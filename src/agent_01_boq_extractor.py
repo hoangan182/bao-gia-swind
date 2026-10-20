@@ -119,6 +119,7 @@ class Agent01_BOQExtractor:
         has_filter = False
         is_double_layer = False
         is_black_2nd_layer = False
+        is_box_combo = False
         dia_val = None
         eff_model_code = None
         motor_brand = "BELIMO"
@@ -309,6 +310,24 @@ class Agent01_BOQExtractor:
                 model_fslf = model_bfn = "VCD"
                 note_fslf = note_bfn = "Van điều chỉnh lưu lượng tay gạt tôn mạ kẽm. ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm" if ei_rating > 0 else "Van điều chỉnh lưu lượng tay gạt tôn mạ kẽm"
 
+            # Van+Van Combo: Nối thêm model suffix & note cho tất cả van phụ trong combo
+            sec_dmps = item.get("secondary_dampers") or ([item.get("secondary_damper")] if item.get("secondary_damper") else [])
+            sec_model_map = {"VCD": " + VCD", "NRD": " + NRD", "PRD": " + PRD", "MD": " + MD", "FD": " + FD"}
+            sec_note_map = {
+                "VCD": " + Van điều chỉnh lưu lượng tay gạt tôn mạ kẽm",
+                "NRD": " + Van 1 chiều tôn mạ kẽm",
+                "PRD": " + Van xả áp đối trọng tôn mạ kẽm",
+                "MD": " + Van động cơ ON-OFF BELIMO (đóng mở 150s), xuất xứ Thụy Sỹ",
+                "FD": " + Van chặn lửa cầu chì EI120 (BCTN 4761/VLXD-TBMT)"
+            }
+            for sec_dmp in sec_dmps:
+                if sec_dmp in sec_model_map:
+                    model_fslf = f"{model_fslf}{sec_model_map[sec_dmp]}"
+                    model_bfn = f"{model_bfn}{sec_model_map[sec_dmp]}"
+                if sec_dmp in sec_note_map:
+                    note_fslf = f"{note_fslf}{sec_note_map[sec_dmp]}"
+                    note_bfn = f"{note_bfn}{sec_note_map[sec_dmp]}"
+
         elif cat == "CUA_GIO":
             combined_search = (raw_search + " " + full_search).lower()
             combo_cfg = (subtype_rules or {}).get("COMBO_AND_DETECTION_RULES") or get_subtype_rules().get("COMBO_AND_DETECTION_RULES", {})
@@ -335,7 +354,7 @@ class Agent01_BOQExtractor:
             has_filter = any(k in combined_search for k in filter_kws)
             is_double_layer = ("2 lớp" in combined_search or "hai lớp" in combined_search)
             is_black_2nd_layer = ("2nd layer" in combined_search or "black paint" in combined_search or "sơn đen" in combined_search)
-            box_note = ". Không tính box do nhà thầu tự thi công" if ("box" in combined_search or "hộp gió" in combined_search) else ""
+            box_note = ""
 
             # Rule 2: Cửa tăng áp, cửa hút khói kèm OBD -> nan thẳng bầu dục kèm van OBD mã SDG+O
             is_press_or_smoke = any(k in combined_search for k in ("tăng áp", "tạo áp", "hút khói", "thải khói", "pag", "seg"))
@@ -345,14 +364,20 @@ class Agent01_BOQExtractor:
                 any(k in combined_search for k in louver_kws)
                 or (any(k in raw_search for k in ("cấp khí bù", "bù khí", "cấp gió bù", "bù gió")) and not any(k in raw_search for k in ("fag", "sag", "rag", "oag", "pag", "seg", "eag", "sdg", "nan thẳng", "bầu dục")))
                 or (max(w, h) >= 3000.0 and not has_obd and not is_double_layer and not any(k in combined_search for k in ("nan thẳng", "bầu dục", "linear", "sọt trứng", "khuếch tán")))
+                or (has_mesh and not has_obd and not has_filter and not is_double_layer and not any(k in combined_search for k in ("cover", "nan thẳng", "bầu dục", "linear", "sọt trứng", "khuếch tán", "sag", "rag", "oag", "pag", "seg", "eag", "sdg")))
             )
             is_standalone_lcct = has_mesh and not any(k in raw_search for k in louver_kws + ("cửa", "miệng", "sag", "fag", "rag", "oag", "pag", "seg", "eag", "sdg", "cover", "nan "))
 
             # Rule 4: Cửa hồi là cửa nan thẳng bầu dục kèm lưới lọc bụi mã SDG+F
-            is_return_grille = any(k in combined_search for k in ("cửa hồi", "miệng hồi", "hút hồi", "rag", "hồi gió", "gió hồi"))
+            is_return_grille = any(k in combined_search for k in ("cửa hồi", "miệng hồi", "hút hồi", "rag", "hồi gió", "gió hồi", "hồi lạnh"))
 
-            # Rule 5: Cửa khuếch tán mã SD
-            is_diffuser_sq = any(k in combined_search for k in ("khuếch tán", "scd", "sad", "diffuser")) or (w == 600 and h == 600 and "sag" in combined_search)
+            # Rule 5: Cửa khuếch tán mã SD:
+            # - Mặc định cho cửa vuông hệ điều hòa: 600x600 (cổ 450x450), 450x450 (cổ 300x300), 300x300 (cổ 150x150)
+            is_sq_ac_diffuser = (w > 0 and w == h and int(w) in (600, 450, 300) and not is_return_grille and not is_louver_z)
+            is_diffuser_sq = any(k in combined_search for k in ("khuếch tán", "scd", "sad", "diffuser")) or is_sq_ac_diffuser or (w == 600 and h == 600 and "sag" in combined_search)
+
+            # Rule 6: Nhận diện Cửa gió / Miệng gió kèm hộp gió
+            is_box_combo = any(k in combined_search for k in ("kèm hộp gió", "kèm hộp", "kèm box", "có hộp gió", "gắn hộp gió", "hộp và cửa", "hộp miệng gió", "hộp kèm cửa", "hộp + cửa")) and any(k in combined_search for k in ("cửa gió", "miệng gió", "cửa cấp", "cửa hồi", "miệng cấp", "miệng hồi", "cửa nan", "louver", "luover"))
 
             if is_standalone_lcct:
                 profile_type = "LCCT"
@@ -374,7 +399,7 @@ class Agent01_BOQExtractor:
                 model_fslf = model_bfn = "WL+N" if has_mesh else "WL"
                 if w > 0 and h > 0:
                     b1, b2 = int(max(50, w - 50)), int(max(50, h - 50))
-                note_fslf = note_bfn = ("Louver nan Z ngoài trời kèm lưới chắn côn trùng Inox 304" if has_mesh else "Louver nan Z ngoài trời") + (" kèm phin lọc bụi G4" if has_filter else "") + box_note
+                note_fslf = note_bfn = ("Louver nan Z ngoài trời kèm lưới chắn côn trùng Inox 304" if has_mesh else "Louver nan Z ngoài trời") + (" kèm lưới lọc bụi" if has_filter else "") + box_note
 
             elif is_return_grille:
                 profile_type = "BD"
@@ -382,7 +407,7 @@ class Agent01_BOQExtractor:
                 model_fslf = model_bfn = "SDG+O+F" if has_obd else "SDG+F"
                 if w > 0 and h > 0:
                     b1, b2 = int(max(50, w - 50)), int(max(50, h - 50))
-                note_fslf = note_bfn = f"Cửa hồi nan thẳng bầu dục kèm lưới lọc bụi G4{' và van OBD' if has_obd else ''}" + box_note
+                note_fslf = note_bfn = f"Cửa hồi nan thẳng bầu dục kèm lưới lọc bụi{' và van OBD' if has_obd else ''}" + box_note
 
             elif is_diffuser_sq:
                 profile_type = "T"
@@ -461,7 +486,7 @@ class Agent01_BOQExtractor:
             is_fitting = raw_name.lower().startswith(("box ", "hộp "))
             subtype = "BOX" if is_fitting else "DUCT_RECT"
             model_fslf = model_bfn = "BOX" if is_fitting else "DUCT-TDF"
-            brand = "SWIND / Phương Nam"
+            brand = "SWIND"
             thk_col = thk if thk > 0 else None
             l_col = int(l) if (is_fitting and l > 0) else (1120 if w > 0 else None)
             note_fslf = note_bfn = "Box miệng gió tôn mạ kẽm Phương Nam" if is_fitting else f"Ống gió tôn mạ kẽm Phương Nam dày {thk:.2f}mm"
@@ -469,7 +494,7 @@ class Agent01_BOQExtractor:
         elif cat == "ONG_MEM":
             dia_val = int(d) if d > 0 else None
             if not dia_val:
-                m = re.search(r'D\s?(\d+)', (raw_name + " " + str(item.get("model", ""))).upper())
+                m = re.search(r'D\s?(\d+)', (raw_name + " " + str(item.get("model", "")) + " " + str(item.get("note_boq", ""))).upper())
                 if m:
                     dia_val = int(m.group(1))
             raw_sub = cls.get_subtype(subtype_rules, "ONG_MEM", raw_name.lower(), cls.get_subtype(subtype_rules, "ONG_MEM", name.lower(), "NON_INSUL"))
@@ -524,9 +549,11 @@ class Agent01_BOQExtractor:
             "fslf_ratio": fslf_ratio,
             "act_unit": act_unit,
             "model_code": eff_model_code,
-            "motor_brand": motor_brand
+            "motor_brand": motor_brand,
+            "is_box_combo": is_box_combo
         }
         item["resolved_spec"] = resolved_spec
+        item["is_box_combo"] = is_box_combo
         return resolved_spec
 
     @classmethod

@@ -1,6 +1,6 @@
 # AGENT 02: CHUYÊN VIÊN RÀ SOÁT PHÂN LOẠI & HỌC TỪ KHÓA (BOQ REVIEWER)
 > **Mã định danh:** `SWIND-AGENT-02`  
-> **Module thực thi:** [`src/agent_02_boq_reviewer.py`](file:///Users/hoangan/work/swind/src/agent_02_boq_reviewer.py)  
+> **Module thực thi:** [`src/agent_02_boq_reviewer.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_02_boq_reviewer.py)  
 > **Chức danh:** Chuyên viên Phân loại Ngữ nghĩa & Học máy Tương tác (HITL)
 
 ---

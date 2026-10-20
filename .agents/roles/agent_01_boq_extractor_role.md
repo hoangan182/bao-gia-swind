@@ -1,6 +1,6 @@
 # AGENT 01: KỸ SƯ BÓC TÁCH BOQ & GIẢI MÃ SPEC TẬP TRUNG (BOQ EXTRACTOR & SPEC RESOLVER)
 > **Mã định danh:** `SWIND-AGENT-01`  
-> **Module thực thi:** [`src/agent_01_boq_extractor.py`](file:///Users/hoangan/work/swind/src/agent_01_boq_extractor.py) & [`src/swind_boq_parser.py`](file:///Users/hoangan/work/swind/src/swind_boq_parser.py)  
+> **Module thực thi:** [`src/agent_01_boq_extractor.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_01_boq_extractor.py) & [`src/swind_boq_parser.py`](file:///Users/hoangan/work/PCCC/swind/src/swind_boq_parser.py)  
 > **Chức danh:** Kỹ sư Bóc tách BOQ Đa năng & Giải mã Hồ sơ Kỹ thuật Tập trung
 
 ---

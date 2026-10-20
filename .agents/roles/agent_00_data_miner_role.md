@@ -1,6 +1,6 @@
 # AGENT 00: CHUYÊN GIA KHAI THÁC DỮ LIỆU GỐC (THE DATA MINER)
 > **Mã định danh:** `SWIND-AGENT-00`  
-> **Module thực thi:** [`src/agent_00_data_miner.py`](file:///Users/hoangan/work/swind/src/agent_00_data_miner.py) & [`src/extract_master_data.py`](file:///Users/hoangan/work/swind/src/extract_master_data.py)  
+> **Module thực thi:** [`src/agent_00_data_miner.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_00_data_miner.py) & [`src/extract_master_data.py`](file:///Users/hoangan/work/PCCC/swind/src/extract_master_data.py)  
 > **Chức danh:** Kỹ sư Khai thác & Tái tạo Master Database 2026
 
 ---

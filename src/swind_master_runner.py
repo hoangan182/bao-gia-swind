@@ -283,16 +283,32 @@ def process_single_sheet_estimation(
 
         item_id = f"{prefix}-{item_counter:03d}"
 
+        is_box_combo = spec.get("is_box_combo") or item.get("is_box_combo") or (
+            any(k in raw_name.lower() for k in ("kèm hộp gió", "kèm hộp", "kèm box", "có hộp gió", "gắn hộp gió"))
+            and any(k in raw_name.lower() for k in ("cửa gió", "miệng gió", "cửa cấp", "miệng cấp", "cửa hồi", "miệng hồi"))
+        )
         override_price = 0
-        if cat in ["THUONG_MAI", "ONG_MEM", "KHAC"]:
-            try:
-                override_price = float(item.get("ref_price") or 0)
-            except:
-                override_price = 0
+        box_combo_add_price = 0
+        try:
+            p_ref = float(item.get("ref_price") or 0)
+            if p_ref > 0:
+                if is_box_combo and cat == "CUA_GIO":
+                    box_combo_add_price = p_ref
+                else:
+                    override_price = p_ref
+        except:
+            override_price = 0
+            box_combo_add_price = 0
 
         note_str = spec.get("note_std") or spec.get("note_fslf") or ""
         if not note_str:
             note_str = "Hàng thương mại" if cat == "THUONG_MAI" else "Ống mềm" if cat == "ONG_MEM" else ""
+
+        if is_box_combo and cat == "CUA_GIO":
+            if box_combo_add_price > 0:
+                note_str = f"{note_str} (ĐG bao gồm Hộp gió đã báo {box_combo_add_price:,.0f}đ + Cửa gió Swind)" if note_str else f"ĐG bao gồm Hộp gió đã báo {box_combo_add_price:,.0f}đ + Cửa gió Swind"
+            else:
+                note_str = f"{note_str} (ĐG chỉ bao gồm phần Cửa gió Swind)" if note_str else "ĐG chỉ bao gồm phần Cửa gió Swind"
 
         labor_rate, overhead_rate, margin_rate = get_financial_rates(cat)
         builder.add_boq_summary_row(
@@ -307,7 +323,8 @@ def process_single_sheet_estimation(
             labor_rate=labor_rate,
             overhead_rate=overhead_rate,
             note=note_str,
-            override_price=override_price
+            override_price=override_price,
+            box_combo_add_price=box_combo_add_price
         )
 
         # Bóc tách chi tiết BOM theo Xưởng chuyên môn
@@ -364,6 +381,32 @@ def process_single_sheet_estimation(
                     calc_qty_per_item=comp["calc_qty"],
                     note=comp.get("note", "")
                 )
+            # Van+Van Combo: Tính thêm BOM cho tất cả các van phụ (secondary_dampers) và cộng dồn vào cùng parent_id
+            sec_dmps = item.get("secondary_dampers") or ([item.get("secondary_damper")] if item.get("secondary_damper") else [])
+            for sec_idx, sec_dmp in enumerate(sec_dmps, 1):
+                sec_bom = Agent05_DamperBOM.calculate_damper_bom(
+                    parent_id=f"{item_id}-SEC{sec_idx}",
+                    damper_type=sec_dmp,
+                    w=w if w > 0 else 300,
+                    h=h if h > 0 else 300,
+                    brand="PN",
+                    ei_rating=0,
+                    model_code=None,
+                    motor_brand="BELIMO",
+                    d=d
+                )
+                for comp in sec_bom["components"]:
+                    builder.add_subsheet_component(
+                        sheet_type="VAN",
+                        sub_key=comp["sub_key"],
+                        parent_id=item_id,
+                        comp_name=f"Van {sec_dmp} kèm combo - {comp['name']}",
+                        category=comp["category"],
+                        mat_id=comp["mat_id"],
+                        unit=comp["unit"],
+                        calc_qty_per_item=comp["calc_qty"],
+                        note=f"Van phụ {sec_dmp} trong combo {damper_type}+{sec_dmp}"
+                    )
             if damper_type == "MFD_LOUVER":
                 louver_bom = Agent06_DiffuserBOM.calculate_diffuser_bom(
                     parent_id=f"{item_id}-LV",
@@ -553,12 +596,24 @@ def process_single_sheet_estimation(
         l_rate, o_rate, mg_rate = get_financial_rates(cat)
         l_cost = (m_cost - mot_cost) * l_rate
         o_cost = (m_cost - mot_cost) * o_rate
-        item["calc_sell_mat"] = math.floor(((m_cost + o_cost - mot_cost) * (1 + mg_rate) + mot_cost) + 0.5)
-        item["calc_sell_lab"] = math.floor(l_cost * (1 + mg_rate) + 0.5)
-        item["calc_sell_unit"] = math.floor(((m_cost + l_cost + o_cost - mot_cost) * (1 + mg_rate) + mot_cost) + 0.5)
+        diff_sell_unit = math.floor(((m_cost + l_cost + o_cost - mot_cost) * (1 + mg_rate) + mot_cost) + 0.5)
+        item["calc_sell_diffuser_unit"] = diff_sell_unit
+        if override_price > 0:
+            item["calc_sell_unit"] = int(override_price)
+            item["calc_sell_mat"] = int(override_price)
+            item["calc_sell_lab"] = 0
+        elif box_combo_add_price > 0:
+            item["calc_sell_mat"] = math.floor(((m_cost + o_cost - mot_cost) * (1 + mg_rate) + mot_cost) + 0.5) + int(box_combo_add_price)
+            item["calc_sell_lab"] = math.floor(l_cost * (1 + mg_rate) + 0.5)
+            item["calc_sell_unit"] = int(box_combo_add_price + diff_sell_unit)
+        else:
+            item["calc_sell_mat"] = math.floor(((m_cost + o_cost - mot_cost) * (1 + mg_rate) + mot_cost) + 0.5)
+            item["calc_sell_lab"] = math.floor(l_cost * (1 + mg_rate) + 0.5)
+            item["calc_sell_unit"] = diff_sell_unit
         item["calc_note"] = note_str
         is_mfd = (cat == "VAN_GIO" and "mfd" in raw_name.lower())
-        item["calc_brand"] = "SWIND / VIWECO (KLB)" if is_mfd else (spec.get("brand") or "SWIND")
+        eff_motor_brand = spec.get("motor_brand") or "BELIMO"
+        item["calc_brand"] = "SWIND"
         if qty == 0 and item_id in builder.parent_rows:
             builder.ws_00.cell(builder.parent_rows[item_id], 17, value=int(item["calc_sell_unit"]))
 
@@ -837,18 +892,8 @@ def export_customer_boq_quotation_files(
         # đồng thời xuất thêm 1 bản điền trực tiếp trên form gốc của khách hàng
         if boq_file and os.path.exists(boq_file):
             try:
-                need_custom_form = True
-                if template_wb is not None and sh_name in template_wb.sheetnames:
-                    ws_probe = template_wb[sh_name]
-                    p_v16 = str(ws_probe.cell(10, 16).value or "").upper()
-                    p_v29 = str(ws_probe.cell(10, 29).value or "").upper()
-                    p_g4 = str(ws_probe.cell(4, 7).value or "").upper()
-                    p_h4 = str(ws_probe.cell(4, 8).value or "").upper()
-                    need_custom_form = ("LỰA CHỌN" in p_v16 and "PHƯƠNG ÁN 1" in p_v29) or ("ĐƠN GIÁ" in p_g4 and "THÀNH TIỀN" in p_h4)
-                if need_custom_form:
-                    wb_cust = openpyxl.load_workbook(boq_file)
-                else:
-                    wb_cust = None
+                from collections import defaultdict
+                wb_cust = openpyxl.load_workbook(boq_file)
                 if wb_cust is not None and sh_name in wb_cust.sheetnames:
                     ws_cust = wb_cust[sh_name]
                     v16 = str(ws_cust.cell(10, 16).value or "").upper()
@@ -893,31 +938,156 @@ def export_customer_boq_quotation_files(
                         wb_cust.save(ecoba_out)
                         customer_files.append((f"{sh_name} (Form gốc Ecoba)", ecoba_out))
                         print(f"  -> File Báo giá điền trực tiếp trên Form gốc khách hàng: {ecoba_out}")
-                    elif "ĐƠN GIÁ" in str(ws_cust.cell(4, 7).value or "").upper() and "THÀNH TIỀN" in str(ws_cust.cell(4, 8).value or "").upper():
-                        row_map = {it["source_row"]: it for it in sh_items if it.get("source_row")}
-                        for r_c in range(6, ws_cust.max_row + 1):
-                            if ws_cust.row_dimensions[r_c].hidden:
-                                continue
-                            c_b = str(ws_cust.cell(r_c, 2).value or "").lower()
-                            if "tổng trước vat" in c_b or "tổng cộng" in c_b:
+                    else:
+                        header_r = None
+                        p_col = None
+                        t_col = None
+                        q_col = None
+                        brand_col = None
+                        model_col = None
+                        note_col = None
+                        from openpyxl.utils import get_column_letter
+
+                        for r_chk in range(1, min(30, ws_cust.max_row + 1)):
+                            for c_chk in range(1, min(25, ws_cust.max_column + 1)):
+                                v_chk = str(ws_cust.cell(r_chk, c_chk).value or "").strip().lower()
+                                if "đơn giá" in v_chk and not p_col:
+                                    header_r = r_chk
+                                    p_col = c_chk
+                                elif "thành tiền" in v_chk and not t_col:
+                                    t_col = c_chk
+                                elif any(k in v_chk for k in ("khối lượng", "số lượng")) and not q_col:
+                                    q_col = c_chk
+                                elif any(k in v_chk for k in ("nhãn hiệu", "xuất xứ")) and not brand_col:
+                                    brand_col = c_chk
+                                elif any(k in v_chk for k in ("mã hiệu", "quy cách", "thông số")) and not model_col:
+                                    model_col = c_chk
+                                elif "ghi chú" in v_chk and not note_col:
+                                    note_col = c_chk
+                            if p_col and t_col:
                                 break
-                            if r_c in row_map:
-                                it_c = row_map[r_c]
-                                sp_c = it_c.get("resolved_spec", {})
-                                m_val = sp_c.get("model_std") or sp_c.get("model_fslf") or it_c.get("model")
-                                b_val = sp_c.get("brand") or "SWIND"
-                                p_val = int(it_c.get("calc_sell_unit", 0))
-                                n_val = sp_c.get("note_std") or sp_c.get("note_fslf") or ""
-                                ws_cust.cell(r_c, 3, value=b_val)
-                                if ws_cust.cell(r_c, 4).value in (None, ""):
-                                    ws_cust.cell(r_c, 4, value=m_val)
-                                ws_cust.cell(r_c, 7, value=p_val).number_format = "#,##0"
-                                ws_cust.cell(r_c, 8, value=f"=ROUNDUP(G{r_c}*F{r_c}, -2)").number_format = "#,##0"
-                                ws_cust.cell(r_c, 9, value=n_val)
-                        cust_out = os.path.join(project_dir, f"{project_name}_BAO_GIA_FORM_KHACH.xlsx")
-                        wb_cust.save(cust_out)
-                        customer_files.append((f"{sh_name} (Form gốc khách hàng)", cust_out))
-                        print(f"  -> File Báo giá điền trực tiếp trên Form gốc khách hàng: {cust_out}")
+
+                        if header_r and p_col and t_col:
+                            row_map = defaultdict(list)
+                            for it in sh_items:
+                                if it.get("source_row"):
+                                    row_map[it["source_row"]].append(it)
+
+                            col_p_let = get_column_letter(p_col)
+                            col_q_let = get_column_letter(q_col) if q_col else "F"
+                            col_t_let = get_column_letter(t_col)
+
+                            first_data_r = header_r + 1
+                            last_data_r = header_r + 1
+                            sum_vat_row = None
+
+                            for r_c in range(header_r + 1, ws_cust.max_row + 1):
+                                if ws_cust.row_dimensions[r_c].hidden:
+                                    continue
+                                c_b = str(ws_cust.cell(r_c, 2).value or "").strip().lower()
+                                if any(k in c_b for k in ("tổng trước vat", "tổng cộng", "tổng giá trị")):
+                                    sum_vat_row = r_c
+                                    last_data_r = r_c - 1
+                                    break
+                                if r_c in row_map:
+                                    last_data_r = r_c
+                                    its_c = row_map[r_c]
+                                    curr_price = ws_cust.cell(r_c, p_col).value
+                                    curr_p_val = 0
+                                    try:
+                                        if curr_price is not None:
+                                            curr_p_val = float(str(curr_price).replace(",", "").strip())
+                                    except:
+                                        curr_p_val = 0
+
+                                    is_any_box_combo = any(it_c.get("is_box_combo") or it_c.get("resolved_spec", {}).get("is_box_combo") for it_c in its_c)
+                                    if is_any_box_combo:
+                                        diff_p = sum(int(it_c.get("calc_sell_diffuser_unit", it_c.get("calc_sell_unit", 0))) for it_c in its_c)
+                                        diff_models = [it_c.get("resolved_spec", {}).get("model_std") or it_c.get("resolved_spec", {}).get("model_fslf") or "Cửa gió" for it_c in its_c]
+                                        m_str = "/".join(filter(None, diff_models)) or "Cửa gió"
+                                        if curr_p_val > 0:
+                                            total_combo_p = int(curr_p_val + diff_p)
+                                            ws_cust.cell(r_c, p_col, value=total_combo_p).number_format = "#,##0"
+                                            ws_cust.cell(r_c, t_col, value=f"=ROUNDUP({col_p_let}{r_c}*{col_q_let}{r_c}, -2)").number_format = "#,##0"
+                                            if note_col:
+                                                curr_n = str(ws_cust.cell(r_c, note_col).value or "").strip()
+                                                if curr_n and curr_n != "0":
+                                                    if "không gồm cửa gió" in curr_n.lower():
+                                                        new_n = curr_n.replace("không gồm cửa gió", f"đã gồm Cửa gió Swind ({m_str})")
+                                                    elif "cửa gió" not in curr_n.lower():
+                                                        new_n = f"{curr_n} + Cửa gió Swind ({m_str})"
+                                                    else:
+                                                        new_n = f"{curr_n} (kèm Cửa gió {m_str})"
+                                                    ws_cust.cell(r_c, note_col, value=new_n)
+                                                else:
+                                                    ws_cust.cell(r_c, note_col, value=f"ĐG gồm Hộp gió {curr_p_val:,.0f}đ + Cửa gió Swind ({m_str})")
+                                        else:
+                                            ws_cust.cell(r_c, p_col, value=diff_p).number_format = "#,##0"
+                                            ws_cust.cell(r_c, t_col, value=f"=ROUNDUP({col_p_let}{r_c}*{col_q_let}{r_c}, -2)").number_format = "#,##0"
+                                            if note_col:
+                                                curr_n = str(ws_cust.cell(r_c, note_col).value or "").strip()
+                                                if not curr_n or curr_n == "0":
+                                                    ws_cust.cell(r_c, note_col, value=f"Đơn giá chỉ bao gồm phần Cửa gió Swind ({m_str}), chưa gồm hộp gió")
+                                        if model_col:
+                                            curr_m = str(ws_cust.cell(r_c, model_col).value or "").strip()
+                                            if not curr_m or curr_m == "0":
+                                                ws_cust.cell(r_c, model_col, value=m_str)
+                                        if brand_col:
+                                            curr_b = str(ws_cust.cell(r_c, brand_col).value or "").strip()
+                                            if not curr_b or curr_b == "0":
+                                                ws_cust.cell(r_c, brand_col, value="SWIND")
+                                    elif curr_p_val > 0:
+                                        ws_cust.cell(r_c, p_col, value=curr_p_val).number_format = "#,##0"
+                                        ws_cust.cell(r_c, t_col, value=f"=ROUNDUP({col_p_let}{r_c}*{col_q_let}{r_c}, -2)").number_format = "#,##0"
+                                    else:
+                                        calc_p = sum(int(it_c.get("calc_sell_unit", 0)) for it_c in its_c)
+                                        ws_cust.cell(r_c, p_col, value=calc_p).number_format = "#,##0"
+                                        ws_cust.cell(r_c, t_col, value=f"=ROUNDUP({col_p_let}{r_c}*{col_q_let}{r_c}, -2)").number_format = "#,##0"
+                                        if brand_col:
+                                            curr_b = str(ws_cust.cell(r_c, brand_col).value or "").strip()
+                                            if not curr_b or curr_b == "0":
+                                                b_tokens = []
+                                                for it_c in its_c:
+                                                    b_str = it_c.get("calc_brand") or it_c.get("resolved_spec", {}).get("brand")
+                                                    if b_str:
+                                                        for part in b_str.split("/"):
+                                                            p_strip = part.strip()
+                                                            if p_strip and p_strip not in b_tokens:
+                                                                b_tokens.append(p_strip)
+                                                b_val = " / ".join(b_tokens) or "SWIND"
+                                                ws_cust.cell(r_c, brand_col, value=b_val)
+                                        if model_col:
+                                            curr_m = str(ws_cust.cell(r_c, model_col).value or "").strip()
+                                            if not curr_m or curr_m == "0":
+                                                m_val = " / ".join(filter(None, [it_c.get("resolved_spec", {}).get("model_std") or it_c.get("resolved_spec", {}).get("model_fslf") or it_c.get("model") for it_c in its_c]))
+                                                if m_val:
+                                                    ws_cust.cell(r_c, model_col, value=m_val)
+                                        if note_col:
+                                            curr_n = str(ws_cust.cell(r_c, note_col).value or "").strip()
+                                            if not curr_n or curr_n == "0":
+                                                n_val = " / ".join(filter(None, [it_c.get("calc_note") or it_c.get("resolved_spec", {}).get("note_std") for it_c in its_c]))
+                                                if n_val:
+                                                    ws_cust.cell(r_c, note_col, value=n_val)
+
+                            if sum_vat_row:
+                                ws_cust.cell(sum_vat_row, t_col, value=f"=SUM({col_t_let}{first_data_r}:{col_t_let}{last_data_r})").number_format = "#,##0"
+                                for r_chk in range(sum_vat_row + 1, min(sum_vat_row + 10, ws_cust.max_row + 1)):
+                                    txt = str(ws_cust.cell(r_chk, 2).value or "").lower()
+                                    if "vat(10%)" in txt or "vat (10%)" in txt or "vat 10%" in txt:
+                                        ws_cust.cell(r_chk, t_col, value=f"={col_t_let}{sum_vat_row}*0.1").number_format = "#,##0"
+                                    elif "vat(8%)" in txt or "vat (8%)" in txt or "vat 8%" in txt:
+                                        orig_v8 = ws_cust.cell(r_chk, t_col).value
+                                        if orig_v8 and str(orig_v8).strip() not in ("0", ""):
+                                            ws_cust.cell(r_chk, t_col, value=f"={col_t_let}{sum_vat_row}*0.08").number_format = "#,##0"
+                                        else:
+                                            ws_cust.cell(r_chk, t_col, value=0).number_format = "#,##0"
+                                    elif "tổng thanh toán" in txt or "tổng cộng thanh toán" in txt:
+                                        ws_cust.cell(r_chk, t_col, value=f"=SUM({col_t_let}{sum_vat_row}:{col_t_let}{r_chk-1})").number_format = "#,##0"
+
+                            cust_out = os.path.join(project_dir, f"{project_name}_BAO_GIA_FORM_KHACH.xlsx")
+                            wb_cust.save(cust_out)
+                            customer_files.append((f"{sh_name} (Form gốc khách hàng)", cust_out))
+                            print(f"  -> File Báo giá điền trực tiếp trên Form gốc khách hàng: {cust_out}")
             except Exception as e:
                 print(f"  [Cảnh báo] Không thể xuất form gốc khách hàng: {e}")
 

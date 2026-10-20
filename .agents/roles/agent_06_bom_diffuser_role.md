@@ -1,6 +1,6 @@
 # AGENT 06: KỸ SƯ BÓC TÁCH BOM XƯỞNG CỬA GIÓ & MIỆNG GIÓ NHÔM (DIFFUSER BOM MAKER)
 > **Mã định danh:** `SWIND-AGENT-06`  
-> **Module thực thi:** [`src/agent_06_bom_diffuser.py`](file:///Users/hoangan/work/swind/src/agent_06_bom_diffuser.py)  
+> **Module thực thi:** [`src/agent_06_bom_diffuser.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_06_bom_diffuser.py)  
 > **Chức danh:** Kỹ sư Chế tạo Xưởng Cửa gió & Miệng gió Nhôm định hình
 
 ---

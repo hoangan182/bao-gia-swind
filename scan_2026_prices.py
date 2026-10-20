@@ -1,6 +1,8 @@
 import pandas as pd
 
-file_path = "/Users/hoangan/work/swind/BẢNG TÍNH GIÁ SWIND  chuẩn 2026.xls"
+import glob
+file_matches = glob.glob("*chua*n 2026.xls*")
+file_path = file_matches[0] if file_matches else "BẢNG TÍNH GIÁ SWIND  chuẩn 2026.xls"
 try:
     xl = pd.ExcelFile(file_path)
     df_ton = pd.read_excel(xl, sheet_name="Vat tu tôn")

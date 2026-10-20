@@ -1,7 +1,7 @@
 # AGENT 0B: KIỂM TOÁN VIÊN ĐẦU VÀO ĐA MÔ HÌNH (THE INPUT AUDITOR)
 > **Mã định danh:** `SWIND-AGENT-0B`  
 > **Chức danh:** Chuyên viên Kiểm toán Kỹ thuật Đầu vào Đa Mô hình (Multi-LLM Auditor)  
-> **Tài liệu căn cứ:** [KE_HOACH_BOC_TACH_SPEC_VA_BAO_GIA_DU_AN_HDL.md](file:///Users/hoangan/work/swind/plan/KE_HOACH_BOC_TACH_SPEC_VA_BAO_GIA_DU_AN_HDL.md) & [HUONG_DAN_SU_DUNG_BANG_TINH_GIA_SWIND.md](file:///Users/hoangan/work/swind/HUONG_DAN_SU_DUNG_BANG_TINH_GIA_SWIND.md)
+> **Tài liệu căn cứ:** [KE_HOACH_BOC_TACH_SPEC_VA_BAO_GIA_DU_AN_HDL.md](file:///Users/hoangan/work/PCCC/swind/plan/KE_HOACH_BOC_TACH_SPEC_VA_BAO_GIA_DU_AN_HDL.md) & [HUONG_DAN_SU_DUNG_BANG_TINH_GIA_SWIND.md](file:///Users/hoangan/work/PCCC/swind/HUONG_DAN_SU_DUNG_BANG_TINH_GIA_SWIND.md)
 
 ---
 

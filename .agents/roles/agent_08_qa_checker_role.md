@@ -1,6 +1,6 @@
 # AGENT 08: KIỂM TOÁN VIÊN ĐỘC LẬP 3 TẦNG (QA CHECKER & FINAL QUOTATION AUDITOR)
 > **Mã định danh:** `SWIND-AGENT-08`  
-> **Module thực thi:** [`src/agent_08_qa_checker.py`](file:///Users/hoangan/work/swind/src/agent_08_qa_checker.py), [`src/swind_checker.py`](file:///Users/hoangan/work/swind/src/swind_checker.py) & [`src/swind_final_quotation_auditor.py`](file:///Users/hoangan/work/swind/src/swind_final_quotation_auditor.py)  
+> **Module thực thi:** [`src/agent_08_qa_checker.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_08_qa_checker.py), [`src/swind_checker.py`](file:///Users/hoangan/work/PCCC/swind/src/swind_checker.py) & [`src/swind_final_quotation_auditor.py`](file:///Users/hoangan/work/PCCC/swind/src/swind_final_quotation_auditor.py)  
 > **Chức danh:** Kiểm toán viên Độc lập 3 Tầng & Thẩm định Báo giá Cuối cùng
 
 ---

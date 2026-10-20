@@ -219,6 +219,12 @@
     },
     "MISSING_QTY_FILL_UNIT_PRICE": {
       "rule": "Những dòng thuộc Cửa gió và Van gió có tên và kích thước rõ ràng nhưng chưa có khối lượng (ô Số lượng / Đơn vị trống trong BOQ) vẫn giữ nguyên trong bảng báo giá, để trống cột Số lượng và điền đầy đủ Đơn giá."
+    },
+    "AIR_CONDITIONING_SQUARE_DIFFUSER_SD_RULE": {
+      "rule": "Đối với hạng mục cửa dành cho hệ điều hòa, cửa vuông các kích thước 600x600 (cổ 450x450), 450x450 (cổ 300x300), 300x300 (cổ 150x150) mặc định áp dụng mã cửa khuếch tán vuông SD (profile type 'T', B1=W-150, B2=H-150). Cửa hồi / miệng hồi thì mặc định là cửa nan thẳng bầu dục kèm lưới lọc bụi (mã SDG+F, profile type 'BD', has_filter=True)."
+    },
+    "COMBO_DIFFUSER_WITH_PLENUM_BOX_RULE": {
+      "rule": "Khi BOQ có 'Cửa gió kèm hộp gió' hoặc 'Miệng gió kèm hộp gió': Swind báo giá phần Cửa gió. Nếu BOQ đã có giá sẵn (như trường hợp Minh Triết đã báo giá phần hộp gió và ghi chú chưa gồm cửa gió), Swind sẽ cộng giá cửa gió vào giá có sẵn đó (Đơn giá = Giá hộp gió + Giá cửa gió Swind) và ghi thêm thông tin Cửa gió vào phần ghi chú. Nếu BOQ chưa có giá, Swind báo giá phần Cửa gió và ghi chú rõ 'Đơn giá chỉ bao gồm phần Cửa gió [Model], chưa gồm hộp gió' để áp dụng thống nhất cho các dự án tiếp theo."
     }
   }
 }

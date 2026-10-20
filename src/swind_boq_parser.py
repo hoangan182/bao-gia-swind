@@ -83,10 +83,11 @@ class SwindBOQParser:
             # Kiểm tra xem có phải dòng tiêu đề phân nhóm không (giữ lại dòng Cửa/Van có quy cách kích thước dù chưa điền khối lượng)
             if qty_val is None or not isinstance(qty_val, (int, float)) or qty_val <= 0:
                 nl_chk = name_str.lower()
+                is_blank_qty = (qty_val is None or str(qty_val).strip() == "")
                 has_cv_kw = any(k in nl_chk for k in cv_kws) or bool(re.search(cv_rx, nl_chk))
                 has_cv_dim = bool(re.search(r'(\d+\s*[xX*]\s*\d+|\b[dD]\d{2,4}\b|\b(?:vcd|fd|nrd|prd|md)\s+\d{2,4}\b)', nl_chk))
-                if has_cv_kw and has_cv_dim and "tổng cộng" not in nl_chk:
-                    is_missing_qty = (qty_val is None or str(qty_val).strip() == "")
+                if is_blank_qty and has_cv_kw and has_cv_dim and "tổng cộng" not in nl_chk:
+                    is_missing_qty = True
                     qty_val = 0.0
                 else:
                     if not unit_val and "tổng cộng" not in nl_chk:
@@ -123,7 +124,7 @@ class SwindBOQParser:
                 full_name_str = f"{clean_section} {name_str}"
                 
             # Phân loại sản phẩm (Category detection) động từ Master Catalog
-            name_lower = name_str.lower()
+            name_lower = name_str.lower().replace('ồ', 'ố')
             full_name_lower = full_name_str.lower()
             model_str = str(model_val).strip() if model_val is not None else ""
             category = "KHAC"
@@ -160,7 +161,7 @@ class SwindBOQParser:
                                 break
 
                 # 2b. Box / Hộp tĩnh áp tôn mạ kẽm (không kèm tiêu âm) -> ONG_GIO
-                if category == "KHAC" and name_lower.startswith(("box ", "hộp ")) and "tiêu âm" not in name_lower:
+                if category == "KHAC" and name_lower.startswith(("box ", "hộp ")) and not name_lower.startswith(("hộp và cửa", "hộp + cửa", "hộp kèm cửa", "box và cửa", "box + cửa")) and "tiêu âm" not in name_lower:
                     category = "ONG_GIO"
 
                 # 2c. Kiểm tra Hàng Sản Xuất có độ đặc thù cao (Canvas, Tiêu âm, Cửa, Van, Ống mềm)
@@ -203,7 +204,7 @@ class SwindBOQParser:
                 l = float(l_explicit.group(1))
 
             # Bóc tách đường kính tròn D / DN / Ø / Phi (kể cả viết dạng D100x100: "cứ kích thước D là tròn")
-            d_match = re.search(r'(?:^|[\s_(+-])(?:[dD][nN]?|Ø|phi\s*)(\d{2,4})(?:\s*[xX*]\s*\1)?\b', dim_clean_text, re.IGNORECASE)
+            d_match = re.search(r'(?:^|[\s_(+:-])(?:[dD][nN]?|Ø|phi\s*)(\d{2,4})(?:\s*[xX*]\s*\1)?(?:\s*mm)?(?:\b|(?=[^\w]))', dim_clean_text, re.IGNORECASE)
             rect_search_text = re.sub(r'(?<![a-zA-Z])(?:[dD][nN]?|Ø|phi\s*)(\d{2,4})\s*[xX*]\s*\1\b', ' ', dim_clean_text, flags=re.IGNORECASE)
 
             if w == 0 and h == 0:
@@ -402,6 +403,85 @@ class SwindBOQParser:
                         "is_missing_qty": is_missing_qty,
                         "ref_price": ws.cell(r, col_map["price"]).value if "price" in col_map else None
                     })
+
+            elif category == "VAN_GIO" and not has_diffuser:
+                # Rule 8: Chaining Token Scanner - Quét đệ quy tất cả các token phân cách bởi dấu '+' hoặc từ khóa 'kèm'/'gắn'
+                # Nhận diện đầy đủ không giới hạn số lượng van cộng dồn (VD: FD+VD, MFD+NRD, MFD+VD+NRD, NRD+FD...)
+                damper_priority = {"MFSD": 1, "MFD": 2, "FD": 3, "MD": 4, "PRD": 5, "NRD": 6, "VCD": 7}
+
+                def _detect_damper_type(tok_str):
+                    t = tok_str.strip().lower()
+                    if re.search(r'\bmfsd\b', t): return "MFSD"
+                    if re.search(r'\bmfd\b|ngăn\s*cháy.*động\s*cơ|chống\s*cháy.*động\s*cơ|chặn\s*lửa.*động\s*cơ', t): return "MFD"
+                    if re.search(r'\bvcd\b|\bvd\b|điều\s*chỉnh.*lưu\s*lượng', t): return "VCD"
+                    if re.search(r'\bnrd\b|1\s*chiều|một\s*chiều', t): return "NRD"
+                    if re.search(r'\bprd\b|xả\s*áp', t): return "PRD"
+                    if re.search(r'\bmd\b|động\s*cơ|on/off|on-off', t): return "MD"
+                    if re.search(r'\bfd\b|chặn\s*lửa|chống\s*cháy|dập\s*lửa|cầu\s*chì', t): return "FD"
+                    return None
+
+                tokens = [tk.strip() for tk in re.split(r'\s*(?:\+|\bkèm\b|\bgắn\b|\btích\s*hợp\b)\s*', raw_name_str) if tk.strip()]
+                detected_dampers = []
+                for tk in tokens:
+                    dt = _detect_damper_type(tk)
+                    if dt and dt not in detected_dampers:
+                        detected_dampers.append(dt)
+
+                if len(detected_dampers) > 1:
+                    # Sắp xếp theo thứ bậc ưu tiên để chọn van chính (MFSD > MFD > FD > MD > PRD > NRD > VCD)
+                    sorted_dampers = sorted(detected_dampers, key=lambda x: damper_priority.get(x, 99))
+                    primary_type = sorted_dampers[0]
+                    secondary_dampers = sorted_dampers[1:]
+                    secondary_type = secondary_dampers[0] if secondary_dampers else None
+
+                    items.append({
+                        "source_row": r,
+                        "source_sheet": sheet_name,
+                        "section": current_section,
+                        "raw_name": raw_name_str,
+                        "name": name_str,
+                        "note_boq": note_boq,
+                        "category": "VAN_GIO",
+                        "model": primary_type,
+                        "secondary_damper": secondary_type,
+                        "secondary_dampers": secondary_dampers,
+                        "w": w,
+                        "h": h,
+                        "d": d_val,
+                        "l": l,
+                        "thickness": thickness,
+                        "ei_rating": ei_rating,
+                        "unit": str(unit_val).strip() if str(unit_val).strip() else "cái",
+                        "qty": float(qty_val),
+                        "is_missing_qty": is_missing_qty,
+                        "ref_price": ws.cell(r, col_map["price"]).value if "price" in col_map else None
+                    })
+                else:
+                    # Không match combo Van+Van → xử lý như van đơn thông thường
+                    item_data = {
+                        "source_row": r,
+                        "source_sheet": sheet_name,
+                        "section": current_section,
+                        "raw_name": raw_name_str,
+                        "name": name_str,
+                        "note_boq": note_boq,
+                        "category": category,
+                        "orig_category": orig_category,
+                        "is_missing_dims": is_missing_dims,
+                        "model": model_str.upper(),
+                        "w": w,
+                        "h": h,
+                        "d": d_val,
+                        "l": l,
+                        "thickness": thickness,
+                        "ei_rating": ei_rating,
+                        "unit": str(unit_val).strip(),
+                        "qty": float(qty_val),
+                        "is_missing_qty": is_missing_qty,
+                        "ref_price": ws.cell(r, col_map["price"]).value if "price" in col_map else None,
+                        "is_ktc_applied": False
+                    }
+                    items.append(item_data)
 
             else:
                 # Không phải Combo: Xử lý KTC cho Cửa gió (độ dày & chiều dài Van gió lấy trực tiếp từ Agent05_DamperBOM)

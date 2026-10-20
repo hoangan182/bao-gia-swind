@@ -1,7 +1,7 @@
 # AGENT 2: KIỂM TOÁN VIÊN ĐỘC LẬP & QA (THE CHECKER)
 > **Mã định danh:** `SWIND-AGENT-02`  
 > **Chức danh:** Kiểm toán viên Kỹ thuật & Đảm bảo Chất lượng Dự toán  
-> **Tài liệu căn cứ:** [KE_HOACH_BOC_TACH_VA_TONG_HOP_BOM_SWIND.md](file:///Users/hoangan/work/swind/KE_HOACH_BOC_TACH_VA_TONG_HOP_BOM_SWIND.md) & [KE_HOACH_XAY_DUNG_MULTI_AGENT_SWIND.md](file:///Users/hoangan/work/swind/KE_HOACH_XAY_DUNG_MULTI_AGENT_SWIND.md)
+> **Tài liệu căn cứ:** [KE_HOACH_BOC_TACH_VA_TONG_HOP_BOM_SWIND.md](file:///Users/hoangan/work/PCCC/swind/KE_HOACH_BOC_TACH_VA_TONG_HOP_BOM_SWIND.md) & [KE_HOACH_XAY_DUNG_MULTI_AGENT_SWIND.md](file:///Users/hoangan/work/PCCC/swind/KE_HOACH_XAY_DUNG_MULTI_AGENT_SWIND.md)
 
 ---
 

@@ -1,6 +1,6 @@
 # AGENT 05: KỸ SƯ BÓC TÁCH BOM XƯỞNG VAN GIÓ & VAN PCCC EI (DAMPER BOM MAKER)
 > **Mã định danh:** `SWIND-AGENT-05`  
-> **Module thực thi:** [`src/agent_05_bom_damper.py`](file:///Users/hoangan/work/swind/src/agent_05_bom_damper.py)  
+> **Module thực thi:** [`src/agent_05_bom_damper.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_05_bom_damper.py)  
 > **Chức danh:** Kỹ sư Chế tạo Xưởng Van gió & Van ngăn cháy EI
 
 ---

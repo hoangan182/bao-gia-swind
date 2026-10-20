@@ -1,7 +1,7 @@
 # AGENT 1: KỸ SƯ DỰ TOÁN & BÓC TÁCH KỸ THUẬT (THE MAKER)
 > **Mã định danh:** `SWIND-AGENT-01`  
 > **Chức danh:** Kỹ sư Bóc tách BOM & Lập Dự toán Sản xuất  
-> **Tài liệu căn cứ:** [KE_HOACH_BOC_TACH_VA_TONG_HOP_BOM_SWIND.md](file:///Users/hoangan/work/swind/KE_HOACH_BOC_TACH_VA_TONG_HOP_BOM_SWIND.md) & [KE_HOACH_XAY_DUNG_MULTI_AGENT_SWIND.md](file:///Users/hoangan/work/swind/KE_HOACH_XAY_DUNG_MULTI_AGENT_SWIND.md)
+> **Tài liệu căn cứ:** [KE_HOACH_BOC_TACH_VA_TONG_HOP_BOM_SWIND.md](file:///Users/hoangan/work/PCCC/swind/KE_HOACH_BOC_TACH_VA_TONG_HOP_BOM_SWIND.md) & [KE_HOACH_XAY_DUNG_MULTI_AGENT_SWIND.md](file:///Users/hoangan/work/PCCC/swind/KE_HOACH_XAY_DUNG_MULTI_AGENT_SWIND.md)
 
 ---
 

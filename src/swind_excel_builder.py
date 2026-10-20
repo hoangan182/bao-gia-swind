@@ -114,7 +114,7 @@ class SwindExcelBuilder:
         self.ws_06.append([idx, mat_id, name, category, price])
         self.ws_06.cell(row=r, column=5).number_format = "#,##0"
 
-    def add_boq_summary_row(self, stt, item_id, group, name, size, unit, qty, margin=0.18, labor_rate=0.25, overhead_rate=0.10, note="", override_price=0):
+    def add_boq_summary_row(self, stt, item_id, group, name, size, unit, qty, margin=0.18, labor_rate=0.25, overhead_rate=0.10, note="", override_price=0, box_combo_add_price=0):
         """
         Thêm dòng vào bảng tổng hợp báo giá với công thức sống liên kết 100%.
         Tách biệt tỷ lệ nhân công (labor_rate) và chi phí xưởng (overhead_rate) cho từng nhóm mặt hàng.
@@ -145,7 +145,13 @@ class SwindExcelBuilder:
         f_gia_von_unit = f"=IF(G{r}>0, N{r}/G{r}, 0)"
         
         # Q: Đơn giá bán = (Giá vốn cơ khí * (1 + margin) + Chi phí động cơ thương mại) / Số lượng
-        f_gia_ban = f"=IF(G{r}>0, ((N{r}-{act_expr})*(1+P{r})+{act_expr})/G{r}, 0)"
+        if box_combo_add_price > 0:
+            f_calc = f"IF(G{r}>0, ((N{r}-{act_expr})*(1+P{r})+{act_expr})/G{r}, 0)"
+            f_gia_ban = f"={box_combo_add_price:.0f}+{f_calc}"
+        elif override_price > 0:
+            f_gia_ban = override_price
+        else:
+            f_gia_ban = f"=IF(G{r}>0, ((N{r}-{act_expr})*(1+P{r})+{act_expr})/G{r}, 0)"
         
         # R: Thành tiền = Số lượng * Đơn giá bán
         f_thanh_tien = f"=G{r}*Q{r}"

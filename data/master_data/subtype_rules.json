@@ -7,7 +7,7 @@
         {"keywords": ["fd", "lửa", "chống cháy", "dập lửa", "ngăn cháy"], "subtype": "FD"},
         {"keywords": ["prd", "xả áp"], "subtype": "PRD"},
         {"keywords": ["nrd", "1 chiều", "một chiều"], "subtype": "NRD"},
-        {"keywords": ["vcd", "điều chỉnh", "lưu lượng"], "subtype": "VCD"}
+        {"keywords": ["vcd", "vd", "điều chỉnh", "lưu lượng"], "subtype": "VCD"}
     ],
     "ONG_MEM": [
         {"keywords": ["không cách", "không bảo", "bare", "non_insul"], "subtype": "NON_INSUL"},
@@ -57,6 +57,7 @@
         "louver_z_keywords": ["nan z", "louver", "luover", "louvre", "chớp", "fal", "oal", "eal", "wl"],
         "mesh_keywords": ["lưới", "chắn côn trùng", "lcct", "+n", "+ n", "+is", "is"],
         "filter_keywords": ["phin lọc", "lọc bụi", "+f", "g4"],
+        "combo_box_keywords": ["kèm hộp gió", "kèm hộp", "kèm box", "có hộp gió", "gắn hộp gió", "hộp và cửa", "hộp miệng gió", "hộp kèm cửa", "hộp + cửa"],
         "hvac_sheet_keywords": [
             "dhkk", "hvac", "thong gio", "thông gió", "thong_gio",
             "hut khoi", "hút khói", "hut_khoi", "tang ap", "tăng áp", "tang áp", "tăng ap",

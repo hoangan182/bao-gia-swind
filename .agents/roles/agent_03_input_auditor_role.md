@@ -1,6 +1,6 @@
 # AGENT 03: KIỂM TOÁN VIÊN ĐẦU VÀO 4 TRỤC (INPUT AUDITOR)
 > **Mã định danh:** `SWIND-AGENT-03`  
-> **Module thực thi:** [`src/agent_03_input_auditor.py`](file:///Users/hoangan/work/swind/src/agent_03_input_auditor.py)  
+> **Module thực thi:** [`src/agent_03_input_auditor.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_03_input_auditor.py)  
 > **Chức danh:** Kiểm toán viên Đầu vào Đa Mô hình (4-Axis Input Auditor)
 
 ---

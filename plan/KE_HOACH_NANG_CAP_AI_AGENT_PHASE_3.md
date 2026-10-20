@@ -9,7 +9,7 @@ Bản kế hoạch này giải quyết 3 bài toán chiến lược để biến
 - **Tách biệt Database:** Lưu trữ độc lập trong thư mục `data/master_data/`:
   - `master_commercial_tech.json` (Lưu thông tin kỹ thuật hàng thương mại).
   - `master_commercial_price.json` & `prices/master_commercial_price_<timestamp>.json` (Lưu lịch sử giá hàng thương mại).
-- **Tự động Học giá (`Agent 09` - [`src/agent_09_price_learner.py`](file:///Users/hoangan/work/swind/src/agent_09_price_learner.py)):**
+- **Tự động Học giá (`Agent 09` - [`src/agent_09_price_learner.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_09_price_learner.py)):**
   - Khi User điền đơn giá (`> 0`) vào Sheet `06_BANG_GIA_VAT_TU_AP_DUNG` của file Excel Báo giá, chạy lệnh:
     ```bash
     ./venv/bin/python3 src/agent_09_price_learner.py "<path_to_excel_file>"
@@ -20,7 +20,7 @@ Bản kế hoạch này giải quyết 3 bài toán chiến lược để biến
 
 ## 2. CƠ CHẾ XÁC NHẬN "HUMAN-IN-THE-LOOP" (HITL) CHO BOQ (`AGENT 02`)
 
-- **Module thực thi:** `Agent 02` ([`src/agent_02_boq_reviewer.py`](file:///Users/hoangan/work/swind/src/agent_02_boq_reviewer.py))
+- **Module thực thi:** `Agent 02` ([`src/agent_02_boq_reviewer.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_02_boq_reviewer.py))
 - **Cảnh báo & Phân loại:**
   - Tự động phát hiện các mặt hàng rơi vào nhóm `KHAC` và so khớp độ tương đồng ngữ nghĩa với Master Catalog.
   - Hỗ trợ tương tác trực tiếp với User hoặc chạy chế độ `--auto-accept`.

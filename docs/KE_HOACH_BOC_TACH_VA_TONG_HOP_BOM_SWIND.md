@@ -1,6 +1,6 @@
 # KẾ HOẠCH TỔNG HỢP, BÓC TÁCH DỮ LIỆU & XÂY DỰNG HỆ THỐNG TÍNH GIÁ TỰ ĐỘNG SWIND
 > **Mã tài liệu:** `SOP-SWIND-ESTIMATION-01`  
-> **Căn cứ dữ liệu gốc:** File [`BẢNG TÍNH GIÁ SWIND  chuẩn 2026.xls`](file:///Users/hoangan/work/swind/BA%CC%89NG%20TI%CC%81NH%20GIA%CC%81%20SWIND%20%20chua%CC%82%CC%89n%202026.xls) và hồ sơ mẫu [`Copy of BG01.2_SLAND_NAMVIET- CỬA GIÓ VAN GIÓ TIÊU ÂM_BANA HILL H1- 08062026 VER4- van đa cánh BFN.xlsx`](file:///Users/hoangan/work/swind/Copy%20of%20BG01.2_SLAND_NAMVIET-%20CU%CC%9B%CC%89A%20GIO%CC%81%20VAN%20GIO%CC%81%20TIE%CC%82U%20A%CC%82M_BANA%20HILL%20H1-%2008062026%20VER4-%20van%20%C4%91a%20ca%CC%81nh%20BFN.xlsx)  
+> **Căn cứ dữ liệu gốc:** File [`BẢNG TÍNH GIÁ SWIND  chuẩn 2026.xls`](file:///Users/hoangan/work/PCCC/swind/BA%CC%89NG%20TI%CC%81NH%20GIA%CC%81%20SWIND%20%20chua%CC%82%CC%89n%202026.xls) và hồ sơ mẫu [`Copy of BG01.2_SLAND_NAMVIET- CỬA GIÓ VAN GIÓ TIÊU ÂM_BANA HILL H1- 08062026 VER4- van đa cánh BFN.xlsx`](file:///Users/hoangan/work/PCCC/swind/Copy%20of%20BG01.2_SLAND_NAMVIET-%20CU%CC%9B%CC%89A%20GIO%CC%81%20VAN%20GIO%CC%81%20TIE%CC%82U%20A%CC%82M_BANA%20HILL%20H1-%2008062026%20VER4-%20van%20%C4%91a%20ca%CC%81nh%20BFN.xlsx)  
 > **Mục tiêu:** Bản kế hoạch tác nghiệp và đặc tả kỹ thuật này đóng vai trò kim chỉ nam (Single Source of Truth). Khi có yêu cầu bóc tách đơn hàng hoặc nâng cấp phần mềm, **người dùng và AI Agent chỉ cần đọc tài liệu này để triển khai chính xác 100%**.
 
 ---
@@ -72,7 +72,7 @@ Quy trình khép kín gồm 5 bước phối hợp nhịp nhàng giữa con ngư
 
 ## PHẦN III: BẢNG TỔNG HỢP CHI TIẾT CẤU THÀNH SẢN PHẨM (MASTER BOM MATRIX)
 
-Trong file gốc [`BẢNG TÍNH GIÁ SWIND  chuẩn 2026.xls`](file:///Users/hoangan/work/swind/BA%CC%89NG%20TI%CC%81NH%20GIA%CC%81%20SWIND%20%20chua%CC%82%CC%89n%202026.xls), toàn bộ hệ thống sản phẩm được chia thành **6 nhóm sản phẩm lớn** với cây vật tư cấu thành như sau:
+Trong file gốc [`BẢNG TÍNH GIÁ SWIND  chuẩn 2026.xls`](file:///Users/hoangan/work/PCCC/swind/BA%CC%89NG%20TI%CC%81NH%20GIA%CC%81%20SWIND%20%20chua%CC%82%CC%89n%202026.xls), toàn bộ hệ thống sản phẩm được chia thành **6 nhóm sản phẩm lớn** với cây vật tư cấu thành như sau:
 
 ---
 

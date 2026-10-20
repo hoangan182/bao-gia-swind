@@ -1,6 +1,6 @@
 # AGENT 04: KỸ SƯ BÓC TÁCH BOM XƯỞNG ỐNG GIÓ, CANVAS & TIÊU ÂM (DUCTWORK BOM MAKER)
 > **Mã định danh:** `SWIND-AGENT-04`  
-> **Module thực thi:** [`src/agent_04_bom_duct.py`](file:///Users/hoangan/work/swind/src/agent_04_bom_duct.py)  
+> **Module thực thi:** [`src/agent_04_bom_duct.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_04_bom_duct.py)  
 > **Chức danh:** Kỹ sư Chế tạo Xưởng Ống gió, Phụ kiện ống, Khớp nối mềm & Tiêu âm
 
 ---

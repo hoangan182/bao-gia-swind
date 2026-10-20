@@ -1,7 +1,7 @@
 # AGENT 0A: KỸ SƯ TIỀN XỬ LÝ & BÓC TÁCH ĐA NĂNG (THE UNIVERSAL EXTRACTOR)
 > **Mã định danh:** `SWIND-AGENT-0A`  
 > **Chức danh:** Kỹ sư Tiền xử lý & Trích xuất Dữ liệu BOQ Đa định dạng  
-> **Tài liệu căn cứ:** [KE_HOACH_BOC_TACH_SPEC_VA_BAO_GIA_DU_AN_HDL.md](file:///Users/hoangan/work/swind/plan/KE_HOACH_BOC_TACH_SPEC_VA_BAO_GIA_DU_AN_HDL.md) & [HUONG_DAN_SU_DUNG_BANG_TINH_GIA_SWIND.md](file:///Users/hoangan/work/swind/HUONG_DAN_SU_DUNG_BANG_TINH_GIA_SWIND.md)
+> **Tài liệu căn cứ:** [KE_HOACH_BOC_TACH_SPEC_VA_BAO_GIA_DU_AN_HDL.md](file:///Users/hoangan/work/PCCC/swind/plan/KE_HOACH_BOC_TACH_SPEC_VA_BAO_GIA_DU_AN_HDL.md) & [HUONG_DAN_SU_DUNG_BANG_TINH_GIA_SWIND.md](file:///Users/hoangan/work/PCCC/swind/HUONG_DAN_SU_DUNG_BANG_TINH_GIA_SWIND.md)
 
 ---
 

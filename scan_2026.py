@@ -1,7 +1,9 @@
 import pandas as pd
 import sys
 
-file_path = "/Users/hoangan/work/swind/BẢNG TÍNH GIÁ SWIND  chuẩn 2026.xls"
+import glob
+file_matches = glob.glob("*chua*n 2026.xls*")
+file_path = file_matches[0] if file_matches else "BẢNG TÍNH GIÁ SWIND  chuẩn 2026.xls"
 try:
     xl = pd.ExcelFile(file_path)
     print("Sheets:", xl.sheet_names)
