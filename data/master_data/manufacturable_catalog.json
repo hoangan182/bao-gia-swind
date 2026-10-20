@@ -1,0 +1,80 @@
+[
+    {
+        "product_code": "CANVAS_CONN",
+        "name": "Khớp nối mềm (Canvas)",
+        "keywords": [
+            "canvas",
+            "khớp nối mềm"
+        ],
+        "mapping_category": "CANVAS"
+    },
+    {
+        "product_code": "ACOUSTIC_PARTITION",
+        "name": "Vách ngăn tiêu âm/Hộp gió tiêu âm",
+        "keywords": [
+            "tiêu âm",
+            "vách ngăn",
+            "plenum"
+        ],
+        "mapping_category": "TIEU_AM"
+    },
+    {
+        "product_code": "DIFFUSER_GRILLE",
+        "name": "Cửa gió / Miệng gió các loại",
+        "keywords": [
+            "cửa",
+            "miệng",
+            "nan",
+            "louver",
+            "luover",
+            "fal",
+            "eal",
+            "oal",
+            "eag",
+            "sag",
+            "pag",
+            "seg",
+            "rag",
+            "sdg",
+            "lcct",
+            "lưới chắn côn trùng"
+        ],
+        "mapping_category": "CUA_GIO"
+    },
+    {
+        "product_code": "DAMPER",
+        "name": "Van điều chỉnh lưu lượng / Van gió",
+        "keywords": [
+            "van",
+            "vcd",
+            "fd",
+            "mfd",
+            "mfsd",
+            "md",
+            "nrd",
+            "prd",
+            "xả áp"
+        ],
+        "mapping_category": "VAN_GIO"
+    },
+    {
+        "product_code": "FLEX_DUCT",
+        "name": "Ống gió mềm (có/không bảo ôn)",
+        "keywords": [
+            "ống mềm",
+            "ống gió mềm",
+            "flex duct"
+        ],
+        "mapping_category": "ONG_MEM"
+    },
+    {
+        "product_code": "DUCT_RECT",
+        "name": "Ống gió vuông/chữ nhật",
+        "keywords": [
+            "ống gió",
+            "tole",
+            "tôn"
+        ],
+        "mapping_category": "ONG_GIO"
+    }
+]

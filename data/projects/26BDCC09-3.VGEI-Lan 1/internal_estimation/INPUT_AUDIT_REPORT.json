@@ -1,0 +1,757 @@
+{
+  "project_name": "26BDCC09-3.VGEI-Lan 1",
+  "model_used": "Gemini 2.5 Pro",
+  "total_items": 47,
+  "pass_items": 47,
+  "requires_mapping_items": 0,
+  "critical_errors": [],
+  "warnings": [
+    {
+      "row": 29,
+      "item": "MFD kích thước 3600x2000",
+      "issue": "Van gió quá khổ (3600.0x2000.0). Theo tiêu chuẩn kỹ thuật cần chia nhiều khoang/modul hoặc tăng độ dày tôn."
+    },
+    {
+      "row": 30,
+      "item": "MFD kích thước 2600x1700",
+      "issue": "Van gió quá khổ (2600.0x1700.0). Theo tiêu chuẩn kỹ thuật cần chia nhiều khoang/modul hoặc tăng độ dày tôn."
+    },
+    {
+      "row": 33,
+      "item": "Van chặn lửa bằng động cơ MFD 2400x500",
+      "issue": "Van gió quá khổ (2400.0x500.0). Theo tiêu chuẩn kỹ thuật cần chia nhiều khoang/modul hoặc tăng độ dày tôn."
+    },
+    {
+      "row": 34,
+      "item": "Van chặn lửa bằng động cơ MFD 1700x500",
+      "issue": "Van gió quá khổ (1700.0x500.0). Theo tiêu chuẩn kỹ thuật cần chia nhiều khoang/modul hoặc tăng độ dày tôn."
+    },
+    {
+      "row": 36,
+      "item": "Van chặn lửa bằng động cơ MFD 1500x1100",
+      "issue": "Van gió quá khổ (1500.0x1100.0). Theo tiêu chuẩn kỹ thuật cần chia nhiều khoang/modul hoặc tăng độ dày tôn."
+    },
+    {
+      "row": 51,
+      "item": "MFD kích thước 1300x1200",
+      "issue": "Van gió quá khổ (1300.0x1200.0). Theo tiêu chuẩn kỹ thuật cần chia nhiều khoang/modul hoặc tăng độ dày tôn."
+    },
+    {
+      "row": 52,
+      "item": "MFD kích thước 1500x2000",
+      "issue": "Van gió quá khổ (1500.0x2000.0). Theo tiêu chuẩn kỹ thuật cần chia nhiều khoang/modul hoặc tăng độ dày tôn."
+    },
+    {
+      "row": 53,
+      "item": "MFD kích thước 1900x3000",
+      "issue": "Van gió quá khổ (1900.0x3000.0). Theo tiêu chuẩn kỹ thuật cần chia nhiều khoang/modul hoặc tăng độ dày tôn."
+    }
+  ],
+  "items_detail": [
+    {
+      "row_index": 12,
+      "raw_name": "Van chặn lửa FD kích thước 600x300",
+      "parsed_dims": {
+        "w": 600.0,
+        "h": 300.0
+      },
+      "raw_qty": 39.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 13,
+      "raw_name": "Van chặn lửa FD kích thước 400x200",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 200.0
+      },
+      "raw_qty": 4.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 14,
+      "raw_name": "Van chặn lửa FD kích thước 250x100",
+      "parsed_dims": {
+        "w": 250.0,
+        "h": 100.0
+      },
+      "raw_qty": 814.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 15,
+      "raw_name": "Van chặn lửa FD kích thước 900x400",
+      "parsed_dims": {
+        "w": 900.0,
+        "h": 400.0
+      },
+      "raw_qty": 40.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 16,
+      "raw_name": "Van chặn lửa FD kích thước 150x100",
+      "parsed_dims": {
+        "w": 150.0,
+        "h": 100.0
+      },
+      "raw_qty": 814.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 17,
+      "raw_name": "Van chặn lửa FD kích thước 150x150",
+      "parsed_dims": {
+        "w": 150.0,
+        "h": 150.0
+      },
+      "raw_qty": 44.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 18,
+      "raw_name": "Van chặn lửa FD kích thước cho quạt 700 m3/h, 50Pa",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 400.0
+      },
+      "raw_qty": 3.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 19,
+      "raw_name": "Van chặn lửa FD kích thước cho quạt  600 m3/h, 50Pa",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 20,
+      "raw_name": "Van chặn lửa FD kích thước cho quạt  900 m3/h, 50Pa",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 21,
+      "raw_name": "Van chặn lửa FD kích thước cho quạt  800 m3/h, 400Pa",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 400.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 22,
+      "raw_name": "Van chặn lửa FD kích thước cho quạt  1800 m3/h, 50Pa",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 23,
+      "raw_name": "Van chặn lửa FD kích thước cho quạt  1300 m3/h, 50Pa",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 24,
+      "raw_name": "Van chặn lửa FD kích thước cho quạt  200 m3/h, 50Pa",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 400.0
+      },
+      "raw_qty": 3.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 25,
+      "raw_name": "Van chặn lửa FD kích thước 500x300",
+      "parsed_dims": {
+        "w": 500.0,
+        "h": 300.0
+      },
+      "raw_qty": 6.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 26,
+      "raw_name": "Van chặn lửa FD kích thước 300x200",
+      "parsed_dims": {
+        "w": 300.0,
+        "h": 200.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 27,
+      "raw_name": "MFD kích thước 500x200",
+      "parsed_dims": {
+        "w": 500.0,
+        "h": 200.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 28,
+      "raw_name": "MFD kích thước 900x400",
+      "parsed_dims": {
+        "w": 900.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 29,
+      "raw_name": "MFD kích thước 3600x2000",
+      "parsed_dims": {
+        "w": 3600.0,
+        "h": 2000.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 30,
+      "raw_name": "MFD kích thước 2600x1700",
+      "parsed_dims": {
+        "w": 2600.0,
+        "h": 1700.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 31,
+      "raw_name": "Van chặn lửa FD kích thước 800x400",
+      "parsed_dims": {
+        "w": 800.0,
+        "h": 400.0
+      },
+      "raw_qty": 4.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 32,
+      "raw_name": "Van chặn lửa FD kích thước 500x250",
+      "parsed_dims": {
+        "w": 500.0,
+        "h": 250.0
+      },
+      "raw_qty": 4.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 33,
+      "raw_name": "Van chặn lửa bằng động cơ MFD 2400x500",
+      "parsed_dims": {
+        "w": 2400.0,
+        "h": 500.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 34,
+      "raw_name": "Van chặn lửa bằng động cơ MFD 1700x500",
+      "parsed_dims": {
+        "w": 1700.0,
+        "h": 500.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 35,
+      "raw_name": "Van chặn lửa bằng động cơ MFD 1200x300",
+      "parsed_dims": {
+        "w": 1200.0,
+        "h": 300.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 36,
+      "raw_name": "Van chặn lửa bằng động cơ MFD 1500x1100",
+      "parsed_dims": {
+        "w": 1500.0,
+        "h": 1100.0
+      },
+      "raw_qty": 3.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 37,
+      "raw_name": "Van chặn lửa bằng động cơ MFD 1100x1000",
+      "parsed_dims": {
+        "w": 1100.0,
+        "h": 1000.0
+      },
+      "raw_qty": 3.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 38,
+      "raw_name": "Van chặn lửa bằng động cơ MFD 700x400",
+      "parsed_dims": {
+        "w": 700.0,
+        "h": 400.0
+      },
+      "raw_qty": 10.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 39,
+      "raw_name": "Van chặn lửa FD cho quạt 900 m3/h, 50Pa",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 40,
+      "raw_name": "Van chặn lửa FD cho quạt 500 m3/h, 50Pa",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 41,
+      "raw_name": "Van chặn lửa FD cho quạt 100 m3/h, 50Pa",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 400.0
+      },
+      "raw_qty": 4.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 42,
+      "raw_name": "Van chặn lửa kèm động cơ MFD cho quạt 200 m3/h, 50Pa",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 43,
+      "raw_name": "Van chặn lửa FD kích thước 1000x400",
+      "parsed_dims": {
+        "w": 1000.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 44,
+      "raw_name": "Van chặn lửa FD kích thước 500x350",
+      "parsed_dims": {
+        "w": 500.0,
+        "h": 350.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 45,
+      "raw_name": "Van chặn lửa FD kích thước 400x300",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 300.0
+      },
+      "raw_qty": 4.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 46,
+      "raw_name": "Van chặn lửa FD kích thước 300x150",
+      "parsed_dims": {
+        "w": 300.0,
+        "h": 150.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 47,
+      "raw_name": "MFD kích thước 400x250",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 250.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 48,
+      "raw_name": "MFD kích thước 500x400",
+      "parsed_dims": {
+        "w": 500.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 49,
+      "raw_name": "MFD kích thước 700x400",
+      "parsed_dims": {
+        "w": 700.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 50,
+      "raw_name": "MFD kích thước 1000x400",
+      "parsed_dims": {
+        "w": 1000.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 51,
+      "raw_name": "MFD kích thước 1300x1200",
+      "parsed_dims": {
+        "w": 1300.0,
+        "h": 1200.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 52,
+      "raw_name": "MFD kích thước 1500x2000",
+      "parsed_dims": {
+        "w": 1500.0,
+        "h": 2000.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 53,
+      "raw_name": "MFD kích thước 1900x3000",
+      "parsed_dims": {
+        "w": 1900.0,
+        "h": 3000.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 54,
+      "raw_name": "Van chặn lửa bằng động cơ MFD kt: 900x400mm, EI30",
+      "parsed_dims": {
+        "w": 900.0,
+        "h": 400.0
+      },
+      "raw_qty": 17.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 55,
+      "raw_name": "Van chặn lửa FD kích thước 200x150",
+      "parsed_dims": {
+        "w": 200.0,
+        "h": 150.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 56,
+      "raw_name": "MFD kích thước 800x400",
+      "parsed_dims": {
+        "w": 800.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 57,
+      "raw_name": "MFD kích thước 500x300",
+      "parsed_dims": {
+        "w": 500.0,
+        "h": 300.0
+      },
+      "raw_qty": 4.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 58,
+      "raw_name": "Van chặn lửa bằng động cơ MFD kt: 900x500mm, EI30",
+      "parsed_dims": {
+        "w": 900.0,
+        "h": 500.0
+      },
+      "raw_qty": 36.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    }
+  ]
+}

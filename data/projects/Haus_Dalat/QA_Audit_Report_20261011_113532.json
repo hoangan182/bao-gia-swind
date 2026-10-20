@@ -1,0 +1,3632 @@
+{
+    "qa_status": "QA_REJECTED",
+    "total_items_audited": 636,
+    "total_components_audited": 1659,
+    "total_issues_found": 453,
+    "issues": [
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 2,
+            "sub_key": "SW-TRD-001-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_KHOI_HAM_XE_HUT_K_BDCE' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 3,
+            "sub_key": "SW-TRD-002-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_KHOI_HAM_XE_HUT_K_5C8C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 4,
+            "sub_key": "SW-TRD-003-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_KHOI_HAM_XE_HUT_K_85A7' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 5,
+            "sub_key": "SW-TRD-004-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_KHOI_HAM_XE_HUT_K_50BF' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 6,
+            "sub_key": "SW-TRD-005-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_KHOI_HAM_XE_HUT_K_C640' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 7,
+            "sub_key": "SW-TRD-006-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_KHOI_HAM_XE_HUT_K_5E99' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 8,
+            "sub_key": "SW-TRD-007-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_KHOI_HAM_XE_HUT_K_0135' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 9,
+            "sub_key": "SW-TRD-008-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_KHOI_HAM_XE_HUT_K_8FEB' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 10,
+            "sub_key": "SW-TRD-009-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_KHOI_HAM_XE_HUT_K_5E9C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 11,
+            "sub_key": "SW-TRD-010-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_KHOI_HAM_XE_HUT_K_2169' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 12,
+            "sub_key": "SW-TRD-011-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_KHOI_HAM_XE_HUT_K_04CF' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 13,
+            "sub_key": "SW-TRD-012-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_KHOI_HAM_XE_HUT_K_6B0C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 14,
+            "sub_key": "SW-TRD-013-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_KHOI_HAM_XE_HUT_K_55AD' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 15,
+            "sub_key": "SW-TRD-014-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_KHOI_HAM_XE_HUT_K_BF17' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 33,
+            "sub_key": "SW-DIFF-047-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_HUT_KHOI_HA_8B49' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 34,
+            "sub_key": "SW-DIFF-048-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_HUT_KHOI_HA_CF0E' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 35,
+            "sub_key": "SW-DIFF-049-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_HUT_KHOI_HA_FD5D' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 36,
+            "sub_key": "SW-TRD-050-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_KHOI_HAM_XE_HUT_K_016B' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 38,
+            "sub_key": "SW-DUCT-051-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-ONG_THONG_GIO_VA_PHU_A849' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 40,
+            "sub_key": "SW-DUCT-052-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-ONG_THONG_GIO_VA_PHU_44C4' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 42,
+            "sub_key": "SW-DUCT-053-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-ONG_THONG_GIO_VA_PHU_46E3' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 44,
+            "sub_key": "SW-DUCT-054-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-ONG_THONG_GIO_VA_PHU_FCFE' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 45,
+            "sub_key": "SW-TRD-055-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_THONG_GIO_VA_PHU_KIEN_BOX_11DB' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 46,
+            "sub_key": "SW-TRD-055-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-ONG_THONG_GIO_VA_PHU_11DB' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 47,
+            "sub_key": "SW-TRD-056-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_THONG_GIO_VA_PHU_KIEN_BOX_82DE' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 48,
+            "sub_key": "SW-TRD-056-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-ONG_THONG_GIO_VA_PHU_82DE' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 49,
+            "sub_key": "SW-TRD-057-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_THONG_GIO_VA_PHU_KIEN_BOX_E395' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 50,
+            "sub_key": "SW-TRD-057-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-ONG_THONG_GIO_VA_PHU_E395' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 51,
+            "sub_key": "SW-TRD-058-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_THONG_GIO_VA_PHU_KIEN_BOX_A0E1' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 52,
+            "sub_key": "SW-TRD-058-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-ONG_THONG_GIO_VA_PHU_A0E1' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 53,
+            "sub_key": "SW-TRD-059-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_0E7C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 54,
+            "sub_key": "SW-TRD-060-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_CDC2' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 55,
+            "sub_key": "SW-TRD-061-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_1386' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 56,
+            "sub_key": "SW-TRD-062-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_68E4' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 57,
+            "sub_key": "SW-TRD-063-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_F6FD' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 58,
+            "sub_key": "SW-TRD-064-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_07AC' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 59,
+            "sub_key": "SW-TRD-065-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_2C9C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 60,
+            "sub_key": "SW-TRD-066-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_B64F' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 61,
+            "sub_key": "SW-TRD-067-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_8D9F' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 62,
+            "sub_key": "SW-TRD-068-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_8416' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 63,
+            "sub_key": "SW-TRD-069-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_0BB2' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 64,
+            "sub_key": "SW-TRD-070-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_72F7' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 65,
+            "sub_key": "SW-TRD-071-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_4A30' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 66,
+            "sub_key": "SW-TRD-072-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_F291' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 67,
+            "sub_key": "SW-TRD-073-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_3FF6' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 68,
+            "sub_key": "SW-TRD-074-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_3A11' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 69,
+            "sub_key": "SW-TRD-075-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_D2E7' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 70,
+            "sub_key": "SW-TRD-076-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_8B6B' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 71,
+            "sub_key": "SW-TRD-077-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_E639' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 72,
+            "sub_key": "SW-TRD-078-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_F0F2' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 73,
+            "sub_key": "SW-TRD-079-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_42C5' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 74,
+            "sub_key": "SW-TRD-080-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_498D' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 75,
+            "sub_key": "SW-TRD-081-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_891C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 76,
+            "sub_key": "SW-TRD-082-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_1157' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 77,
+            "sub_key": "SW-TRD-083-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_050A' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 78,
+            "sub_key": "SW-TRD-084-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_50FB' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 79,
+            "sub_key": "SW-TRD-085-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_97E6' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 80,
+            "sub_key": "SW-TRD-086-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_QUAT_HUONG_TRU_E25B' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 81,
+            "sub_key": "SW-TRD-140-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_TAO_AP_VAT_TU_PHU_PHU_KIEN' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 83,
+            "sub_key": "SW-DUCT-141-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_G_A19B' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 85,
+            "sub_key": "SW-DUCT-142-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_G_5D3C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 87,
+            "sub_key": "SW-DUCT-143-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_G_8FA7' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 89,
+            "sub_key": "SW-DUCT-144-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_G_7F99' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 90,
+            "sub_key": "SW-TRD-145-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_ONG_THONG_GIO_TAO_AP_6A5C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 91,
+            "sub_key": "SW-TRD-145-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_G_6A5C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 92,
+            "sub_key": "SW-TRD-146-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_ONG_THONG_GIO_TAO_AP_106E' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 93,
+            "sub_key": "SW-TRD-146-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_G_106E' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 94,
+            "sub_key": "SW-TRD-147-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_ONG_THONG_GIO_TAO_AP_6252' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 95,
+            "sub_key": "SW-TRD-147-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_G_6252' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 96,
+            "sub_key": "SW-TRD-148-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_ONG_THONG_GIO_TAO_AP_708B' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 97,
+            "sub_key": "SW-TRD-148-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_G_708B' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 98,
+            "sub_key": "SW-TRD-149-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_P_BE63' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 99,
+            "sub_key": "SW-TRD-150-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_P_05E9' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 100,
+            "sub_key": "SW-TRD-151-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_P_5959' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 101,
+            "sub_key": "SW-TRD-152-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_O_130A' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 102,
+            "sub_key": "SW-TRD-153-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_O_3898' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 103,
+            "sub_key": "SW-TRD-154-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_O_2798' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 104,
+            "sub_key": "SW-TRD-155-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_6C8C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 105,
+            "sub_key": "SW-TRD-156-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_7996' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 106,
+            "sub_key": "SW-TRD-157-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_B272' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 107,
+            "sub_key": "SW-TRD-158-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_B62A' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 108,
+            "sub_key": "SW-TRD-159-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_03BF' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 109,
+            "sub_key": "SW-TRD-160-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_C4A3' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 110,
+            "sub_key": "SW-TRD-161-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_9F75' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 111,
+            "sub_key": "SW-TRD-162-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_4156' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 112,
+            "sub_key": "SW-TRD-163-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_4C20' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 113,
+            "sub_key": "SW-TRD-164-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_3FE6' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 114,
+            "sub_key": "SW-TRD-165-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_E71D' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 115,
+            "sub_key": "SW-TRD-166-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_3DC8' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 116,
+            "sub_key": "SW-TRD-167-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_9473' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 117,
+            "sub_key": "SW-TRD-168-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_946D' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 118,
+            "sub_key": "SW-TRD-169-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_85CA' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 119,
+            "sub_key": "SW-TRD-170-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_4FCD' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 120,
+            "sub_key": "SW-TRD-171-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_A8B7' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 121,
+            "sub_key": "SW-TRD-172-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_C485' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 122,
+            "sub_key": "SW-TRD-173-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_9C3B' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 123,
+            "sub_key": "SW-TRD-174-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_623C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 124,
+            "sub_key": "SW-TRD-175-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_05AD' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 125,
+            "sub_key": "SW-TRD-176-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_44D2' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 126,
+            "sub_key": "SW-TRD-177-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_BBC1' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 127,
+            "sub_key": "SW-TRD-178-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_11AD' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 128,
+            "sub_key": "SW-TRD-179-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_0CDB' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 129,
+            "sub_key": "SW-TRD-180-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_68D7' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 130,
+            "sub_key": "SW-TRD-181-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_FA31' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 131,
+            "sub_key": "SW-TRD-182-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_7797' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 132,
+            "sub_key": "SW-TRD-183-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_E2B7' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 133,
+            "sub_key": "SW-TRD-184-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_33EC' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 134,
+            "sub_key": "SW-TRD-185-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_FC19' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 135,
+            "sub_key": "SW-TRD-186-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_7DE1' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 136,
+            "sub_key": "SW-TRD-187-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_E836' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 137,
+            "sub_key": "SW-TRD-188-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_5212' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 138,
+            "sub_key": "SW-TRD-189-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_5205' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 139,
+            "sub_key": "SW-TRD-190-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_E33A' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 140,
+            "sub_key": "SW-TRD-191-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_188D' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 141,
+            "sub_key": "SW-TRD-192-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_B9FB' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 142,
+            "sub_key": "SW-TRD-193-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_0CBF' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 143,
+            "sub_key": "SW-TRD-194-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_AE52' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 144,
+            "sub_key": "SW-TRD-195-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_66E8' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 145,
+            "sub_key": "SW-TRD-196-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_B77E' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 146,
+            "sub_key": "SW-TRD-197-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_F8AA' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 147,
+            "sub_key": "SW-TRD-198-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_0ECD' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 148,
+            "sub_key": "SW-TRD-199-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_75AA' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 149,
+            "sub_key": "SW-TRD-200-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_7686' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 150,
+            "sub_key": "SW-TRD-201-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_8618' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 151,
+            "sub_key": "SW-TRD-202-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_3DF1' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 152,
+            "sub_key": "SW-TRD-203-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_ECC7' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 153,
+            "sub_key": "SW-TRD-204-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_836C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 154,
+            "sub_key": "SW-TRD-205-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_61A1' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 155,
+            "sub_key": "SW-TRD-206-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_CAP_GIO_TUOI_GIO_BU_Q_99F8' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 160,
+            "sub_key": "SW-DUCT-259-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_C_2F73' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 162,
+            "sub_key": "SW-DUCT-260-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_C_AAB8' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 164,
+            "sub_key": "SW-DUCT-261-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_C_A0C1' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 166,
+            "sub_key": "SW-DUCT-262-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_C_49CD' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 168,
+            "sub_key": "SW-DUCT-263-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_C_D98A' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 169,
+            "sub_key": "SW-TRD-264-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_ONG_THONG_CAP_GIO_TUO_01B5' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 170,
+            "sub_key": "SW-TRD-264-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_C_01B5' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 171,
+            "sub_key": "SW-TRD-265-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_ONG_THONG_CAP_GIO_TUO_96F1' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 172,
+            "sub_key": "SW-TRD-265-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_C_96F1' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 173,
+            "sub_key": "SW-TRD-266-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_ONG_THONG_CAP_GIO_TUO_6B58' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 174,
+            "sub_key": "SW-TRD-266-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_C_6B58' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 175,
+            "sub_key": "SW-TRD-267-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_ONG_THONG_CAP_GIO_TUO_D3FF' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 176,
+            "sub_key": "SW-TRD-267-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_ONG_THONG_C_D3FF' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 177,
+            "sub_key": "SW-TRD-274-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_B0A9' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 178,
+            "sub_key": "SW-TRD-275-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_065B' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 179,
+            "sub_key": "SW-TRD-276-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_709C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 180,
+            "sub_key": "SW-TRD-279-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_E019' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 181,
+            "sub_key": "SW-TRD-280-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_3D6A' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 182,
+            "sub_key": "SW-TRD-285-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_5D2C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 183,
+            "sub_key": "SW-TRD-286-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_FCCB' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 184,
+            "sub_key": "SW-TRD-287-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_F554' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 185,
+            "sub_key": "SW-TRD-288-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_9450' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 186,
+            "sub_key": "SW-TRD-289-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_E7E7' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 187,
+            "sub_key": "SW-TRD-290-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_A302' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 188,
+            "sub_key": "SW-TRD-291-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_C3B3' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 189,
+            "sub_key": "SW-TRD-292-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_A23D' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 190,
+            "sub_key": "SW-TRD-293-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_97DE' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 191,
+            "sub_key": "SW-TRD-294-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_3FA4' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 192,
+            "sub_key": "SW-TRD-295-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_2776' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 193,
+            "sub_key": "SW-TRD-296-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_31F6' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 194,
+            "sub_key": "SW-TRD-297-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_964E' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 195,
+            "sub_key": "SW-TRD-298-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_AAC6' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 196,
+            "sub_key": "SW-TRD-299-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_61B8' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 197,
+            "sub_key": "SW-TRD-300-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_087D' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 198,
+            "sub_key": "SW-TRD-301-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_0ACC' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 199,
+            "sub_key": "SW-TRD-302-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_HUT_GIO_THAI_HUT_GIO_FEC0' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 200,
+            "sub_key": "SW-DIFF-333-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_HUT_GIO_THA_57D5' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 201,
+            "sub_key": "SW-DIFF-334-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_HUT_GIO_THA_0AC1' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 202,
+            "sub_key": "SW-DIFF-335-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_HUT_GIO_THA_0380' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 203,
+            "sub_key": "SW-DIFF-336-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_HUT_GIO_THA_D0F5' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 204,
+            "sub_key": "SW-DIFF-337-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_HUT_GIO_THA_F5F1' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 205,
+            "sub_key": "SW-DIFF-338-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_HUT_GIO_THA_A184' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 206,
+            "sub_key": "SW-DIFF-339-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-HE_THONG_HUT_GIO_THA_ADC8' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 210,
+            "sub_key": "SW-FLEX-352-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'FLEX_DUCT_D100_INSULATED' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 211,
+            "sub_key": "SW-FLEX-353-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'FLEX_DUCT_D150_INSULATED' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 212,
+            "sub_key": "SW-TRD-354-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_GIO_MEM_D200_KHONG_CACH_NH_5D81' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 217,
+            "sub_key": "SW-TRD-359-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-HE_THONG_ONG_THONG_GIO_HUT_BEP_1F4C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 218,
+            "sub_key": "SW-TRD-360-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-PHAN_CHUNG_CAM_BIEN_CHAT_LUONG_4BB4' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 219,
+            "sub_key": "SW-TRD-361-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-PHAN_CHUNG_CAM_BIEN_CHENH_AP' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 220,
+            "sub_key": "SW-TRD-362-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-PHAN_CHUNG_CAM_BIEN_KHOI' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 221,
+            "sub_key": "SW-TRD-363-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-PHAN_CHUNG_CAM_BIEN_NHIET' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 222,
+            "sub_key": "SW-TRD-364-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-PHAN_CHUNG_VAT_TU_PHU_PHU_KIEN' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 223,
+            "sub_key": "SW-TRD-365-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_1_CR_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 224,
+            "sub_key": "SW-TRD-366-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_1_0101_33_5KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 225,
+            "sub_key": "SW-TRD-367-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_1_0102_22_4KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 226,
+            "sub_key": "SW-TRD-368-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_1_0103_50KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 227,
+            "sub_key": "SW-TRD-369-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_1_0201_33_5KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 228,
+            "sub_key": "SW-TRD-370-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_1_0202_28KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 229,
+            "sub_key": "SW-TRD-371-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_1_0203_28KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 230,
+            "sub_key": "SW-TRD-372-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_1_0205A_22_4KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 231,
+            "sub_key": "SW-TRD-373-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0105A2_28KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 232,
+            "sub_key": "SW-TRD-374-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0105_50KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 233,
+            "sub_key": "SW-TRD-375-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_1_0206_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 234,
+            "sub_key": "SW-TRD-376-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_1_0208A_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 235,
+            "sub_key": "SW-TRD-377-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_1_0208_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 236,
+            "sub_key": "SW-TRD-378-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_1_0209_16KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 237,
+            "sub_key": "SW-TRD-379-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_CR_16KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 238,
+            "sub_key": "SW-TRD-380-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0101_33_5KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 239,
+            "sub_key": "SW-TRD-381-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0102_33_5KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 240,
+            "sub_key": "SW-TRD-382-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0103_33_5KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 241,
+            "sub_key": "SW-TRD-383-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0105A2_28KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 242,
+            "sub_key": "SW-TRD-384-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0105_50KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 243,
+            "sub_key": "SW-TRD-385-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0106_28KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 244,
+            "sub_key": "SW-TRD-386-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0108A_22_4KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 245,
+            "sub_key": "SW-TRD-387-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0201_28KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 246,
+            "sub_key": "SW-TRD-388-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0202_33_5KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 247,
+            "sub_key": "SW-TRD-389-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0203_33_5KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 248,
+            "sub_key": "SW-TRD-390-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0205A_33_5KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 249,
+            "sub_key": "SW-TRD-391-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0205_28KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 250,
+            "sub_key": "SW-TRD-392-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0206_20KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 251,
+            "sub_key": "SW-TRD-393-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0208A_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 252,
+            "sub_key": "SW-TRD-394-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0208_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 253,
+            "sub_key": "SW-TRD-395-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0209_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 254,
+            "sub_key": "SW-TRD-396-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0210_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 255,
+            "sub_key": "SW-TRD-397-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0211_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 256,
+            "sub_key": "SW-TRD-398-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_2_0212_16KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 257,
+            "sub_key": "SW-TRD-399-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_3_CR_16' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 258,
+            "sub_key": "SW-TRD-400-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_3_0101_56KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 259,
+            "sub_key": "SW-TRD-401-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_3_0102_50KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 260,
+            "sub_key": "SW-TRD-402-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_3_0103_33_5KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 261,
+            "sub_key": "SW-TRD-403-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_3_0105A_40KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 262,
+            "sub_key": "SW-TRD-404-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_3_0105_45KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 263,
+            "sub_key": "SW-TRD-405-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_3_0201_50KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 264,
+            "sub_key": "SW-TRD-406-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_3_0202_33_5KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 265,
+            "sub_key": "SW-TRD-407-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_3_0203_50KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 266,
+            "sub_key": "SW-TRD-408-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_3_0205A_33_5KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 267,
+            "sub_key": "SW-TRD-409-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_3_0205_16KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 268,
+            "sub_key": "SW-TRD-410-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_3_0206_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 269,
+            "sub_key": "SW-TRD-411-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_ODU_A1_3_0208A_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 270,
+            "sub_key": "SW-TRD-412-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_NONG_VAT_TU_PHU_PHU_KIEN' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 271,
+            "sub_key": "SW-TRD-413-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_1_1F_01_03_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 272,
+            "sub_key": "SW-TRD-414-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_1_1F_04_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 273,
+            "sub_key": "SW-TRD-415-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_1_1F_05_7_1KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 274,
+            "sub_key": "SW-TRD-416-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_1_1F_06_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 275,
+            "sub_key": "SW-TRD-417-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_1_1F_07_09_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 276,
+            "sub_key": "SW-TRD-418-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_1_1F_10_11_5_6KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 277,
+            "sub_key": "SW-TRD-419-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_1_2F_01_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 278,
+            "sub_key": "SW-TRD-420-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_1_2F_02_03_9KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 279,
+            "sub_key": "SW-TRD-421-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_1_2F_04_05_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 280,
+            "sub_key": "SW-TRD-422-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_1_2F_06_07_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 281,
+            "sub_key": "SW-TRD-423-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_1_2F_08_09_9KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 282,
+            "sub_key": "SW-TRD-424-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_1_2F_10_11_4_5KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 283,
+            "sub_key": "SW-TRD-425-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_1_2F_12_13_5_6KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 284,
+            "sub_key": "SW-TRD-426-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_1_2F_14_15_4_5KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 285,
+            "sub_key": "SW-TRD-427-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_1_2F_16_17_4_5KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 286,
+            "sub_key": "SW-TRD-428-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_1_2F_18_19_7_1KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 287,
+            "sub_key": "SW-TRD-429-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_1F_01_02_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 288,
+            "sub_key": "SW-TRD-430-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_1F_03_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 289,
+            "sub_key": "SW-TRD-431-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_1F_04_05_9KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 290,
+            "sub_key": "SW-TRD-432-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_1F_06_07_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 291,
+            "sub_key": "SW-TRD-433-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_1F_08_09_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 292,
+            "sub_key": "SW-TRD-434-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_1F_10_11_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 293,
+            "sub_key": "SW-TRD-435-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_1F_12_13_7_1KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 294,
+            "sub_key": "SW-TRD-436-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_1F_14_15_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 295,
+            "sub_key": "SW-TRD-437-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_1F_16_17_9KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 296,
+            "sub_key": "SW-TRD-438-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_2F_01_02_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 297,
+            "sub_key": "SW-TRD-439-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_2F_03_04_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 298,
+            "sub_key": "SW-TRD-440-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_2F_05_9KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 299,
+            "sub_key": "SW-TRD-441-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_2F_06_07_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 300,
+            "sub_key": "SW-TRD-442-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_2F_08_09_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 301,
+            "sub_key": "SW-TRD-443-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_2F_10_11_12_5F74' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 302,
+            "sub_key": "SW-TRD-444-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_2F_13_9KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 303,
+            "sub_key": "SW-TRD-445-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_2F_14_7_1KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 304,
+            "sub_key": "SW-TRD-446-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_2F_15_16_5_6KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 305,
+            "sub_key": "SW-TRD-447-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_2F_17_18_5_6KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 306,
+            "sub_key": "SW-TRD-448-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_2F_19_20_5_6KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 307,
+            "sub_key": "SW-TRD-449-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_2F_21_22_4_5KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 308,
+            "sub_key": "SW-TRD-450-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_2F_23_24_5_6KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 309,
+            "sub_key": "SW-TRD-451-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_2_2F_25_26_7_1KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 310,
+            "sub_key": "SW-TRD-452-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_3_1F_01_04_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 311,
+            "sub_key": "SW-TRD-453-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_3_1F_05_08_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 312,
+            "sub_key": "SW-TRD-454-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_3_1F_09_10_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 313,
+            "sub_key": "SW-TRD-455-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_3_1F_05A_11_12_1660' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 314,
+            "sub_key": "SW-TRD-456-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_3_1F_05A_13_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 315,
+            "sub_key": "SW-TRD-457-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_3_1F_14_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 316,
+            "sub_key": "SW-TRD-458-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_3_1F_15_16_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 317,
+            "sub_key": "SW-TRD-459-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_3_1F_17_18_7_1KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 318,
+            "sub_key": "SW-TRD-460-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_3_2F_01_04_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 319,
+            "sub_key": "SW-TRD-461-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_3_2F_05_06_07_9KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 320,
+            "sub_key": "SW-TRD-462-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_3_2F_08_11_11_2KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 321,
+            "sub_key": "SW-TRD-463-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_3_2F_12_13_14KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 322,
+            "sub_key": "SW-TRD-464-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_3_2F_14_15_7_1KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 323,
+            "sub_key": "SW-TRD-465-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_3_2F_16_17_4_5KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 324,
+            "sub_key": "SW-TRD-466-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_IDU_A1_3_2F_18_19_5_6KW' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 325,
+            "sub_key": "SW-TRD-467-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_DIEU_KHIEN_NHIET_DO_CO_DAY' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 326,
+            "sub_key": "SW-TRD-468-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_VAT_TU_PHU_PHU_KIEN' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 327,
+            "sub_key": "SW-TRD-469-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-MAY_LANH_CUC_BO_ODU_B1_Z2_01_0_187F' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 328,
+            "sub_key": "SW-TRD-470-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-MAY_LANH_CUC_BO_ODU_B1_Z2_03_0_3E9C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 329,
+            "sub_key": "SW-TRD-471-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-MAY_LANH_CUC_BO_ODU_B1_Z2_05_0_E303' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 330,
+            "sub_key": "SW-TRD-472-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-MAY_LANH_CUC_BO_ODU_B1_Z2_07_0_9F23' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 331,
+            "sub_key": "SW-TRD-473-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-MAY_LANH_CUC_BO_ACU_B1_Z2_01_02' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 332,
+            "sub_key": "SW-TRD-474-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-MAY_LANH_CUC_BO_ACU_B1_Z2_03_04' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 333,
+            "sub_key": "SW-TRD-475-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-MAY_LANH_CUC_BO_ACU_B1_Z2_05_06' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 334,
+            "sub_key": "SW-TRD-476-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-MAY_LANH_CUC_BO_ACU_B1_Z2_07_08' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 335,
+            "sub_key": "SW-TRD-477-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-MAY_LANH_CUC_BO_VAT_TU_PHU_PHU_KIEN' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 339,
+            "sub_key": "SW-ACST-478-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-MIENG_GIO_BOX_GIO_CA_B991' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 343,
+            "sub_key": "SW-ACST-479-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-MIENG_GIO_BOX_GIO_CA_2E17' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 347,
+            "sub_key": "SW-ACST-480-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-MIENG_GIO_BOX_GIO_CA_6D80' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 351,
+            "sub_key": "SW-ACST-481-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-MIENG_GIO_BOX_GIO_CA_A68B' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 355,
+            "sub_key": "SW-ACST-482-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-MIENG_GIO_BOX_GIO_CA_052A' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 359,
+            "sub_key": "SW-ACST-483-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-MIENG_GIO_BOX_GIO_CA_3AC7' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 360,
+            "sub_key": "SW-DIFF-484-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-MIENG_GIO_CAP_SAG600_BACF' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 361,
+            "sub_key": "SW-DIFF-485-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-MIENG_GIO_HOI_RAG600_7262' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 362,
+            "sub_key": "SW-TRD-486-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-MIENG_GIO_VAT_TU_PHU_PHU_KIEN' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 368,
+            "sub_key": "SW-FLEX-490-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'FLEX_DUCT_D400_INSULATED' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 369,
+            "sub_key": "SW-FLEX-491-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'FLEX_DUCT_D350_INSULATED' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 370,
+            "sub_key": "SW-FLEX-492-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'FLEX_DUCT_D300_INSULATED' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 371,
+            "sub_key": "SW-FLEX-493-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'FLEX_DUCT_D250_INSULATED' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 372,
+            "sub_key": "SW-FLEX-494-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'FLEX_DUCT_D400_INSULATED' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 373,
+            "sub_key": "SW-FLEX-495-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'FLEX_DUCT_D350_INSULATED' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 374,
+            "sub_key": "SW-FLEX-496-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'FLEX_DUCT_D300_INSULATED' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 375,
+            "sub_key": "SW-FLEX-497-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'FLEX_DUCT_D250_INSULATED' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 376,
+            "sub_key": "SW-TRD-498-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_GIO_LANH_VAT_TU_PHU_PHU_KIEN' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 377,
+            "sub_key": "SW-TRD-499-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-CACH_NHIET_ONG_DONG_D28_6_BO_C_A499' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 378,
+            "sub_key": "SW-TRD-500-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-CACH_NHIET_ONG_DONG_D28_6_NAP_E095' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 379,
+            "sub_key": "SW-TRD-501-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-CACH_NHIET_ONG_DONG_D28_6_VAT_1DE1' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 380,
+            "sub_key": "SW-TRD-502-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-NUOC_NGUNG_ONG_UPVC_D27' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 381,
+            "sub_key": "SW-TRD-503-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-NUOC_NGUNG_ONG_UPVC_D34' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 382,
+            "sub_key": "SW-TRD-504-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-NUOC_NGUNG_ONG_UPVC_D42' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 383,
+            "sub_key": "SW-TRD-505-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-NUOC_NGUNG_ONG_UPVC_D60' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 384,
+            "sub_key": "SW-TRD-506-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-NUOC_NGUNG_CACH_NHIET_ONG_UPVC_D27' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 385,
+            "sub_key": "SW-TRD-507-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-NUOC_NGUNG_CACH_NHIET_ONG_UPVC_D34' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 386,
+            "sub_key": "SW-TRD-508-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-NUOC_NGUNG_CACH_NHIET_ONG_UPVC_D42' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 387,
+            "sub_key": "SW-TRD-509-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-NUOC_NGUNG_CACH_NHIET_ONG_UPVC_D60' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 388,
+            "sub_key": "SW-TRD-510-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-NUOC_NGUNG_VAT_TU_PHU_PHU_KIEN' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 389,
+            "sub_key": "SW-DUCT-511-BODY",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-STEEL-PN-1.50' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 390,
+            "sub_key": "SW-DUCT-512-BODY",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-STEEL-PN-1.50' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 391,
+            "sub_key": "SW-DUCT-513-BODY",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-STEEL-PN-1.50' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 392,
+            "sub_key": "SW-DUCT-514-BODY",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-STEEL-PN-1.50' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 393,
+            "sub_key": "SW-DUCT-515-BODY",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-STEEL-PN-1.50' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 394,
+            "sub_key": "SW-DUCT-516-BODY",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-STEEL-PN-1.50' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 395,
+            "sub_key": "SW-DUCT-517-BODY",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-STEEL-PN-1.50' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 396,
+            "sub_key": "SW-DUCT-518-BODY",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-STEEL-PN-1.50' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 397,
+            "sub_key": "SW-DUCT-519-BODY",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-STEEL-PN-1.50' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 398,
+            "sub_key": "SW-DUCT-520-BODY",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-STEEL-PN-1.50' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 399,
+            "sub_key": "SW-DUCT-521-BODY",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-STEEL-PN-1.50' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 400,
+            "sub_key": "SW-DUCT-522-BODY",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-STEEL-PN-1.50' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 401,
+            "sub_key": "SW-DUCT-523-BODY",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-STEEL-PN-1.50' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 402,
+            "sub_key": "SW-DUCT-524-BODY",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-STEEL-PN-1.50' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 403,
+            "sub_key": "SW-DUCT-525-BODY",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-STEEL-PN-1.50' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 404,
+            "sub_key": "SW-TRD-526-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-MANG_TON_ZAM_DI_ONG_DONG_NGOAI_9BD8' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 405,
+            "sub_key": "SW-TRD-527-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 406,
+            "sub_key": "SW-TRD-528-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 407,
+            "sub_key": "SW-TRD-529-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 408,
+            "sub_key": "SW-TRD-530-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 409,
+            "sub_key": "SW-TRD-531-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 410,
+            "sub_key": "SW-TRD-532-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 411,
+            "sub_key": "SW-TRD-533-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 412,
+            "sub_key": "SW-TRD-534-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 413,
+            "sub_key": "SW-TRD-535-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 414,
+            "sub_key": "SW-TRD-536-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 415,
+            "sub_key": "SW-TRD-537-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 416,
+            "sub_key": "SW-TRD-538-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 417,
+            "sub_key": "SW-TRD-539-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 418,
+            "sub_key": "SW-TRD-540-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 419,
+            "sub_key": "SW-TRD-541-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 420,
+            "sub_key": "SW-TRD-542-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 421,
+            "sub_key": "SW-TRD-543-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 422,
+            "sub_key": "SW-TRD-544-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 423,
+            "sub_key": "SW-TRD-545-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 424,
+            "sub_key": "SW-TRD-546-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_1_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 425,
+            "sub_key": "SW-TRD-547-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 426,
+            "sub_key": "SW-TRD-548-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 427,
+            "sub_key": "SW-TRD-549-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 428,
+            "sub_key": "SW-TRD-550-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 429,
+            "sub_key": "SW-TRD-551-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 430,
+            "sub_key": "SW-TRD-552-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 431,
+            "sub_key": "SW-TRD-553-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 432,
+            "sub_key": "SW-TRD-554-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 433,
+            "sub_key": "SW-TRD-555-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 434,
+            "sub_key": "SW-TRD-556-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 435,
+            "sub_key": "SW-TRD-557-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 436,
+            "sub_key": "SW-TRD-558-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 437,
+            "sub_key": "SW-TRD-559-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 438,
+            "sub_key": "SW-TRD-560-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 439,
+            "sub_key": "SW-TRD-561-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 440,
+            "sub_key": "SW-TRD-562-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 441,
+            "sub_key": "SW-TRD-563-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 442,
+            "sub_key": "SW-TRD-564-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 443,
+            "sub_key": "SW-TRD-565-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 444,
+            "sub_key": "SW-TRD-566-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 445,
+            "sub_key": "SW-TRD-567-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 446,
+            "sub_key": "SW-TRD-568-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_2_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 447,
+            "sub_key": "SW-TRD-569-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 448,
+            "sub_key": "SW-TRD-570-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 449,
+            "sub_key": "SW-TRD-571-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 450,
+            "sub_key": "SW-TRD-572-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 451,
+            "sub_key": "SW-TRD-573-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 452,
+            "sub_key": "SW-TRD-574-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 453,
+            "sub_key": "SW-TRD-575-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 454,
+            "sub_key": "SW-TRD-576-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 455,
+            "sub_key": "SW-TRD-577-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 456,
+            "sub_key": "SW-TRD-578-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 457,
+            "sub_key": "SW-TRD-579-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 458,
+            "sub_key": "SW-TRD-580-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 459,
+            "sub_key": "SW-TRD-581-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 460,
+            "sub_key": "SW-TRD-582-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 461,
+            "sub_key": "SW-TRD-583-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 462,
+            "sub_key": "SW-TRD-584-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 463,
+            "sub_key": "SW-TRD-585-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_NONG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 464,
+            "sub_key": "SW-TRD-586-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 465,
+            "sub_key": "SW-TRD-587-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-A1_3_DAN_LANH' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 466,
+            "sub_key": "SW-TRD-588-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_DIEU_KHIEN_NHIET_DO_CO_DAY' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 467,
+            "sub_key": "SW-TRD-589-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-DAN_LANH_VAT_TU_PHU_PHU_KIEN' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 471,
+            "sub_key": "SW-ACST-590-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-MIENG_GIO_CHO_CAP_NH_DA3E' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 475,
+            "sub_key": "SW-ACST-591-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-MIENG_GIO_CHO_CAP_NH_FBD0' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 479,
+            "sub_key": "SW-ACST-592-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-MIENG_GIO_CHO_CAP_NH_3914' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 483,
+            "sub_key": "SW-ACST-593-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-MIENG_GIO_CHO_CAP_NH_87A5' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 487,
+            "sub_key": "SW-ACST-594-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-MIENG_GIO_CHO_CAP_NH_34FC' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 491,
+            "sub_key": "SW-ACST-595-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-MIENG_GIO_CHO_CAP_NH_7090' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 495,
+            "sub_key": "SW-ACST-596-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-MIENG_GIO_CHO_CAP_NH_0FBB' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 496,
+            "sub_key": "SW-TRD-606-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-MIENG_GIO_CAP_HOI_CHO_MAY_LANH_A4B2' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 498,
+            "sub_key": "SW-DUCT-607-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-ONG_GIO_LANH_BOX_MIE_8C68' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 500,
+            "sub_key": "SW-DUCT-608-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-ONG_GIO_LANH_BOX_MIE_88E9' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 501,
+            "sub_key": "SW-FLEX-609-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'FLEX_DUCT_D350_INSULATED' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 502,
+            "sub_key": "SW-FLEX-609-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-ONG_GIO_LANH_BOX_MIE_1FDC' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 503,
+            "sub_key": "SW-FLEX-610-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'FLEX_DUCT_D300_INSULATED' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 504,
+            "sub_key": "SW-FLEX-610-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-ONG_GIO_LANH_BOX_MIE_EF26' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 505,
+            "sub_key": "SW-FLEX-611-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'FLEX_DUCT_D250_INSULATED' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 506,
+            "sub_key": "SW-FLEX-611-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-ONG_GIO_LANH_BOX_MIE_3A3C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 507,
+            "sub_key": "SW-FLEX-612-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'FLEX_DUCT_D200_INSULATED' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 508,
+            "sub_key": "SW-FLEX-612-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-ONG_GIO_LANH_BOX_MIE_B255' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 509,
+            "sub_key": "SW-TRD-613-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_GIO_LANH_BOX_MIENG_GIO_VAT_B1A1' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 510,
+            "sub_key": "SW-TRD-613-BOX",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-BOX-ONG_GIO_LANH_BOX_MIE_B1A1' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 511,
+            "sub_key": "SW-TRD-614-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_DONG_D6_4' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 512,
+            "sub_key": "SW-TRD-615-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_DONG_D9_5' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 513,
+            "sub_key": "SW-TRD-616-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_DONG_D12_7' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 514,
+            "sub_key": "SW-TRD-617-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_DONG_D15_9' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 515,
+            "sub_key": "SW-TRD-618-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_DONG_D19_1' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 516,
+            "sub_key": "SW-TRD-619-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_DONG_CACH_NHIET_ONG_DONG_D6_4' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 517,
+            "sub_key": "SW-TRD-620-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_DONG_CACH_NHIET_ONG_DONG_D9_5' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 518,
+            "sub_key": "SW-TRD-621-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_DONG_CACH_NHIET_ONG_DONG_D12_7' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 519,
+            "sub_key": "SW-TRD-622-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_DONG_CACH_NHIET_ONG_DONG_D15_9' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 520,
+            "sub_key": "SW-TRD-623-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_DONG_CACH_NHIET_ONG_DONG_D19_1' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 521,
+            "sub_key": "SW-TRD-624-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_DONG_BO_CHIA_GAS' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 522,
+            "sub_key": "SW-TRD-625-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_DONG_NAP_GA_BO_SUNG' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 523,
+            "sub_key": "SW-TRD-626-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-ONG_DONG_VAT_TU_PHU_PHU_KIEN' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 524,
+            "sub_key": "SW-TRD-627-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-NUOC_NGUNG_ONG_UPVC_D27' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 525,
+            "sub_key": "SW-TRD-628-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-NUOC_NGUNG_ONG_UPVC_D34' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 526,
+            "sub_key": "SW-TRD-629-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-NUOC_NGUNG_ONG_UPVC_D60' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 527,
+            "sub_key": "SW-TRD-630-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-NUOC_NGUNG_CACH_NHIET_ONG_UPVC_D27' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 528,
+            "sub_key": "SW-TRD-631-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-NUOC_NGUNG_CACH_NHIET_ONG_UPVC_D34' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 529,
+            "sub_key": "SW-TRD-632-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-NUOC_NGUNG_CACH_NHIET_ONG_UPVC_D60' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 530,
+            "sub_key": "SW-TRD-633-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-NUOC_NGUNG_VAT_TU_PHU_PHU_KIEN' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 531,
+            "sub_key": "SW-TRD-634-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-CHI_PHI_CHUNG_KIEM_TRA_NGHIEM_FCB5' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 532,
+            "sub_key": "SW-TRD-635-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-CHI_PHI_CHUNG_CHI_PHI_CAT_DUC_7600' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "01_BOC_TACH_ONG",
+            "row": 533,
+            "sub_key": "SW-TRD-636-TM",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-THUONG_MAI-CHI_PHI_CHUNG_CHI_PHI_CHONG_CH_147A' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "02_BOC_TACH_CUA",
+            "row": 46,
+            "sub_key": "SW-TRD-055-LƯỚI",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-LUOI-ONG_THONG_GIO_VA_PHU_11DB' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "02_BOC_TACH_CUA",
+            "row": 107,
+            "sub_key": "SW-TRD-145-LƯỚI",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-LUOI-HE_THONG_ONG_THONG_G_6A5C' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "02_BOC_TACH_CUA",
+            "row": 304,
+            "sub_key": "SW-TRD-635-LƯỚI",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-LUOI-CHI_PHI_CHUNG_CHI_PH_7600' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "03_BOC_TACH_VAN",
+            "row": 25,
+            "sub_key": "SW-DAMPER-026-ACTUATOR",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-ACTUATOR-BELIMO-BF24' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "03_BOC_TACH_VAN",
+            "row": 32,
+            "sub_key": "SW-DAMPER-027-ACTUATOR",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-ACTUATOR-BELIMO-BF24' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "03_BOC_TACH_VAN",
+            "row": 254,
+            "sub_key": "SW-DAMPER-109-ACTUATOR",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-ACTUATOR-BELIMO-BF24' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        },
+        {
+            "sheet": "03_BOC_TACH_VAN",
+            "row": 388,
+            "sub_key": "SW-DAMPER-212-ACTUATOR",
+            "severity": "WARNING",
+            "error_type": "ZERO_PRICE",
+            "message": "Vật tư 'MAT-ACTUATOR-BELIMO-BF24' đang bị thiếu Đơn Giá (Bằng 0) trong Bảng Giá 06! Cần điền giá và chạy tool Học Giá."
+        }
+    ]
+}

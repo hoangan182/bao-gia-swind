@@ -1,0 +1,66 @@
+{
+    "VAN_GIO": [
+        {"keywords": ["cấp bù gió khi có cháy", "cửa sổ cấp bù gió"], "subtype": "MFD"},
+        {"keywords": ["mfsd", "motorized fire smoke"], "subtype": "MFSD"},
+        {"keywords": ["mfd", "ngăn cháy có động cơ", "chặn lửa có động cơ", "chặn lửa bằng động cơ", "chặn lửa kèm động cơ", "chặn lửa đóng mở bằng mo tơ", "chặn lửa đóng mở bằng mô tơ", "chặn lửa đóng mở bằng motor", "chặn lửa đóng mở bằng động cơ"], "subtype": "MFD"},
+        {"keywords": ["md", "động cơ", "điện", "mô tơ", "môtơ", "mo tơ", "motor", "van on/off", "van on-off"], "subtype": "MD"},
+        {"keywords": ["fd", "lửa", "chống cháy", "dập lửa", "ngăn cháy"], "subtype": "FD"},
+        {"keywords": ["prd", "xả áp"], "subtype": "PRD"},
+        {"keywords": ["nrd", "1 chiều", "một chiều"], "subtype": "NRD"},
+        {"keywords": ["vcd", "điều chỉnh", "lưu lượng"], "subtype": "VCD"}
+    ],
+    "ONG_MEM": [
+        {"keywords": ["không cách", "không bảo", "bare", "non_insul"], "subtype": "NON_INSUL"},
+        {"keywords": ["cách nhiệt", "bảo ôn", "insul"], "subtype": "INSUL"}
+    ],
+    "CUA_GIO": [
+        {"keywords": ["cửa hồi", "miệng hồi", "hút hồi", "rag", "hồi gió", "gió hồi"], "subtype": "BD"},
+        {"keywords": ["khuếch tán", "sad", "ead", "scd"], "subtype": "T"},
+        {"keywords": ["louver", "luover", "louvre", "fal", "eal", "oal", "wl", "chớp", "lam", "ngoài trời", "nan z"], "subtype": "Z"},
+        {"keywords": ["sọt trứng", "eggcrate", "ecg"], "subtype": "ECG"},
+        {"keywords": ["linear", "slb", "nan t ", "nan t-", "khe dài", "tuyến tính", "slot"], "subtype": "SLB"},
+        {"keywords": ["bầu dục", "nan thẳng", "seag", "seg", "oag", "mag", "pag", "sag", "srg", "sdg", "obd", "eag"], "subtype": "BD"}
+    ],
+    "HEADER_ALIASES": {
+        "name_keywords": ["sản phẩm", "hạng mục", "quy cách", "công tác", "nội dung", "diễn giải", "mô tả", "tên vật tư", "danh mục"],
+        "name_cand_keywords": ["sản phẩm", "hạng mục", "danh mục", "công tác", "nội dung", "diễn giải", "mô tả", "tên vật tư"],
+        "qty_keywords": ["số lượng", "q'ty", "qty", "khối lượng", "sl", "kl"],
+        "stt_keywords": ["stt", "tt", "no", "no."],
+        "spec_keywords": ["thông số", "quy cách"],
+        "model_keywords": ["model", "mã hiệu"],
+        "brand_keywords": ["thương hiệu", "nhãn hiệu", "xuất xứ"],
+        "size_keywords": ["kích thước", "size"],
+        "thickness_keywords": ["độ dày"],
+        "unit_keywords": ["unit", "đơn vị"],
+        "price_keywords": ["đơn giá", "price"],
+        "total_keywords": ["thành tiền", "total"],
+        "remarks_keywords": ["ghi chú", "remarks"]
+    },
+    "COMBO_AND_DETECTION_RULES": {
+        "missing_qty_cv_keywords": ["louver", "luover", "louvre", "miệng gió", "cửa gió", "cửa nan", "van ", "vcd", "mfd", "mfsd", "nrd", "prd"],
+        "missing_qty_cv_regex": "\\b(fd|md|sag|rag|eag|oag|pag|seg|eal|oal|fal)\\b",
+        "combo_diffuser_regex": "\\bmiệng\\s*gió\\b|\\bcửa\\s*gió\\b|\\bcửa\\s*nan\\b|\\blouver\\b|\\bluover\\b|\\blouvre\\b|cửa\\s*(?:nan|thẳng|gió|\\+)",
+        "combo_damper_regex": "\\b(mfd|mfsd|md|fd|prd|nrd|vcd)\\b|van\\s+(?:on/off|on-off|chống\\s*cháy|chặn\\s*lửa|động\\s*cơ|một\\s*chiều|1\\s*chiều|xả\\s*áp)",
+        "inline_combo_dampers": ["MD", "FD", "VCD"],
+        "combo_model_suffix": {
+            "MD": "+MD",
+            "FD": " + FD",
+            "VCD": " + VCD"
+        },
+        "combo_note_suffix": {
+            "MD": " kèm van động cơ ON-OFF BELIMO (đóng mở 150s), xuất xứ Thụy Sỹ",
+            "FD": " + Van chặn lửa cầu chì EI120 (BCTN 4761/VLXD-TBMT)",
+            "VCD": " + Van điều chỉnh lưu lượng tay gạt tôn mạ kẽm"
+        },
+        "ktc_regex": "\\bktc\\b|kích\\s*thước\\s*cổ",
+        "single_dim_damper_regex": "\\b(?:vcd|fd|nrd|prd|md|obd|mfd|mfsd)\\s+(\\d{2,4})\\b",
+        "louver_z_keywords": ["nan z", "louver", "luover", "louvre", "chớp", "fal", "oal", "eal", "wl"],
+        "mesh_keywords": ["lưới", "chắn côn trùng", "lcct", "+n", "+ n", "+is", "is"],
+        "filter_keywords": ["phin lọc", "lọc bụi", "+f", "g4"],
+        "hvac_sheet_keywords": [
+            "dhkk", "hvac", "thong gio", "thông gió", "thong_gio",
+            "hut khoi", "hút khói", "hut_khoi", "tang ap", "tăng áp", "tang áp", "tăng ap",
+            "tang_ap", "duct", "lanh", "lạnh", "ventilation", "m.4 duct"
+        ]
+    }
+}

@@ -1,0 +1,224 @@
+{
+  "STANDARD_UNITS": {
+    "VCD_RECTANGULAR": {
+      "name": "Van gió điều chỉnh chữ nhật (VCD)",
+      "aliases": [
+        "van vcd",
+        "van gió vuông",
+        "van lưu lượng",
+        "vang điều chỉnh chữ nhật",
+        "vcd",
+        "van chỉnh lưu lượng",
+        "van gió vcd"
+      ]
+    },
+    "VCD_ROUND": {
+      "name": "Van gió điều chỉnh tròn (Round VCD)",
+      "aliases": [
+        "van vcd tròn",
+        "van gió tròn",
+        "van tròn chỉnh lưu lượng",
+        "round vcd"
+      ]
+    },
+    "NRD_RECTANGULAR": {
+      "name": "Van một chiều chữ nhật (NRD)",
+      "aliases": [
+        "van nrd",
+        "van 1 chiều",
+        "van một chiều",
+        "van gió một chiều",
+        "van bướm chữ nhật"
+      ]
+    },
+    "NRD_ROUND": {
+      "name": "Van một chiều tròn (Round NRD)",
+      "aliases": [
+        "van nrd tròn",
+        "van 1 chiều tròn",
+        "van bướm tròn"
+      ]
+    },
+    "FD_RECTANGULAR": {
+      "name": "Van dập lửa chữ nhật (FD - Cầu chì)",
+      "aliases": [
+        "van fd",
+        "van dập lửa",
+        "van chặn lửa",
+        "van chặn lửa cầu chì",
+        "van ngăn lửa",
+        "van chống cháy cầu chì",
+        "fire damper"
+      ]
+    },
+    "MFD_RECTANGULAR": {
+      "name": "Van ngăn khói dập lửa động cơ (MFD/MD)",
+      "aliases": [
+        "van mfd",
+        "van md",
+        "van ngăn khói",
+        "van dập lửa gắn động cơ",
+        "van chặn lửa động cơ",
+        "motorized fire damper"
+      ]
+    },
+    "LOUVER_OUTDOOR": {
+      "name": "Cửa gió ngoài trời chống mưa (Louver)",
+      "aliases": [
+        "cửa louver",
+        "cửa gió louver",
+        "louver chắn mưa",
+        "cửa nan z",
+        "cửa gió nan z",
+        "cửa lấy gió tươi",
+        "cửa gió ngoài trời",
+        "cửa thải gió",
+        "air louver",
+        "weather louver"
+      ]
+    },
+    "GRILLE_LINEAR": {
+      "name": "Cửa gió nan T / nan chữ nhật (Linear Grille)",
+      "aliases": [
+        "cửa nan t",
+        "cửa gió nan t",
+        "cửa nan thẳng",
+        "cửa gió nan thẳng",
+        "cửa gió thổi",
+        "cửa gió nan chữ nhật",
+        "cửa nan chữ nhật",
+        "linear bar grille",
+        "linear grille",
+        "cửa nan bầu dục"
+      ]
+    },
+    "DIFFUSER_SQUARE": {
+      "name": "Cửa gió khuếch tán vuông (Square Diffuser)",
+      "aliases": [
+        "cửa khuếch tán",
+        "cửa kt",
+        "cửa vuông khuếch tán",
+        "cửa hướng dòng",
+        "square diffuser"
+      ]
+    },
+    "SILENCER_BOX": {
+      "name": "Hộp tiêu âm chữ nhật",
+      "aliases": [
+        "hộp tiêu âm",
+        "tiêu âm đường ống",
+        "hộp giảm ồn",
+        "silencer",
+        "hộp bọc tiêu âm"
+      ]
+    },
+    "SILENCER_ROUND": {
+      "name": "Ống tiêu âm tròn",
+      "aliases": [
+        "ống tiêu âm",
+        "tiêu âm tròn",
+        "round silencer"
+      ]
+    },
+    "CANVAS_FLEXIBLE": {
+      "name": "Nối mềm Canvas vuông",
+      "aliases": [
+        "nối mềm",
+        "nối mềm canvas",
+        "bạt nối mềm",
+        "cổ bạt",
+        "ống bạt mềm"
+      ]
+    }
+  },
+  "PROJECT_EXPERIENCE_RULES": {
+    "PLUMBING_VENT_CAP_EXCLUSION": {
+      "rule": "Bỏ trống (không báo giá) các mục 'Chụp thông hơi inox DN80/DN100/D200/D110/D90/D160/D140' thuộc hệ cấp thoát nước (PS/FF).",
+      "category": "THUONG_MAI",
+      "keywords": ["chụp thông hơi", "chụp thông gió d110", "chụp thông gió d160"]
+    },
+    "COMBO_GRILLE_PLUS_MD": {
+      "rule": "Khi BOQ gộp Cửa gió + Van MD trên 1 dòng (ví dụ 'Miệng gió SAG+MD', 'Miệng gió PAG + MD'), giữ nguyên 1 dòng khớp BOQ và cộng gộp đơn giá (Cửa gió 1 lớp + Van MD động cơ Belimo ON/OFF theo tiết diện 5Nm/10Nm/20Nm).",
+      "model_format": "SDG+MD"
+    },
+    "MOTORIZED_RELIEF_DAMPER": {
+      "rule": "Mục 'Van xả áp động cơ' (kèm ghi chú 'Van tuyến tính') tính theo van động cơ thường MD dùng động cơ Belimo theo tiết diện (5Nm/10Nm/20Nm), phân biệt với 'Van xả áp cơ' (PRD đối trọng).",
+      "subtype": "MD"
+    },
+    "NORMAL_DAMPER_EI_WRAPPING": {
+      "rule": "Các van thường (NRD, PRD, VCD) có yêu cầu EI30/EI60 trong cột Ghi chú: tính diện tích bọc thân van * 320,000đ cộng vào đơn giá van thường.",
+      "rate_vnd_per_m2": 320000,
+      "mandatory_note": "ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm"
+    },
+    "ROUND_DAMPER_AND_D_DIMENSION": {
+      "rule": "Cứ kích thước ký hiệu D (ví dụ D100, D150, D800, D100x100) là tiết diện tròn (Ø). Van tròn D100-D500 lấy theo bảng giá chuẩn BG VAN; tôn D100-D300 dày 0.75mm, D350-D500 dày 0.95mm.",
+      "thickness_tiers": {
+        "D100_to_D300": 0.75,
+        "D350_to_D500": 0.95,
+        "above_D500": 1.15
+      }
+    },
+    "ALUMINUM_SELLING_PRICE_165K": {
+      "rule": "Giá nhôm tính giá bán cửa gió (đặc biệt mã SDG / SLB / SWL trong BG Cửa) thống nhất fix chuẩn 165,000 VNĐ/kg (thay vì 150,000 VNĐ/kg ở bảng cũ).",
+      "aluminum_selling_price_per_kg": 165000
+    },
+    "UNSPECIFIED_DIMENSION_DAMPER_EXCLUSION": {
+      "rule": "Các mục Cửa gió / Van gió không ghi kích thước trong BOQ (w=0, h=0, d=0, ví dụ 'Van xả áp cơ cho quạt tăng áp thang máy' không có KT) thì bỏ trống không báo giá (chuyển về THUONG_MAI)."
+    },
+    "ELECTRICAL_CABINET_EXCLUSION": {
+      "rule": "Các mục 'Tủ điện cho van gió...', 'Tủ điều khiển cưỡng bức van...' là tủ điện điều khiển (THUONG_MAI), không phải van gió, bỏ trống khi báo giá Cửa/Van."
+    },
+    "MFD_SUBTYPE_AND_MOTOR_SELECTION_POLICY": {
+      "immutable_rule": true,
+      "default_mfd_model_code": "1.02",
+      "default_motor_brand": "BELIMO",
+      "rule": "QUY TẮC BẤT BIẾN (KHÔNG ĐƯỢC SỬA): 1) Nhận diện MFD: Mọi dòng VAN_GIO vừa có từ khóa chống cháy ('chặn lửa', 'ngăn cháy', 'dập lửa') vừa có từ khóa động cơ ('động cơ', 'mô tơ', 'môtơ', 'mo tơ', 'motor') chỉ nhận diện về subtype = 'MFD' (độc lập hoàn toàn với hãng động cơ). 2) Không gán cứng theo tên dự án: Hãng động cơ & mã đốt MFD chỉ lấy từ thông tin dòng BOQ hoặc tham số '--motor-brand' / '--mfd-model' khi User ra yêu cầu. 3) Mặc định cố định của hệ thống: Nếu User không ra yêu cầu riêng và BOQ không chỉ định khác, hệ thống MẶC ĐỊNH CỐ ĐỊNH dùng mã MFD 1.02 (SWIND-1.02-MFD-EI90) và động cơ BELIMO."
+    },
+    "VENT_CAP_EXCLUSION": {
+      "rule": "Bỏ trống không báo giá các mục 'Vent cap D100 / D140' (chụp thông hơi trục uPVC ngoài phạm vi Cửa/Van gió, phân loại về THUONG_MAI)."
+    },
+    "COMBO_LOUVER_PLUS_FD": {
+      "rule": "Khi BOQ gộp Cửa gió nan Z kèm LCCT & Van FD trên cùng 1 dòng (ví dụ 'Cửa gió nan Z kèm lưới chắn côn trùng & van FD, 700x500'), giữ nguyên 1 dòng khớp BOQ và cộng gộp đơn giá Cửa nan Z kèm LCCT (WL+N) + Van chặn lửa cầu chì (FD 2.01), Model ghi 'WL+N + FD'."
+    },
+    "LARGE_SINGLE_LAYER_GRILLE_LOUVER_WL": {
+      "rule": "Khi BOQ ghi 'Cửa gió nan 1 lớp' khổ lớn (>= 3000mm, ví dụ 5000x700, 6000x700, 6500x700 ở tầng hầm, không kèm OBD và không ghi rõ bầu dục/nan thẳng) thì áp mã Louver nan Z (WL); còn dòng có kèm van OBD (ví dụ 1000x500 kèm van OBD) áp mã SDG+O."
+    },
+    "HIDDEN_ROWS_AND_COLUMNS_EXCLUSION": {
+      "rule": "Không đọc các dòng bị ẩn (row_dimensions.hidden) và các cột bị ẩn (column_dimensions.hidden) trong file BOQ của khách."
+    },
+    "HONEYWELL_104_DAMPER_QUOTATION_RULES": {
+      "model_code": "1.04",
+      "model_name": "SWIND-1.04-MFD-EI60",
+      "bctn": "1515/VLXD-TBMT",
+      "actuator_model": "HoneyWell MS4609F1010/B (9Nm, 230V, đóng mở nhanh 15s)",
+      "actuator_selling_price_vnd": 3400000,
+      "module_split_limit_mm": {
+        "max_w": 1750,
+        "max_h": 1000
+      },
+      "rule": "Khi báo giá van ngăn cháy động cơ HoneyWell (mã 1.04 / SWIND-1.04-MFD-EI60): 1) Khổ tối đa 1 thân theo BCTN 1515/VLXD-TBMT là W<=1750mm, H<=1000mm (ví dụ 1600x400 là 1 modul, 1800x400 chia 2 modul, 3960x560 chia 3 modul, 1460x1260 chia 2 modul). 2) Đơn giá động cơ HoneyWell MS4609F1010/B (9Nm, 230V, 15s) là 3,400,000 VNĐ/bộ (thấp hơn Belimo FSLF 230US 300,000đ và thấp hơn Belimo BFN 800,000đ). 3) Đơn giá 1 bộ van = (Đơn giá cơ khí thân van 1 modul theo bậc kích thước + 3,400,000) * số modul. 4) Ghi chú chuẩn: '- Van động cơ SWIND-MFSD - Tiêu chuẩn EI 60\\n- 2 đầu bích TDC - HoneyWell, 9Nm, 230V, Type đóng mở nhanh: 15s - Model: MS4609F1010/B\\n- Sản xuất theo BCTN số 1515/VLXD-TBMT' (kèm '\\n- Chia N modul theo bản vẽ chi tiết' khi N > 1)."
+    },
+    "OPTIMAL_2D_DAMPER_MODULE_SPLITTING": {
+      "formula": "mod_w = ceil(W / max_w_mm), mod_h = ceil(H / max_h_mm), modules_count = mod_w * mod_h, B1 = W / mod_w, B2 = H / mod_h",
+      "limits_by_model": {
+        "standard_101_102_103_201": {"max_w_mm": 1500, "max_h_mm": 800},
+        "honeywell_104": {"max_w_mm": 1750, "max_h_mm": 1000},
+        "large_105": {"max_w_mm": 1700, "max_h_mm": 1000},
+        "standard_md": {"max_w_mm": 2000, "max_h_mm": 2000}
+      },
+      "rule": "Khi chia modul van 2 chiều (W x H), luôn bám sát kích thước tối đa 2 chiều (max_w_mm, max_h_mm) của từng mã BCTN trong master_bom_rules.json: mod_w = ceil(W / max_w_mm), mod_h = ceil(H / max_h_mm), tổng số modul = mod_w * mod_h (tuyệt đối không chia W cho 1000mm khi W > 1500mm). Ví dụ với mã 1.02 (max 1500x800): 5000x700 chia 4 modul (1250x700), 6000x700 chia 4 modul (1500x700), 6500x700 chia 5 modul (1300x700), giúp tối ưu số lượng động cơ và không làm đội giá."
+    },
+    "NON_EI_FD_COL_O_PRICING": {
+      "rule": "Khi BOQ chỉ ghi 'Van chặn lửa FD WxH' mà không có chỉ số EI / BCTN / hệ thống PCCC chống cháy, áp theo Cột O ('Van cầu chì / Fuse Fire damper' - van tôn mạ kẽm gắn cầu chì, không bọc tấm chống cháy EI, Model: FD, L=200mm, mặc định dùng tôn mạ kẽm dày 1.15mm MAT-STEEL-PN-1.15 tương ứng đơn giá m2 AJ17=321,300đ) trong BẢNG TÍNH GIÁ SWIND chuẩn 2026.xls (Sheet 'BG VAN ')."
+    },
+    "SINGLE_DIM_ROUND_DAMPER_DEFAULT": {
+      "rule": "Khi van gió chỉ ghi 1 kích thước đơn mà không ghi ký hiệu D/Ø hay WxH (ví dụ 'VCD 150'), mặc định hiểu là van tròn đường kính D (ví dụ D150, A1='Ø', A2=150, L=200, độ dày 0.75mm)."
+    },
+    "COMBO_LOUVER_PLUS_VCD": {
+      "rule": "Khi BOQ gộp Louver kèm LCCT + VCD trên cùng 1 dòng (ví dụ 'Luover gió tươi 200x200 kèm lưới chắn côn trùng + VCD'), giữ 1 dòng khớp BOQ, Model ghi 'WL+N + VCD', đơn giá = tổng đơn giá Louver kèm LCCT (WL+N) + Van VCD cùng kích thước."
+    },
+    "MISSING_QTY_FILL_UNIT_PRICE": {
+      "rule": "Những dòng thuộc Cửa gió và Van gió có tên và kích thước rõ ràng nhưng chưa có khối lượng (ô Số lượng / Đơn vị trống trong BOQ) vẫn giữ nguyên trong bảng báo giá, để trống cột Số lượng và điền đầy đủ Đơn giá."
+    }
+  }
+}

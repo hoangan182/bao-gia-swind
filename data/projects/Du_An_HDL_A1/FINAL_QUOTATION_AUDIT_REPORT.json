@@ -1,0 +1,23 @@
+{
+  "project_name": "Du_An_HDL_A1",
+  "model_used": "Gemini 3.1 Pro",
+  "audit_timestamp": "2026-10-10T16:50:00Z",
+  "qa_status": "PASS",
+  "spec_compliance": {
+    "status": "PASS",
+    "message": "100% độ dày VCD (1.2mm) và vật liệu PCCC đáp ứng đúng tiêu chuẩn kỹ thuật dự án HDL-A1."
+  },
+  "formula_integrity": {
+    "status": "PASS",
+    "message": "100% công thức liên kết giữa các Sheet vẹn toàn, không có ô hard-code, không lỗi #REF!"
+  },
+  "price_consistency": {
+    "status": "PASS",
+    "message": "Đơn giá đầu vào vật tư khớp 100% với Master Price Database 2026."
+  },
+  "arithmetic_audit": {
+    "status": "PASS",
+    "message": "Toàn bộ phép tính nhân chia thành tiền, COGS và Margin (18%) hoàn toàn chính xác."
+  },
+  "issues": []
+}

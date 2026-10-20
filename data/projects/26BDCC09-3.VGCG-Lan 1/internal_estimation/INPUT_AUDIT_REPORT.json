@@ -1,0 +1,773 @@
+{
+  "project_name": "26BDCC09-3.VGCG-Lan 1",
+  "model_used": "Gemini 2.5 Pro",
+  "total_items": 51,
+  "pass_items": 51,
+  "requires_mapping_items": 0,
+  "critical_errors": [],
+  "warnings": [],
+  "items_detail": [
+    {
+      "row_index": 13,
+      "raw_name": "FAL 500x400, Louver+ LCCT",
+      "parsed_dims": {
+        "w": 500.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 14,
+      "raw_name": "EAL + LCCT 300x200, Louver",
+      "parsed_dims": {
+        "w": 300.0,
+        "h": 200.0
+      },
+      "raw_qty": 5.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 15,
+      "raw_name": "VCD 900x400, van chỉnh lưu lượng gió",
+      "parsed_dims": {
+        "w": 900.0,
+        "h": 400.0
+      },
+      "raw_qty": 36.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 16,
+      "raw_name": "VCD 600x300, van chỉnh lưu lượng gió",
+      "parsed_dims": {
+        "w": 600.0,
+        "h": 300.0
+      },
+      "raw_qty": 36.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 17,
+      "raw_name": "EAG 150x150 kèm OBD, miệng gió thải",
+      "parsed_dims": {
+        "w": 150.0,
+        "h": 150.0
+      },
+      "raw_qty": 88.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 18,
+      "raw_name": "Miệng gió EAG+OBD 1200x600",
+      "parsed_dims": {
+        "w": 1200.0,
+        "h": 600.0
+      },
+      "raw_qty": 31.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 19,
+      "raw_name": "Miệng gió PAG + OBD 600x600",
+      "parsed_dims": {
+        "w": 600.0,
+        "h": 600.0
+      },
+      "raw_qty": 32.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 24,
+      "raw_name": "FAL 500x300, Louver+ LCCT",
+      "parsed_dims": {
+        "w": 500.0,
+        "h": 300.0
+      },
+      "raw_qty": 10.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 25,
+      "raw_name": "NRD 900x400 van 1 chiều",
+      "parsed_dims": {
+        "w": 900.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 26,
+      "raw_name": "NRD 500x200 van 1 chiều",
+      "parsed_dims": {
+        "w": 500.0,
+        "h": 200.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 27,
+      "raw_name": "EAG + OBD 300x200, miệng gió thải",
+      "parsed_dims": {
+        "w": 300.0,
+        "h": 200.0
+      },
+      "raw_qty": 5.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 28,
+      "raw_name": "VCD 800x400, van chỉnh lưu lượng gió",
+      "parsed_dims": {
+        "w": 800.0,
+        "h": 400.0
+      },
+      "raw_qty": 4.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 29,
+      "raw_name": "VCD 700x400, van chỉnh lưu lượng gió",
+      "parsed_dims": {
+        "w": 700.0,
+        "h": 400.0
+      },
+      "raw_qty": 28.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 30,
+      "raw_name": "VCD 500x350, van chỉnh lưu lượng gió",
+      "parsed_dims": {
+        "w": 500.0,
+        "h": 350.0
+      },
+      "raw_qty": 32.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 31,
+      "raw_name": "VCD 600x350, van chỉnh lưu lượng gió",
+      "parsed_dims": {
+        "w": 600.0,
+        "h": 350.0
+      },
+      "raw_qty": 4.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 32,
+      "raw_name": "VCD 500x250, van chỉnh lưu lượng gió",
+      "parsed_dims": {
+        "w": 500.0,
+        "h": 250.0
+      },
+      "raw_qty": 32.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 33,
+      "raw_name": "VCD 400x200, van chỉnh lưu lượng gió",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 200.0
+      },
+      "raw_qty": 36.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 34,
+      "raw_name": "Van gió 1 chiều NRD kích thước 400x200",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 200.0
+      },
+      "raw_qty": 8.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 35,
+      "raw_name": "VCD 1000x650, van chỉnh lưu lượng gió",
+      "parsed_dims": {
+        "w": 1000.0,
+        "h": 650.0
+      },
+      "raw_qty": 4.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 36,
+      "raw_name": "Miệng gió SAG+MD 1200x600",
+      "parsed_dims": {
+        "w": 1200.0,
+        "h": 600.0
+      },
+      "raw_qty": 5.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 37,
+      "raw_name": "Cửa bù gió 1200x500",
+      "parsed_dims": {
+        "w": 1200.0,
+        "h": 500.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 38,
+      "raw_name": "Cửa bù gió 3000x600",
+      "parsed_dims": {
+        "w": 3000.0,
+        "h": 600.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 39,
+      "raw_name": "Cửa bù gió 3300x500",
+      "parsed_dims": {
+        "w": 3300.0,
+        "h": 500.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 40,
+      "raw_name": "Miệng gió SEG + OBD 1000x600",
+      "parsed_dims": {
+        "w": 1000.0,
+        "h": 600.0
+      },
+      "raw_qty": 68.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 41,
+      "raw_name": "Miệng gió PAG + MD 700x1200",
+      "parsed_dims": {
+        "w": 700.0,
+        "h": 1200.0
+      },
+      "raw_qty": 32.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 44,
+      "raw_name": "FAL 1300x1200, Louver+ LCCT",
+      "parsed_dims": {
+        "w": 1300.0,
+        "h": 1200.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 45,
+      "raw_name": "FAL 700x400, Louver+ LCCT",
+      "parsed_dims": {
+        "w": 700.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 46,
+      "raw_name": "EAL 600x300, Louver+ LCCT",
+      "parsed_dims": {
+        "w": 600.0,
+        "h": 300.0
+      },
+      "raw_qty": 3.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 47,
+      "raw_name": "FAL 500x350, Louver+ LCCT",
+      "parsed_dims": {
+        "w": 500.0,
+        "h": 350.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 48,
+      "raw_name": "FAL 400x300, Louver+ LCCT",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 300.0
+      },
+      "raw_qty": 4.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 49,
+      "raw_name": "NRD 1000x400 van 1 chiều",
+      "parsed_dims": {
+        "w": 1000.0,
+        "h": 400.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 50,
+      "raw_name": "NRD 400x250 van 1 chiều",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 250.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 51,
+      "raw_name": "NRD 300x150 van 1 chiều",
+      "parsed_dims": {
+        "w": 300.0,
+        "h": 150.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 52,
+      "raw_name": "EAG + OBD 400x300, miệng gió thải",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 300.0
+      },
+      "raw_qty": 8.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 53,
+      "raw_name": "Lưới chắn côn trùng bằng inox",
+      "parsed_dims": {
+        "d": 800.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 54,
+      "raw_name": "Van gió 1 chiều NRD kích thước 500x200",
+      "parsed_dims": {
+        "w": 500.0,
+        "h": 200.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 55,
+      "raw_name": "Miệng gió SAG+MD 1200x600",
+      "parsed_dims": {
+        "w": 1200.0,
+        "h": 600.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 56,
+      "raw_name": "NRD 1000x800 van 1 chiều",
+      "parsed_dims": {
+        "w": 1000.0,
+        "h": 800.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 57,
+      "raw_name": "Van xả áp cơ 600x500",
+      "parsed_dims": {
+        "w": 600.0,
+        "h": 500.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 58,
+      "raw_name": "Cửa bù gió 4000x600",
+      "parsed_dims": {
+        "w": 4000.0,
+        "h": 600.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 59,
+      "raw_name": "Louver cấp bù khí tươi qua cửa sổ FL+100MM, 1000x500",
+      "parsed_dims": {
+        "w": 1000.0,
+        "h": 500.0
+      },
+      "raw_qty": 16.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 60,
+      "raw_name": "Miệng gió SEG + OBD 1200x600",
+      "parsed_dims": {
+        "w": 1200.0,
+        "h": 600.0
+      },
+      "raw_qty": 9.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 61,
+      "raw_name": "Miệng gió SEG + OBD 600x600",
+      "parsed_dims": {
+        "w": 600.0,
+        "h": 600.0
+      },
+      "raw_qty": 16.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 62,
+      "raw_name": "Miệng gió PAG + MD 500x500",
+      "parsed_dims": {
+        "w": 500.0,
+        "h": 500.0
+      },
+      "raw_qty": 8.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 63,
+      "raw_name": "Van xả áp cơ 1100x600",
+      "parsed_dims": {
+        "w": 1100.0,
+        "h": 600.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 64,
+      "raw_name": "Van xả áp động cơ 1100x600",
+      "parsed_dims": {
+        "w": 1100.0,
+        "h": 600.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 65,
+      "raw_name": "FAL 900x400, Louver+ LCCT",
+      "parsed_dims": {
+        "w": 900.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 66,
+      "raw_name": "NRD 800x400 van 1 chiều",
+      "parsed_dims": {
+        "w": 800.0,
+        "h": 400.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 67,
+      "raw_name": "EAG + OBD 250x250, miệng gió thải",
+      "parsed_dims": {
+        "w": 250.0,
+        "h": 250.0
+      },
+      "raw_qty": 3.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 68,
+      "raw_name": "VCD D100x100, van điều chỉnh lưu lượng",
+      "parsed_dims": {
+        "d": 100.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 69,
+      "raw_name": "VCD D150, van điều chỉnh lưu lượng",
+      "parsed_dims": {
+        "d": 150.0
+      },
+      "raw_qty": 3.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    }
+  ]
+}

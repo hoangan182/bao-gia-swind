@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swind HVAC Estimation MAS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-wind brand-icon"></i>
+                <h2>SWIND MAS</h2>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active"><i class="fa-solid fa-folder-open"></i> Bóc tách dự án</a>
+                <a href="#" class="nav-item"><i class="fa-solid fa-database"></i> Quản lý Master Data</a>
+                <a href="#" class="nav-item"><i class="fa-solid fa-book-journal-whills"></i> Bảng Kinh Nghiệm (Từ điển)</a>
+                <a href="#" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Báo cáo thống kê</a>
+            </nav>
+            
+            <div class="agent-status" style="margin-top: 12px;">
+                <div style="font-size: 0.7rem; text-transform: uppercase; color: #38bdf8; font-weight: 600; margin-bottom: 6px; letter-spacing: 0.4px;">QUY TRÌNH A: MASTER DATA (ĐỘC LẬP)</div>
+                <div class="agent-card" style="margin-bottom: 4px; padding: 4px 10px;">
+                    <div class="agent-icon" style="font-size: 0.8rem;"><i class="fa-solid fa-database"></i></div>
+                    <div class="agent-info">
+                        <h4 style="font-size: 0.75rem; margin: 0;">Agent 00: Data Miner</h4>
+                        <span class="status-badge green" style="font-size: 0.6rem;">Đã tạo Master 1 lần</span>
+                    </div>
+                </div>
+                <div class="agent-card" style="margin-bottom: 10px; padding: 4px 10px;">
+                    <div class="agent-icon" style="font-size: 0.8rem;"><i class="fa-solid fa-tags"></i></div>
+                    <div class="agent-info">
+                        <h4 style="font-size: 0.75rem; margin: 0;">Agent 09: Price Learner</h4>
+                        <span class="status-badge" style="background:#0284c7; color:#fff; font-size: 0.6rem;">Khi cần Update giá</span>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.7rem; text-transform: uppercase; color: #94a3b8; font-weight: 600; margin-bottom: 6px; letter-spacing: 0.4px;">QUY TRÌNH B: BÁO GIÁ BOQ (01 -> 08)</div>
+                <div class="agent-card" style="margin-bottom: 4px; padding: 4px 10px;">
+                    <div class="agent-icon" style="font-size: 0.8rem;"><i class="fa-solid fa-file-import"></i></div>
+                    <div class="agent-info">
+                        <h4 style="font-size: 0.75rem; margin: 0;">Agent 01: BOQ Extractor</h4>
+                        <span class="status-badge green" style="font-size: 0.6rem;">Đọc BOQ & Spec</span>
+                    </div>
+                </div>
+                <div class="agent-card" style="margin-bottom: 4px; padding: 4px 10px;">
+                    <div class="agent-icon" style="font-size: 0.8rem;"><i class="fa-solid fa-brain"></i></div>
+                    <div class="agent-info">
+                        <h4 style="font-size: 0.75rem; margin: 0;">Agent 02: BOQ Reviewer</h4>
+                        <span class="status-badge green" style="font-size: 0.6rem;">Phân loại & Học từ</span>
+                    </div>
+                </div>
+                <div class="agent-card" style="margin-bottom: 4px; padding: 4px 10px;">
+                    <div class="agent-icon" style="font-size: 0.8rem;"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div class="agent-info">
+                        <h4 style="font-size: 0.75rem; margin: 0;">Agent 03: Input Auditor</h4>
+                        <span class="status-badge green" style="font-size: 0.6rem;">Kiểm toán 4 trục</span>
+                    </div>
+                </div>
+                <div class="agent-card" style="margin-bottom: 4px; padding: 4px 10px;">
+                    <div class="agent-icon" style="font-size: 0.8rem;"><i class="fa-solid fa-industry"></i></div>
+                    <div class="agent-info">
+                        <h4 style="font-size: 0.75rem; margin: 0;">Agent 04-06: BOM Makers</h4>
+                        <span class="status-badge" style="background:#64748b; color:#fff; font-size: 0.6rem;">Ống / Van / Cửa</span>
+                    </div>
+                </div>
+                <div class="agent-card" style="margin-bottom: 4px; padding: 4px 10px;">
+                    <div class="agent-icon" style="font-size: 0.8rem;"><i class="fa-solid fa-file-excel"></i></div>
+                    <div class="agent-info">
+                        <h4 style="font-size: 0.75rem; margin: 0;">Agent 07: Excel Publisher</h4>
+                        <span class="status-badge" style="background:#64748b; color:#fff; font-size: 0.6rem;">Áp giá Master & Xuất 9 Sheets</span>
+                    </div>
+                </div>
+                <div class="agent-card" style="padding: 4px 10px;">
+                    <div class="agent-icon" style="font-size: 0.8rem;"><i class="fa-solid fa-clipboard-check"></i></div>
+                    <div class="agent-info">
+                        <h4 style="font-size: 0.75rem; margin: 0;">Agent 08: QA Checker</h4>
+                        <span class="status-badge" style="background:#64748b; color:#fff; font-size: 0.6rem;">Kiểm toán 3 tầng</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="breadcrumbs">Dự án / <span>Bà Nà Hills Phase 1 (Universal Input)</span></div>
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=002060&color=fff" alt="User" class="avatar">
+                    <span>Admin</span>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="header-section">
+                    <h1>Khởi tạo Bóc Tách Dự Án</h1>
+                    <p>Hệ thống Đa Tác Vụ tự động bóc tách BOQ đa định dạng và tính toán chi phí vật tư dự án HVAC.</p>
+                </div>
+
+                <!-- GIAI ĐOẠN 1: BÓC TÁCH & AUDIT ĐẦU VÀO -->
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <div class="step-indicator">1</div>
+                        <h3>GIAI ĐOẠN 1: BÓC TÁCH & AUDIT ĐẦU VÀO</h3>
+                    </div>
+                    <div class="upload-zone" id="dropZone" style="margin-bottom: 20px;">
+                        <i class="fa-solid fa-file-excel upload-icon"></i>
+                        <h4>Kéo thả file Excel BOQ bất kỳ của nhà thầu vào đây</h4>
+                        <p>Hệ thống tự động dò cột, bóc tách kích thước & ánh xạ chủng loại.</p>
+                        <button class="btn btn-outline" onclick="document.getElementById('uploadedFile').classList.remove('hide')">Chọn File Excel</button>
+                        <div class="uploaded-file hide" id="uploadedFile" style="margin-top: 10px;">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span class="file-name">BOQ_NhaThau_KhongChuan.xlsx</span>
+                            <span class="file-size">1.5 MB</span>
+                            <i class="fa-solid fa-check-circle text-success"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="pricing-controls" style="margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 20px;">
+                        <div class="form-group" style="width: 100%;">
+                            <label>Chọn Model AI cho Agent 03 (Input Auditor)</label>
+                            <select class="form-control" id="agent0BModel">
+                                <option value="gemini-pro">Gemini 2.5 Pro (Khuyên dùng - Logic sâu)</option>
+                                <option value="gemini-flash">Gemini 2.5 Flash (Tốc độ cao)</option>
+                                <option value="claude">Claude 3.7 Sonnet</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <button class="btn btn-primary" onclick="document.getElementById('auditGrid').style.display='block'">
+                            <i class="fa-solid fa-search"></i> BÓC TÁCH & KIỂM TOÁN ĐẦU VÀO (AGENT 01 + 02 + 03)
+                        </button>
+                    </div>
+
+                    <!-- LƯỚI DATA GRID AUDIT ĐẦU VÀO (HUMAN-IN-THE-LOOP ĐÃ GIA CỐ) -->
+                    <div id="auditGrid" style="display: none;">
+                        <div class="grid-toolbar" style="background: #eef2ff; color: #1e1b4b; padding: 12px 16px; border-radius: 6px; margin-bottom: 12px; border-left: 4px solid #6366f1;">
+                            <div style="font-weight: 600; margin-bottom: 4px;"><i class="fa-solid fa-shield-halved text-primary"></i> BIÊN BẢN KIỂM TOÁN ĐẦU VÀO (AGENT 01, 02 & 03 - MULTI-LLM AUDITED):</div>
+                            <div style="font-size: 0.85rem; color: #475569;">
+                                Đã quét 4 trục kỹ thuật. Phát hiện <strong>1 cảnh báo Bẫy Đơn vị tính (UOM)</strong> và <strong>1 mục cần ánh xạ chủng loại</strong>.
+                                <br><span class="badge" style="background: #dbeafe; color: #1e40af; font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; margin-top: 4px; display: inline-block;">
+                                    <i class="fa-solid fa-lock"></i> Cơ chế phòng thủ: Từ mới chỉ lưu vào Dự án + Gửi hàng đợi Lead phê duyệt Master (Chống đầu độc dữ liệu).
+                                </span>
+                            </div>
+                        </div>
+
+                        <div style="overflow-x: auto;">
+                            <table class="modern-table" style="font-size: 0.85rem;">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40px;">STT</th>
+                                        <th>Tên vật tư & Chủng loại chuẩn</th>
+                                        <th>Quy cách Kích thước</th>
+                                        <th>Vật liệu / PCCC / Phụ kiện</th>
+                                        <th>ĐVT & Kiểm toán UOM</th>
+                                        <th>Số lượng</th>
+                                        <th>Trạng thái Audit</th>
+                                        <th>Hành động (Action)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>
+                                            <strong>Van dập lửa FD gắn động cơ Belimo</strong>
+                                            <div style="color: #64748b; font-size: 0.75rem;">➔ Van dập lửa chữ nhật (FD_RECTANGULAR)</div>
+                                        </td>
+                                        <td><span class="badge" style="background: #f1f5f9;">W=1200, H=500</span></td>
+                                        <td>
+                                            <div><i class="fa-solid fa-fire text-danger"></i> <strong>EI60</strong> | Tôn dày 1.2mm</div>
+                                            <div style="color: #0284c7; font-size: 0.75rem;"><i class="fa-solid fa-bolt"></i> Động cơ điện 24V/220V</div>
+                                        </td>
+                                        <td>Bộ</td>
+                                        <td><strong>10</strong></td>
+                                        <td><span class="status-badge green">PASS</span></td>
+                                        <td><i class="fa-solid fa-check text-success"></i> Đạt</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>
+                                            <strong>Cửa gió nan T kèm phin lọc bụi G4</strong>
+                                            <div style="color: #64748b; font-size: 0.75rem;">➔ Cửa gió nan T (GRILLE_LINEAR)</div>
+                                        </td>
+                                        <td>
+                                            <div>Mặt: <strong>800x200</strong></div>
+                                            <div style="color: #64748b; font-size: 0.75rem;">Cổ: 750x150</div>
+                                        </td>
+                                        <td>
+                                            <div><i class="fa-solid fa-filter text-primary"></i> Phin lọc bụi G4</div>
+                                            <div style="color: #64748b; font-size: 0.75rem;">Sơn tĩnh điện RAL</div>
+                                        </td>
+                                        <td>Bộ</td>
+                                        <td><strong>25</strong></td>
+                                        <td><span class="status-badge green">PASS</span></td>
+                                        <td><i class="fa-solid fa-check text-success"></i> Đạt</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>
+                                            <strong>Cửa louver chắn mưa kèm lưới inox</strong>
+                                            <div style="color: #64748b; font-size: 0.75rem;">➔ Cửa Louver ngoài trời (LOUVER_OUTDOOR)</div>
+                                        </td>
+                                        <td><span class="badge" style="background: #f1f5f9;">2000x1500</span></td>
+                                        <td>
+                                            <div><i class="fa-solid fa-shield text-info"></i> Lưới chắn côn trùng Inox</div>
+                                            <div style="color: #64748b; font-size: 0.75rem;">Nhôm định hình A6063</div>
+                                        </td>
+                                        <td>
+                                            <span style="color: #0284c7; font-weight: 600;">m2</span>
+                                            <div style="font-size: 0.75rem; color: #0284c7;">(~3.0 m2/bộ)</div>
+                                        </td>
+                                        <td><strong>15.0</strong></td>
+                                        <td><span class="status-badge green">PASS</span></td>
+                                        <td><i class="fa-solid fa-check text-success"></i> Đạt</td>
+                                    </tr>
+                                    <tr style="background: #fffbeb;">
+                                        <td>4</td>
+                                        <td>
+                                            <strong>Van lưu lượng VCD tôn mạ kẽm</strong>
+                                            <div style="color: #64748b; font-size: 0.75rem;">➔ Van gió điều chỉnh (VCD_RECTANGULAR)</div>
+                                        </td>
+                                        <td><span class="badge" style="background: #f1f5f9;">800x400</span></td>
+                                        <td>Tôn mạ kẽm Z180 dày 0.75mm</td>
+                                        <td style="color: #b45309; font-weight: 600;">
+                                            <i class="fa-solid fa-triangle-exclamation"></i> m2 (Lệch ĐVT)
+                                        </td>
+                                        <td><strong>12</strong></td>
+                                        <td><span class="status-badge" style="background: #f59e0b; color: #fff;">CẢNH BÁO UOM</span></td>
+                                        <td>
+                                            <button class="btn btn-outline" style="font-size: 0.75rem; padding: 4px 8px;" onclick="resolveUOM(4)">
+                                                Đổi sang Cái/Bộ
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr style="background: #fff1f2;" id="mappingRow">
+                                        <td>5</td>
+                                        <td style="color: #e11d48; font-weight: bold;">
+                                            Cửa nan bầu dục (Mã mới lạ)
+                                            <div style="color: #e11d48; font-size: 0.75rem;">Chưa có trong từ điển Master</div>
+                                        </td>
+                                        <td><span class="badge" style="background: #f1f5f9;">1000x150</span></td>
+                                        <td>Nhôm định hình sơn tĩnh điện</td>
+                                        <td>Bộ</td>
+                                        <td><strong>18</strong></td>
+                                        <td><span class="status-badge" style="background: #e11d48; color: #fff;">CHỜ ÁNH XẠ</span></td>
+                                        <td>
+                                            <select class="form-control" style="border: 2px solid #e11d48; font-size: 0.8rem; padding: 4px 8px;" id="mappingSelect">
+                                                <option value="">-- Chọn chủng loại chuẩn --</option>
+                                                <option value="GRILLE_LINEAR">Cửa gió nan T / nan chữ nhật (Linear Grille)</option>
+                                                <option value="LOUVER_OUTDOOR">Cửa gió ngoài trời chống mưa (Louver)</option>
+                                                <option value="VCD_RECTANGULAR">Van gió điều chỉnh chữ nhật (VCD)</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                            <div style="font-size: 0.8rem; color: #64748b;">
+                                <i class="fa-solid fa-circle-info"></i> Sau khi duyệt, hệ thống sẽ mở khóa Giai đoạn 2 và chuyển giao <strong>JSON_BOQ_Clean</strong> cho <strong>Agent 04, 05, 06 (Workshop BOM Makers)</strong>.
+                            </div>
+                            <button class="btn btn-primary" onclick="confirmMapping()">
+                                <i class="fa-solid fa-check-double"></i> Duyệt Dữ Liệu Đầu Vào & Chuyển Sang GĐ2
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- GIAI ĐOẠN 2: CHẠY QUY TRÌNH TUẦN TỰ -->
+                <div class="card glass-card mt-4" id="stage2Card" style="opacity: 0.5; pointer-events: none;">
+                    <div class="card-header">
+                        <div class="step-indicator">2</div>
+                        <h3>GIAI ĐOẠN 2: QUY TRÌNH CHẾ TẠO BOM & LẬP BÁO GIÁ</h3>
+                    </div>
+                    
+                    <div class="pricing-controls">
+                        <div class="form-group" style="width: 100%; margin-bottom: 15px;">
+                            <label>Chọn bộ giá cơ sở (Master Data Price)</label>
+                            <select class="form-control" id="priceProfile">
+                                <option value="sep2026">Bảng giá Tháng 09/2026 (Mặc định)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="width: 100%;">
+                            <label>Chọn Model AI cho Agent 08 (Independent QA Checker)</label>
+                            <select class="form-control" id="agent2Model">
+                                <option value="gemini-pro">Gemini 2.5 Pro (Khuyên dùng - Soát xét toàn diện)</option>
+                                <option value="claude">Claude 3.7 Sonnet</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Execution Action -->
+                    <div class="action-bar mt-4">
+                        <button class="btn btn-primary btn-lg" id="runStage2Btn" onclick="runPipeline()">
+                            <i class="fa-solid fa-cogs"></i> CHẠY PIPELINE BÁO GIÁ & XUẤT EXCEL
+                        </button>
+                    </div>
+
+                    <!-- Execution Progress (Hidden initially) -->
+                    <div class="execution-panel glass-card hide" id="executionPanel" style="margin-top: 20px;">
+                        <h3>Trạng thái luồng thực thi Tuần tự</h3>
+                        <div class="progress-timeline">
+                            <div class="timeline-item done">
+                                <div class="marker"><i class="fa-solid fa-check"></i></div>
+                                <div class="content">
+                                    <h4>Agent 04, 05, 06 (Workshop BOM Makers) & Agent 07 (Excel Publisher)</h4>
+                                    <p>Đã tính toán BOM chi tiết 3 xưởng (Ống, Van, Cửa) và xuất 2 Phương án Báo giá thành công.</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item done">
+                                <div class="marker"><i class="fa-solid fa-check"></i></div>
+                                <div class="content">
+                                    <h4>Agent 08 (Independent QA Checker)</h4>
+                                    <p>Kiểm toán 3 tầng độc lập: 100% khớp Spec, công thức sống không gãy (QA_PASSED).</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item done">
+                                <div class="marker"><i class="fa-solid fa-file-excel"></i></div>
+                                <div class="content">
+                                    <h4 style="color: #28a745;">Hoàn thành Xuất File Báo Giá</h4>
+                                    <button class="btn btn-outline" style="margin-top: 5px;">Tải Báo Giá (.xlsx)</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function resolveUOM(rowId) {
+            var row = document.querySelector("#auditGrid tbody tr:nth-child(4)");
+            var uomCell = row.cells[4];
+            var statusCell = row.cells[6];
+            var actionCell = row.cells[7];
+            
+            uomCell.innerHTML = "Bộ";
+            uomCell.style.color = "";
+            statusCell.innerHTML = '<span class="status-badge green">PASS</span>';
+            actionCell.innerHTML = '<i class="fa-solid fa-check text-success"></i> Đã quy đổi';
+            row.style.background = "#fff";
+            alert("Đã quy đổi ĐVT dòng 4 từ 'm2' sang 'Bộ' để tính theo Đơn giá Cái/Bộ chuẩn.");
+        }
+
+        function confirmMapping() {
+            var val = document.getElementById("mappingSelect").value;
+            if(!val) {
+                alert("Vui lòng chọn ánh xạ chủng loại cho dòng bị cảnh báo!");
+                return;
+            }
+            
+            // Thông báo phòng thủ 2 cấp
+            alert("✓ XÁC NHẬN AN TOÀN:\n- Đã lưu ánh xạ 'Cửa nan bầu dục' -> '" + val + "' vào Bộ nhớ Dự án (Project Memory).\n- Đã gửi đề xuất vào Hàng đợi Phê duyệt Master (pending_approval_queue.json) để Lead duyệt sau.\n- Đã đóng gói JSON_BOQ_Clean. Mở khóa Giai đoạn 2!");
+            
+            // Cập nhật trạng thái dòng 5
+            var row5 = document.getElementById("mappingRow");
+            row5.cells[6].innerHTML = '<span class="status-badge green">PASS</span>';
+            row5.cells[7].innerHTML = '<i class="fa-solid fa-check text-success"></i> Đã gán vào ' + val;
+            row5.style.background = "#fff";
+            
+            // Mở khóa Giai đoạn 2
+            var stage2 = document.getElementById("stage2Card");
+            stage2.style.opacity = "1";
+            stage2.style.pointerEvents = "auto";
+            stage2.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function runPipeline() {
+            var btn = document.getElementById("runStage2Btn");
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> PIPELINE ĐANG CHẾ TẠO BOM & TÍNH GIÁ...';
+            btn.disabled = true;
+            
+            var panel = document.getElementById("executionPanel");
+            panel.classList.remove("hide");
+            
+            // Scroll to panel
+            panel.scrollIntoView({ behavior: 'smooth' });
+            
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> ĐÃ HOÀN TẤT BÁO GIÁ DỰ ÁN';
+                btn.classList.replace('btn-primary', 'btn-success');
+                btn.style.background = '#10b981';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

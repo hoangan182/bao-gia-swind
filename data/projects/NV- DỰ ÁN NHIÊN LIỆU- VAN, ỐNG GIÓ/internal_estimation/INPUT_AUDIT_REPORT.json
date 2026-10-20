@@ -1,0 +1,538 @@
+{
+  "project_name": "NV- DỰ ÁN NHIÊN LIỆU- VAN, ỐNG GIÓ",
+  "model_used": "Gemini 2.5 Pro",
+  "total_items": 35,
+  "pass_items": 35,
+  "requires_mapping_items": 0,
+  "critical_errors": [
+    {
+      "row": 37,
+      "item": "Louver gió thải kèm LCCT 700x100",
+      "issue": "Số lượng không hợp lệ hoặc bị trống ('0.0'). Không thể lập dự toán."
+    }
+  ],
+  "warnings": [],
+  "items_detail": [
+    {
+      "row_index": 20,
+      "raw_name": "Miệng gió thải 200x100mm",
+      "parsed_dims": {
+        "w": 200.0,
+        "h": 100.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 21,
+      "raw_name": "Louver gió kèm LCCT 600x300",
+      "parsed_dims": {
+        "w": 600.0,
+        "h": 300.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 22,
+      "raw_name": "Louver gió kèm LCCT 1500x500",
+      "parsed_dims": {
+        "w": 1500.0,
+        "h": 500.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 23,
+      "raw_name": "Miệng gió thải 450x200",
+      "parsed_dims": {
+        "w": 450.0,
+        "h": 200.0
+      },
+      "raw_qty": 5.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 24,
+      "raw_name": "Miệng gió tươi 750x350",
+      "parsed_dims": {
+        "w": 750.0,
+        "h": 350.0
+      },
+      "raw_qty": 3.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 25,
+      "raw_name": "Miệng gió tươi 450x200",
+      "parsed_dims": {
+        "w": 450.0,
+        "h": 200.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 29,
+      "raw_name": "Luover gió tươi 200x200 kèm lưới chắn côn trùng + VCD",
+      "parsed_dims": {
+        "w": 200.0,
+        "h": 200.0
+      },
+      "raw_qty": 8.0,
+      "raw_unit": "cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 30,
+      "raw_name": "Miệng gió cấp 900x500 kèm OBD",
+      "parsed_dims": {
+        "w": 900.0,
+        "h": 500.0
+      },
+      "raw_qty": 6.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 31,
+      "raw_name": "Miệng gió cấp 400x300 kèm OBD",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 300.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 32,
+      "raw_name": "Miệng gió cấp 600x400 kèm OBD",
+      "parsed_dims": {
+        "w": 600.0,
+        "h": 400.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 36,
+      "raw_name": "Louver gió thải kèm LCCT 200x100",
+      "parsed_dims": {
+        "w": 200.0,
+        "h": 100.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 37,
+      "raw_name": "Louver gió thải kèm LCCT 700x100",
+      "parsed_dims": {
+        "w": 700.0,
+        "h": 100.0
+      },
+      "raw_qty": 0.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 38,
+      "raw_name": "Miệng gió thải WC 200x200 kèm OBD",
+      "parsed_dims": {
+        "w": 200.0,
+        "h": 200.0
+      },
+      "raw_qty": 4.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 42,
+      "raw_name": "Van chặn lửa FD100x100",
+      "parsed_dims": {
+        "w": 100.0,
+        "h": 100.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 43,
+      "raw_name": "Louver gió tươi kèm LCCT 400x150",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 150.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 44,
+      "raw_name": "VCD 150",
+      "parsed_dims": {
+        "d": 150.0
+      },
+      "raw_qty": 5.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 48,
+      "raw_name": "Van chặn lửa FD150x100",
+      "parsed_dims": {
+        "w": 150.0,
+        "h": 100.0
+      },
+      "raw_qty": 5.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 49,
+      "raw_name": "Louver gió thải kèm LCCT 400x150",
+      "parsed_dims": {
+        "w": 400.0,
+        "h": 150.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 50,
+      "raw_name": "Miệng gió hút mùi WC 200x200",
+      "parsed_dims": {
+        "w": 200.0,
+        "h": 200.0
+      },
+      "raw_qty": 3.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 51,
+      "raw_name": "Miệng gió hút mùi WC 250x250",
+      "parsed_dims": {
+        "w": 250.0,
+        "h": 250.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 55,
+      "raw_name": "Louver gió thải kèm LCCT 700x100",
+      "parsed_dims": {
+        "w": 700.0,
+        "h": 100.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 56,
+      "raw_name": "Miệng gió thải WC 200x200 kèm OBD",
+      "parsed_dims": {
+        "w": 200.0,
+        "h": 200.0
+      },
+      "raw_qty": 4.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 60,
+      "raw_name": "Van chặn lửa FD 100x100",
+      "parsed_dims": {
+        "w": 100.0,
+        "h": 100.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 61,
+      "raw_name": "Van chặn lửa FD 200x200",
+      "parsed_dims": {
+        "w": 200.0,
+        "h": 200.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 62,
+      "raw_name": "Louver gió tươi kèm LCCT 800x250",
+      "parsed_dims": {
+        "w": 800.0,
+        "h": 250.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 63,
+      "raw_name": "VCD 150",
+      "parsed_dims": {
+        "d": 150.0
+      },
+      "raw_qty": 7.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 67,
+      "raw_name": "Van chặn lửa FD550x200",
+      "parsed_dims": {
+        "w": 550.0,
+        "h": 200.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 68,
+      "raw_name": "Van chặn lửa FD250x100",
+      "parsed_dims": {
+        "w": 250.0,
+        "h": 100.0
+      },
+      "raw_qty": 3.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 69,
+      "raw_name": "Van chặn lửa FD150x100",
+      "parsed_dims": {
+        "w": 150.0,
+        "h": 100.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 70,
+      "raw_name": "Louver gió thải kèm LCCT 250x150",
+      "parsed_dims": {
+        "w": 250.0,
+        "h": 150.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 71,
+      "raw_name": "Miệng gió thải WC 200x200 kèm OBD",
+      "parsed_dims": {
+        "w": 200.0,
+        "h": 200.0
+      },
+      "raw_qty": 3.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 75,
+      "raw_name": "Louver gió tươi kèm LCCT 300x150",
+      "parsed_dims": {
+        "w": 300.0,
+        "h": 150.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 76,
+      "raw_name": "VCD 150",
+      "parsed_dims": {
+        "d": 150.0
+      },
+      "raw_qty": 4.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 80,
+      "raw_name": "Louver gió tươi kèm LCCT 300x150",
+      "parsed_dims": {
+        "w": 300.0,
+        "h": 150.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "Cái",
+      "standard_id": "CUA_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 81,
+      "raw_name": "VCD 150",
+      "parsed_dims": {
+        "d": 150.0
+      },
+      "raw_qty": 5.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+    "MANUFACTURING": {
+        "labor_rate": 0.25,
+        "overhead_rate": 0.10,
+        "margin": 0.18,
+        "categories": ["ONG_GIO", "CUA_GIO", "VAN_GIO", "CANVAS", "TIEU_AM"],
+        "description": "Hàng sản xuất cơ khí tại xưởng: 25% nhân công, 10% xưởng, 18% margin"
+    },
+    "COMMERCIAL": {
+        "labor_rate": 0.0,
+        "overhead_rate": 0.02,
+        "margin": 0.10,
+        "categories": ["THUONG_MAI", "ONG_MEM", "KHAC"],
+        "description": "Hàng thương mại mua đi bán lại: 0% nhân công sản xuất, 2% lưu kho bốc xếp, 10% margin"
+    }
+}

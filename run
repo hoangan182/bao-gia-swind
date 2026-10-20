@@ -1,0 +1,2 @@
+#!/bin/bash
+python3 src/swind_master_runner.py

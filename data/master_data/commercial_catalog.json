@@ -1,0 +1,64 @@
+[
+    {
+        "product_code": "FAN_AXIAL",
+        "name": "Quạt hướng trục",
+        "keywords": [
+            "quạt",
+            "fan",
+            "cef",
+            "sef"
+        ]
+    },
+    {
+        "product_code": "AC_UNIT",
+        "name": "Máy lạnh (PAU, FCU, ODU)",
+        "keywords": [
+            "pau",
+            "fcu",
+            "odu",
+            "máy lạnh",
+            "dàn lạnh",
+            "dàn nóng"
+        ]
+    },
+    {
+        "product_code": "PIPE_COPPER",
+        "name": "Ống đồng & phụ kiện thương mại",
+        "keywords": [
+            "ống đồng",
+            "ông đồng",
+            "ống nước",
+            "upvc",
+            "bẫy nước",
+            "cửa sổ",
+            "vật tư phụ",
+            "phụ kiện",
+            "lớp chống cháy",
+            "nghiệm thu",
+            "cắt đục",
+            "chống cháy lan",
+            "lưới bảo vệ"
+        ]
+    },
+    {
+        "product_code": "VALVE_WATER",
+        "name": "Van nước",
+        "keywords": [
+            "van nước",
+            "van chặn",
+            "van cân bằng",
+            "van bướm",
+            "van cổng",
+            "van bi",
+            "van cầu",
+            "van xả khí",
+            "van xả cặn",
+            "van xả nước",
+            "van giảm áp",
+            "van an toàn",
+            "van 1 chiều nước",
+            "van điện từ",
+            "y lọc"
+        ]
+    }
+]

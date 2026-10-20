@@ -1,0 +1,888 @@
+[
+    {
+        "MAT_ID": "MAT-STEEL-DONGBU-0.50",
+        "Price": 26000.0,
+        "Price_m2": 102050.0
+    },
+    {
+        "MAT_ID": "MAT-STEEL-DONGBU-0.60",
+        "Price": 26000.0,
+        "Price_m2": 122460.0
+    },
+    {
+        "MAT_ID": "MAT-STEEL-DONGBU-0.80",
+        "Price": 26000.0,
+        "Price_m2": 163280.0
+    },
+    {
+        "MAT_ID": "MAT-STEEL-DONGBU-1.00",
+        "Price": 26000.0,
+        "Price_m2": 204100.0
+    },
+    {
+        "MAT_ID": "MAT-STEEL-DONGBU-1.20",
+        "Price": 26000.0,
+        "Price_m2": 244920.0
+    },
+    {
+        "MAT_ID": "MAT-STEEL-DONGBU-1.50",
+        "Price": 26000.0,
+        "Price_m2": 306150.0
+    },
+    {
+        "MAT_ID": "MAT-STEEL-DONGBU-2.00",
+        "Price": 26000.0,
+        "Price_m2": 408200.0
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.35",
+        "Price": 23800.0,
+        "Price_m2": 56795.454545454544
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.40",
+        "Price": 23550.0,
+        "Price_m2": 66368.18181818181
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.42",
+        "Price": 23400.0,
+        "Price_m2": 69313.63636363635
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.47",
+        "Price": 23200.0,
+        "Price_m2": 63636.36363636363
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.50",
+        "Price": 23200.0,
+        "Price_m2": 81903.0303030303
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.55",
+        "Price": 23000.0,
+        "Price_m2": 89386.36363636363
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.58",
+        "Price": 23000.0,
+        "Price_m2": 71212.12121212122
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.60",
+        "Price": 22850.0,
+        "Price_m2": 96939.39393939392
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.64",
+        "Price": 22800.0,
+        "Price_m2": 103290.90909090909
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.70",
+        "Price": 22700.0,
+        "Price_m2": 112468.18181818181
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.75",
+        "Price": 22600.0,
+        "Price_m2": 90909.0909090909
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.95",
+        "Price": 22500.0,
+        "Price_m2": 111363.63636363635
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-1.15",
+        "Price": 22400.0,
+        "Price_m2": 128787.8787878788
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-1.20",
+        "Price": 22400.0,
+        "Price_m2": 190909.09090909088
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-0.48",
+        "Price": 23664.19,
+        "Price_m2": 89166.66666666667
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-0.58",
+        "Price": 21597.48,
+        "Price_m2": 98333.33333333334
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-0.75",
+        "Price": 21941.0,
+        "Price_m2": 129166.66666666667
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-0.95",
+        "Price": 20897.59,
+        "Price_m2": 155833.33333333334
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-1.15",
+        "Price": 20586.39,
+        "Price_m2": 185833.33333333334
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-1.20",
+        "Price": 20586.39,
+        "Price_m2": 185833.33333333334
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-1.38",
+        "Price": 21923.75,
+        "Price_m2": 237500.0
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-1.48",
+        "Price": 20442.42,
+        "Price_m2": 237500.0
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-1.50",
+        "Price": 20442.42,
+        "Price_m2": 237500.0
+    },
+    {
+        "MAT_ID": "MAT-STEEL-HOASEN-0.48",
+        "Price": 22115.98,
+        "Price_m2": 83333.0
+    },
+    {
+        "MAT_ID": "MAT-STEEL-HOASEN-0.58",
+        "Price": 20865.36,
+        "Price_m2": 95000.0
+    },
+    {
+        "MAT_ID": "MAT-STEEL-HOASEN-0.75",
+        "Price": 20460.34,
+        "Price_m2": 120450.0
+    },
+    {
+        "MAT_ID": "MAT-STEEL-HOASEN-0.95",
+        "Price": 20003.58,
+        "Price_m2": 149166.6666666667
+    },
+    {
+        "MAT_ID": "MAT-STEEL-HOASEN-1.15",
+        "Price": 19764.78,
+        "Price_m2": 178416.6666666667
+    },
+    {
+        "MAT_ID": "MAT-STEEL-HOA_SEN-1.15",
+        "Price": 19764.78,
+        "Price_m2": 178416.6666666667
+    },
+    {
+        "MAT_ID": "MAT-STEEL-HOASEN-1.50",
+        "Price": 18966.74,
+        "Price_m2": 223333.33333333334
+    },
+    {
+        "MAT_ID": "MAT-STEEL-BLUESCOPE-0.47",
+        "Price": 19714.63,
+        "Price_m2": 72727.27272727272
+    },
+    {
+        "MAT_ID": "MAT-STEEL-BLUESCOPE-0.57",
+        "Price": 20319.42,
+        "Price_m2": 90909.0909090909
+    },
+    {
+        "MAT_ID": "MAT-STEEL-BLUESCOPE-0.77",
+        "Price": 19926.31,
+        "Price_m2": 120454.54545454544
+    },
+    {
+        "MAT_ID": "MAT-STEEL-BLUESCOPE-0.95",
+        "Price": 20013.74,
+        "Price_m2": 149242.42424242425
+    },
+    {
+        "MAT_ID": "MAT-STEEL-BLUESCOPE-1.15",
+        "Price": 19973.75,
+        "Price_m2": 180303.0303030303
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS304-0-5",
+        "Price": 78000.0,
+        "Price_m2": 306150.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS304-0-6",
+        "Price": 78000.0,
+        "Price_m2": 367380.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS304-0-7",
+        "Price": 78000.0,
+        "Price_m2": 428610.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS304-0-8",
+        "Price": 78000.0,
+        "Price_m2": 489840.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS304-0-9",
+        "Price": 78000.0,
+        "Price_m2": 551070.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS304-1-0",
+        "Price": 78000.0,
+        "Price_m2": 612300.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS304-1-2",
+        "Price": 78000.0,
+        "Price_m2": 734760.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS430-0-5",
+        "Price": 45000.0,
+        "Price_m2": 176625.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS430-0-6",
+        "Price": 45000.0,
+        "Price_m2": 211950.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS430-0-7",
+        "Price": 45000.0,
+        "Price_m2": 247274.99999999997
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS430-0-8",
+        "Price": 45000.0,
+        "Price_m2": 282600.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS430-0-9",
+        "Price": 45000.0,
+        "Price_m2": 317925.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS430-1-0",
+        "Price": 45000.0,
+        "Price_m2": 353250.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS430-1-1",
+        "Price": 45000.0,
+        "Price_m2": 388575.00000000006
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS430-1-2",
+        "Price": 45000.0,
+        "Price_m2": 423900.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS201-0-4",
+        "Price": 48000.0,
+        "Price_m2": 151680.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS201-0-5",
+        "Price": 48000.0,
+        "Price_m2": 189600.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS201-0-6",
+        "Price": 48000.0,
+        "Price_m2": 227520.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS201-0-7",
+        "Price": 48000.0,
+        "Price_m2": 265440.0
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS201-0-8",
+        "Price": 48000.0,
+        "Price_m2": 303360.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TRUC-SUS-201-D10",
+        "Price": 50000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TRUC-SUS-201-D12",
+        "Price": 72000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TRUC-SUS-201-D14",
+        "Price": 98000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-BAC-DONG-D10",
+        "Price": 6000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-BAC-DONG-D12",
+        "Price": 8000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-BAC-DONG-D14",
+        "Price": 10000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TAY-GAT-1-1M2",
+        "Price": 100000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-GIANG-TAY-GAT-1",
+        "Price": 20000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-GIANG-TAY-GAT-2",
+        "Price": 25000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-CAU-CHI-1-400X400",
+        "Price": 220000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-CAU-CHI-2-400X400",
+        "Price": 300000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TRUC-VIT-1",
+        "Price": 100000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-BAC-DONG-8",
+        "Price": 4000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-BANH-RANG-VAN-NHOM",
+        "Price": 35000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TAY-VAN-NHUA-1M2",
+        "Price": 165000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TAY-VAN-INOX-1M2",
+        "Price": 195000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TAY-VAN-NHOM",
+        "Price": 260000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-GIOANG-CAO-SU-VAN-NHOM",
+        "Price": 6500.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TAY-GAT-NHO",
+        "Price": 50000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TAY-GAT-TRUNG-BINH",
+        "Price": 75000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-MOTOR-NENUTEC-THUY-SY-LT-300X300",
+        "Price": 1750000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-MOTOR-NENUTEC-THUY-SY-GT-300X300",
+        "Price": 1950000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-MOTOR-NENUTEC-THUY-SY-1M2",
+        "Price": 2200000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-MOTOR-VAN-DAP-LUA-CAM-BIEN",
+        "Price": 4200000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-MOTOR-VAN-AP-SUAT",
+        "Price": 4200000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-CAU-CHI-TRUNG-QUOC",
+        "Price": 65000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-CAU-CHI-USA-1-400X400",
+        "Price": 105000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-CAU-CHI-USA-2-400X400",
+        "Price": 126000.0
+    },
+    {
+        "MAT_ID": "MAT-FLANGE-L-30X30X2-CT38-L-6-M",
+        "Price": 30000.0
+    },
+    {
+        "MAT_ID": "MAT-FLANGE-L-30X30X3-CT38-L-6-M",
+        "Price": 35000.0
+    },
+    {
+        "MAT_ID": "MAT-FLANGE-L-40X40X4-CT39-L-6-M",
+        "Price": 45000.0
+    },
+    {
+        "MAT_ID": "MAT-FLANGE-L-50X50X4-CT40-L-6-M",
+        "Price": 55000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-LUOI-NHUA",
+        "Price": 25000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-MOTOR-NENUTEC-THUY-SY-LT-300X300",
+        "Price": 1750000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-MOTOR-NENUTEC-THUY-SY-GT-300X300",
+        "Price": 1950000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-MOTOR-NENUTEC-THUY-SY-1M2",
+        "Price": 2200000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-MOTOR-VAN-DAP-LUA-CAM-BIEN",
+        "Price": 4200000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-MOTOR-VAN-AP-SUAT",
+        "Price": 4200000.0
+    },
+    {
+        "MAT_ID": "MAT-ALU-NAN-BD",
+        "Price": 126000.0
+    },
+    {
+        "MAT_ID": "MAT-ALU-NAN-T",
+        "Price": 126000.0
+    },
+    {
+        "MAT_ID": "MAT-ALU-KHUNG-BD",
+        "Price": 126000.0
+    },
+    {
+        "MAT_ID": "MAT-ALU-KHUNG-BD-Z-MONG",
+        "Price": 126000.0
+    },
+    {
+        "MAT_ID": "MAT-ALU-NAN-Z-DAY",
+        "Price": 126000.0
+    },
+    {
+        "MAT_ID": "MAT-ALU-NAN-Z-MONG",
+        "Price": 126000.0
+    },
+    {
+        "MAT_ID": "MAT-ALU-KHUNG-Z-2-LOP",
+        "Price": 126000.0
+    },
+    {
+        "MAT_ID": "MAT-ALU-NAN-OBD",
+        "Price": 133000.0
+    },
+    {
+        "MAT_ID": "MAT-ALU-KHUNG-OBD",
+        "Price": 133000.0
+    },
+    {
+        "MAT_ID": "MAT-ALU-NAN-BD-EUS02",
+        "Price": 120000.0
+    },
+    {
+        "MAT_ID": "MAT-ALU-KHUNG-BD-EUS01",
+        "Price": 120000.0
+    },
+    {
+        "MAT_ID": "MAT-ALU-NAN-Z-EUS05",
+        "Price": 120000.0
+    },
+    {
+        "MAT_ID": "MAT-ALU-KHUNG-Z-EUS03",
+        "Price": 120000.0
+    },
+    {
+        "MAT_ID": "MAT-ALU-NAN-OBD-EUS20",
+        "Price": 130000.0
+    },
+    {
+        "MAT_ID": "MAT-ALU-KHUNG-OBD-EUS10",
+        "Price": 130000.0
+    },
+    {
+        "MAT_ID": "MAT-PAINT-POWDER",
+        "Price": 75000.0
+    },
+    {
+        "MAT_ID": "MAT-DOOR-ACCESSORY",
+        "Price": 15000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NACA-2-05",
+        "Price": 1250000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NACA-2-10",
+        "Price": 1732500.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NACA-2-20",
+        "Price": 2016000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NACA-2-40",
+        "Price": 3549000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NTC-831",
+        "Price": 800000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NACM-1-2-05",
+        "Price": 1785000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NACM-1-1-10",
+        "Price": 2226000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NACM-1-1-20",
+        "Price": 3087000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NACM-1-1-40",
+        "Price": 4515000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-MODEL-NPG-1-DIEU-KHI",
+        "Price": 1260000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-MODEL-NTC-843-DIEU-K",
+        "Price": 1512000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-SAFA-1-05S",
+        "Price": 3108000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-SAFA-1-08S",
+        "Price": 3507000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-SAFA-2-05S",
+        "Price": 3255000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-SAFA-2-08S",
+        "Price": 3696000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-CAM-BIEN-NHIET-BANG-",
+        "Price": 300000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-MODEL-B",
+        "Price": 70000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-MODEL-A",
+        "Price": 80000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-THUY-TINH-KHONG-MAT-12",
+        "Price": 13000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-THUY-TINH-CO-BAC-T12-13",
+        "Price": 18500.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-THUY-TINH-KHONG-MAT-14",
+        "Price": 24000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-THUY-TINH-CO-BAC-T24-15",
+        "Price": 28000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-THUY-TINH-KHONG-MAT-16",
+        "Price": 32000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-THUY-TINH-CO-MAT-BAC-17",
+        "Price": 37000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-KHOANG-TAM-T40-19",
+        "Price": 215000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-KHOANG-TAM-T50-20",
+        "Price": 240000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-KHOANG-T60-D50-21",
+        "Price": 260000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-KHOANG-T80-D50-22",
+        "Price": 340000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-KHOANG-T100-D50-23",
+        "Price": 378000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-GOM-BAO-610-X7200-X-25",
+        "Price": 280000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-GOM-HOP-610-X7200-X-26",
+        "Price": 360000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-GOM-HOP-610-X7200-X-27",
+        "Price": 465000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-GOM-HOP-610-X7200-X-28",
+        "Price": 970000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-GOM-DANG-TAM-600-X-9-29",
+        "Price": 720000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-GOM-DANG-ROI-30",
+        "Price": 370000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-MUT-TRUNG-3CM-KICH-THUOC-32",
+        "Price": 260000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-MUT-TRUNG-5CM-KICH-THUOC-33",
+        "Price": 360000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-MUT-GAI-5CM-KICH-THUOC-TA-34",
+        "Price": 330000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-XOP-XPS-DAY-25MM-KICH-THU-35",
+        "Price": 72000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-VAI-THUY-TINH-36",
+        "Price": 85000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-TON-LO-D6-38",
+        "Price": 130000.0
+    },
+    {
+        "MAT_ID": "MAT-INSUL-TON-LO-D10-40",
+        "Price": 130000.0
+    },
+    {
+        "MAT_ID": "CANVAS_FIRE_RESISTANT",
+        "Price": 57600.0
+    },
+    {
+        "MAT_ID": "ROCKWOOL_50MM_50KG",
+        "Price": 65000.0
+    },
+    {
+        "MAT_ID": "GLASS_CLOTH",
+        "Price": 15000.0
+    },
+    {
+        "MAT_ID": "PERFORATED_SHEET",
+        "Price": 55000.0
+    },
+    {
+        "MAT_ID": "SUPERLON_19MM",
+        "Price": 220000.0
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D100_NON_INSUL",
+        "Price": 55000.0
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D150_NON_INSUL",
+        "Price": 70000.0
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D200_NON_INSUL",
+        "Price": 99500.0
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D250_NON_INSUL",
+        "Price": 115000.0
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D300_NON_INSUL",
+        "Price": 135000.0
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D350_NON_INSUL",
+        "Price": 195000.0
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D100_INSUL",
+        "Price": 130000.0
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D150_INSUL",
+        "Price": 165000.0
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D200_INSUL",
+        "Price": 190000.0
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D250_INSUL",
+        "Price": 245000.0
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D300_INSUL",
+        "Price": 245000.0
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D350_INSUL",
+        "Price": 280000.0
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D400_NON_INSUL",
+        "Price": 225000.0
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D400_INSUL",
+        "Price": 320000.0
+    },
+    {
+        "MAT_ID": "MAT-FIREBOARD-10MM-BODY",
+        "Price": 518500.0
+    },
+    {
+        "MAT_ID": "MAT-FIREBOARD-20MM-BLADE",
+        "Price": 592600.0
+    },
+    {
+        "MAT_ID": "MAT-FIREBOARD-10MM-BLADE",
+        "Price": 518500.0
+    },
+    {
+        "MAT_ID": "MAT-INSULATION-EI-DAMPER",
+        "Price": 518500.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-FSLF24",
+        "Price": 3700000.0,
+        "Purchase_Price": 3315700.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-BFN24",
+        "Price": 3700000.0,
+        "Purchase_Price": 2973700.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-BF24",
+        "Price": 5500000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-HONEYWELL",
+        "Price": 3400000.0,
+        "Purchase_Price": 2850000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-SWIND-VIWECO",
+        "Price": 1600000.0,
+        "Purchase_Price": 1312500.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-KLB-V6006FS500S",
+        "Price": 1600000.0,
+        "Purchase_Price": 1312500.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-5NM",
+        "Price": 2200000.0,
+        "Purchase_Price": 1650000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-10NM",
+        "Price": 2800000.0,
+        "Purchase_Price": 2098000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-20NM",
+        "Price": 3150000.0,
+        "Purchase_Price": 2472500.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-HOP-LO-XO",
+        "Price": 60000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-SILICON-BULONG-VIT",
+        "Price": 40000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TAY-GAT-CAU-CHI-1",
+        "Price": 150000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TAY-GAT-CAU-CHI-2",
+        "Price": 225000.0
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-LO-XO-DOI",
+        "Price": 4000.0
+    },
+    {
+        "MAT_ID": "ECCENTRIC_SHAFT",
+        "Price": 45000
+    },
+    {
+        "MAT_ID": "MAT-MESH-INOX-304",
+        "Price": 150000.0
+    },
+    {
+        "MAT_ID": "MAT-ALU-EGGCRATE-CORE",
+        "Price": 750000.0
+    },
+    {
+        "MAT_ID": "MAT-FILTER-G4",
+        "Price": 220000.0
+    },
+    {
+        "MAT_ID": "MAT-THUONG_MAI-LOP_CHONG_CHAY_EI30",
+        "Price": 450000.0
+    },
+    {
+        "MAT_ID": "MAT-THUONG_MAI-LOP_CHONG_CHAY_EI60",
+        "Price": 550000.0
+    },
+    {
+        "MAT_ID": "MAT-THUONG_MAI-LOP_CHONG_CHAY_EI120",
+        "Price": 700000.0
+    },
+    {
+        "MAT_ID": "MAT-THUONG_MAI-LUOI_BAO_VE",
+        "Price": 150000.0
+    }
+]

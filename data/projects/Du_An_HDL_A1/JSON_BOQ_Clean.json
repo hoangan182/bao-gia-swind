@@ -1,0 +1,93 @@
+{
+  "batch_id": "BATCH_01",
+  "project_name": "Du_An_HDL_A1",
+  "total_items": 6,
+  "items": [
+    {
+      "row_id": 1,
+      "raw_text": "Van dập lửa FD tôn dày 1.2mm đạt EI60 gắn động cơ Belimo",
+      "category": "VAN_GIO",
+      "product_code": "FD_RECTANGULAR",
+      "w": 1200,
+      "h": 500,
+      "l": null,
+      "qty": 10,
+      "unit": "Bộ",
+      "accessories": ["Động cơ điện 24V/220V"],
+      "finish": "Tôn mạ kẽm tiêu chuẩn",
+      "status": "APPROVED_CLEAN"
+    },
+    {
+      "row_id": 2,
+      "raw_text": "Cửa gió nan T sơn tĩnh điện kèm phin lọc bụi G4",
+      "category": "CUA_GIO",
+      "product_code": "GRILLE_LINEAR",
+      "w": 800,
+      "h": 200,
+      "l": null,
+      "qty": 25,
+      "unit": "Bộ",
+      "accessories": ["Phin lọc bụi G4/Nylon", "Sơn tĩnh điện theo màu kiến trúc"],
+      "finish": "Sơn tĩnh điện",
+      "status": "APPROVED_CLEAN"
+    },
+    {
+      "row_id": 3,
+      "raw_text": "Cửa louver chắn mưa kèm lưới côn trùng inox",
+      "category": "CUA_GIO",
+      "product_code": "LOUVER_OUTDOOR",
+      "w": 2000,
+      "h": 1500,
+      "l": null,
+      "qty": 15.0,
+      "unit": "m2",
+      "accessories": ["Lưới chắn côn trùng Inox"],
+      "finish": "Tôn mạ kẽm tiêu chuẩn",
+      "status": "APPROVED_CLEAN"
+    },
+    {
+      "row_id": 4,
+      "raw_text": "Van lưu lượng VCD tôn mạ kẽm",
+      "category": "VAN_GIO",
+      "product_code": "VCD_RECTANGULAR",
+      "w": 800,
+      "h": 400,
+      "l": null,
+      "qty": 12,
+      "unit": "Bộ",
+      "note": "Xác nhận từ User: Kích thước 800x400 nhỏ (<1m2), chuyển đổi đơn vị từ m2 sang Bộ.",
+      "accessories": [],
+      "finish": "Tôn mạ kẽm tiêu chuẩn",
+      "status": "APPROVED_CLEAN"
+    },
+    {
+      "row_id": 5,
+      "raw_text": "Cửa nan bầu dục (mã mới lạ chưa có trong DB)",
+      "category": "CUA_GIO",
+      "product_code": "GRILLE_LINEAR",
+      "w": 1000,
+      "h": 150,
+      "l": null,
+      "qty": 18,
+      "unit": "Bộ",
+      "accessories": [],
+      "finish": "Tôn mạ kẽm tiêu chuẩn",
+      "status": "APPROVED_CLEAN"
+    },
+    {
+      "row_id": 6,
+      "raw_text": "Van chặn lửa cầu chì",
+      "category": "VAN_GIO",
+      "product_code": "FD_ROUND",
+      "w": 250,
+      "h": 250,
+      "l": null,
+      "qty": 1,
+      "unit": "Cái",
+      "note": "Xác nhận từ User: Vật tư PCCC cần thiết, tạm tính 1 Cái và sẽ đánh dấu trong file excel.",
+      "accessories": [],
+      "finish": "Tôn mạ kẽm tiêu chuẩn",
+      "status": "APPROVED_CLEAN"
+    }
+  ]
+}

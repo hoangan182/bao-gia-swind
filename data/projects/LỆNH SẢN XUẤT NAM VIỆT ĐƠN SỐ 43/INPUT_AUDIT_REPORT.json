@@ -1,0 +1,411 @@
+{
+  "project_name": "LỆNH SẢN XUẤT NAM VIỆT ĐƠN SỐ 43",
+  "model_used": "Gemini 2.5 Pro",
+  "total_items": 24,
+  "pass_items": 22,
+  "requires_mapping_items": 2,
+  "critical_errors": [],
+  "warnings": [
+    {
+      "row": 16,
+      "item": "Van FD 1000x1200xL200",
+      "issue": "Van gió quá khổ (1000.0x1200.0). Theo tiêu chuẩn kỹ thuật cần chia nhiều khoang/modul hoặc tăng độ dày tôn."
+    },
+    {
+      "row": 18,
+      "item": "Van FD 1250x1000xL200",
+      "issue": "Van gió quá khổ (1250.0x1000.0). Theo tiêu chuẩn kỹ thuật cần chia nhiều khoang/modul hoặc tăng độ dày tôn."
+    },
+    {
+      "row": 19,
+      "item": "Van FD 1350x900xL200",
+      "issue": "Van gió quá khổ (1350.0x900.0). Theo tiêu chuẩn kỹ thuật cần chia nhiều khoang/modul hoặc tăng độ dày tôn."
+    },
+    {
+      "row": 20,
+      "item": "Van FD 1350x900xL300",
+      "issue": "Van gió quá khổ (1350.0x900.0). Theo tiêu chuẩn kỹ thuật cần chia nhiều khoang/modul hoặc tăng độ dày tôn."
+    },
+    {
+      "row": 21,
+      "item": "Van FD 1400x1100xL200",
+      "issue": "Van gió quá khổ (1400.0x1100.0). Theo tiêu chuẩn kỹ thuật cần chia nhiều khoang/modul hoặc tăng độ dày tôn."
+    },
+    {
+      "row": 22,
+      "item": "Van FD 1800x700xL200",
+      "issue": "Van gió quá khổ (1800.0x700.0). Theo tiêu chuẩn kỹ thuật cần chia nhiều khoang/modul hoặc tăng độ dày tôn."
+    },
+    {
+      "row": 25,
+      "item": "Van FD 800x1550xL200",
+      "issue": "Van gió quá khổ (800.0x1550.0). Theo tiêu chuẩn kỹ thuật cần chia nhiều khoang/modul hoặc tăng độ dày tôn."
+    },
+    {
+      "row": 42,
+      "item": "Chi phí kiểm định",
+      "issue": "Không bóc tách được kích thước (W, H hoặc D). Cần bổ sung quy cách."
+    },
+    {
+      "row": 43,
+      "item": "Vận chuyển",
+      "issue": "Không bóc tách được kích thước (W, H hoặc D). Cần bổ sung quy cách."
+    }
+  ],
+  "items_detail": [
+    {
+      "row_index": 16,
+      "raw_name": "Van FD 1000x1200xL200",
+      "parsed_dims": {
+        "w": 1000.0,
+        "h": 1200.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": "EI120"
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 17,
+      "raw_name": "Van FD 1200x700xL200",
+      "parsed_dims": {
+        "w": 1200.0,
+        "h": 700.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": "EI120"
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 18,
+      "raw_name": "Van FD 1250x1000xL200",
+      "parsed_dims": {
+        "w": 1250.0,
+        "h": 1000.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": "EI120"
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 19,
+      "raw_name": "Van FD 1350x900xL200",
+      "parsed_dims": {
+        "w": 1350.0,
+        "h": 900.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": "EI120"
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 20,
+      "raw_name": "Van FD 1350x900xL300",
+      "parsed_dims": {
+        "w": 1350.0,
+        "h": 900.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": "EI120"
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 21,
+      "raw_name": "Van FD 1400x1100xL200",
+      "parsed_dims": {
+        "w": 1400.0,
+        "h": 1100.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": "EI120"
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 22,
+      "raw_name": "Van FD 1800x700xL200",
+      "parsed_dims": {
+        "w": 1800.0,
+        "h": 700.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": "EI120"
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 23,
+      "raw_name": "Van FD 500x400xL200",
+      "parsed_dims": {
+        "w": 500.0,
+        "h": 400.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": "EI120"
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 24,
+      "raw_name": "Van FD 700x500xL200",
+      "parsed_dims": {
+        "w": 700.0,
+        "h": 500.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": "EI120"
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 25,
+      "raw_name": "Van FD 800x1550xL200",
+      "parsed_dims": {
+        "w": 800.0,
+        "h": 1550.0
+      },
+      "raw_qty": 1.0,
+      "raw_unit": "cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": "EI120"
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 27,
+      "raw_name": "Van chặn lửa MFD - EI45 - Kích thước: 150x100",
+      "parsed_dims": {
+        "w": 150.0,
+        "h": 100.0
+      },
+      "raw_qty": 39.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": "EI120"
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 28,
+      "raw_name": "Van chặn lửa MFD - EI45 - Kích thước: 150x150",
+      "parsed_dims": {
+        "w": 150.0,
+        "h": 150.0
+      },
+      "raw_qty": 19.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": "EI120"
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 29,
+      "raw_name": "Van điều chỉnh lưu lượng VCD - Kích thước: 150x100",
+      "parsed_dims": {
+        "w": 150.0,
+        "h": 100.0
+      },
+      "raw_qty": 63.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 30,
+      "raw_name": "Van điều chỉnh lưu lượng VCD - Kích thước: 150x150",
+      "parsed_dims": {
+        "w": 150.0,
+        "h": 150.0
+      },
+      "raw_qty": 23.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 31,
+      "raw_name": "Van điều chỉnh lưu lượng VCD - Kích thước: 300x200",
+      "parsed_dims": {
+        "w": 300.0,
+        "h": 200.0
+      },
+      "raw_qty": 2.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 32,
+      "raw_name": "Van điều gió MD - Kích thước: 150x100",
+      "parsed_dims": {
+        "w": 150.0,
+        "h": 100.0
+      },
+      "raw_qty": 41.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 33,
+      "raw_name": "Van điều gió MD - Kích thước: 150x150",
+      "parsed_dims": {
+        "w": 150.0,
+        "h": 150.0
+      },
+      "raw_qty": 14.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 36,
+      "raw_name": "Van chặn lửa MFD - EI45 - Kích thước: 150x100",
+      "parsed_dims": {
+        "w": 150.0,
+        "h": 100.0
+      },
+      "raw_qty": 46.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": "EI120"
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 37,
+      "raw_name": "Van chặn lửa MFD - EI45 - Kích thước: 150x150",
+      "parsed_dims": {
+        "w": 150.0,
+        "h": 150.0
+      },
+      "raw_qty": 9.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": "EI120"
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 38,
+      "raw_name": "Van điều chỉnh lưu lượng VCD - Kích thước: 150x100",
+      "parsed_dims": {
+        "w": 150.0,
+        "h": 100.0
+      },
+      "raw_qty": 37.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 39,
+      "raw_name": "Van điều chỉnh lưu lượng VCD - Kích thước: 150x150",
+      "parsed_dims": {
+        "w": 150.0,
+        "h": 150.0
+      },
+      "raw_qty": 7.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 40,
+      "raw_name": "Van điều gió MD - Kích thước: 150x100",
+      "parsed_dims": {
+        "w": 150.0,
+        "h": 100.0
+      },
+      "raw_qty": 55.0,
+      "raw_unit": "Cái",
+      "standard_id": "VAN_GIO",
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "PASS"
+    },
+    {
+      "row_index": 42,
+      "raw_name": "Chi phí kiểm định",
+      "parsed_dims": {},
+      "raw_qty": 1.0,
+      "raw_unit": "lô",
+      "standard_id": null,
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "REQUIRES_MAPPING"
+    },
+    {
+      "row_index": 43,
+      "raw_name": "Vận chuyển",
+      "parsed_dims": {},
+      "raw_qty": 1.0,
+      "raw_unit": "lô",
+      "standard_id": null,
+      "spec_features": {
+        "fire_rating": null
+      },
+      "status": "REQUIRES_MAPPING"
+    }
+  ]
+}

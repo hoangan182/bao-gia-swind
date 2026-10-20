@@ -1,0 +1,17 @@
+#!/bin/bash
+echo "Khởi động hệ thống Swind MAS..."
+
+# Tắt tiến trình cũ (nếu có) đang chạy cổng 8000
+lsof -ti:8000 | xargs kill -9 2>/dev/null
+
+# Chạy server ở chế độ nền
+cd frontend
+python3 -m http.server 8000 &
+
+# Chờ 1 giây để server kịp lên
+sleep 1
+
+# Mở trình duyệt mặc định trên macOS
+open http://localhost:8000
+
+echo "Giao diện đã được mở tại trình duyệt!"

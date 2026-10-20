@@ -1,0 +1,1487 @@
+[
+    {
+        "MAT_ID": "MAT-STEEL-DONGBU-0.50",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN DONGBU 0.50mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R5C2",
+        "Density_kg_m2": 3.925
+    },
+    {
+        "MAT_ID": "MAT-STEEL-DONGBU-0.60",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN DONGBU 0.60mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R6C2",
+        "Density_kg_m2": 4.71
+    },
+    {
+        "MAT_ID": "MAT-STEEL-DONGBU-0.80",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN DONGBU 0.80mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R7C2",
+        "Density_kg_m2": 6.28
+    },
+    {
+        "MAT_ID": "MAT-STEEL-DONGBU-1.00",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN DONGBU 1.00mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R8C2",
+        "Density_kg_m2": 7.85
+    },
+    {
+        "MAT_ID": "MAT-STEEL-DONGBU-1.20",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN DONGBU 1.20mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R9C2",
+        "Density_kg_m2": 9.42
+    },
+    {
+        "MAT_ID": "MAT-STEEL-DONGBU-1.50",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN DONGBU 1.50mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R10C2",
+        "Density_kg_m2": 11.775
+    },
+    {
+        "MAT_ID": "MAT-STEEL-DONGBU-2.00",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN DONGBU 2.00mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R11C2",
+        "Density_kg_m2": 15.7
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.35",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN THĂNG LONG VNSTEEL 0.35mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R5C7",
+        "Density_kg_m2": 3.15
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.40",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN THĂNG LONG VNSTEEL 0.40mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R6C7",
+        "Density_kg_m2": 3.72
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.42",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN THĂNG LONG VNSTEEL 0.42mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R7C7",
+        "Density_kg_m2": 3.91
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.47",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN THĂNG LONG VNSTEEL 0.47mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R8C7",
+        "Density_kg_m2": 4.38
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.50",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN THĂNG LONG VNSTEEL 0.50mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R9C7",
+        "Density_kg_m2": 4.66
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.55",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN THĂNG LONG VNSTEEL 0.55mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R10C7",
+        "Density_kg_m2": 5.13
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.58",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN THĂNG LONG VNSTEEL 0.58mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R11C7",
+        "Density_kg_m2": 5.41
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.60",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN THĂNG LONG VNSTEEL 0.60mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R12C7",
+        "Density_kg_m2": 5.6
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.64",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN THĂNG LONG VNSTEEL 0.64mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R13C7",
+        "Density_kg_m2": 5.98
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.70",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN THĂNG LONG VNSTEEL 0.70mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R14C7",
+        "Density_kg_m2": 6.54
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.75",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN THĂNG LONG VNSTEEL 0.75mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R15C7",
+        "Density_kg_m2": 7.02
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-0.95",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN THĂNG LONG VNSTEEL 0.95mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R16C7",
+        "Density_kg_m2": 8.9
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-1.15",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN THĂNG LONG VNSTEEL 1.15mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R17C7",
+        "Density_kg_m2": 10.78
+    },
+    {
+        "MAT_ID": "MAT-STEEL-VNSTEEL-1.20",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN THĂNG LONG VNSTEEL 1.20mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R18C7",
+        "Density_kg_m2": 11.25
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-0.48",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN PHƯƠNG NAM 0.48mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R5C14",
+        "Density_kg_m2": 3.768
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-0.58",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN PHƯƠNG NAM 0.58mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R6C14",
+        "Density_kg_m2": 4.553
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-0.75",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN PHƯƠNG NAM 0.75mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R7C14",
+        "Density_kg_m2": 5.887
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-0.95",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN PHƯƠNG NAM 0.95mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R8C14",
+        "Density_kg_m2": 7.457
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-1.15",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN PHƯƠNG NAM 1.15mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R9C14",
+        "Density_kg_m2": 9.027
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-1.20",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN PHƯƠNG NAM 1.20mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R9C14",
+        "Density_kg_m2": 9.027
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-1.38",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN PHƯƠNG NAM 1.38mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R10C14",
+        "Density_kg_m2": 10.833
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-1.48",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN PHƯƠNG NAM 1.48mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R11C14",
+        "Density_kg_m2": 11.618
+    },
+    {
+        "MAT_ID": "MAT-STEEL-PN-1.50",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN PHƯƠNG NAM 1.50mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R11C14",
+        "Density_kg_m2": 11.618
+    },
+    {
+        "MAT_ID": "MAT-STEEL-HOASEN-0.48",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN HOA SEN 0.48mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R5C19",
+        "Density_kg_m2": 3.768
+    },
+    {
+        "MAT_ID": "MAT-STEEL-HOASEN-0.58",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN HOA SEN 0.58mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R6C19",
+        "Density_kg_m2": 4.553
+    },
+    {
+        "MAT_ID": "MAT-STEEL-HOASEN-0.75",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN HOA SEN 0.75mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R7C19",
+        "Density_kg_m2": 5.887
+    },
+    {
+        "MAT_ID": "MAT-STEEL-HOASEN-0.95",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN HOA SEN 0.95mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R8C19",
+        "Density_kg_m2": 7.457
+    },
+    {
+        "MAT_ID": "MAT-STEEL-HOASEN-1.15",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN HOA SEN 1.15mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R9C19",
+        "Density_kg_m2": 9.027
+    },
+    {
+        "MAT_ID": "MAT-STEEL-HOA_SEN-1.15",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN HOA SEN 1.15mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R9C19",
+        "Density_kg_m2": 9.027
+    },
+    {
+        "MAT_ID": "MAT-STEEL-HOASEN-1.50",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN HOA SEN 1.50mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R10C19",
+        "Density_kg_m2": 11.775
+    },
+    {
+        "MAT_ID": "MAT-STEEL-BLUESCOPE-0.47",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN BLUESCOPE 0.47mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R5C24",
+        "Density_kg_m2": 3.689
+    },
+    {
+        "MAT_ID": "MAT-STEEL-BLUESCOPE-0.57",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN BLUESCOPE 0.57mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R6C24",
+        "Density_kg_m2": 4.474
+    },
+    {
+        "MAT_ID": "MAT-STEEL-BLUESCOPE-0.77",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN BLUESCOPE 0.77mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R7C24",
+        "Density_kg_m2": 6.045
+    },
+    {
+        "MAT_ID": "MAT-STEEL-BLUESCOPE-0.95",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN BLUESCOPE 0.95mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R8C24",
+        "Density_kg_m2": 7.457
+    },
+    {
+        "MAT_ID": "MAT-STEEL-BLUESCOPE-1.15",
+        "Category": "TÔN_CUỘN_MẠ_KẼM",
+        "Name": "TÔN BLUESCOPE 1.15mm",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R9C24",
+        "Density_kg_m2": 9.027
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS304-0-5",
+        "Category": "INOX",
+        "Name": "Inox Sus304-0.5",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R5C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS304-0-6",
+        "Category": "INOX",
+        "Name": "Inox Sus304-0.6",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R6C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS304-0-7",
+        "Category": "INOX",
+        "Name": "Inox Sus304-0.7",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R7C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS304-0-8",
+        "Category": "INOX",
+        "Name": "Inox Sus304-0.8",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R8C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS304-0-9",
+        "Category": "INOX",
+        "Name": "Inox Sus304-0.9",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R9C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS304-1-0",
+        "Category": "INOX",
+        "Name": "Inox Sus304-1,0",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R10C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS304-1-2",
+        "Category": "INOX",
+        "Name": "Inox Sus304-1,2",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R11C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS430-0-5",
+        "Category": "INOX",
+        "Name": "Inox Sus430-0.5",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R12C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS430-0-6",
+        "Category": "INOX",
+        "Name": "Inox Sus430-0.6",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R13C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS430-0-7",
+        "Category": "INOX",
+        "Name": "Inox Sus430-0.7",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R14C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS430-0-8",
+        "Category": "INOX",
+        "Name": "Inox Sus430-0.8",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R15C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS430-0-9",
+        "Category": "INOX",
+        "Name": "Inox Sus430-0.9",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R16C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS430-1-0",
+        "Category": "INOX",
+        "Name": "Inox Sus430-1,0",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R17C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS430-1-1",
+        "Category": "INOX",
+        "Name": "Inox Sus430-1,1",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R18C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS430-1-2",
+        "Category": "INOX",
+        "Name": "Inox Sus430-1,2",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R19C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS201-0-4",
+        "Category": "INOX",
+        "Name": "Inox Sus201-0.4",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R20C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS201-0-5",
+        "Category": "INOX",
+        "Name": "Inox Sus201-0.5",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R21C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS201-0-6",
+        "Category": "INOX",
+        "Name": "Inox Sus201-0.6",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R22C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS201-0-7",
+        "Category": "INOX",
+        "Name": "Inox Sus201-0.7",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R23C29"
+    },
+    {
+        "MAT_ID": "MAT-INOX-SUS201-0-8",
+        "Category": "INOX",
+        "Name": "Inox Sus201-0.8",
+        "Unit": "kg",
+        "Source_Trace": "Vat tu tôn!R24C29"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TRUC-SUS-201-D10",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Trục Sus 201 D10",
+        "Unit": "m",
+        "Source_Trace": "Vat tu tôn"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TRUC-SUS-201-D12",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Trục Sus 201 D12",
+        "Unit": "m",
+        "Source_Trace": "Vat tu tôn"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TRUC-SUS-201-D14",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Trục Sus 201 D14",
+        "Unit": "m",
+        "Source_Trace": "Vat tu tôn"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-BAC-DONG-D10",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Bạc đồng D10",
+        "Unit": "Đôi",
+        "Source_Trace": "Vat tu tôn"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-BAC-DONG-D12",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Bạc đồng D12",
+        "Unit": "Đôi",
+        "Source_Trace": "Vat tu tôn"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-BAC-DONG-D14",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Bạc đồng D14",
+        "Unit": "Đôi",
+        "Source_Trace": "Vat tu tôn"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TAY-GAT-1-1M2",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Tay gạt 1 >1m2",
+        "Unit": "Cái",
+        "Source_Trace": "Vat tu tôn"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-GIANG-TAY-GAT-1",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Giằng tay gạt 1",
+        "Unit": "Cái",
+        "Source_Trace": "Vat tu tôn"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-GIANG-TAY-GAT-2",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Giằng tay gạt 2",
+        "Unit": "Cái",
+        "Source_Trace": "Vat tu tôn!R13C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-CAU-CHI-1-400X400",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Cầu chì 1 <400x400",
+        "Unit": "Cái",
+        "Source_Trace": "Vat tu tôn!R14C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-CAU-CHI-2-400X400",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Cầu chì 2>400x400",
+        "Unit": "Cái",
+        "Source_Trace": "Vat tu tôn!R15C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TRUC-VIT-1",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Trục vít 1",
+        "Unit": "Cái",
+        "Source_Trace": "Vat tu tôn!R16C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-BAC-DONG-8",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Bạc đồng 8",
+        "Unit": "cặp",
+        "Source_Trace": "Vat tu tôn!R18C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-BANH-RANG-VAN-NHOM",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Bánh răng van nhôm",
+        "Unit": "Bộ",
+        "Source_Trace": "Vat tu tôn!R19C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TAY-VAN-NHUA-1M2",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Tay van nhựa >1m2",
+        "Unit": "Bộ",
+        "Source_Trace": "Vat tu tôn!R20C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TAY-VAN-INOX-1M2",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Tay van Inox >1m2",
+        "Unit": "Bộ",
+        "Source_Trace": "Vat tu tôn!R21C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TAY-VAN-NHOM",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Tay van nhôm",
+        "Unit": "Bộ",
+        "Source_Trace": "Vat tu tôn!R22C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-GIOANG-CAO-SU-VAN-NHOM",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Gioăng cao su van nhôm",
+        "Unit": "M",
+        "Source_Trace": "Vat tu tôn!R23C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TAY-GAT-NHO",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Tay gạt nhỏ",
+        "Unit": "Bộ",
+        "Source_Trace": "Vat tu tôn!R24C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TAY-GAT-TRUNG-BINH",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Tay gạt trung bình",
+        "Unit": "Bộ",
+        "Source_Trace": "Vat tu tôn!R25C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-MOTOR-NENUTEC-THUY-SY-LT-300X300",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Motor NENUTEC - THỤY SỸ <300x300",
+        "Unit": "cái",
+        "Source_Trace": "Vat tu tôn!R26C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-MOTOR-NENUTEC-THUY-SY-GT-300X300",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Motor NENUTEC - THỤY SỸ >300x300",
+        "Unit": "cái",
+        "Source_Trace": "Vat tu tôn!R27C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-MOTOR-NENUTEC-THUY-SY-1M2",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Motor NENUTEC - THỤY SỸ >1m2",
+        "Unit": "cái",
+        "Source_Trace": "Vat tu tôn!R28C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-MOTOR-VAN-DAP-LUA-CAM-BIEN",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Motor van dập lửa + cảm biến",
+        "Unit": "Cái",
+        "Source_Trace": "Vat tu tôn!R29C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-MOTOR-VAN-AP-SUAT",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Motor van áp suất",
+        "Unit": "Cái",
+        "Source_Trace": "Vat tu tôn!R30C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-CAU-CHI-TRUNG-QUOC",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Cầu chì Trung Quốc",
+        "Unit": "Cái",
+        "Source_Trace": "Vat tu tôn!R31C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-CAU-CHI-USA-1-400X400",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Cầu chì USA -1 (<400x400)",
+        "Unit": "Cái",
+        "Source_Trace": "Vat tu tôn!R32C33"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-CAU-CHI-USA-2-400X400",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Cầu chì USA-2 (>400x400)",
+        "Unit": "Cái",
+        "Source_Trace": "Vat tu tôn!R33C33"
+    },
+    {
+        "MAT_ID": "MAT-FLANGE-L-30X30X2-CT38-L-6-M",
+        "Category": "THÉP_BÍCH_GÓC",
+        "Name": "L 30x30x2 CT38 L = 6 m",
+        "Unit": "m",
+        "Source_Trace": "Vat tu tôn!R13C37"
+    },
+    {
+        "MAT_ID": "MAT-FLANGE-L-30X30X3-CT38-L-6-M",
+        "Category": "THÉP_BÍCH_GÓC",
+        "Name": "L 30x30x3 CT38 L = 6 m",
+        "Unit": "m",
+        "Source_Trace": "Vat tu tôn!R14C37"
+    },
+    {
+        "MAT_ID": "MAT-FLANGE-L-40X40X4-CT39-L-6-M",
+        "Category": "THÉP_BÍCH_GÓC",
+        "Name": "L 40x40x4 CT39 L = 6 m",
+        "Unit": "m",
+        "Source_Trace": "Vat tu tôn!R15C37"
+    },
+    {
+        "MAT_ID": "MAT-FLANGE-L-50X50X4-CT40-L-6-M",
+        "Category": "THÉP_BÍCH_GÓC",
+        "Name": "L 50x50x4 CT40 L = 6 m",
+        "Unit": "m",
+        "Source_Trace": "Vat tu tôn!R16C37"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-LUOI-NHUA",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Lưới nhựa",
+        "Unit": "m2",
+        "Source_Trace": "Vat tu tôn!R5C41"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-MOTOR-NENUTEC-THUY-SY-LT-300X300",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Motor NENUTEC - THỤY SỸ <300x300",
+        "Unit": "cái",
+        "Source_Trace": "Vat tu tôn!R6C41"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-MOTOR-NENUTEC-THUY-SY-GT-300X300",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Motor NENUTEC - THỤY SỸ >300x300",
+        "Unit": "cái",
+        "Source_Trace": "Vat tu tôn!R7C41"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-MOTOR-NENUTEC-THUY-SY-1M2",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Motor NENUTEC - THỤY SỸ >1m2",
+        "Unit": "cái",
+        "Source_Trace": "Vat tu tôn!R8C41"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-MOTOR-VAN-DAP-LUA-CAM-BIEN",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Motor van dập lửa + cảm biến",
+        "Unit": "m2",
+        "Source_Trace": "Vat tu tôn!R9C41"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-MOTOR-VAN-AP-SUAT",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Motor van áp suất",
+        "Unit": "m2",
+        "Source_Trace": "Vat tu tôn!R10C41"
+    },
+    {
+        "MAT_ID": "MAT-ALU-NAN-BD",
+        "Category": "NHÔM_ĐỊNH_HÌNH",
+        "Name": "Nhôm định hình NAN BD",
+        "Unit": "kg",
+        "Source_Trace": "BG Cửa  (rút gọn)!R3C2",
+        "Weight_kg_m": 0.058
+    },
+    {
+        "MAT_ID": "MAT-ALU-NAN-T",
+        "Category": "NHÔM_ĐỊNH_HÌNH",
+        "Name": "Nhôm định hình NAN T",
+        "Unit": "kg",
+        "Source_Trace": "BG Cửa  (rút gọn)!R4C2",
+        "Weight_kg_m": 0.078
+    },
+    {
+        "MAT_ID": "MAT-ALU-KHUNG-BD",
+        "Category": "NHÔM_ĐỊNH_HÌNH",
+        "Name": "Nhôm định hình KHUNG BD",
+        "Unit": "kg",
+        "Source_Trace": "BG Cửa  (rút gọn)!R5C2",
+        "Weight_kg_m": 0.2
+    },
+    {
+        "MAT_ID": "MAT-ALU-KHUNG-BD-Z-MONG",
+        "Category": "NHÔM_ĐỊNH_HÌNH",
+        "Name": "Nhôm định hình KHUNG BD+ Z MỎNG",
+        "Unit": "kg",
+        "Source_Trace": "BG Cửa  (rút gọn)!R6C2",
+        "Weight_kg_m": 0.173
+    },
+    {
+        "MAT_ID": "MAT-ALU-NAN-Z-DAY",
+        "Category": "NHÔM_ĐỊNH_HÌNH",
+        "Name": "Nhôm định hình NAN Z DÀY",
+        "Unit": "kg",
+        "Source_Trace": "BG Cửa  (rút gọn)!R7C2",
+        "Weight_kg_m": 0.217
+    },
+    {
+        "MAT_ID": "MAT-ALU-NAN-Z-MONG",
+        "Category": "NHÔM_ĐỊNH_HÌNH",
+        "Name": "Nhôm định hình NAN Z MỎNG",
+        "Unit": "kg",
+        "Source_Trace": "BG Cửa  (rút gọn)!R8C2",
+        "Weight_kg_m": 0.16
+    },
+    {
+        "MAT_ID": "MAT-ALU-KHUNG-Z-2-LOP",
+        "Category": "NHÔM_ĐỊNH_HÌNH",
+        "Name": "Nhôm định hình KHUNG Z+2 LỚP",
+        "Unit": "kg",
+        "Source_Trace": "BG Cửa  (rút gọn)!R9C2",
+        "Weight_kg_m": 0.227
+    },
+    {
+        "MAT_ID": "MAT-ALU-NAN-OBD",
+        "Category": "NHÔM_ĐỊNH_HÌNH",
+        "Name": "Nhôm định hình NAN OBD",
+        "Unit": "kg",
+        "Source_Trace": "BG Cửa  (rút gọn)!R10C2",
+        "Weight_kg_m": 0.11
+    },
+    {
+        "MAT_ID": "MAT-ALU-KHUNG-OBD",
+        "Category": "NHÔM_ĐỊNH_HÌNH",
+        "Name": "Nhôm định hình KHUNG OBD",
+        "Unit": "kg",
+        "Source_Trace": "BG Cửa  (rút gọn)!R11C2",
+        "Weight_kg_m": 0.158
+    },
+    {
+        "MAT_ID": "MAT-ALU-NAN-BD-EUS02",
+        "Category": "NHÔM_ĐỊNH_HÌNH",
+        "Name": "Nhôm định hình NAN BD EUS 02",
+        "Unit": "kg",
+        "Source_Trace": "BG Cửa  (rút gọn)!R14C2",
+        "Weight_kg_m": 0.071
+    },
+    {
+        "MAT_ID": "MAT-ALU-KHUNG-BD-EUS01",
+        "Category": "NHÔM_ĐỊNH_HÌNH",
+        "Name": "Nhôm định hình KHUNG BD EUS 01",
+        "Unit": "kg",
+        "Source_Trace": "BG Cửa  (rút gọn)!R15C2",
+        "Weight_kg_m": 0.206
+    },
+    {
+        "MAT_ID": "MAT-ALU-NAN-Z-EUS05",
+        "Category": "NHÔM_ĐỊNH_HÌNH",
+        "Name": "Nhôm định hình NAN Z EUS 05",
+        "Unit": "kg",
+        "Source_Trace": "BG Cửa  (rút gọn)!R16C2",
+        "Weight_kg_m": 0.162
+    },
+    {
+        "MAT_ID": "MAT-ALU-KHUNG-Z-EUS03",
+        "Category": "NHÔM_ĐỊNH_HÌNH",
+        "Name": "Nhôm định hình KHUNG Z EUS 03",
+        "Unit": "kg",
+        "Source_Trace": "BG Cửa  (rút gọn)!R17C2",
+        "Weight_kg_m": 0.247
+    },
+    {
+        "MAT_ID": "MAT-ALU-NAN-OBD-EUS20",
+        "Category": "NHÔM_ĐỊNH_HÌNH",
+        "Name": "Nhôm định hình NAN OBD EUS 20",
+        "Unit": "kg",
+        "Source_Trace": "BG Cửa  (rút gọn)!R18C2",
+        "Weight_kg_m": 0.094
+    },
+    {
+        "MAT_ID": "MAT-ALU-KHUNG-OBD-EUS10",
+        "Category": "NHÔM_ĐỊNH_HÌNH",
+        "Name": "Nhôm định hình KHUNG OBD EUS 10",
+        "Unit": "kg",
+        "Source_Trace": "BG Cửa  (rút gọn)!R19C2",
+        "Weight_kg_m": 0.141
+    },
+    {
+        "MAT_ID": "MAT-PAINT-POWDER",
+        "Category": "SƠN_TĨNH_ĐIỆN",
+        "Name": "Sơn tĩnh điện tiêu chuẩn Polyester",
+        "Unit": "m2",
+        "Source_Trace": "BG Cửa  (rút gọn)!R32C21"
+    },
+    {
+        "MAT_ID": "MAT-DOOR-ACCESSORY",
+        "Category": "PHỤ_KIỆN_CỬA",
+        "Name": "Phụ kiện lắp ghép / Ke góc cửa gió",
+        "Unit": "Bộ",
+        "Source_Trace": "BG Cửa  (rút gọn)!R34C20"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NACA-2-05",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Model: NACA 2-05  ( 220VAC, On/Off )",
+        "Unit": "Cái",
+        "Source_Trace": "VT van"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NACA-2-10",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Model: NACA 2-10   ( 220VAC, On/Off )",
+        "Unit": "Cái",
+        "Source_Trace": "VT van"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NACA-2-20",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Model: NACA 2-20   ( 220VAC, On/Off )",
+        "Unit": "Cái",
+        "Source_Trace": "VT van"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NACA-2-40",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Model: NACA 2-40   ( 220VAC, On/Off )",
+        "Unit": "Cái",
+        "Source_Trace": "VT van"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NTC-831",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Model: NTC 831",
+        "Unit": "Cái",
+        "Source_Trace": "VT van"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NACM-1-2-05",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Model: NACM 1.2-05  ( Modulating )",
+        "Unit": "Cái",
+        "Source_Trace": "VT van"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NACM-1-1-10",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Model: NACM 1.1-10  ( Modulating )",
+        "Unit": "Cái",
+        "Source_Trace": "VT van"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NACM-1-1-20",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Model: NACM 1.1-20  ( Modulating )",
+        "Unit": "Cái",
+        "Source_Trace": "VT van"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-NACM-1-1-40",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Model: NACM 1.1-40  ( Modulating )",
+        "Unit": "Cái",
+        "Source_Trace": "VT van!R26C3"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-MODEL-NPG-1-DIEU-KHI",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Model: NPG-1 ( Điều khiển cửa gió theo % đóng mở )",
+        "Unit": "Cái",
+        "Source_Trace": "VT van!R28C3"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-MODEL-NTC-843-DIEU-K",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Model: NTC-843 ( Điều khiển cửa gió theo nhiệt độ phòng )",
+        "Unit": "Cái",
+        "Source_Trace": "VT van!R29C3"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-SAFA-1-05S",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "SAFA - 1 - 05S ( 24VAC/DC ) - Không có cảm biến",
+        "Unit": "Cái",
+        "Source_Trace": "VT van!R31C3"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-SAFA-1-08S",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "SAFA - 1 - 08S ( 24VAC/DC )  - Không có cảm biến",
+        "Unit": "Cái",
+        "Source_Trace": "VT van!R32C3"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-SAFA-2-05S",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "SAFA - 2 - 05S ( 220VAC  )  - Không có cảm biến",
+        "Unit": "Cái",
+        "Source_Trace": "VT van!R33C3"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-SAFA-2-08S",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "SAFA - 2 - 08S ( 220VAC  )  - Không có cảm biến",
+        "Unit": "Cái",
+        "Source_Trace": "VT van!R34C3"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-CAM-BIEN-NHIET-BANG-",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Cảm biến nhiệt bằng điện gắn với Motor dùng cho fire damper",
+        "Unit": "Cái",
+        "Source_Trace": "VT van!R35C3"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-MODEL-B",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Model: B (165ºF) ( Loại nhỏ )",
+        "Unit": "Cái",
+        "Source_Trace": "VT van!R37C3"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-MODEL-A",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Model: A (165ºF) ( Loại lớn )",
+        "Unit": "Cái",
+        "Source_Trace": "VT van!R38C3"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-THUY-TINH-KHONG-MAT-12",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông thuỷ tinh không mặt bạc T12 D50 - Chiều dày 50mm, khổ rộng 1,2m dài 30m. Tổng 36m2/cuộn. Tỷ trọng 12kg/m3",
+        "Unit": "m2",
+        "Source_Trace": "VT tiêu âm!R12C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-THUY-TINH-CO-BAC-T12-13",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông thuỷ tinh có bạc T12 D50 - Chiều dày 50mm, khổ rộng 1,2m dài 30m. Tổng 36m2/cuộn. Tỷ trọng 12kg/m3",
+        "Unit": "m2",
+        "Source_Trace": "VT tiêu âm!R13C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-THUY-TINH-KHONG-MAT-14",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông thuỷ tinh không mặt bạc T24 D50 - Chiều dày 50mm, khổ rộng 1,2m dài 20m. Tổng 24m2/cuộn. Tỷ trọng 24kg/m3",
+        "Unit": "m2",
+        "Source_Trace": "VT tiêu âm!R14C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-THUY-TINH-CO-BAC-T24-15",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông thuỷ tinh có bạc T24 D50 - Chiều dày 50mm, khổ rộng 1,2m dài 20m. Tổng 24m2/cuộn. Tỷ trọng 24kg/m3",
+        "Unit": "m2",
+        "Source_Trace": "VT tiêu âm!R15C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-THUY-TINH-KHONG-MAT-16",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông thuỷ tinh không mặt bạc T32 D50 - Chiều dày 50mm, khổ rộng 1,2m dài 15m. Tổng 18m2/cuộn. Tỷ trọng 32kg/m3",
+        "Unit": "m2",
+        "Source_Trace": "VT tiêu âm!R16C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-THUY-TINH-CO-MAT-BAC-17",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông thuỷ tinh có mặt bạc T32 D50 - Chiều dày 50mm, khổ rộng 1,2m dài 15m. Tổng 18m2/cuộn. Tỷ trọng 32kg/m3",
+        "Unit": "m2",
+        "Source_Trace": "VT tiêu âm!R17C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-KHOANG-TAM-T40-19",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông khoáng tấm T40 - Kích thước tấm: 50 x 600 x 1200mm - 1 Kiện gồm 06 tấm, tỷ trọng 40kg/m3",
+        "Unit": "kiện",
+        "Source_Trace": "VT tiêu âm!R19C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-KHOANG-TAM-T50-20",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông khoáng tấm T50 - Kích thước tấm: 50 x 600 x 1200mm - 1 Kiện gồm 06 tấm, tỷ trọng 50kg/m3",
+        "Unit": "kiện",
+        "Source_Trace": "VT tiêu âm!R20C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-KHOANG-T60-D50-21",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông khoáng T60 D50 - Kích thước tấm: 50 x 600 x 1200mm - 1 Kiện gồm 06 tấm, tỷ trọng 60kg/m3",
+        "Unit": "kiện",
+        "Source_Trace": "VT tiêu âm!R21C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-KHOANG-T80-D50-22",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông khoáng T80 D50 - Kích thước tấm: 50 x 600 x 1200mm - 1 Kiện gồm 06 tấm, tỷ trọng 80kg/m3",
+        "Unit": "kiện",
+        "Source_Trace": "VT tiêu âm!R22C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-KHOANG-T100-D50-23",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông khoáng T100 D50 - Kích thước tấm: 100 x 600 x 1200mm - 1 Kiện gồm 03 tấm, tỷ trọng 100kg/m3",
+        "Unit": "kiện",
+        "Source_Trace": "VT tiêu âm!R23C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-GOM-BAO-610-X7200-X-25",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông gốm bao 610 x7200 x 25mm - Bông gốm dạng bao dài 7,2m, rộng 0,61 dày 25mm , chịu nhiệt 1000 độ",
+        "Unit": "bao",
+        "Source_Trace": "VT tiêu âm!R25C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-GOM-HOP-610-X7200-X-26",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông gốm hộp  610 x7200 x 25mm T96 - Bông gốm dạng bao dài 7,2m, rộng 0,61 dày 25mm , chịu nhiệt 1260 độ . 6P",
+        "Unit": "hộp",
+        "Source_Trace": "VT tiêu âm!R26C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-GOM-HOP-610-X7200-X-27",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông gốm hộp  610 x7200 x 25mm T128 - Bông gốm dạng bao dài 7,2m, rộng 0,61 dày 25mm , chịu nhiệt 1260 độ . 8P",
+        "Unit": "hộp",
+        "Source_Trace": "VT tiêu âm!R27C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-GOM-HOP-610-X7200-X-28",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông gốm hộp  610 x7200 x 25mm T128 - Bông gốm dạng bao dài 7,2m, rộng 0,61 dày 25mm , chịu nhiệt 1430 độ",
+        "Unit": "hộp",
+        "Source_Trace": "VT tiêu âm!R28C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-GOM-DANG-TAM-600-X-9-29",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông gốm dạng tấm 600 x 900 T340 - Hộp D25 = 4 tấm  - Hộp D50 = 2 tấm",
+        "Unit": "hộp",
+        "Source_Trace": "VT tiêu âm!R29C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-BONG-GOM-DANG-ROI-30",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông gốm dạng rời",
+        "Unit": "hộp",
+        "Source_Trace": "VT tiêu âm!R30C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-MUT-TRUNG-3CM-KICH-THUOC-32",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Mút trứng 3cm , kích thước tấm 1,6 x 2m",
+        "Unit": "tấm",
+        "Source_Trace": "VT tiêu âm!R32C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-MUT-TRUNG-5CM-KICH-THUOC-33",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Mút trứng 5cm , kích thước tấm 1,6 x 2m",
+        "Unit": "tấm",
+        "Source_Trace": "VT tiêu âm!R33C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-MUT-GAI-5CM-KICH-THUOC-TA-34",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Mút gai 5cm , kích thước tấm 1 x 1m",
+        "Unit": "tấm",
+        "Source_Trace": "VT tiêu âm!R34C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-XOP-XPS-DAY-25MM-KICH-THU-35",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Xốp XPS . Dày 25mm kích thước tấm 600 x 1800",
+        "Unit": "m2",
+        "Source_Trace": "VT tiêu âm!R35C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-VAI-THUY-TINH-36",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Vải thủy tinh",
+        "Unit": "kg",
+        "Source_Trace": "VT tiêu âm!R36C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-TON-LO-D6-38",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Tôn lỗ D6",
+        "Unit": "tấm",
+        "Source_Trace": "VT tiêu âm!R38C2"
+    },
+    {
+        "MAT_ID": "MAT-INSUL-TON-LO-D10-40",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Tôn lỗ D10",
+        "Unit": "tấm",
+        "Source_Trace": "VT tiêu âm!R40C2"
+    },
+    {
+        "MAT_ID": "CANVAS_FIRE_RESISTANT",
+        "Category": "VẬT_TƯ_BẠT",
+        "Name": "Cuộn vải bạt bọc cách nhiệt/chống cháy",
+        "Unit": "m2",
+        "Source_Trace": "BG canvas, ventcap"
+    },
+    {
+        "MAT_ID": "ROCKWOOL_50MM_50KG",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Bông Rockwool tỷ trọng 50kg/m3 dày 50mm",
+        "Unit": "m2",
+        "Source_Trace": "BG TIEU AM"
+    },
+    {
+        "MAT_ID": "GLASS_CLOTH",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Vải thủy tinh bọc tiêu âm",
+        "Unit": "m2",
+        "Source_Trace": "BG TIEU AM"
+    },
+    {
+        "MAT_ID": "PERFORATED_SHEET",
+        "Category": "VẬT_LIỆU_TIÊU_ÂM",
+        "Name": "Tôn đục lỗ tiêu âm",
+        "Unit": "m2",
+        "Source_Trace": "BG TIEU AM"
+    },
+    {
+        "MAT_ID": "SUPERLON_19MM",
+        "Category": "VẬT_LIỆU_BẢO_ÔN",
+        "Name": "Bảo ôn Superlon dạng tấm dày 19mm",
+        "Unit": "m2",
+        "Source_Trace": "bảo ôn"
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D100_NON_INSUL",
+        "Category": "ỐNG_GIÓ_MỀM",
+        "Name": "ống mềm D100 không bảo ôn",
+        "Unit": "ống",
+        "Source_Trace": "bảo ôn"
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D150_NON_INSUL",
+        "Category": "ỐNG_GIÓ_MỀM",
+        "Name": "ống mềm D150 không bảo ôn",
+        "Unit": "ống",
+        "Source_Trace": "bảo ôn"
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D200_NON_INSUL",
+        "Category": "ỐNG_GIÓ_MỀM",
+        "Name": "ống mềm D200 không bảo ôn",
+        "Unit": "ống",
+        "Source_Trace": "bảo ôn"
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D250_NON_INSUL",
+        "Category": "ỐNG_GIÓ_MỀM",
+        "Name": "ống mềm D250 không bảo ôn",
+        "Unit": "ống",
+        "Source_Trace": "bảo ôn"
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D300_NON_INSUL",
+        "Category": "ỐNG_GIÓ_MỀM",
+        "Name": "ống mềm D300 không bảo ôn",
+        "Unit": "ống",
+        "Source_Trace": "bảo ôn"
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D350_NON_INSUL",
+        "Category": "ỐNG_GIÓ_MỀM",
+        "Name": "ống mềm D350 không bảo ôn",
+        "Unit": "ống",
+        "Source_Trace": "bảo ôn"
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D100_INSUL",
+        "Category": "ỐNG_GIÓ_MỀM",
+        "Name": "ống mềm D100 có bảo ôn",
+        "Unit": "ống",
+        "Source_Trace": "bảo ôn"
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D150_INSUL",
+        "Category": "ỐNG_GIÓ_MỀM",
+        "Name": "ống mềm D150 có bảo ôn",
+        "Unit": "ống",
+        "Source_Trace": "bảo ôn"
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D200_INSUL",
+        "Category": "ỐNG_GIÓ_MỀM",
+        "Name": "ống mềm D200 có bảo ôn",
+        "Unit": "ống",
+        "Source_Trace": "bảo ôn"
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D250_INSUL",
+        "Category": "ỐNG_GIÓ_MỀM",
+        "Name": "ống mềm D250 có bảo ôn",
+        "Unit": "ống",
+        "Source_Trace": "bảo ôn"
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D300_INSUL",
+        "Category": "ỐNG_GIÓ_MỀM",
+        "Name": "ống mềm D300 có bảo ôn",
+        "Unit": "ống",
+        "Source_Trace": "bảo ôn"
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D350_INSUL",
+        "Category": "ỐNG_GIÓ_MỀM",
+        "Name": "ống mềm D350 có bảo ôn",
+        "Unit": "ống",
+        "Source_Trace": "bảo ôn"
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D400_NON_INSUL",
+        "Category": "ỐNG_GIÓ_MỀM",
+        "Name": "ống mềm D400 không bảo ôn",
+        "Unit": "ống",
+        "Source_Trace": "bảo ôn"
+    },
+    {
+        "MAT_ID": "FLEX_DUCT_D400_INSUL",
+        "Category": "ỐNG_GIÓ_MỀM",
+        "Name": "ống mềm D400 có bảo ôn",
+        "Unit": "ống",
+        "Source_Trace": "bảo ôn"
+    },
+    {
+        "MAT_ID": "MAT-FIREBOARD-10MM-BODY",
+        "Category": "VẬT_LIỆU_CÁCH_NHIỆT",
+        "Name": "Tấm chống cháy dày 10mm bọc thân van FD/MFD",
+        "Unit": "m2",
+        "Source_Trace": "BG VAN !R16C43"
+    },
+    {
+        "MAT_ID": "MAT-FIREBOARD-20MM-BLADE",
+        "Category": "VẬT_LIỆU_CÁCH_NHIỆT",
+        "Name": "Tấm chống cháy dày 20mm làm lõi cánh van FD/MFD",
+        "Unit": "m2",
+        "Source_Trace": "BG VAN !R16C44"
+    },
+    {
+        "MAT_ID": "MAT-FIREBOARD-10MM-BLADE",
+        "Category": "VẬT_LIỆU_CÁCH_NHIỆT",
+        "Name": "Tấm chống cháy dày 10mm ốp 2 mặt cánh van FD/MFD",
+        "Unit": "m2",
+        "Source_Trace": "BG VAN !R16C45"
+    },
+    {
+        "MAT_ID": "MAT-INSULATION-EI-DAMPER",
+        "Category": "VẬT_LIỆU_CÁCH_NHIỆT",
+        "Name": "Bọc cách nhiệt chống cháy tấm MGO/Thạch cao 10mm (Tiêu chuẩn EI)",
+        "Unit": "m2",
+        "Source_Trace": "BG VAN !R16C43"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-FSLF24",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Động cơ chặn lửa ON/OFF 3.5Nm, 230V/24V (BELIMO FSLF24 / FSLF230)",
+        "Unit": "Cái",
+        "Source_Trace": "BG VAN !R16C41"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-BFN24",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Động cơ chặn lửa ON/OFF 9Nm, 230V/24V (BELIMO BFN24 / BFN230)",
+        "Unit": "Cái",
+        "Source_Trace": "BG VAN !R16C42"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-BF24",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Động cơ chặn lửa ON/OFF 18Nm, 24V (BELIMO BF 24 hoặc tương đương)",
+        "Unit": "Cái",
+        "Source_Trace": "Bang_Tinh_Gia_Swind_Chuan_2026_Estimated"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-HONEYWELL",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Động cơ chặn lửa ON/OFF 9Nm, 230V, đóng mở nhanh 15s (HoneyWell MS4609F1010/B)",
+        "Unit": "Cái",
+        "Source_Trace": "BG VAN !R16C46"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-SWIND-VIWECO",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Động cơ chặn lửa ON/OFF Swind (Viweco V6006FS500S)",
+        "Unit": "Cái",
+        "Source_Trace": "BG VAN !R16C47"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-KLB-V6006FS500S",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Động cơ chặn lửa ON/OFF KLB (Swin V6006FS500S EI90)",
+        "Unit": "Cái",
+        "Source_Trace": "BG VAN !R16C47 (Col S R28)"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-5NM",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Động cơ van gió Belimo ON/OFF 5Nm",
+        "Unit": "Cái",
+        "Source_Trace": "BG VAN !R16C48"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-10NM",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Động cơ van gió Belimo ON/OFF 10Nm",
+        "Unit": "Cái",
+        "Source_Trace": "BG VAN !R16C49"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-20NM",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Động cơ van gió Belimo ON/OFF 20Nm",
+        "Unit": "Cái",
+        "Source_Trace": "BG VAN !R16C50"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-HOP-LO-XO",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Hộp lò xo van chặn lửa FD/MFD",
+        "Unit": "Bộ",
+        "Source_Trace": "BG VAN !R31C52"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-SILICON-BULONG-VIT",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Silicon chống cháy + bu lông, ốc vít van FD/MFD",
+        "Unit": "Bộ",
+        "Source_Trace": "BG VAN !R31C53"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TAY-GAT-CAU-CHI-1",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Tay gạt cầu chì van FD (Loại 1-2 cánh)",
+        "Unit": "Bộ",
+        "Source_Trace": "BG VAN !R31C39"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-TAY-GAT-CAU-CHI-2",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Tay gạt cầu chì van FD (Loại 3-5 cánh)",
+        "Unit": "Bộ",
+        "Source_Trace": "BG VAN !R43C39"
+    },
+    {
+        "MAT_ID": "MAT-DAMPER-LO-XO-DOI",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Lò xo van chặn lửa / đôi",
+        "Unit": "Đôi",
+        "Source_Trace": "BG VAN !R16C40"
+    },
+    {
+        "MAT_ID": "ECCENTRIC_SHAFT",
+        "Category": "PHỤ_KIỆN_VAN",
+        "Name": "Cơ cấu lệch tâm / Lò xo đóng mở (NRD)",
+        "Unit": "Bộ",
+        "Source_Trace": "BG VAN CU"
+    },
+    {
+        "MAT_ID": "MAT-MESH-INOX-304",
+        "Category": "PHỤ_KIỆN_CỬA",
+        "Name": "Lưới chắn côn trùng Inox 304 (LCCT)",
+        "Unit": "m2",
+        "Source_Trace": "BG Cửa !R211C18"
+    },
+    {
+        "MAT_ID": "MAT-ALU-EGGCRATE-CORE",
+        "Category": "NHÔM_ĐỊNH_HÌNH",
+        "Name": "Lõi nhôm sọt trứng (Eggcrate Core 12.7x12.7x12.7mm)",
+        "Unit": "m2",
+        "Source_Trace": "BG Cửa !R157C16"
+    },
+    {
+        "MAT_ID": "MAT-FILTER-G4",
+        "Category": "PHỤ_KIỆN_CỬA",
+        "Name": "Lưới lọc bụi sơ cấp G4 kèm khung nhôm",
+        "Unit": "m2",
+        "Source_Trace": "BG Cửa !Filter"
+    },
+    {
+        "MAT_ID": "MAT-THUONG_MAI-LOP_CHONG_CHAY_EI30",
+        "Category": "VẬT_LIỆU_CÁCH_NHIỆT",
+        "Name": "Bọc chống cháy ống gió chuẩn EI30",
+        "Unit": "m2",
+        "Source_Trace": "BG VAN !EI30"
+    },
+    {
+        "MAT_ID": "MAT-THUONG_MAI-LOP_CHONG_CHAY_EI60",
+        "Category": "VẬT_LIỆU_CÁCH_NHIỆT",
+        "Name": "Bọc chống cháy ống gió chuẩn EI60",
+        "Unit": "m2",
+        "Source_Trace": "BG VAN !EI60"
+    },
+    {
+        "MAT_ID": "MAT-THUONG_MAI-LOP_CHONG_CHAY_EI120",
+        "Category": "VẬT_LIỆU_CÁCH_NHIỆT",
+        "Name": "Bọc chống cháy ống gió chuẩn EI120",
+        "Unit": "m2",
+        "Source_Trace": "BG VAN !EI120"
+    },
+    {
+        "MAT_ID": "MAT-THUONG_MAI-LUOI_BAO_VE",
+        "Category": "PHỤ_KIỆN_CỬA",
+        "Name": "Lưới bảo vệ đầu ống Inox 304",
+        "Unit": "cái",
+        "Source_Trace": "BG Cửa !Mesh"
+    }
+]
