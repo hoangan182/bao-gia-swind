@@ -104,5 +104,11 @@
     "côn thu": "ONG_GIO",
     "côn thu chuyển tiết diện": "ONG_GIO",
     "chân rẽ": "ONG_GIO",
-    "chân rẽ kèm côn thu chuyển tiết diện": "ONG_GIO"
+    "chân rẽ kèm côn thu chuyển tiết diện": "ONG_GIO",
+    "cút 45 độ": "ONG_GIO",
+    "cút 45 độ + lcct": "ONG_GIO",
+    "cút 45 độ  + lcct": "ONG_GIO",
+    "cút  45 độ +lcct": "ONG_GIO",
+    "cút 45 độ  kèm lcct": "ONG_GIO",
+    "cút 45 độ + lcct + lọc bụi": "ONG_GIO"
 }

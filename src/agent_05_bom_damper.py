@@ -220,8 +220,15 @@ class Agent05_DamperBOM:
                 act_id = "MAT-ACTUATOR-SWIND-VIWECO"
                 act_name = "Động cơ van gió KLB/VIWECO 24V - 10Nm ON/OFF"
             elif motor_brand.upper() == "HONEYWELL":
-                act_id = "MAT-ACTUATOR-HONEYWELL"
-                act_name = "Động cơ chặn lửa ON/OFF 9Nm, 230V, đóng mở nhanh 15s (HoneyWell MS4609F1010/B)"
+                if cross_section_mod_m2 <= 0.8:
+                    act_id = "MAT-ACTUATOR-HONEYWELL-5NM"
+                    act_name = "Động cơ van gió HoneyWell ON/OFF 5Nm (Model: CN4605A)"
+                elif cross_section_mod_m2 <= 1.8:
+                    act_id = "MAT-ACTUATOR-HONEYWELL-10NM"
+                    act_name = "Động cơ van gió HoneyWell ON/OFF 10Nm (Model: CN4610A)"
+                else:
+                    act_id = "MAT-ACTUATOR-HONEYWELL-20NM"
+                    act_name = "Động cơ van gió HoneyWell ON/OFF 20Nm (Model: CN4620A)"
             elif cross_section_mod_m2 <= 0.8:
                 act_id = "MAT-ACTUATOR-BELIMO-5NM"
                 act_name = "Động cơ van gió Belimo ON/OFF 5Nm"
@@ -369,7 +376,7 @@ class Agent05_DamperBOM:
                 "unit": "Bộ",
                 "note": f"Keo silicon chống cháy & phụ kiện lắp ghép ({modules_count} bộ)"
             })
-        elif ei_rating > 0 and max(w_eff, h_eff) > 150.0:
+        elif ei_rating > 0 and not is_md and max(w_eff, h_eff) > 150.0:
             from swind_utils import get_master_price_map
             p_fb10 = get_master_price_map().get("MAT-FIREBOARD-10MM-BODY", 518500.0)
             area_fb10_ei = (z_total_m2 * 320000.0) / (p_fb10 * 1.593)
@@ -410,59 +417,25 @@ class Agent05_DamperBOM:
             ei_sell = (z_round_m2 * ei_rate) if (ei_rating > 0 and not (is_fd_ei or is_mfd)) else 0.0
             target_mech_sell = base_round_sell + ei_sell
         elif is_fd_ei or is_mfd:
-            hw_tiers = damper_rules.get("honeywell_104_mech_tiers")
-            if is_mfd and (model_code == "1.04" or motor_brand.upper() == "HONEYWELL") and hw_tiers:
-                if w_eff > float(hw_tiers.get("large_total_w_threshold_mm", 3000.0)):
-                    w_gt = hw_tiers["large_total_w_formula"]
-                    fd_base_mod = _excel_round(
-                        float(w_gt["A"]) + float(w_gt["B_w"]) * w_mod + float(w_gt["B_h"]) * h_mod + float(w_gt["D"]) * (w_mod * h_mod),
-                        -2
-                    )
-                elif w_mod < 1000.0 and h_mod < 1000.0:
-                    h_tier = max(w_mod, h_mod) if w_mod < h_mod else h_mod
-                    t_cfg = hw_tiers["sub_1000_tiers"][-1]
-                    for t_cand in hw_tiers["sub_1000_tiers"]:
-                        if h_tier <= float(t_cand["max_h"]):
-                            t_cfg = t_cand
-                            break
-                    fd_base_mod = _excel_round(
-                        float(t_cfg["A"]) + float(t_cfg["B"]) * (w_mod + h_mod) + float(t_cfg["D"]) * (w_mod * h_mod),
-                        -2
-                    )
-                else:
-                    ge_cfg = hw_tiers["ge_1000_formula"]
-                    a_val = float(ge_cfg["h_tiers"][-1]["A"])
-                    for t_cand in ge_cfg["h_tiers"]:
-                        if h_mod <= float(t_cand["max_h"]):
-                            a_val = float(t_cand["A"])
-                            break
-                    if w_mod > 1500.0:
-                        a_val += float(ge_cfg.get("w_gt_1500_surcharge", 300000.0))
-                    fd_base_mod = _excel_round(
-                        a_val + float(ge_cfg["B"]) * (w_mod + h_mod) + float(ge_cfg["D"]) * (w_mod * h_mod),
-                        -2
-                    )
-                target_mech_sell = fd_base_mod * modules_count
+            # Công thức gốc BG VAN chuẩn 2026 (R30..R34, R36..R41)
+            # Thay thế đa thức chia 149 (legacy Haus Dalat) bằng tính từng thành phần:
+            #   O  = ROUND((Z_m2 × pkv + c_acc) × 1.15, -3)   ← vỏ + phụ kiện
+            #   AQ = chu_vi × 4 × 300mm × 700,000               ← tấm 10mm bọc thân (2 lớp)
+            #   AR = diện tích tấm 20mm lõi cánh × 800,000
+            #   AS = diện tích tấm 10mm ốp 2 mặt cánh × 700,000
+            #   AY = pkv × S_m2 × 2                             ← tôn tấm bọc
+            #   + 100,000 (hộp lò xo) × 1.25 (mult)
+            z_mod_m2 = ((w_mod + h_mod) * 2.0 * 300.0 + w_mod * h_mod) / 1_000_000.0
+            o_mod = _excel_round((z_mod_m2 * 321300.0 + 153000.0) * 1.15, -3)
+            aq_mod = (w_mod + h_mod) * 4.0 * 300.0 / 1_000_000.0 * 700000.0
+            if is_single_blade:
+                ar_mod = (w_mod / 1000.0) * (h_mod / 1000.0) * 800000.0
+                as_mod = (w_mod / 1000.0) * (h_mod / 1000.0) * 2.0 * 700000.0
             else:
-                # Công thức gốc BG VAN chuẩn 2026 (R30..R34, R36..R41)
-                # Thay thế đa thức chia 149 (legacy Haus Dalat) bằng tính từng thành phần:
-                #   O  = ROUND((Z_m2 × pkv + c_acc) × 1.15, -3)   ← vỏ + phụ kiện
-                #   AQ = chu_vi × 4 × 300mm × 700,000               ← tấm 10mm bọc thân (2 lớp)
-                #   AR = diện tích tấm 20mm lõi cánh × 800,000
-                #   AS = diện tích tấm 10mm ốp 2 mặt cánh × 700,000
-                #   AY = pkv × S_m2 × 2                             ← tôn tấm bọc
-                #   + 100,000 (hộp lò xo) × 1.25 (mult)
-                z_mod_m2 = ((w_mod + h_mod) * 2.0 * 300.0 + w_mod * h_mod) / 1_000_000.0
-                o_mod = _excel_round((z_mod_m2 * 321300.0 + 153000.0) * 1.15, -3)
-                aq_mod = (w_mod + h_mod) * 4.0 * 300.0 / 1_000_000.0 * 700000.0
-                if is_single_blade:
-                    ar_mod = (w_mod / 1000.0) * (h_mod / 1000.0) * 800000.0
-                    as_mod = (w_mod / 1000.0) * (h_mod / 1000.0) * 2.0 * 700000.0
-                else:
-                    ar_mod = ((w_mod - 20.0) / 1000.0 * 0.21 * blade_factor_per_mod) * 1.1 * 800000.0
-                    as_mod = ((w_mod / 1000.0) * 0.21 * blade_factor_per_mod * 2.0) * 1.1 * 700000.0
-                ay_mod = 321300.0 * (w_mod / 1000.0) * (h_mod / 1000.0) * 2.0
-                target_mech_sell = (o_mod + aq_mod + ar_mod + as_mod + ay_mod + 100000.0) * 1.25 * modules_count
+                ar_mod = ((w_mod - 20.0) / 1000.0 * 0.21 * blade_factor_per_mod) * 1.1 * 800000.0
+                as_mod = ((w_mod / 1000.0) * 0.21 * blade_factor_per_mod * 2.0) * 1.1 * 700000.0
+            ay_mod = 321300.0 * (w_mod / 1000.0) * (h_mod / 1000.0) * 2.0
+            target_mech_sell = (o_mod + aq_mod + ar_mod + as_mod + ay_mod + 100000.0) * 1.25 * modules_count
         elif is_fd_normal:
             pkv = 321300.0
             if w_eff >= 1000.0 or h_eff >= 1000.0:
@@ -491,20 +464,20 @@ class Agent05_DamperBOM:
                 c_acc = 252000.0 if is_prd else (152000.0 if is_nrd else 261000.0)
                 mult = 1.0
             elif h_eff > 400.0:
-                pkv = 321300.0 if is_prd else 271026.0
+                pkv = 271026.0
                 c_acc = 232000.0 if is_prd else (148000.0 if is_nrd else 224000.0)
                 mult = 1.0
             elif h_eff > 250.0:
-                pkv = 271026.0 if is_prd else 236628.0
-                c_acc = 206000.0 if is_prd else (97000.0 if is_nrd else 146000.0)
+                pkv = 236628.0
+                c_acc = 154000.0 if is_prd else (97000.0 if is_nrd else 146000.0)
                 mult = 1.0
             else:
                 pkv = 236628.0
-                c_acc = (96000.0 if w_eff <= 400.0 else 115000.0) if is_prd else (59000.0 if is_nrd else 101000.0)
+                c_acc = 95000.0 if is_prd else (59000.0 if is_nrd else 101000.0)
                 mult = 1.0
             base_mech_sell = _excel_round((z_total_m2 * pkv + c_acc) * 1.15, -3) * mult
             ei_rate = float(damper_rules.get("vcd_nrd_ei_wrapping_rate_per_m2", 320000.0))
-            ei_sell = (z_total_m2 * ei_rate) if (ei_rating > 0 and max(w_eff, h_eff) > 150.0) else 0.0
+            ei_sell = (z_total_m2 * ei_rate) if (ei_rating > 0 and not is_md and max(w_eff, h_eff) > 150.0) else 0.0
             target_mech_sell = base_mech_sell + ei_sell
 
         continuous_suffixes = ("-BODY", "-BLADE", "-AXLE", "-FB10-BODY", "-FB20-BLADE", "-FB10-BLADE")

@@ -92,7 +92,7 @@ def detect_boq_header(ws):
     aliases = get_subtype_rules().get("HEADER_ALIASES", {})
     NAME_KEYWORDS = tuple(aliases.get("name_keywords", ("sản phẩm", "hạng mục", "quy cách", "công tác", "nội dung", "diễn giải", "mô tả", "tên vật tư", "danh mục")))
     NAME_CAND_KEYWORDS = tuple(aliases.get("name_cand_keywords", ("sản phẩm", "hạng mục", "danh mục", "công tác", "nội dung", "diễn giải", "mô tả", "tên vật tư")))
-    QTY_KEYWORDS = tuple(aliases.get("qty_keywords", ("số lượng", "q'ty", "qty", "khối lượng", "sl", "kl")))
+    QTY_KEYWORDS = tuple(aliases.get("qty_keywords", ("số lượng", "q'ty", "q.ty", "qty", "khối lượng", "sl", "kl")))
     STT_KEYWORDS = tuple(aliases.get("stt_keywords", ("stt", "tt", "no", "no.")))
     SPEC_KEYWORDS = tuple(aliases.get("spec_keywords", ("thông số", "quy cách")))
     MODEL_KEYWORDS = tuple(aliases.get("model_keywords", ("model", "mã hiệu")))
@@ -144,8 +144,34 @@ def detect_boq_header(ws):
             if name_cands:
                 col_map["name"] = max(name_cands, key=lambda col_c: sum(1 for rr in range(r + 1, min(ws.max_row + 1, r + 25)) if ws.cell(rr, col_c).value not in (None, "")))
             if qty_cands:
-                col_map["qty"] = max(qty_cands, key=lambda col_c: sum(1 for rr in range(r + 1, min(ws.max_row + 1, r + 25)) if isinstance(ws.cell(rr, col_c).value, (int, float)) and ws.cell(rr, col_c).value > 0))
+                col_map["qty"] = max(qty_cands, key=lambda col_c: sum(1 for rr in range(r + 1, min(ws.max_row + 1, r + 500)) if isinstance(ws.cell(rr, col_c).value, (int, float)) and ws.cell(rr, col_c).value > 0))
+                if len(qty_cands) > 1:
+                    col_map["qty_alt"] = [c for c in qty_cands if c != col_map["qty"]][0]
             break
+
+    if header_row is None:
+        unit_set = {"cái", "bộ", "m", "m2", "m²", "md", "chiếc", "cụm", "hộp", "tấm", "kg", "lô", "set", "pcs", "ea"}
+        for r in range(1, min(25, ws.max_row + 1)):
+            if r in hidden_rows:
+                continue
+            row_cells = {c: ws.cell(r, c).value for c in range(1, max_scan_col + 1)
+                         if get_column_letter(c) not in hidden_cols and ws.cell(r, c).value is not None}
+            unit_cols = [c for c, v in row_cells.items() if str(v).strip().lower() in unit_set]
+            qty_cols = [c for c, v in row_cells.items() if isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0]
+            name_cols = [c for c, v in row_cells.items() if isinstance(v, str) and len(v.strip()) >= 4 and str(v).strip().lower() not in unit_set]
+            if unit_cols and qty_cols and name_cols:
+                u_col = unit_cols[0]
+                n_cands = [c for c in name_cols if c < u_col] or name_cols
+                n_col = n_cands[-1]
+                q_cands = [c for c in qty_cols if c > u_col] or [c for c in qty_cols if c != n_col]
+                if q_cands:
+                    q_col = q_cands[0]
+                    stt_cands = [c for c in qty_cols if c < n_col]
+                    header_row = r - 1
+                    col_map = {"name": n_col, "unit": u_col, "qty": q_col}
+                    if stt_cands:
+                        col_map["stt"] = stt_cands[-1]
+                    break
 
     if header_row is None:
         # Fallback: bố cục chuẩn Swind (Row 11)

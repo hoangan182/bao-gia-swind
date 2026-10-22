@@ -79,22 +79,32 @@ class SwindBOQParser:
             name_str = str(name_val).strip()
             raw_name_str = name_str
             is_missing_qty = False
+            is_pure_dim = bool(re.match(r'^(?:[dD]\d+|\d+\s*[xX*]\s*\d+)$', name_str))
+            if name_str.lower().endswith(("kích thước:", "kích thước")) and not re.search(r'\d', name_str):
+                current_section = name_str
+                continue
+            if is_pure_dim and current_section and current_section.upper() != "SẢN PHẨM":
+                name_str = f"{current_section.strip()} {name_str}"
             
             # Kiểm tra xem có phải dòng tiêu đề phân nhóm không (giữ lại dòng Cửa/Van có quy cách kích thước dù chưa điền khối lượng)
             if qty_val is None or not isinstance(qty_val, (int, float)) or qty_val <= 0:
                 nl_chk = name_str.lower()
                 is_blank_qty = (qty_val is None or str(qty_val).strip() == "")
+                is_zero_qty_with_unit = (qty_val in (0, 0.0, "0") and unit_val not in (None, "", 0, "0"))
                 has_cv_kw = any(k in nl_chk for k in cv_kws) or bool(re.search(cv_rx, nl_chk))
                 has_cv_dim = bool(re.search(r'(\d+\s*[xX*]\s*\d+|\b[dD]\d{2,4}\b|\b(?:vcd|fd|nrd|prd|md)\s+\d{2,4}\b)', nl_chk))
-                if is_blank_qty and has_cv_kw and has_cv_dim and "tổng cộng" not in nl_chk:
-                    is_missing_qty = True
+                if (is_blank_qty or is_zero_qty_with_unit) and has_cv_kw and has_cv_dim and "tổng cộng" not in nl_chk:
+                    is_missing_qty = is_blank_qty
                     qty_val = 0.0
                 else:
-                    if not unit_val and "tổng cộng" not in nl_chk:
+                    if not unit_val and not is_pure_dim and "tổng cộng" not in nl_chk:
                         current_section = name_str
                     continue
                 
             if not unit_val:
+                if ws.cell(r, col_map.get("stt", 1)).value in (0, "0") and not re.search(r'\d', name_str):
+                    current_section = name_str
+                    continue
                 unit_val = "m" if any(k in name_str.lower() for k in ("ống đồng", "ông đồng", "cách nhiệt", "upvc")) else "Cái"
                 
             # Đọc kích thước (Chỉ đọc từ cột tương ứng nếu header thực sự có cột đó)
@@ -147,7 +157,7 @@ class SwindBOQParser:
                 # 2a. Van nước / Cửa sổ / Thiết bị bắt đầu bằng Quạt, Máy lạnh, Dàn lạnh, Dàn nóng, Chụp thông hơi -> THUONG_MAI
                 if name_lower.startswith("cửa sổ") and ("cấp bù gió" in name_lower or "khi có cháy" in name_lower):
                     category = "VAN_GIO"
-                elif name_lower.startswith(("quạt ", "máy lạnh", "dàn lạnh", "dàn nóng", "cửa sổ", "chụp thông hơi", "tủ điện", "tủ điều khiển", "vent cap")):
+                elif name_lower.startswith(("quạt ", "máy lạnh", "dàn lạnh", "dàn nóng", "cửa sổ", "chụp thông hơi", "tủ điện", "tủ điều khiển", "vent cap", "ventcap")):
                     category = "THUONG_MAI"
                 else:
                     for comm in self.commercial_catalog:
@@ -160,8 +170,8 @@ class SwindBOQParser:
                                 category = "THUONG_MAI"
                                 break
 
-                # 2b. Box / Hộp tĩnh áp tôn mạ kẽm (không kèm tiêu âm) -> ONG_GIO
-                if category == "KHAC" and name_lower.startswith(("box ", "hộp ")) and not name_lower.startswith(("hộp và cửa", "hộp + cửa", "hộp kèm cửa", "box và cửa", "box + cửa")) and "tiêu âm" not in name_lower:
+                # 2b. Box / Hộp tĩnh áp tôn mạ kẽm & Phụ kiện ống gió (Cút, Côn, Chân rẽ, Tê) -> ONG_GIO
+                if category == "KHAC" and name_lower.startswith(("box ", "hộp ", "cút ", "côn ", "chân rẽ", "tê ")) and not name_lower.startswith(("hộp và cửa", "hộp + cửa", "hộp kèm cửa", "box và cửa", "box + cửa")) and "tiêu âm" not in name_lower:
                     category = "ONG_GIO"
 
                 # 2c. Kiểm tra Hàng Sản Xuất có độ đặc thù cao (Canvas, Tiêu âm, Cửa, Van, Ống mềm)
@@ -261,6 +271,8 @@ class SwindBOQParser:
             if category in ("VAN_GIO", "CUA_GIO") and w == 0 and h == 0 and d_val == 0:
                 is_missing_dims = True
                 category = "THUONG_MAI"
+            elif category == "CUA_GIO" and d_val > 0 and any(k in full_name_lower for k in ("miệng", "cửa", "diffuser", "ead")):
+                category = "THUONG_MAI"
 
             # Trích xuất chỉ số chống cháy EI (EI30, EI60, EI90, EI120)
             ei_rating = 0
@@ -284,9 +296,14 @@ class SwindBOQParser:
                     
             name_str = full_name_str
 
-            # Rule 1: Kích thước cửa gió ghi KTC thì cộng thêm mỗi cạnh 50mm
+            # Rule 1: Kích thước cửa gió ghi KTC hoặc cửa bù khí (mặc định nan Z) thì cộng thêm mỗi cạnh 50mm
             ktc_rx = combo_cfg.get("ktc_regex", r'\bktc\b|kích\s*thước\s*cổ')
-            is_ktc = bool(re.search(ktc_rx, dim_search_text, re.IGNORECASE))
+            raw_makeup_chk = f"{raw_name_str} {model_str} {note_boq}".lower()
+            is_makeup_air_z = (
+                any(k in raw_makeup_chk for k in ("cấp khí bù", "bù khí", "cấp gió bù", "bù gió"))
+                and not any(k in raw_makeup_chk for k in ("fag", "sag", "rag", "oag", "pag", "seg", "eag", "sdg", "obd", "nan thẳng", "bầu dục"))
+            )
+            is_ktc = bool(re.search(ktc_rx, dim_search_text, re.IGNORECASE)) or is_makeup_air_z
 
             # Rule 6 & 7: Kiểm tra dòng sản phẩm kết hợp Van + Cửa (Combo)
             search_combo_txt = f"{raw_name_str} {name_str} {model_str}".lower().replace("\n", " ")
@@ -295,138 +312,69 @@ class SwindBOQParser:
             has_diffuser = bool(re.search(diff_rx, search_combo_txt))
             m_damper = re.search(damp_rx, search_combo_txt)
 
-            if category in ("CUA_GIO", "VAN_GIO") and has_diffuser and m_damper:
-                match_kw = m_damper.group(0).lower()
-                if "mfsd" in match_kw:
-                    d_type, d_desc = "MFSD", "chặn khói lửa động cơ MFSD"
-                elif "mfd" in match_kw:
-                    d_type, d_desc = "MFD", "chặn lửa động cơ MFD"
-                elif "md" in match_kw or "on/off" in match_kw or "on-off" in match_kw or "động cơ" in match_kw:
-                    d_type, d_desc = "MD", "gió động cơ ON/OFF MD"
-                elif "fd" in match_kw or "cầu chì" in match_kw or "chặn lửa" in match_kw:
-                    d_type, d_desc = "FD", "chặn lửa cầu chì FD"
-                elif "prd" in match_kw or "xả áp" in match_kw:
-                    d_type, d_desc = "PRD", "xả áp đối trọng PRD"
-                elif "nrd" in match_kw or "một chiều" in match_kw or "1 chiều" in match_kw:
-                    d_type, d_desc = "NRD", "một chiều NRD"
-                else:
-                    d_type, d_desc = "VCD", "điều chỉnh lưu lượng VCD"
+            damper_priority = {"MFSD": 1, "MFD": 2, "FD": 3, "MD": 4, "PRD": 5, "NRD": 6, "VCD": 7}
 
-                inline_dampers = tuple(combo_cfg.get("inline_combo_dampers", ("MD", "FD", "VCD")))
-                if d_type in inline_dampers and not name_lower.startswith("van "):
-                    # Giữ 1 dòng gộp theo đúng BOQ khách (mã SDG+MD, WL+N + FD hoặc WL+N + VCD), đơn giá = tổng giá Cửa gió + Van
-                    w_diff = (w + 50.0) if (is_ktc and w > 0) else w
-                    h_diff = (h + 50.0) if (is_ktc and h > 0) else h
-                    d_diff = (d_val + 50.0) if (is_ktc and d_val > 0) else d_val
-                    items.append({
-                        "source_row": r,
-                        "source_sheet": sheet_name,
-                        "section": current_section,
-                        "raw_name": raw_name_str,
-                        "name": name_str,
-                        "note_boq": note_boq,
-                        "category": "CUA_GIO",
-                        "combo_damper": d_type,
-                        "w_damper": w,
-                        "h_damper": h,
-                        "d_damper": d_val,
-                        "model": model_str.upper(),
-                        "w": w_diff,
-                        "h": h_diff,
-                        "d": d_diff,
-                        "l": l,
-                        "thickness": 0.0,
-                        "ei_rating": ei_rating,
-                        "unit": str(unit_val).strip() if str(unit_val).strip() else "cái",
-                        "qty": float(qty_val),
-                        "is_missing_qty": is_missing_qty,
-                        "ref_price": ws.cell(r, col_map["price"]).value if "price" in col_map else None,
-                        "is_ktc_applied": True
-                    })
-                else:
-                    # Phân rã thành 2 dòng sản phẩm riêng biệt (Cửa gió & Van gió)
-                    w_diff = (w + 50.0) if (is_ktc and w > 0) else w
-                    h_diff = (h + 50.0) if (is_ktc and h > 0) else h
-                    d_diff = (d_val + 50.0) if (is_ktc and d_val > 0) else d_val
-                    dim_diff_str = f"D{int(d_diff)}" if d_diff > 0 else (f"{int(w_diff)}x{int(h_diff)}" if w_diff > 0 else "")
-                    name_diff = f"Cửa gió nan thẳng {dim_diff_str}" if dim_diff_str else f"{name_str} (Phần cửa gió)"
-                    raw_diff = f"Cửa gió nan thẳng {dim_diff_str}" if dim_diff_str else raw_name_str
+            def _detect_damper_type(tok_str):
+                t = tok_str.strip().lower()
+                if re.search(diff_rx, t) and not re.search(r'\b(mfsd|mfd|vcd|vd|nrd|prd|md|fd)\b', t):
+                    m_v = re.search(r'\bvan\b.*', t)
+                    if not m_v:
+                        return None
+                    t = m_v.group(0)
+                if re.search(r'\bmfsd\b', t): return "MFSD"
+                if re.search(r'\bmfd\b|ngăn\s*cháy.*động\s*cơ|chống\s*cháy.*động\s*cơ|chặn\s*lửa.*động\s*cơ', t): return "MFD"
+                if re.search(r'\bvcd\b|\bvd\b|điều\s*chỉnh.*lưu\s*lượng', t): return "VCD"
+                if re.search(r'\bnrd\b|1\s*chiều|một\s*chiều', t): return "NRD"
+                if re.search(r'\bprd\b|xả\s*áp', t): return "PRD"
+                if re.search(r'\bmd\b|động\s*cơ|on/off|on-off', t): return "MD"
+                if re.search(r'\bfd\b|chặn\s*lửa|chống\s*cháy|dập\s*lửa|cầu\s*chì', t): return "FD"
+                return None
 
-                    items.append({
-                        "source_row": r,
-                        "source_sheet": sheet_name,
-                        "section": current_section,
-                        "raw_name": raw_diff,
-                        "name": name_diff,
-                        "note_boq": note_boq,
-                        "category": "CUA_GIO",
-                        "model": "SDG",
-                        "w": w_diff,
-                        "h": h_diff,
-                        "d": d_diff,
-                        "l": l,
-                        "thickness": 0.0,
-                        "ei_rating": 0,
-                        "unit": str(unit_val).strip() if str(unit_val).strip() else "cái",
-                        "qty": float(qty_val),
-                        "is_missing_qty": is_missing_qty,
-                        "ref_price": None,
-                        "is_ktc_applied": True
-                    })
+            scan_source = f"{raw_name_str} + {model_str}" if model_str else raw_name_str
+            tokens = [tk.strip() for tk in re.split(r'\s*(?:\+|(?:\bkèm\b|\bgắn\b|\btích\s*hợp\b|\bkết\s*hợp\b)(?!\s*(?:động\s*cơ|mô\s*tơ|môtơ|mo\s*tơ|motor|cầu\s*chì)))\s*', scan_source, flags=re.IGNORECASE) if tk.strip()]
+            detected_dampers = []
+            for tk in tokens:
+                dt = _detect_damper_type(tk)
+                if dt and dt not in detected_dampers:
+                    detected_dampers.append(dt)
+            if not detected_dampers and m_damper:
+                dt = _detect_damper_type(m_damper.group(0))
+                if dt:
+                    detected_dampers.append(dt)
 
-                    # 2. Phần Van gió (VAN_GIO) — Độ dày & chiều dài lấy từ Agent05_DamperBOM
-                    w_damp = w
-                    h_damp = h
-                    d_damp = d_val
-                    dim_damp_str = f"D{int(d_damp)}" if d_damp > 0 else (f"{int(w_damp)}x{int(h_damp)}" if w_damp > 0 else "")
-                    ei_suf = f" - EI{ei_rating}" if ei_rating > 0 else ""
-                    name_damp = f"Van {d_desc} {dim_damp_str}{ei_suf}" if dim_damp_str else f"Van {d_type} {name_str}"
-                    raw_damp = f"Van {d_type} {dim_damp_str}{ei_suf}" if dim_damp_str else raw_name_str
-
-                    items.append({
-                        "source_row": r,
-                        "source_sheet": sheet_name,
-                        "section": current_section,
-                        "raw_name": raw_damp,
-                        "name": name_damp,
-                        "note_boq": note_boq,
-                        "category": "VAN_GIO",
-                        "model": d_type,
-                        "w": w_damp,
-                        "h": h_damp,
-                        "d": d_damp,
-                        "l": 0,
-                        "thickness": 0.0,
-                        "ei_rating": ei_rating,
-                        "unit": str(unit_val).strip() if str(unit_val).strip() else "cái",
-                        "qty": float(qty_val),
-                        "is_missing_qty": is_missing_qty,
-                        "ref_price": ws.cell(r, col_map["price"]).value if "price" in col_map else None
-                    })
+            if category in ("CUA_GIO", "VAN_GIO") and has_diffuser and m_damper and detected_dampers:
+                sorted_dampers = sorted(detected_dampers, key=lambda x: damper_priority.get(x, 99))
+                w_diff = (w + 50.0) if (is_ktc and w > 0) else w
+                h_diff = (h + 50.0) if (is_ktc and h > 0) else h
+                d_diff = (d_val + 50.0) if (is_ktc and d_val > 0) else d_val
+                items.append({
+                    "source_row": r,
+                    "source_sheet": sheet_name,
+                    "section": current_section,
+                    "raw_name": raw_name_str,
+                    "name": name_str,
+                    "note_boq": note_boq,
+                    "category": "CUA_GIO",
+                    "combo_damper": sorted_dampers[0],
+                    "combo_dampers": sorted_dampers,
+                    "w_damper": w,
+                    "h_damper": h,
+                    "d_damper": d_val,
+                    "model": model_str.upper(),
+                    "w": w_diff,
+                    "h": h_diff,
+                    "d": d_diff,
+                    "l": l,
+                    "thickness": 0.0,
+                    "ei_rating": ei_rating,
+                    "unit": str(unit_val).strip() if str(unit_val).strip() else "cái",
+                    "qty": float(qty_val),
+                    "is_missing_qty": is_missing_qty,
+                    "ref_price": ws.cell(r, col_map["price"]).value if "price" in col_map else None,
+                    "is_ktc_applied": True
+                })
 
             elif category == "VAN_GIO" and not has_diffuser:
-                # Rule 8: Chaining Token Scanner - Quét đệ quy tất cả các token phân cách bởi dấu '+' hoặc từ khóa 'kèm'/'gắn'
-                # Nhận diện đầy đủ không giới hạn số lượng van cộng dồn (VD: FD+VD, MFD+NRD, MFD+VD+NRD, NRD+FD...)
-                damper_priority = {"MFSD": 1, "MFD": 2, "FD": 3, "MD": 4, "PRD": 5, "NRD": 6, "VCD": 7}
-
-                def _detect_damper_type(tok_str):
-                    t = tok_str.strip().lower()
-                    if re.search(r'\bmfsd\b', t): return "MFSD"
-                    if re.search(r'\bmfd\b|ngăn\s*cháy.*động\s*cơ|chống\s*cháy.*động\s*cơ|chặn\s*lửa.*động\s*cơ', t): return "MFD"
-                    if re.search(r'\bvcd\b|\bvd\b|điều\s*chỉnh.*lưu\s*lượng', t): return "VCD"
-                    if re.search(r'\bnrd\b|1\s*chiều|một\s*chiều', t): return "NRD"
-                    if re.search(r'\bprd\b|xả\s*áp', t): return "PRD"
-                    if re.search(r'\bmd\b|động\s*cơ|on/off|on-off', t): return "MD"
-                    if re.search(r'\bfd\b|chặn\s*lửa|chống\s*cháy|dập\s*lửa|cầu\s*chì', t): return "FD"
-                    return None
-
-                tokens = [tk.strip() for tk in re.split(r'\s*(?:\+|\bkèm\b|\bgắn\b|\btích\s*hợp\b)\s*', raw_name_str) if tk.strip()]
-                detected_dampers = []
-                for tk in tokens:
-                    dt = _detect_damper_type(tk)
-                    if dt and dt not in detected_dampers:
-                        detected_dampers.append(dt)
-
                 if len(detected_dampers) > 1:
                     # Sắp xếp theo thứ bậc ưu tiên để chọn van chính (MFSD > MFD > FD > MD > PRD > NRD > VCD)
                     sorted_dampers = sorted(detected_dampers, key=lambda x: damper_priority.get(x, 99))
@@ -546,7 +494,7 @@ class SwindBOQParser:
             if not sheet_names:
                 # Nếu không auto-detect được sheet nào, lấy sheet đầu tiên không phải summary
                 for s in self.wb.sheetnames:
-                    if "summary" not in s.lower():
+                    if not any(k in s.lower() for k in ("summary", "cover", "bìa")):
                         sheet_names = [s]
                         break
                 if not sheet_names:

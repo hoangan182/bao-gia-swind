@@ -191,18 +191,27 @@ class Agent06_DiffuserBOM:
             total_alu_kg = frame_kg
 
         elif profile_type == "SLB":
-            D, E = max(50.0, w_val - 50.0), h_val
-            F, G = w_val, h_val + 50.0
+            if is_black_2nd_layer:
+                D, E = max(50.0, w_val - 50.0), h_val
+                F, G = w_val, h_val + 50.0
+                has_obd = True
+                mult_slb = 1.75 if w_val >= 5000.0 else 1.5
+            else:
+                F, G = w_val, h_val
+                D, E = max(50.0, w_val - 50.0), max(50.0, h_val - 50.0)
+                mult_slb = 1.0
             N, O = F / 1000.0, G / 1000.0
             d_m, e_m = D / 1000.0, E / 1000.0
             n_nan = max(1, _excel_round((e_m - 0.015) / 0.02))
             n_suot = max(1, _excel_round(d_m / 0.8))
-            has_obd = True
 
-            mult_slb = 1.75 if w_val >= 5000.0 else 1.5
             raw_frame_kg = 2.0 * (N + O) * 0.20
             raw_blade_kg = n_nan * d_m * 0.08 + n_suot * e_m * 0.07
             p_alu_slb = float(diffuser_rules.get("aluminum_selling_price_per_kg", 165000.0))
+            if not is_black_2nd_layer:
+                unrounded_slb_sell = ((raw_frame_kg + raw_blade_kg) * p_alu_slb + 5000.0 + (raw_frame_kg + raw_blade_kg) * 20000.0) * 1.25
+                target_slb_sell = _excel_round(unrounded_slb_sell, -3)
+                mult_slb = (target_slb_sell / unrounded_slb_sell) if unrounded_slb_sell > 0 else 1.0
             frame_kg = raw_frame_kg * (p_alu_slb * 1.25 * mult_slb) / (p_alu_bd_master * mfg_markup)
             blade_kg = raw_blade_kg * (p_alu_slb * 1.25 * mult_slb) / (p_alu_bd_master * mfg_markup)
             paint_m2 = (raw_frame_kg + raw_blade_kg) * (20000.0 * 1.25 * mult_slb) / (p_paint_master * mfg_markup)
@@ -397,7 +406,7 @@ class Agent06_DiffuserBOM:
 
         if has_obd:
             d_m, e_m = D / 1000.0, E / 1000.0
-            obd_mult = (1.75 if w_val >= 5000.0 else 1.5) if profile_type == "SLB" else 1.0
+            obd_mult = (1.75 if w_val >= 5000.0 else 1.5) if (profile_type == "SLB" and is_black_2nd_layer) else 1.0
             raw_obd_frame_kg = 2.0 * (d_m + e_m) * 0.158
             raw_obd_blade_kg = (d_m / 0.04) * e_m * 0.10
             raw_obd_acc_cost = (d_m / 0.04) * 1500.0 + 5000.0

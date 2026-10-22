@@ -1,0 +1,44 @@
+{
+  "pending_proposals": [
+    {
+      "raw_name": "cút 90 độ",
+      "proposed_id": "ONG_GIO",
+      "standard_name": "ONG_GIO",
+      "project": "General",
+      "proposed_by": "Engineer",
+      "status": "PENDING_APPROVAL"
+    },
+    {
+      "raw_name": "côn thu",
+      "proposed_id": "ONG_GIO",
+      "standard_name": "ONG_GIO",
+      "project": "General",
+      "proposed_by": "Engineer",
+      "status": "PENDING_APPROVAL"
+    },
+    {
+      "raw_name": "côn thu chuyển tiết diện",
+      "proposed_id": "ONG_GIO",
+      "standard_name": "ONG_GIO",
+      "project": "General",
+      "proposed_by": "Engineer",
+      "status": "PENDING_APPROVAL"
+    },
+    {
+      "raw_name": "chân rẽ",
+      "proposed_id": "ONG_GIO",
+      "standard_name": "ONG_GIO",
+      "project": "General",
+      "proposed_by": "Engineer",
+      "status": "PENDING_APPROVAL"
+    },
+    {
+      "raw_name": "chân rẽ kèm côn thu chuyển tiết diện",
+      "proposed_id": "ONG_GIO",
+      "standard_name": "ONG_GIO",
+      "project": "General",
+      "proposed_by": "Engineer",
+      "status": "PENDING_APPROVAL"
+    }
+  ]
+}

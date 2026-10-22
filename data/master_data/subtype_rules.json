@@ -22,22 +22,22 @@
         {"keywords": ["bầu dục", "nan thẳng", "seag", "seg", "oag", "mag", "pag", "sag", "srg", "sdg", "obd", "eag"], "subtype": "BD"}
     ],
     "HEADER_ALIASES": {
-        "name_keywords": ["sản phẩm", "hạng mục", "quy cách", "công tác", "nội dung", "diễn giải", "mô tả", "tên vật tư", "danh mục"],
-        "name_cand_keywords": ["sản phẩm", "hạng mục", "danh mục", "công tác", "nội dung", "diễn giải", "mô tả", "tên vật tư"],
-        "qty_keywords": ["số lượng", "q'ty", "qty", "khối lượng", "sl", "kl"],
+        "name_keywords": ["sản phẩm", "hạng mục", "quy cách", "công tác", "nội dung", "diễn giải", "mô tả", "tên vật tư", "tên hàng", "danh mục"],
+        "name_cand_keywords": ["sản phẩm", "hạng mục", "danh mục", "công tác", "nội dung", "diễn giải", "mô tả", "tên vật tư", "tên hàng"],
+        "qty_keywords": ["số lượng", "q'ty", "q.ty", "qty", "khối lượng", "sl", "kl"],
         "stt_keywords": ["stt", "tt", "no", "no."],
-        "spec_keywords": ["thông số", "quy cách"],
+        "spec_keywords": ["thông số", "quy cách", "đặc tính", "kỹ thuật"],
         "model_keywords": ["model", "mã hiệu"],
         "brand_keywords": ["thương hiệu", "nhãn hiệu", "xuất xứ"],
         "size_keywords": ["kích thước", "size"],
         "thickness_keywords": ["độ dày"],
-        "unit_keywords": ["unit", "đơn vị"],
+        "unit_keywords": ["unit", "đơn vị", "đvt", "dvt"],
         "price_keywords": ["đơn giá", "price"],
         "total_keywords": ["thành tiền", "total"],
         "remarks_keywords": ["ghi chú", "remarks"]
     },
     "COMBO_AND_DETECTION_RULES": {
-        "missing_qty_cv_keywords": ["louver", "luover", "louvre", "miệng gió", "cửa gió", "cửa nan", "van ", "vcd", "mfd", "mfsd", "nrd", "prd"],
+        "missing_qty_cv_keywords": ["louver", "luover", "louvre", "miệng gió", "miệng hút", "miệng lấy", "miệng cấp", "miệng thải", "miệng hồi", "cửa gió", "cửa nan", "van ", "vcd", "mfd", "mfsd", "nrd", "prd"],
         "missing_qty_cv_regex": "\\b(fd|md|sag|rag|eag|oag|pag|seg|eal|oal|fal)\\b",
         "combo_diffuser_regex": "\\bmiệng\\s*gió\\b|\\bcửa\\s*gió\\b|\\bcửa\\s*nan\\b|\\blouver\\b|\\bluover\\b|\\blouvre\\b|cửa\\s*(?:nan|thẳng|gió|\\+)",
         "combo_damper_regex": "\\b(mfd|mfsd|md|fd|prd|nrd|vcd)\\b|van\\s+(?:on/off|on-off|chống\\s*cháy|chặn\\s*lửa|động\\s*cơ|một\\s*chiều|1\\s*chiều|xả\\s*áp)",

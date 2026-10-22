@@ -191,12 +191,12 @@
       "model_name": "SWIND-1.04-MFD-EI60",
       "bctn": "1515/VLXD-TBMT",
       "actuator_model": "HoneyWell MS4609F1010/B (9Nm, 230V, đóng mở nhanh 15s)",
-      "actuator_selling_price_vnd": 3400000,
+      "actuator_selling_price_vnd": 3600000,
       "module_split_limit_mm": {
         "max_w": 1750,
         "max_h": 1000
       },
-      "rule": "Khi báo giá van ngăn cháy động cơ HoneyWell (mã 1.04 / SWIND-1.04-MFD-EI60): 1) Khổ tối đa 1 thân theo BCTN 1515/VLXD-TBMT là W<=1750mm, H<=1000mm (ví dụ 1600x400 là 1 modul, 1800x400 chia 2 modul, 3960x560 chia 3 modul, 1460x1260 chia 2 modul). 2) Đơn giá động cơ HoneyWell MS4609F1010/B (9Nm, 230V, 15s) là 3,400,000 VNĐ/bộ (thấp hơn Belimo FSLF 230US 300,000đ và thấp hơn Belimo BFN 800,000đ). 3) Đơn giá 1 bộ van = (Đơn giá cơ khí thân van 1 modul theo bậc kích thước + 3,400,000) * số modul. 4) Ghi chú chuẩn: '- Van động cơ SWIND-MFSD - Tiêu chuẩn EI 60\\n- 2 đầu bích TDC - HoneyWell, 9Nm, 230V, Type đóng mở nhanh: 15s - Model: MS4609F1010/B\\n- Sản xuất theo BCTN số 1515/VLXD-TBMT' (kèm '\\n- Chia N modul theo bản vẽ chi tiết' khi N > 1)."
+      "rule": "Khi báo giá van ngăn cháy động cơ HoneyWell (mã 1.04 / SWIND-1.04-MFD-EI60): 1) Khổ tối đa 1 thân theo BCTN 1515/VLXD-TBMT là W<=1750mm, H<=1000mm. 2) Đơn giá động cơ HoneyWell MS4609F1010/B (9Nm, 230V, 15s) theo BẢNG TÍNH GIÁ SWIND chuẩn 2026.xls là 3,600,000 VNĐ/bộ. 3) Phần thân cơ khí tính theo công thức chuẩn đa cánh của BẢNG TÍNH GIÁ SWIND chuẩn 2026.xls (khi H > 250mm chia đa cánh theo hệ số (H - 5)/149 * 0.21 * 1.1). 4) Ghi chú chuẩn: '- Van động cơ MFD - Tiêu chuẩn EI 60\\n- 2 đầu bích TDC - HoneyWell, 9Nm, 230V, Type đóng mở nhanh: 15s - Model: MS4609F1010/B\\n- Sản xuất theo BCTN số 1515/VLXD-TBMT' (kèm '\\n- Chia N modul theo bản vẽ chi tiết' khi N > 1)."
     },
     "OPTIMAL_2D_DAMPER_MODULE_SPLITTING": {
       "formula": "mod_w = ceil(W / max_w_mm), mod_h = ceil(H / max_h_mm), modules_count = mod_w * mod_h, B1 = W / mod_w, B2 = H / mod_h",
@@ -224,7 +224,13 @@
       "rule": "Đối với hạng mục cửa dành cho hệ điều hòa, cửa vuông các kích thước 600x600 (cổ 450x450), 450x450 (cổ 300x300), 300x300 (cổ 150x150) mặc định áp dụng mã cửa khuếch tán vuông SD (profile type 'T', B1=W-150, B2=H-150). Cửa hồi / miệng hồi thì mặc định là cửa nan thẳng bầu dục kèm lưới lọc bụi (mã SDG+F, profile type 'BD', has_filter=True)."
     },
     "COMBO_DIFFUSER_WITH_PLENUM_BOX_RULE": {
-      "rule": "Khi BOQ có 'Cửa gió kèm hộp gió' hoặc 'Miệng gió kèm hộp gió': Swind báo giá phần Cửa gió. Nếu BOQ đã có giá sẵn (như trường hợp Minh Triết đã báo giá phần hộp gió và ghi chú chưa gồm cửa gió), Swind sẽ cộng giá cửa gió vào giá có sẵn đó (Đơn giá = Giá hộp gió + Giá cửa gió Swind) và ghi thêm thông tin Cửa gió vào phần ghi chú. Nếu BOQ chưa có giá, Swind báo giá phần Cửa gió và ghi chú rõ 'Đơn giá chỉ bao gồm phần Cửa gió [Model], chưa gồm hộp gió' để áp dụng thống nhất cho các dự án tiếp theo."
+      "rule": "Khi BOQ có 'Cửa gió kèm hộp gió' hoặc 'Miệng gió kèm hộp gió': Swind chỉ báo giá phần Cửa gió trên sheet báo giá của Swind (không cộng giá hộp gió của nhà thầu khác như Minh Triết), ghi chú '. Không tính box do nhà thầu tự thi công'."
+    },
+    "UNIT_PRICE_ROUNDUP_100_RULE": {
+      "rule": "Làm tròn giá LÊN hàng trăm đồng ở cột Đơn giá (ROUNDUP(Đơn_giá, -2), ví dụ 2405 -> 2500, 28940 -> 29000), không làm tròn ở cột Thành tiền (Thành tiền = Đơn giá * Số lượng)."
+    },
+    "ROUND_DIFFUSER_EAD_AND_CAV_ACOUSTIC_LOUVER_EXCLUSION": {
+      "rule": "Khi chạy báo giá Cửa gió & Van gió: các mục miệng hút/cửa gió tròn chỉ ghi đường kính D (như 'Miệng hút EAD kèm hộp gió D150 / D300' - trừ lưới chắn côn trùng LCCT rời), 'Hộp điều chỉnh lưu lượng gió (CAV) D150' và 'Cửa chớp tiêu âm đầu vào/ra (L=100)' là hàng mua ngoài (THUONG_MAI / TIEU_AM), để trống không báo giá."
     }
   }
 }

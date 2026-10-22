@@ -37,7 +37,7 @@ class Agent01_BOQExtractor:
             target_sheets = self.parser.auto_detect_hvac_sheets()
 
         if not target_sheets:
-            target_sheets = [s for s in self.parser.wb.sheetnames if "summary" not in s.lower()]
+            target_sheets = [s for s in self.parser.wb.sheetnames if not any(k in s.lower() for k in ("summary", "cover", "bìa"))]
             if not target_sheets:
                 target_sheets = [self.parser.wb.sheetnames[0]]
 
@@ -122,7 +122,11 @@ class Agent01_BOQExtractor:
         is_box_combo = False
         dia_val = None
         eff_model_code = None
-        motor_brand = "BELIMO"
+        req_motor = str(item.get("motor_brand_override") or "").strip().upper()
+        req_mfd_model = str(item.get("mfd_model_override") or "").strip()
+        is_klb_req = (req_motor == "KLB") or any(k in (raw_search + " " + full_search).lower() for k in ("klb", "viweco", "v6006")) or (req_mfd_model == "1.03")
+        is_honeywell_req = (req_motor == "HONEYWELL") or any(k in (raw_search + " " + full_search).lower() for k in ("honeywell", "honey well", "ms4609", "s6061")) or (req_mfd_model == "1.04")
+        motor_brand = "KLB" if is_klb_req else ("HONEYWELL" if is_honeywell_req else "BELIMO")
 
         if cat == "VAN_GIO":
             model_item = str(item.get("model") or "").strip().upper()
@@ -132,11 +136,11 @@ class Agent01_BOQExtractor:
                     model_code = mc
                     break
 
-            if "2.01" in model_item or "E-FD" in model_item:
+            if model_item == "FD" or "2.01" in model_item or "E-FD" in model_item:
                 damper_type = "FD"
             elif "1.01" in model_item or "MFSD" in model_item:
                 damper_type = "MFSD"
-            elif any(k in model_item for k in ("1.02", "1.03", "1.04", "1.05")):
+            elif model_item == "MFD" or any(k in model_item for k in ("1.02", "1.03", "1.04", "1.05")):
                 damper_type = "MFD"
             elif model_item == "VCD":
                 damper_type = "VCD"
@@ -162,6 +166,9 @@ class Agent01_BOQExtractor:
             is_klb_req = (req_motor == "KLB") or any(k in (raw_search + " " + full_search).lower() for k in ("klb", "viweco", "v6006")) or (eff_req_code == "1.03")
             is_honeywell_req = (req_motor == "HONEYWELL") or any(k in (raw_search + " " + full_search).lower() for k in ("honeywell", "honey well", "ms4609", "s6061")) or (eff_req_code == "1.04")
             motor_brand = "KLB" if is_klb_req else ("HONEYWELL" if is_honeywell_req else "BELIMO")
+            if eff_type == "MD":
+                ei_rating = 0
+                item["ei_rating"] = 0
             is_fd_ei = (eff_type == "FD") and (
                 (ei_rating > 0)
                 or (eff_req_code == "2.01")
@@ -214,7 +221,7 @@ class Agent01_BOQExtractor:
                     mod_hw_txt = f"\n- Chia {mod_cnt} modul theo bản vẽ chi tiết" if mod_cnt > 1 else ""
                     model_fslf = "MFD + Louver" if damper_type == "MFD_LOUVER" else "SWIND-1.04-MFD-EI60"
                     note_fslf = (
-                        "- Van động cơ SWIND-MFSD - Tiêu chuẩn EI 60\n"
+                        "- Van động cơ MFD - Tiêu chuẩn EI 60\n"
                         "- 2 đầu bích TDC - HoneyWell, 9Nm, 230V, Type đóng mở nhanh: 15s - Model: MS4609F1010/B\n"
                         "- Sản xuất theo BCTN số 1515/VLXD-TBMT"
                         f"{mod_hw_txt}{clamp_txt}{lv_txt}"
@@ -291,15 +298,21 @@ class Agent01_BOQExtractor:
                     note_fslf = note_bfn = "Van chặn lửa cầu chì tôn mạ kẽm"
             elif eff_type == "MD":
                 model_fslf = model_bfn = "MD"
+                s_mod = (w_mod * h_mod) / 1_000_000.0
                 if is_klb_req:
                     if mod_cnt > 1:
-                        note_fslf = note_bfn = f"Van MD chia {mod_cnt} modul,  {mod_cnt} động cơ KLB/VIWECO 24V -10N"
+                        note_fslf = note_bfn = f"Van MD chia {mod_cnt} modul,  {mod_cnt} động cơ KLB/VIWECO 24V - 10Nm ON/OFF"
                     else:
-                        note_fslf = note_bfn = "Van MD, động cơ KLB/VIWECO 24v-10N"
-                elif is_honeywell_req:
-                    note_fslf = note_bfn = "Van động cơ ON-OFF HoneyWell, 9Nm, 230V, đóng mở nhanh 15s (Model: MS4609F1010/B)"
+                        note_fslf = note_bfn = "Van MD, động cơ KLB/VIWECO 24V - 10Nm ON/OFF"
+                elif is_honeywell_req or motor_brand == "HONEYWELL":
+                    act_nm = "5Nm" if s_mod <= 0.8 else ("10Nm" if s_mod <= 1.8 else "20Nm")
+                    act_md = "CN4605A" if s_mod <= 0.8 else ("CN4610A" if s_mod <= 1.8 else "CN4620A")
+                    mod_dmp_txt = f", chia {mod_cnt} modul ({mod_cnt} động cơ)" if mod_cnt > 1 else ""
+                    note_fslf = note_bfn = f"Van động cơ ON-OFF HoneyWell {act_nm}, 230V, đóng mở 90s-150s (Model: {act_md}/tđ){mod_dmp_txt}"
                 else:
-                    note_fslf = note_bfn = "Van động cơ ON-OFF BELIMO (đóng mở 150s), xuất xứ Thụy Sỹ"
+                    act_nm = "5Nm" if s_mod <= 0.8 else ("10Nm" if s_mod <= 1.8 else "20Nm")
+                    mod_dmp_txt = f", chia {mod_cnt} modul ({mod_cnt} động cơ)" if mod_cnt > 1 else ""
+                    note_fslf = note_bfn = f"Van động cơ ON-OFF BELIMO {act_nm} (đóng mở 150s), điện áp 230V, xuất xứ Thụy Sỹ{mod_dmp_txt}"
             elif eff_type == "NRD":
                 model_fslf = model_bfn = "NRD"
                 note_fslf = note_bfn = "Van 1 chiều tôn mạ kẽm. ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm" if ei_rating > 0 else "Van 1 chiều tôn mạ kẽm"
@@ -312,30 +325,36 @@ class Agent01_BOQExtractor:
 
             # Van+Van Combo: Nối thêm model suffix & note cho tất cả van phụ trong combo
             sec_dmps = item.get("secondary_dampers") or ([item.get("secondary_damper")] if item.get("secondary_damper") else [])
-            sec_model_map = {"VCD": " + VCD", "NRD": " + NRD", "PRD": " + PRD", "MD": " + MD", "FD": " + FD"}
-            sec_note_map = {
-                "VCD": " + Van điều chỉnh lưu lượng tay gạt tôn mạ kẽm",
-                "NRD": " + Van 1 chiều tôn mạ kẽm",
-                "PRD": " + Van xả áp đối trọng tôn mạ kẽm",
-                "MD": " + Van động cơ ON-OFF BELIMO (đóng mở 150s), xuất xứ Thụy Sỹ",
-                "FD": " + Van chặn lửa cầu chì EI120 (BCTN 4761/VLXD-TBMT)"
-            }
             for sec_dmp in sec_dmps:
-                if sec_dmp in sec_model_map:
-                    model_fslf = f"{model_fslf}{sec_model_map[sec_dmp]}"
-                    model_bfn = f"{model_bfn}{sec_model_map[sec_dmp]}"
-                if sec_dmp in sec_note_map:
-                    note_fslf = f"{note_fslf}{sec_note_map[sec_dmp]}"
-                    note_bfn = f"{note_bfn}{sec_note_map[sec_dmp]}"
+                sec_item = {
+                    "category": "VAN_GIO",
+                    "raw_name": f"Van {sec_dmp}",
+                    "name": f"Van {sec_dmp}",
+                    "model": sec_dmp,
+                    "w": w,
+                    "h": h,
+                    "d": d,
+                    "ei_rating": 0,
+                    "motor_brand_override": motor_brand
+                }
+                sec_spec = cls.resolve_item_spec(sec_item, subtype_rules, price_map=price_map, idx=idx)
+                model_fslf = f"{model_fslf} + {sec_spec['model_fslf']}"
+                model_bfn = f"{model_bfn} + {sec_spec['model_bfn']}"
+                note_fslf = f"{note_fslf}\n{sec_spec['note_fslf']}" if sec_spec["note_fslf"].startswith("-") else f"{note_fslf} + {sec_spec['note_fslf']}"
+                note_bfn = f"{note_bfn}\n{sec_spec['note_bfn']}" if sec_spec["note_bfn"].startswith("-") else f"{note_bfn} + {sec_spec['note_bfn']}"
 
         elif cat == "CUA_GIO":
             combined_search = (raw_search + " " + full_search).lower()
             combo_cfg = (subtype_rules or {}).get("COMBO_AND_DETECTION_RULES") or get_subtype_rules().get("COMBO_AND_DETECTION_RULES", {})
 
-            # Rule 1: KTC vs KTM check (nếu ghi KTC thì cộng thêm mỗi cạnh 50)
+            # Rule 1: KTC vs KTM check (nếu ghi KTC hoặc cửa bù khí nan Z thì cộng thêm mỗi cạnh 50)
             if not item.get("is_ktc_applied"):
                 ktc_rx = combo_cfg.get("ktc_regex", r'\bktc\b|kích\s*thước\s*cổ')
-                is_ktc = bool(re.search(ktc_rx, combined_search, re.IGNORECASE))
+                is_makeup_air_z = (
+                    any(k in raw_search for k in ("cấp khí bù", "bù khí", "cấp gió bù", "bù gió"))
+                    and not any(k in raw_search for k in ("fag", "sag", "rag", "oag", "pag", "seg", "eag", "sdg", "obd", "nan thẳng", "bầu dục"))
+                )
+                is_ktc = bool(re.search(ktc_rx, combined_search, re.IGNORECASE)) or is_makeup_air_z
                 if is_ktc:
                     if w > 0: w += 50.0
                     if h > 0: h += 50.0
@@ -343,6 +362,8 @@ class Agent01_BOQExtractor:
                     item["w"] = w
                     item["h"] = h
                     item["d"] = d
+                    a1 = "Ø" if d > 0 else (int(w) if w > 0 else None)
+                    a2 = int(d) if d > 0 else (int(h) if h > 0 else None)
                 item["is_ktc_applied"] = True
 
             mesh_kws = tuple(combo_cfg.get("mesh_keywords", ("lưới", "chắn côn trùng", "lcct", "+n", "+ n", "+is", "is")))
@@ -354,7 +375,7 @@ class Agent01_BOQExtractor:
             has_filter = any(k in combined_search for k in filter_kws)
             is_double_layer = ("2 lớp" in combined_search or "hai lớp" in combined_search)
             is_black_2nd_layer = ("2nd layer" in combined_search or "black paint" in combined_search or "sơn đen" in combined_search)
-            box_note = ""
+            box_note = ". Không tính box do nhà thầu tự thi công" if any(k in raw_search for k in ("box", "hộp gió", "kèm hộp")) else ""
 
             # Rule 2: Cửa tăng áp, cửa hút khói kèm OBD -> nan thẳng bầu dục kèm van OBD mã SDG+O
             is_press_or_smoke = any(k in combined_search for k in ("tăng áp", "tạo áp", "hút khói", "thải khói", "pag", "seg"))
@@ -434,7 +455,7 @@ class Agent01_BOQExtractor:
                 elif profile_type == "SLB":
                     model_fslf = model_bfn = "SLB+O" if has_obd else "SLB"
                     if w > 0 and h > 0:
-                        b1, b2 = int(w), int(h)
+                        b1, b2 = (int(w), int(h)) if is_black_2nd_layer else (int(max(50, w - 50)), int(max(50, h - 50)))
                     note_fslf = note_bfn = "Cửa gió Linear nan T" + (" sơn đen lớp 2" if is_black_2nd_layer else "") + (" kèm van OBD" if has_obd else "") + box_note
                 elif profile_type == "T":
                     model_fslf = model_bfn = "SD+O" if has_obd else "SD"
@@ -454,31 +475,49 @@ class Agent01_BOQExtractor:
                         b1, b2 = int(max(50, w - 50)), int(max(50, h - 50))
                     note_fslf = note_bfn = f"Cửa nan bầu dục {'2 lớp' if is_double_layer else '1 lớp'}" + (" kèm van OBD" if has_obd else "") + (" kèm LCCT" if has_mesh else "") + (" kèm phin lọc bụi" if has_filter else "") + box_note
 
-            combo_dmp = item.get("combo_damper")
-            if combo_dmp:
-                suffix_map = combo_cfg.get("combo_model_suffix", {"MD": "+MD", "FD": " + FD", "VCD": " + VCD"})
-                note_map = combo_cfg.get("combo_note_suffix", {
-                    "MD": " kèm van động cơ ON-OFF BELIMO (đóng mở 150s), xuất xứ Thụy Sỹ",
-                    "FD": " + Van chặn lửa cầu chì EI120 (BCTN 4761/VLXD-TBMT)",
-                    "VCD": " + Van điều chỉnh lưu lượng tay gạt tôn mạ kẽm"
-                })
-                if combo_dmp in suffix_map:
-                    model_fslf = model_bfn = f"{model_fslf}{suffix_map[combo_dmp]}"
-                if combo_dmp in note_map:
-                    note_fslf = note_bfn = f"{note_fslf}{note_map[combo_dmp]}"
-                if combo_dmp == "FD":
-                    dmp_bom = Agent05_DamperBOM.calculate_damper_bom(
-                        parent_id=f"Q-{idx}-FD",
-                        damper_type="FD",
-                        w=float(item.get("w_damper") or w or 300),
-                        h=float(item.get("h_damper") or h or 300),
-                        brand="PN",
-                        ei_rating=ei_rating,
-                        model_code="2.01",
-                        d=float(item.get("d_damper") or d or 0)
-                    )
-                    l_col = dmp_bom["l_body"]
-                    thk_col = dmp_bom["thickness_body"]
+            combo_dmps = item.get("combo_dampers") or ([item["combo_damper"]] if item.get("combo_damper") else [])
+            if combo_dmps:
+                dmp_item = {
+                    "category": "VAN_GIO",
+                    "raw_name": raw_name,
+                    "name": name,
+                    "note_boq": item.get("note_boq", ""),
+                    "section": item.get("section", ""),
+                    "source_sheet": item.get("source_sheet", ""),
+                    "model": combo_dmps[0],
+                    "secondary_damper": combo_dmps[1] if len(combo_dmps) > 1 else None,
+                    "secondary_dampers": combo_dmps[1:],
+                    "w": float(item.get("w_damper") or w or 300),
+                    "h": float(item.get("h_damper") or h or 300),
+                    "d": float(item.get("d_damper") or d or 0),
+                    "l": l,
+                    "thickness": thk,
+                    "ei_rating": ei_rating,
+                    "motor_brand_override": item.get("motor_brand_override"),
+                    "mfd_model_override": item.get("mfd_model_override")
+                }
+                dmp_spec = cls.resolve_item_spec(dmp_item, subtype_rules, price_map=price_map, idx=idx)
+                sep_fslf = "" if dmp_spec["model_fslf"] == "MD" else " "
+                sep_bfn = "" if dmp_spec["model_bfn"] == "MD" else " "
+                model_fslf = f"{model_fslf}{sep_fslf}+{sep_fslf}{dmp_spec['model_fslf']}"
+                model_bfn = f"{model_bfn}{sep_bfn}+{sep_bfn}{dmp_spec['model_bfn']}"
+                if dmp_spec["note_fslf"].startswith("-"):
+                    note_fslf = f"- {note_fslf}\n{dmp_spec['note_fslf']}"
+                elif dmp_spec["model_fslf"] == "MD":
+                    note_fslf = f"{note_fslf} kèm {dmp_spec['note_fslf'][0].lower() + dmp_spec['note_fslf'][1:]}"
+                else:
+                    note_fslf = f"{note_fslf} + {dmp_spec['note_fslf']}"
+                if dmp_spec["note_bfn"].startswith("-"):
+                    note_bfn = f"- {note_bfn}\n{dmp_spec['note_bfn']}"
+                elif dmp_spec["model_bfn"] == "MD":
+                    note_bfn = f"{note_bfn} kèm {dmp_spec['note_bfn'][0].lower() + dmp_spec['note_bfn'][1:]}"
+                else:
+                    note_bfn = f"{note_bfn} + {dmp_spec['note_bfn']}"
+                modul = dmp_spec["modul"]
+                l_col = dmp_spec["l_col"]
+                thk_col = dmp_spec["thk_col"]
+                eff_model_code = dmp_spec["model_code"]
+                motor_brand = dmp_spec["motor_brand"]
 
             subtype = profile_type
 
@@ -499,7 +538,7 @@ class Agent01_BOQExtractor:
                     dia_val = int(m.group(1))
             raw_sub = cls.get_subtype(subtype_rules, "ONG_MEM", raw_name.lower(), cls.get_subtype(subtype_rules, "ONG_MEM", name.lower(), "NON_INSUL"))
             subtype = "INSUL" if raw_sub in ("INSUL", "INSULATED") else "NON_INSUL"
-            is_insul = (subtype == "INSUL") or any(k in raw_search for k in ("cách nhiệt", "bảo ôn", "insul"))
+            is_insul = (subtype == "INSUL")
             model_fslf = model_bfn = "FLEX-INSUL" if is_insul else "FLEX-BARE"
             note_fslf = note_bfn = "Ống gió mềm có bảo ôn" if is_insul else "Ống gió mềm không bảo ôn"
 

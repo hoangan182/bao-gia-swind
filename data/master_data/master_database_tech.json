@@ -1394,6 +1394,27 @@
         "Source_Trace": "BG VAN !R16C50"
     },
     {
+        "MAT_ID": "MAT-ACTUATOR-HONEYWELL-5NM",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Động cơ van gió HoneyWell ON/OFF 5Nm (Model: CN4605A)",
+        "Unit": "Cái",
+        "Source_Trace": "HoneyWell ON/OFF 5Nm (Ref Belimo R16C48)"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-HONEYWELL-10NM",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Động cơ van gió HoneyWell ON/OFF 10Nm (Model: CN4610A)",
+        "Unit": "Cái",
+        "Source_Trace": "HoneyWell ON/OFF 10Nm (Ref Belimo R16C49)"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-HONEYWELL-20NM",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Động cơ van gió HoneyWell ON/OFF 20Nm (Model: CN4620A)",
+        "Unit": "Cái",
+        "Source_Trace": "HoneyWell ON/OFF 20Nm (Ref Belimo R16C50)"
+    },
+    {
         "MAT_ID": "MAT-DAMPER-HOP-LO-XO",
         "Category": "PHỤ_KIỆN_VAN",
         "Name": "Hộp lò xo van chặn lửa FD/MFD",

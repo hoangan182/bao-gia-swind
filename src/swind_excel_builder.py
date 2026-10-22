@@ -114,7 +114,7 @@ class SwindExcelBuilder:
         self.ws_06.append([idx, mat_id, name, category, price])
         self.ws_06.cell(row=r, column=5).number_format = "#,##0"
 
-    def add_boq_summary_row(self, stt, item_id, group, name, size, unit, qty, margin=0.18, labor_rate=0.25, overhead_rate=0.10, note="", override_price=0, box_combo_add_price=0):
+    def add_boq_summary_row(self, stt, item_id, group, name, size, unit, qty, margin=0.18, labor_rate=0.25, overhead_rate=0.10, note="", override_price=0):
         """
         Thêm dòng vào bảng tổng hợp báo giá với công thức sống liên kết 100%.
         Tách biệt tỷ lệ nhân công (labor_rate) và chi phí xưởng (overhead_rate) cho từng nhóm mặt hàng.
@@ -145,13 +145,10 @@ class SwindExcelBuilder:
         f_gia_von_unit = f"=IF(G{r}>0, N{r}/G{r}, 0)"
         
         # Q: Đơn giá bán = (Giá vốn cơ khí * (1 + margin) + Chi phí động cơ thương mại) / Số lượng
-        if box_combo_add_price > 0:
-            f_calc = f"IF(G{r}>0, ((N{r}-{act_expr})*(1+P{r})+{act_expr})/G{r}, 0)"
-            f_gia_ban = f"={box_combo_add_price:.0f}+{f_calc}"
-        elif override_price > 0:
+        if override_price > 0:
             f_gia_ban = override_price
         else:
-            f_gia_ban = f"=IF(G{r}>0, ((N{r}-{act_expr})*(1+P{r})+{act_expr})/G{r}, 0)"
+            f_gia_ban = f"=IF(G{r}>0, ROUNDUP(ROUND(((N{r}-{act_expr})*(1+P{r})+{act_expr})/G{r}, 0), -2), 0)"
         
         # R: Thành tiền = Số lượng * Đơn giá bán
         f_thanh_tien = f"=G{r}*Q{r}"
@@ -405,7 +402,7 @@ class SwindExcelBuilder:
             # Nhận diện Header BOQ (dùng hàm chung từ swind_utils)
             header_row, col_map, hidden_rows, hidden_cols, max_scan_col = detect_boq_header(ws_orig)
 
-            stt_col = col_map.get("stt", 1)
+            stt_col = col_map.get("stt", 1) if col_map.get("name", 2) != 1 else col_map.get("stt")
             name_col = col_map.get("name", 2)
             unit_col = col_map.get("unit", 5)
             qty_col = col_map.get("qty", 6)
@@ -414,20 +411,20 @@ class SwindExcelBuilder:
             while start_boq_row <= min(header_row + 3, ws_orig.max_row):
                 r_texts = [str(ws_orig.cell(start_boq_row, c).value or "").strip().lower() for c in range(1, max_scan_col + 1) if get_column_letter(c) not in hidden_cols]
                 name_cell_v = ws_orig.cell(start_boq_row, name_col).value
-                if any(k in r_texts for k in ("boq", "nhà thầu", "a1", "face size", "neck size")) or (name_cell_v in (None, "") and any(k in r_texts for k in ("model", "modul", "thương hiệu", "đơn giá", "thành tiền", "vật liệu", "nhân công", "vật tư"))):
+                if any(k in r_texts for k in ("boq", "nhà thầu", "a1", "face size", "neck size")) or (name_cell_v in (None, "") and (any(k in r_texts for k in ("model", "modul", "thương hiệu", "đơn giá", "thành tiền", "vật liệu", "nhân công", "vật tư", "material / vt", "labor / nc", "material / vật liệu")) or (start_boq_row > header_row + 1 and not any(r_texts)))):
                     start_boq_row += 1
                 else:
                     break
 
             end_boq_row = ws_orig.max_row
-            for r_chk in range(max(start_boq_row, ws_orig.max_row - 30), ws_orig.max_row + 1):
+            for r_chk in range(start_boq_row, ws_orig.max_row + 1):
                 b_chk = str(ws_orig.cell(r_chk, name_col).value or "").strip().lower()
-                a_chk = str(ws_orig.cell(r_chk, stt_col).value or "").strip().lower()
-                if any(k in b_chk or k in a_chk for k in ("tổng cộng", "tổng giá trị", "trước vat")):
+                a_chk = str(ws_orig.cell(r_chk, stt_col).value or "").strip().lower() if stt_col else ""
+                if any(k in b_chk or k in a_chk for k in ("tổng cộng", "tổng giá trị", "trước vat", "trước thuế vat", "total amount")):
                     end_boq_row = r_chk - 1
                     break
             while end_boq_row >= start_boq_row:
-                if any(get_column_letter(c) not in hidden_cols and ws_orig.cell(end_boq_row, c).value is not None and str(ws_orig.cell(end_boq_row, c).value).strip() != "" for c in range(1, max(7, name_col + 1, qty_col + 1))):
+                if end_boq_row not in hidden_rows and any(get_column_letter(c) not in hidden_cols and ws_orig.cell(end_boq_row, c).value is not None and str(ws_orig.cell(end_boq_row, c).value).strip() != "" for c in range(1, max(7, name_col + 1, qty_col + 1))):
                     break
                 end_boq_row -= 1
 
@@ -455,11 +452,13 @@ class SwindExcelBuilder:
                     return False
                 return True
 
-            stt_hidden = get_column_letter(stt_col) in hidden_cols
+            stt_hidden = (not stt_col) or (get_column_letter(stt_col) in hidden_cols)
             for r in range(start_boq_row, end_boq_row + 1):
                 if r in hidden_rows:
                     continue
-                orig_stt = ws_orig.cell(r, stt_col).value if not stt_hidden else None
+                orig_stt = ws_orig.cell(r, stt_col).value if not stt_hidden else (r if header_row == 0 and not stt_col else None)
+                if orig_stt in (0, "0"):
+                    orig_stt = None
                 if r in row_to_items:
                     for idx, item in row_to_items[r]:
                         sheet00_row = idx + 1
@@ -469,11 +468,11 @@ class SwindExcelBuilder:
                         disp_qty = None if item.get("is_missing_qty") else qty
                         spec = item.get("resolved_spec") or Agent01_BOQExtractor.resolve_item_spec(item, subtype_rules, price_map=price_map, idx=idx)
 
-                        f_price_base = f"=ROUND('00_TONG_HOP_BAO_GIA'!Q{sheet00_row}, 0)"
+                        f_price_base = f"=ROUNDUP(ROUND('00_TONG_HOP_BAO_GIA'!Q{sheet00_row}, 0), -2)"
                         if spec.get("has_fslf_formula_diff"):
                             act_unit = spec["act_unit"]
                             ratio = spec["fslf_ratio"]
-                            f_price_fslf = f"=ROUND(('00_TONG_HOP_BAO_GIA'!Q{sheet00_row}-{act_unit:.0f})*{ratio:.6f}+{act_unit:.0f}, 0)"
+                            f_price_fslf = f"=ROUNDUP(ROUND(('00_TONG_HOP_BAO_GIA'!Q{sheet00_row}-{act_unit:.0f})*{ratio:.6f}+{act_unit:.0f}, 0), -2)"
                         else:
                             f_price_fslf = f_price_base
                         f_price_bfn = f_price_base
@@ -482,19 +481,19 @@ class SwindExcelBuilder:
                             orig_stt, raw_name, spec.get("model_std") or spec["model_fslf"], spec["brand"],
                             spec["a1"], spec["a2"], spec["b1"], spec["b2"],
                             spec["modul"], spec["l_col"], spec["thk_col"], unit, disp_qty,
-                            f_price_base, f"=ROUNDUP(N{curr_row}*M{curr_row}, -2)", spec.get("note_std") or spec["note_fslf"]
+                            f_price_base, f"=N{curr_row}*M{curr_row}", spec.get("note_std") or spec["note_fslf"]
                         ]
                         row_fslf = [
                             orig_stt, raw_name, spec["model_fslf"], spec["brand"],
                             spec["a1"], spec["a2"], spec["b1"], spec["b2"],
                             spec["modul"], spec["l_col"], spec["thk_col"], unit, disp_qty,
-                            f_price_fslf, f"=ROUNDUP(N{curr_row}*M{curr_row}, -2)", spec["note_fslf"]
+                            f_price_fslf, f"=N{curr_row}*M{curr_row}", spec["note_fslf"]
                         ]
                         row_bfn = [
                             orig_stt, raw_name, spec["model_bfn"], spec["brand"],
                             spec["a1"], spec["a2"], spec["b1"], spec["b2"],
                             spec["modul"], spec["l_col"], spec["thk_col"], unit, disp_qty,
-                            f_price_bfn, f"=ROUNDUP(N{curr_row}*M{curr_row}, -2)", spec["note_bfn"]
+                            f_price_bfn, f"=N{curr_row}*M{curr_row}", spec["note_bfn"]
                         ]
                         _write_row_cells(curr_row, row_std, row_fslf, row_bfn, is_section=False)
                         curr_row += 1
@@ -502,12 +501,18 @@ class SwindExcelBuilder:
                     c2_cell = ws_orig.cell(r, name_col)
                     orig_b = c2_cell.value
                     orig_c = ws_orig.cell(r, 3).value if name_col == 2 and unit_col != 3 else None
+                    if orig_c in (0, "0"):
+                        orig_c = None
                     orig_u = ws_orig.cell(r, unit_col).value
                     orig_q = ws_orig.cell(r, qty_col).value
+                    if orig_q is None and orig_u not in (None, 0, "0", "") and "qty_alt" in col_map:
+                        orig_q = ws_orig.cell(r, col_map["qty_alt"]).value
                     orig_name = orig_b if (orig_b is not None and str(orig_b).strip() != "") else orig_c
                     orig_name_str = str(orig_name).strip() if orig_name is not None else ""
-                    orig_u_val = orig_u if (orig_u is not None and str(orig_u).strip() != "") else None
+                    orig_u_val = orig_u if (orig_u not in (None, 0, "0") and str(orig_u).strip() != "") else None
                     orig_q_val = orig_q if (orig_q is not None and (not isinstance(orig_q, str) or orig_q.strip() != "")) else None
+                    if orig_u_val is None and (orig_q_val in (0, 0.0, "0") or (stt_col and ws_orig.cell(r, stt_col).value in (0, "0"))):
+                        orig_q_val = None
 
                     if not orig_name_str and orig_stt is None and orig_u_val is None and orig_q_val is None:
                         _write_row_cells(curr_row, [None] * 16, is_section=False)
@@ -538,11 +543,11 @@ class SwindExcelBuilder:
                 qty = item["qty"]
                 spec = item.get("resolved_spec") or Agent01_BOQExtractor.resolve_item_spec(item, subtype_rules, price_map=price_map, idx=idx)
 
-                f_price_base = f"=ROUND('00_TONG_HOP_BAO_GIA'!Q{sheet00_row}, 0)"
+                f_price_base = f"=ROUNDUP(ROUND('00_TONG_HOP_BAO_GIA'!Q{sheet00_row}, 0), -2)"
                 if spec.get("has_fslf_formula_diff"):
                     act_unit = spec["act_unit"]
                     ratio = spec["fslf_ratio"]
-                    f_price_fslf = f"=ROUND(('00_TONG_HOP_BAO_GIA'!Q{sheet00_row}-{act_unit:.0f})*{ratio:.6f}+{act_unit:.0f}, 0)"
+                    f_price_fslf = f"=ROUNDUP(ROUND(('00_TONG_HOP_BAO_GIA'!Q{sheet00_row}-{act_unit:.0f})*{ratio:.6f}+{act_unit:.0f}, 0), -2)"
                 else:
                     f_price_fslf = f_price_base
                 f_price_bfn = f_price_base
@@ -551,19 +556,19 @@ class SwindExcelBuilder:
                     idx, raw_name, spec.get("model_std") or spec["model_fslf"], spec["brand"],
                     spec["a1"], spec["a2"], spec["b1"], spec["b2"],
                     spec["modul"], spec["l_col"], spec["thk_col"], unit, qty,
-                    f_price_base, f"=ROUNDUP(N{curr_row}*M{curr_row}, -2)", spec.get("note_std") or spec["note_fslf"]
+                    f_price_base, f"=N{curr_row}*M{curr_row}", spec.get("note_std") or spec["note_fslf"]
                 ]
                 row_fslf = [
                     idx, raw_name, spec["model_fslf"], spec["brand"],
                     spec["a1"], spec["a2"], spec["b1"], spec["b2"],
                     spec["modul"], spec["l_col"], spec["thk_col"], unit, qty,
-                    f_price_fslf, f"=ROUNDUP(N{curr_row}*M{curr_row}, -2)", spec["note_fslf"]
+                    f_price_fslf, f"=N{curr_row}*M{curr_row}", spec["note_fslf"]
                 ]
                 row_bfn = [
                     idx, raw_name, spec["model_bfn"], spec["brand"],
                     spec["a1"], spec["a2"], spec["b1"], spec["b2"],
                     spec["modul"], spec["l_col"], spec["thk_col"], unit, qty,
-                    f_price_bfn, f"=ROUNDUP(N{curr_row}*M{curr_row}, -2)", spec["note_bfn"]
+                    f_price_bfn, f"=N{curr_row}*M{curr_row}", spec["note_bfn"]
                 ]
                 _write_row_cells(curr_row, row_std, row_fslf, row_bfn, is_section=False)
                 curr_row += 1

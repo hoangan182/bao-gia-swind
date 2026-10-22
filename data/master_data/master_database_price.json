@@ -805,7 +805,7 @@
     },
     {
         "MAT_ID": "MAT-ACTUATOR-HONEYWELL",
-        "Price": 3400000.0,
+        "Price": 3600000.0,
         "Purchase_Price": 2850000.0
     },
     {
@@ -830,6 +830,21 @@
     },
     {
         "MAT_ID": "MAT-ACTUATOR-BELIMO-20NM",
+        "Price": 3150000.0,
+        "Purchase_Price": 2472500.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-HONEYWELL-5NM",
+        "Price": 2200000.0,
+        "Purchase_Price": 1650000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-HONEYWELL-10NM",
+        "Price": 2800000.0,
+        "Purchase_Price": 2098000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-HONEYWELL-20NM",
         "Price": 3150000.0,
         "Purchase_Price": 2472500.0
     },
