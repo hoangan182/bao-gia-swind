@@ -221,16 +221,28 @@
       "rule": "Những dòng thuộc Cửa gió và Van gió có tên và kích thước rõ ràng nhưng chưa có khối lượng (ô Số lượng / Đơn vị trống trong BOQ) vẫn giữ nguyên trong bảng báo giá, để trống cột Số lượng và điền đầy đủ Đơn giá."
     },
     "AIR_CONDITIONING_SQUARE_DIFFUSER_SD_RULE": {
-      "rule": "Đối với hạng mục cửa dành cho hệ điều hòa, cửa vuông các kích thước 600x600 (cổ 450x450), 450x450 (cổ 300x300), 300x300 (cổ 150x150) mặc định áp dụng mã cửa khuếch tán vuông SD (profile type 'T', B1=W-150, B2=H-150). Cửa hồi / miệng hồi thì mặc định là cửa nan thẳng bầu dục kèm lưới lọc bụi (mã SDG+F, profile type 'BD', has_filter=True)."
+      "rule": "Đối với hạng mục cửa dành cho hệ điều hòa, cửa vuông các kích thước 600x600 (cổ 450x450), 450x450 (cổ 300x300), 300x300 (cổ 150x150) mặc định áp dụng mã cửa khuếch tán vuông SD (profile type 'T', B1=W-150, B2=H-150), trừ trường hợp là cửa tăng áp/hút khói kèm OBD hoặc ghi rõ nan thẳng/bầu dục/sọt trứng/linear. Cửa hồi / miệng hồi (bao gồm cả từ khóa 'hồi lạnh') mặc định là cửa nan thẳng bầu dục kèm lưới lọc bụi (mã SDG+F, profile type 'BD', has_filter=True)."
     },
     "COMBO_DIFFUSER_WITH_PLENUM_BOX_RULE": {
-      "rule": "Khi BOQ có 'Cửa gió kèm hộp gió' hoặc 'Miệng gió kèm hộp gió': Swind chỉ báo giá phần Cửa gió trên sheet báo giá của Swind (không cộng giá hộp gió của nhà thầu khác như Minh Triết), ghi chú '. Không tính box do nhà thầu tự thi công'."
+      "rule": "Khi BOQ có 'Cửa gió kèm hộp gió' hoặc 'Miệng gió kèm hộp gió': Swind chỉ báo giá phần Cửa gió trên sheet báo giá của Swind (hoặc cộng giá hộp gió đã báo khi ref_price > 0), ghi chú rõ quy cách."
+    },
+    "DAMPER_PLUS_DAMPER_COMBO_RULE": {
+      "rule": "Khi BOQ gộp nhiều loại van trên cùng 1 dòng (ví dụ 'FD+VD', 'NRD+VCD', 'MD+NRD', phân tách bởi dấu '+', 'kèm', 'gắn', 'tích hợp'), hệ thống tự động tách chuỗi token, chọn van chính theo thứ tự ưu tiên (MFSD > MFD > FD > MD > PRD > NRD > VCD), giữ nguyên 1 dòng BOQ, cộng gộp BOM & đơn giá của tất cả các van trong combo và nối Model (ví dụ 'FD + VCD', 'NRD + VCD')."
+    },
+    "HEADERLESS_BOQ_AUTO_DETECTION_RULE": {
+      "rule": "Khi file Excel BOQ khách hàng gửi không có dòng tiêu đề cột (dữ liệu bắt đầu ngay từ các dòng đầu tiên như 'Xin gia van cua PCCC.xlsx'), hệ thống tự động suy luận cột Đơn vị (cái, bộ, m, m2...), cột Tên vật tư, cột Số lượng và cột Ghi chú để bóc tách đầy đủ từ dòng đầu tiên."
+    },
+    "EXPLICIT_KT_BI_KT_CO_AND_NOTE_OVERRIDE_RULE": {
+      "rule": "Khi BOQ ghi cả 'kt bì W1xH1' và 'kt cổ W2xH2' trên cùng 1 dòng (hoặc đính chính ở cột Ghi chú), lấy trực tiếp W1xH1 làm kích thước phủ bì (A1, A2 - không cộng thêm 50mm) và W2xH2 làm kích thước cổ (B1, B2). Nếu cột Ghi chú có ghi rõ hệ cửa và kích thước đính chính (ví dụ 'Cửa nan Z, kt bì 1040x240, kt cổ 990x190'), ưu tiên áp dụng quy cách và kích thước tại cột Ghi chú."
+    },
+    "IMAGE_BOQ_DUAL_INPUT_WORKFLOW": {
+      "rule": "Hỗ trợ song song cả 2 luồng đầu vào: (1) Khách gửi file Excel trong thư mục 'input/', và (2) Khách gửi ảnh chụp màn hình BOQ trong thư mục 'input picture/'. Agent 01B (agent_01b_image_boq_reader.py) tự động đọc OCR từ ảnh và kết xuất thành file Excel chuẩn trong 'input/' trước khi chạy định giá."
     },
     "UNIT_PRICE_ROUNDUP_100_RULE": {
       "rule": "Làm tròn giá LÊN hàng trăm đồng ở cột Đơn giá (ROUNDUP(Đơn_giá, -2), ví dụ 2405 -> 2500, 28940 -> 29000), không làm tròn ở cột Thành tiền (Thành tiền = Đơn giá * Số lượng)."
     },
     "ROUND_DIFFUSER_EAD_AND_CAV_ACOUSTIC_LOUVER_EXCLUSION": {
-      "rule": "Khi chạy báo giá Cửa gió & Van gió: các mục miệng hút/cửa gió tròn chỉ ghi đường kính D (như 'Miệng hút EAD kèm hộp gió D150 / D300' - trừ lưới chắn côn trùng LCCT rời), 'Hộp điều chỉnh lưu lượng gió (CAV) D150' và 'Cửa chớp tiêu âm đầu vào/ra (L=100)' là hàng mua ngoài (THUONG_MAI / TIEU_AM), để trống không báo giá."
+      "rule": "Khi chạy báo giá Cửa gió & Van gió: các mục miệng hút/cửa gió tròn chỉ ghi đường kính D (như 'Miệng hút EAD kèm hộp gió D150 / D300' - trừ lưới chắn côn trùng LCCT rời hoặc cửa tròn SRD), 'Hộp điều chỉnh lưu lượng gió (CAV) D150' và 'Cửa chớp tiêu âm đầu vào/ra (L=100)' là hàng mua ngoài (THUONG_MAI / TIEU_AM), để trống không báo giá."
     }
   }
 }

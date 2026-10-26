@@ -1,6 +1,7 @@
 import re
 from swind_boq_parser import SwindBOQParser
 from swind_universal_extractor import SwindUniversalExtractor
+from agent_04_bom_duct import Agent04_DuctworkBOM
 from agent_05_bom_damper import Agent05_DamperBOM
 from agent_06_bom_diffuser import Agent06_DiffuserBOM
 from swind_utils import get_subtype_rules
@@ -119,6 +120,8 @@ class Agent01_BOQExtractor:
         has_filter = False
         is_double_layer = False
         is_black_2nd_layer = False
+        is_removable = False
+        is_fire_canvas = False
         is_box_combo = False
         dia_val = None
         eff_model_code = None
@@ -142,6 +145,8 @@ class Agent01_BOQExtractor:
                 damper_type = "MFSD"
             elif model_item == "MFD" or any(k in model_item for k in ("1.02", "1.03", "1.04", "1.05")):
                 damper_type = "MFD"
+            elif model_item == "OBD":
+                damper_type = "OBD"
             elif model_item == "VCD":
                 damper_type = "VCD"
             elif model_item == "MD":
@@ -174,6 +179,17 @@ class Agent01_BOQExtractor:
                 or (eff_req_code == "2.01")
                 or any(k in (raw_search + " " + full_search + " " + str(item.get("source_sheet", ""))).lower() for k in ("ei", "vgei", "pccc", "hút khói", "tăng áp", "bctn", "chống cháy"))
             )
+            if is_fd_ei and d > 0:
+                w = d
+                h = d
+                d = 0.0
+                w_use = w
+                h_use = h
+                item["w"] = w
+                item["h"] = h
+                item["d"] = 0.0
+                a1 = int(w)
+                a2 = int(h)
             eff_model_code = eff_req_code or (("2.01" if is_fd_ei else "FD") if eff_type == "FD" else ("1.03" if is_klb_req else ("1.04" if is_honeywell_req else "1.02")))
             bom_multi = Agent05_DamperBOM.calculate_damper_bom(
                 parent_id=f"Q-{idx}",
@@ -319,6 +335,9 @@ class Agent01_BOQExtractor:
             elif eff_type == "PRD":
                 model_fslf = model_bfn = "PRD"
                 note_fslf = note_bfn = "Van xả áp đối trọng tôn mạ kẽm. ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm" if ei_rating > 0 else "Van xả áp đối trọng tôn mạ kẽm"
+            elif eff_type == "OBD":
+                model_fslf = model_bfn = "OBD"
+                note_fslf = note_bfn = "Van điều chỉnh lưu lượng OBD tôn mạ kẽm"
             else:
                 model_fslf = model_bfn = "VCD"
                 note_fslf = note_bfn = "Van điều chỉnh lưu lượng tay gạt tôn mạ kẽm. ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm" if ei_rating > 0 else "Van điều chỉnh lưu lượng tay gạt tôn mạ kẽm"
@@ -366,79 +385,152 @@ class Agent01_BOQExtractor:
                     a2 = int(d) if d > 0 else (int(h) if h > 0 else None)
                 item["is_ktc_applied"] = True
 
-            mesh_kws = tuple(combo_cfg.get("mesh_keywords", ("lưới", "chắn côn trùng", "lcct", "+n", "+ n", "+is", "is")))
+            mesh_kws = tuple(combo_cfg.get("mesh_keywords", ("lưới", "chắn côn trùng", "côn trùng", "lcct", "+n", "+ n", "+is", "+ is", "i.s", "insect screen", "c/w is", "c/w i.s", "is")))
             filter_kws = tuple(combo_cfg.get("filter_keywords", ("phin lọc", "lọc bụi", "+f", "g4")))
             louver_kws = tuple(combo_cfg.get("louver_z_keywords", ("nan z", "louver", "luover", "louvre", "chớp", "fal", "oal", "eal", "wl")))
 
-            has_obd = ("obd" in combined_search)
-            has_mesh = any(k in combined_search for k in mesh_kws)
-            has_filter = any(k in combined_search for k in filter_kws)
+            has_obd = (
+                "obd" in combined_search
+                or bool(re.search(r'\+\s*o\b|(?:c/w|\+|kèm|with)\s*obd\b|van\s+điều\s*ch[ỉi]nh\s*lưu\s*lượng|van\s+ch[ỉi]nh\s*lưu\s*lượng', combined_search))
+            )
+            filter_search = re.sub(r'không\s+kèm\s+lọc[^\.,\n]*', '', combined_search)
+            mesh_search = re.sub(r'lưới\s+(?:lọc|gió)', '', combined_search)
+            has_mesh = (
+                any(k in mesh_search for k in mesh_kws if k != "is")
+                or bool(re.search(r'\b(?:i\.s\.?|lcct)\b|(?:c/w|\+|kèm|with)\s*is\b', mesh_search))
+            )
+            has_filter = any(k in filter_search for k in filter_kws)
             is_double_layer = ("2 lớp" in combined_search or "hai lớp" in combined_search)
             is_black_2nd_layer = ("2nd layer" in combined_search or "black paint" in combined_search or "sơn đen" in combined_search)
-            box_note = ". Không tính box do nhà thầu tự thi công" if any(k in raw_search for k in ("box", "hộp gió", "kèm hộp")) else ""
+            is_removable = any(k in combined_search for k in ("tháo lắp", "thao lap"))
+            box_note = ". Không tính box do nhà thầu tự thi công" if any(k in combined_search for k in ("box", "hộp gió", "kèm hộp")) else ""
 
             # Rule 2: Cửa tăng áp, cửa hút khói kèm OBD -> nan thẳng bầu dục kèm van OBD mã SDG+O
-            is_press_or_smoke = any(k in combined_search for k in ("tăng áp", "tạo áp", "hút khói", "thải khói", "pag", "seg"))
+            is_press_or_smoke = any(k in combined_search for k in ("tăng áp", "tạo áp", "hút khói", "thải khói", "cấp bù", "pag", "seg", "spg", "seag", "smoke"))
 
             # Rule 3: Cửa ghi nan Z, louver hoặc miệng cấp khí bù ngoài trời hoặc cửa nan 1 lớp khổ lớn >= 3000mm -> cửa nan Z mã WL / WL+N
             is_louver_z = (
                 any(k in combined_search for k in louver_kws)
-                or (any(k in raw_search for k in ("cấp khí bù", "bù khí", "cấp gió bù", "bù gió")) and not any(k in raw_search for k in ("fag", "sag", "rag", "oag", "pag", "seg", "eag", "sdg", "nan thẳng", "bầu dục")))
-                or (max(w, h) >= 3000.0 and not has_obd and not is_double_layer and not any(k in combined_search for k in ("nan thẳng", "bầu dục", "linear", "sọt trứng", "khuếch tán")))
-                or (has_mesh and not has_obd and not has_filter and not is_double_layer and not any(k in combined_search for k in ("cover", "nan thẳng", "bầu dục", "linear", "sọt trứng", "khuếch tán", "sag", "rag", "oag", "pag", "seg", "eag", "sdg")))
+                or (any(k in raw_search for k in ("cấp khí bù", "bù khí", "cấp gió bù", "bù gió")) and not any(k in raw_search for k in ("fag", "sag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "sdg", "nan thẳng", "bầu dục", "nan bd")))
+                or (max(w, h) >= 3000.0 and not has_obd and not is_double_layer and not any(k in combined_search for k in ("nan thẳng", "bầu dục", "nan bd", "linear", "sọt trứng", "sọt trưng", "khuếch tán")))
+                or (has_mesh and not has_obd and not has_filter and not is_double_layer and not any(k in combined_search for k in ("cover", "nan thẳng", "bầu dục", "nan bd", "linear", "sọt trứng", "sọt trưng", "khuếch tán", "fag", "sag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "return", "supply", "insect screen", "i.s", "lcct")))
             )
-            is_standalone_lcct = has_mesh and not any(k in raw_search for k in louver_kws + ("cửa", "miệng", "sag", "fag", "rag", "oag", "pag", "seg", "eag", "sdg", "cover", "nan "))
+            is_standalone_lcct = has_mesh and not any(k in raw_search for k in louver_kws + ("cửa", "miệng", "mặt gió", "sag", "fag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "cover", "nan "))
+            is_standalone_filter = has_filter and not has_mesh and not has_obd and not any(k in raw_search for k in louver_kws + ("cửa", "miệng", "mặt gió", "sag", "fag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "cover", "nan "))
 
-            # Rule 4: Cửa hồi là cửa nan thẳng bầu dục kèm lưới lọc bụi mã SDG+F
-            is_return_grille = any(k in combined_search for k in ("cửa hồi", "miệng hồi", "hút hồi", "rag", "hồi gió", "gió hồi", "hồi lạnh"))
+            # Rule 4: Cửa hồi là cửa nan thẳng bầu dục kèm lưới lọc bụi thô mã SDG+F
+            is_return_grille = any(k in raw_search for k in ("cửa hồi", "miệng hồi", "hút hồi", "rag", "hồi gió", "gió hồi", "hồi lạnh", "cửa gió hồi", "cửa gió hôi", "return air", "return grille"))
+            if is_return_grille and not has_mesh:
+                has_filter = True
+            has_img_slb = bool(item.get("has_embedded_image")) or any(k in combined_search for k in ("linear", "slb", "nan t ", "nan t-", "khe dài", "tuyến tính", "slot"))
 
             # Rule 5: Cửa khuếch tán mã SD:
             # - Mặc định cho cửa vuông hệ điều hòa: 600x600 (cổ 450x450), 450x450 (cổ 300x300), 300x300 (cổ 150x150)
-            is_sq_ac_diffuser = (w > 0 and w == h and int(w) in (600, 450, 300) and not is_return_grille and not is_louver_z)
-            is_diffuser_sq = any(k in combined_search for k in ("khuếch tán", "scd", "sad", "diffuser")) or is_sq_ac_diffuser or (w == 600 and h == 600 and "sag" in combined_search)
+            # - Ngoại lệ: 'Cửa thổi khuếch tán ... kèm OBD và hộp gió' chuyển sang SDG+O / SDG (profile_type='BD')
+            is_thoi_kt = ("cửa thổi khuếch tán" in combined_search)
+            is_sq_ac_diffuser = (
+                not is_thoi_kt and w > 0 and w == h and int(w) in (600, 450, 300)
+                and not is_return_grille and not is_louver_z and not is_press_or_smoke
+                and (not has_obd or any(k in combined_search for k in ("cấp", "lạnh", "điều hòa", "sag", "sad", "scd", "khuếch tán", "450", "150")))
+                and not any(k in combined_search for k in ("nan thẳng", "bầu dục", "nan bd", "sọt trứng", "sọt trưng", "eggcrate", "ecg", "linear", "nan t", "dạng nan", "格栅", "kiểm tra", "检查", "access door", "cửa công tác", "cửa thăm", "tháo lắp", "inspection"))
+            )
+            is_diffuser_sq = (not is_thoi_kt) and (any(k in combined_search for k in ("khuếch tán", "scd", "sad", "diffuser")) or is_sq_ac_diffuser or (w == 600 and h == 600 and "sag" in combined_search))
+
+            # Rule 5b: Cửa gió kiểm tra / cửa tháo lắp (检查风门) → cửa nan bầu dục tháo lắp mã SDGK (có bản lề + chốt khóa)
+            is_inspection_door = any(k in combined_search for k in ("kiểm tra", "检查", "检查风门", "inspection", "access door", "cửa công tác", "cửa thăm", "sdgk"))
 
             # Rule 6: Nhận diện Cửa gió / Miệng gió kèm hộp gió
             is_box_combo = any(k in combined_search for k in ("kèm hộp gió", "kèm hộp", "kèm box", "có hộp gió", "gắn hộp gió", "hộp và cửa", "hộp miệng gió", "hộp kèm cửa", "hộp + cửa")) and any(k in combined_search for k in ("cửa gió", "miệng gió", "cửa cấp", "cửa hồi", "miệng cấp", "miệng hồi", "cửa nan", "louver", "luover"))
 
-            if is_standalone_lcct:
-                profile_type = "LCCT"
-                model_fslf = model_bfn = "LCCT"
-                b1, b2 = None, None
-                note_fslf = note_bfn = "Lưới chắn côn trùng"
-
-            elif is_press_or_smoke and has_obd:
+            if is_inspection_door:
                 profile_type = "BD"
-                has_obd = True
-                model_fslf = model_bfn = "SDG+O"
+                is_removable = True
+                has_mesh = False
+                has_obd = False
+                has_filter = False
+                model_fslf = model_bfn = "SDGK"
                 if w > 0 and h > 0:
                     b1, b2 = int(max(50, w - 50)), int(max(50, h - 50))
-                note_fslf = note_bfn = "Cửa nan thẳng bầu dục kèm van OBD (tăng áp / hút khói)" + box_note
+                note_fslf = note_bfn = "Cửa kiểm tra nan bầu dục tháo lắp (bản lề + chốt)" + box_note
+
+            elif is_standalone_lcct:
+                profile_type = "LCCT"
+                model_fslf = model_bfn = "LCCT+F" if has_filter else "LCCT"
+                b1, b2 = None, None
+                note_fslf = note_bfn = "Lưới chắn côn trùng Inox 304 kèm lọc bụi thô" if has_filter else "Lưới chắn côn trùng"
+
+            elif is_standalone_filter:
+                profile_type = "FILTER_G4"
+                model_fslf = model_bfn = "G4"
+                b1, b2 = None, None
+                note_fslf = note_bfn = "Lưới lọc bụi thô G4 kèm khung nhôm"
+
+            elif is_press_or_smoke and has_obd and not has_img_slb:
+                profile_type = "BD"
+                has_obd = True
+                model_fslf = model_bfn = "SDG+O+N" if has_mesh else "SDG+O"
+                if w > 0 and h > 0:
+                    b1, b2 = int(max(50, w - 50)), int(max(50, h - 50))
+                note_fslf = note_bfn = "Cửa nan thẳng bầu dục kèm van OBD (tăng áp / hút khói)" + (" kèm LCCT" if has_mesh else "") + box_note
 
             elif is_louver_z:
                 profile_type = "Z"
-                has_mesh = bool(has_mesh or any(k in combined_search for k in ("lưới", "côn trùng", "lcct")))
-                model_fslf = model_bfn = "WL+N" if has_mesh else "WL"
+                has_mesh = bool(has_mesh or any(k in combined_search for k in ("lưới", "côn trùng", "lcct", "i.s", "insect screen")))
+                if has_obd and has_mesh:
+                    model_fslf = model_bfn = "WL+O+N"
+                elif has_obd:
+                    model_fslf = model_bfn = "WL+O"
+                elif has_mesh:
+                    model_fslf = model_bfn = "WL+N"
+                else:
+                    model_fslf = model_bfn = "WL"
                 if w > 0 and h > 0:
                     b1, b2 = int(max(50, w - 50)), int(max(50, h - 50))
-                note_fslf = note_bfn = ("Louver nan Z ngoài trời kèm lưới chắn côn trùng Inox 304" if has_mesh else "Louver nan Z ngoài trời") + (" kèm lưới lọc bụi" if has_filter else "") + box_note
+                note_fslf = note_bfn = ("Louver nan Z ngoài trời kèm lưới chắn côn trùng Inox 304" if has_mesh else "Louver nan Z ngoài trời") + (" kèm van OBD" if has_obd else "") + (" kèm lưới lọc bụi thô" if has_filter else "") + box_note
 
-            elif is_return_grille:
+            elif is_return_grille and not has_img_slb:
                 profile_type = "BD"
-                has_filter = True
-                model_fslf = model_bfn = "SDG+O+F" if has_obd else "SDG+F"
+                if not has_mesh:
+                    has_filter = True
+                if has_obd and has_filter and has_mesh:
+                    model_fslf = model_bfn = "SDG+O+F+N"
+                elif has_obd and has_mesh:
+                    model_fslf = model_bfn = "SDG+O+N"
+                elif has_obd:
+                    model_fslf = model_bfn = "SDG+O+F"
+                elif has_filter and has_mesh:
+                    model_fslf = model_bfn = "SDG+F+N"
+                elif has_mesh:
+                    model_fslf = model_bfn = "SDG+N"
+                else:
+                    model_fslf = model_bfn = "SDG+F"
                 if w > 0 and h > 0:
                     b1, b2 = int(max(50, w - 50)), int(max(50, h - 50))
-                note_fslf = note_bfn = f"Cửa hồi nan thẳng bầu dục kèm lưới lọc bụi{' và van OBD' if has_obd else ''}" + box_note
+                rem_txt = " khung tháo lắp" if is_removable else ""
+                ret_acc = "kèm lưới lọc bụi thô và LCCT Inox 304" if (has_filter and has_mesh) else ("kèm lưới chắn côn trùng Inox 304" if has_mesh else "kèm lưới lọc bụi thô")
+                note_fslf = note_bfn = f"Cửa hồi nan thẳng bầu dục{rem_txt} {ret_acc}{' và van OBD' if has_obd else ''}" + box_note
 
             elif is_diffuser_sq:
                 profile_type = "T"
-                model_fslf = model_bfn = "SD+O" if has_obd else "SD"
-                if w > 0 and h > 0:
-                    b1, b2 = int(max(50, w - 150)), int(max(50, h - 150))
-                note_fslf = note_bfn = f"Cửa khuếch tán vuông 4 hướng{' kèm van OBD' if has_obd else ''}" + box_note
+                is_round_diff = any(k in combined_search for k in ("round", "tròn", "srd"))
+                if is_round_diff:
+                    model_fslf = model_bfn = ("SRD+O+N" if has_mesh else "SRD+O") if has_obd else ("SRD+N" if has_mesh else "SRD")
+                    if d > 0:
+                        b1, b2 = "Ø", int(max(50, d - 150))
+                    note_fslf = note_bfn = f"Cửa khuếch tán tròn{' kèm van OBD' if has_obd else ''}{' kèm LCCT' if has_mesh else ''}" + box_note
+                else:
+                    model_fslf = model_bfn = ("SD+O+N" if has_mesh else "SD+O") if has_obd else ("SD+N" if has_mesh else "SD")
+                    if w > 0 and h > 0:
+                        if w >= 300 and h >= 300:
+                            b1, b2 = int(max(50, w - 150)), int(max(50, h - 150))
+                        else:
+                            b1, b2 = int(max(50, w - 50)), int(max(50, h - 50))
+                    note_fslf = note_bfn = f"Cửa khuếch tán vuông 4 hướng{' kèm van OBD' if has_obd else ''}{' kèm LCCT' if has_mesh else ''}" + box_note
 
             else:
-                if any(k in combined_search for k in ("nan thẳng", "bầu dục", "sag", "rag", "oag", "mag", "pag", "seg", "seag", "sdg")):
+                if has_img_slb and not any(k in combined_search for k in ("nan thẳng", "bầu dục", "nan bd", "sọt trứng", "sọt trưng")):
+                    profile_type = "SLB"
+                elif is_thoi_kt or any(k in combined_search for k in ("nan thẳng", "bầu dục", "nan bd", "fag", "sag", "rag", "oag", "mag", "pag", "seg", "spg", "seag", "sdg")):
                     profile_type = "BD"
                 else:
                     profile_type = cls.get_subtype(subtype_rules, "CUA_GIO", raw_search, cls.get_subtype(subtype_rules, "CUA_GIO", full_search, "BD"))
@@ -451,29 +543,46 @@ class Agent01_BOQExtractor:
                     model_fslf = model_bfn = "ECG+O" if has_obd else "ECG"
                     if w > 0 and h > 0:
                         b1, b2 = int(max(50, w - 50)), int(max(50, h - 50))
-                    note_fslf = note_bfn = "Cửa nan sọt trứng" + (" kèm van OBD" if has_obd else "") + box_note
+                    note_fslf = note_bfn = "Cửa nan sọt trứng" + (" lõi tháo lắp" if is_removable else "") + (" kèm van OBD" if has_obd else "") + box_note
                 elif profile_type == "SLB":
-                    model_fslf = model_bfn = "SLB+O" if has_obd else "SLB"
+                    if has_obd and has_filter:
+                        model_fslf = model_bfn = "SLB+O+F"
+                    elif has_obd:
+                        model_fslf = model_bfn = "SLB+O"
+                    elif has_filter:
+                        model_fslf = model_bfn = "SLB+F"
+                    else:
+                        model_fslf = model_bfn = "SLB"
                     if w > 0 and h > 0:
                         b1, b2 = (int(w), int(h)) if is_black_2nd_layer else (int(max(50, w - 50)), int(max(50, h - 50)))
-                    note_fslf = note_bfn = "Cửa gió Linear nan T" + (" sơn đen lớp 2" if is_black_2nd_layer else "") + (" kèm van OBD" if has_obd else "") + box_note
+                    note_fslf = note_bfn = "Cửa gió Linear nan T" + (" sơn đen lớp 2" if is_black_2nd_layer else "") + (" kèm van OBD" if has_obd else "") + (" kèm LCCT" if has_mesh else "") + (" kèm lưới lọc bụi thô" if has_filter else "") + box_note
                 elif profile_type == "T":
-                    model_fslf = model_bfn = "SD+O" if has_obd else "SD"
+                    model_fslf = model_bfn = ("SD+O+N" if has_mesh else "SD+O") if has_obd else ("SD+N" if has_mesh else "SD")
                     if w > 0 and h > 0:
-                        b1, b2 = int(max(50, w - 150)), int(max(50, h - 150))
-                    note_fslf = note_bfn = "Cửa khuếch tán vuông" + (" kèm van OBD" if has_obd else "") + box_note
+                        if w >= 300 and h >= 300:
+                            b1, b2 = int(max(50, w - 150)), int(max(50, h - 150))
+                        else:
+                            b1, b2 = int(max(50, w - 50)), int(max(50, h - 50))
+                    note_fslf = note_bfn = "Cửa khuếch tán vuông" + (" kèm van OBD" if has_obd else "") + (" kèm LCCT" if has_mesh else "") + box_note
                 else:
-                    if has_obd and has_filter:
-                        model_fslf = model_bfn = "SDG+O+F"
+                    if is_removable and not has_obd and not has_filter and not has_mesh:
+                        model_fslf = model_bfn = "SDGK"
+                    elif has_obd and has_filter:
+                        model_fslf = model_bfn = "SDG+O+F+N" if has_mesh else "SDG+O+F"
                     elif has_obd:
-                        model_fslf = model_bfn = "SDG+O"
+                        model_fslf = model_bfn = "SDG+O+N" if has_mesh else "SDG+O"
                     elif has_filter:
-                        model_fslf = model_bfn = "SDG+F"
+                        model_fslf = model_bfn = "SDG+F+N" if has_mesh else "SDG+F"
                     else:
-                        model_fslf = model_bfn = "SDG"
+                        model_fslf = model_bfn = "SDG+N" if has_mesh else "SDG"
                     if w > 0 and h > 0:
                         b1, b2 = int(max(50, w - 50)), int(max(50, h - 50))
-                    note_fslf = note_bfn = f"Cửa nan bầu dục {'2 lớp' if is_double_layer else '1 lớp'}" + (" kèm van OBD" if has_obd else "") + (" kèm LCCT" if has_mesh else "") + (" kèm phin lọc bụi" if has_filter else "") + box_note
+                    note_fslf = note_bfn = f"Cửa nan bầu dục {'2 lớp' if is_double_layer else '1 lớp'}" + (" khung tháo lắp" if is_removable else "") + (" kèm van OBD" if has_obd else "") + (" kèm LCCT" if has_mesh else "") + (" kèm lưới lọc bụi thô" if has_filter else "") + box_note
+
+            w_neck_explicit = float(item.get("w_neck") or 0)
+            h_neck_explicit = float(item.get("h_neck") or 0)
+            if w_neck_explicit > 0 and h_neck_explicit > 0 and profile_type not in ("LCCT", "FILTER_G4"):
+                b1, b2 = int(w_neck_explicit), int(h_neck_explicit)
 
             combo_dmps = item.get("combo_dampers") or ([item["combo_damper"]] if item.get("combo_damper") else [])
             if combo_dmps:
@@ -521,37 +630,67 @@ class Agent01_BOQExtractor:
 
             subtype = profile_type
 
-        elif cat == "ONG_GIO":
-            is_fitting = raw_name.lower().startswith(("box ", "hộp "))
-            subtype = "BOX" if is_fitting else "DUCT_RECT"
-            model_fslf = model_bfn = "BOX" if is_fitting else "DUCT-TDF"
-            brand = "SWIND"
-            thk_col = thk if thk > 0 else None
-            l_col = int(l) if (is_fitting and l > 0) else (1120 if w > 0 else None)
-            note_fslf = note_bfn = "Box miệng gió tôn mạ kẽm Phương Nam" if is_fitting else f"Ống gió tôn mạ kẽm Phương Nam dày {thk:.2f}mm"
+        elif cat in ("ONG_GIO", "CANVAS", "TIEU_AM", "ONG_MEM"):
+            calc_duct = Agent04_DuctworkBOM.calculate_duct_item(item)
+            item["duct_calc"] = calc_duct
+            subtype = calc_duct["subtype"]
+            is_fitting = subtype not in ("DUCT_RECT", "SPIRAL_DUCT", "DUCT_M2", "FLEX_DUCT")
+            brand = "SWIND" if cat == "ONG_GIO" else None
 
-        elif cat == "ONG_MEM":
-            dia_val = int(d) if d > 0 else None
-            if not dia_val:
-                m = re.search(r'D\s?(\d+)', (raw_name + " " + str(item.get("model", "")) + " " + str(item.get("note_boq", ""))).upper())
-                if m:
-                    dia_val = int(m.group(1))
-            raw_sub = cls.get_subtype(subtype_rules, "ONG_MEM", raw_name.lower(), cls.get_subtype(subtype_rules, "ONG_MEM", name.lower(), "NON_INSUL"))
-            subtype = "INSUL" if raw_sub in ("INSUL", "INSULATED") else "NON_INSUL"
-            is_insul = (subtype == "INSUL")
-            model_fslf = model_bfn = "FLEX-INSUL" if is_insul else "FLEX-BARE"
-            note_fslf = note_bfn = "Ống gió mềm có bảo ôn" if is_insul else "Ống gió mềm không bảo ôn"
+            thk_val = float(calc_duct.get("thickness") or 0.0)
+            thk_col = thk_val if thk_val > 0 else None
+            l_val = calc_duct.get("l_mm")
+            l_col = int(l_val) if l_val else None
+            b1 = calc_duct.get("b1")
+            b2 = calc_duct.get("b2")
 
-        elif cat == "CANVAS":
-            subtype = "CANVAS"
-            model_fslf = model_bfn = "CANVAS"
-            l_col = int(l) if l > 0 else 200
-            note_fslf = note_bfn = "Khớp nối mềm vải bạt chống cháy"
+            is_round_main = subtype in (
+                "SPIRAL_DUCT", "ELBOW_RT", "REDUCER_RT", "TEE_RT", "WYE_RT",
+                "TAKEOFF_RT", "OFFSET_RT", "END_CAP_RT", "COUPLING_RT",
+                "CANVAS_RT", "SILENCER_RT", "VENTCAP", "FLEX_DUCT"
+            ) or (d > 0 and w == 0)
+            if is_round_main and d > 0:
+                a1, a2 = "Ø", int(d)
+                dia_val = int(d)
+            elif w > 0:
+                a1, a2 = int(w), int(h)
+            elif d > 0:
+                a1, a2 = "Ø", int(d)
+                dia_val = int(d)
 
-        elif cat == "TIEU_AM":
-            subtype = "SILENCER"
-            model_fslf = model_bfn = "SILENCER"
-            note_fslf = note_bfn = "Tiêu âm ống gió / hộp gió Rockwool 50kg/m3"
+            if l_col:
+                item["l"] = float(l_col)
+            if thk_col:
+                item["thickness"] = thk_val
+            if subtype == "COUPLING_RT":
+                item["unit"] = "cái"
+
+            if subtype == "FLEX_DUCT":
+                is_insul = "BO" in str(calc_duct.get("model_std", "")) and "KBO" not in str(calc_duct.get("model_std", ""))
+                if not dia_val:
+                    m_d = re.search(r'D(\d+)', str(calc_duct.get("model_std", "")))
+                    if m_d:
+                        dia_val = int(m_d.group(1))
+                        a1, a2 = "Ø", dia_val
+                subtype = "INSUL" if is_insul else "NON_INSUL"
+                model_fslf = model_bfn = calc_duct.get("model_std") or ("FLEX-INSUL" if is_insul else "FLEX-BARE")
+            elif subtype in ("CANVAS_SQ", "CANVAS_RT"):
+                is_fire_canvas = ("CHONG-CHAY" in str(calc_duct.get("model_std", ""))) or any(k in raw_search for k in ("chống cháy", "chịu nhiệt", "tahk", "hút khói"))
+                model_fslf = model_bfn = calc_duct.get("model_std") or "CANVAS"
+            else:
+                model_fslf = model_bfn = calc_duct.get("model_std") or subtype
+            note_fslf = note_bfn = calc_duct.get("spec_note", "")
+            if subtype in ("ELBOW_SQ", "ELBOW_45", "ELBOW_90", "ELBOW_RT"):
+                raw_low = raw_name.lower()
+                has_mesh = any(k in raw_low for k in ("lcct", "lưới chắn côn trùng"))
+                has_filter = any(k in raw_low for k in ("lọc g4", "bộ lọc g4", "lọc bụi"))
+                if has_mesh or has_filter:
+                    model_fslf = model_bfn = model_fslf + (" + LCCT" if has_mesh else "") + (" + G4" if has_filter else "")
+                    note_fslf = note_bfn = (
+                        note_fslf
+                        + (" kèm lưới chắn côn trùng Inox 304 (LCCT)" if has_mesh else "")
+                        + (" và lưới lọc bụi thô G4" if has_filter else "")
+                    )
 
         else:
             subtype = "OTHER"
@@ -583,6 +722,8 @@ class Agent01_BOQExtractor:
             "has_filter": has_filter,
             "is_double_layer": is_double_layer,
             "is_black_2nd_layer": is_black_2nd_layer,
+            "is_removable": is_removable,
+            "is_fire_canvas": is_fire_canvas,
             "dia_val": dia_val,
             "has_fslf_formula_diff": has_fslf_formula_diff,
             "fslf_ratio": fslf_ratio,

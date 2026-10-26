@@ -83,9 +83,9 @@ def run_diagnostic(boq_filepath):
 
                 # --- CHECK 2: Trống khối lượng hoặc thiếu kích thước ---
                 is_missing_qty = item.get("is_missing_qty", False)
-                is_missing_dims = item.get("is_missing_dims", False) or (cat in ("CUA_GIO", "VAN_GIO") and w == 0 and h == 0 and d == 0)
+                is_missing_dims = item.get("is_missing_dims", False) or (cat in ("CUA_GIO", "VAN_GIO", "CANVAS") and w == 0 and h == 0 and d == 0)
 
-                if cat in ("CUA_GIO", "VAN_GIO") or orig_cat in ("CUA_GIO", "VAN_GIO"):
+                if cat in ("CUA_GIO", "VAN_GIO", "CANVAS") or orig_cat in ("CUA_GIO", "VAN_GIO", "CANVAS"):
                     if is_missing_qty:
                         report["missing_qty_or_size"].append({
                             "sheet": sheet_name, "row": row,
@@ -133,7 +133,16 @@ def run_diagnostic(boq_filepath):
                     })
                     total_issues += 1
 
-                # --- CHECK 4: FD/MFD không ghi EI hoặc không rõ động cơ ---
+                # --- CHECK 4: FD/MFD không ghi EI hoặc không rõ động cơ, hoặc van khác có yêu cầu EI ---
+                if cat == "VAN_GIO" and ei > 0 and subtype not in ("FD", "MFD", "MFSD", "MFD_LOUVER"):
+                    report["fd_mfd_no_ei_or_motor"].append({
+                        "sheet": sheet_name, "row": row,
+                        "name": raw_name, "model": model,
+                        "issue": f"VAN {subtype} CÓ YÊU CẦU CHỐNG CHÁY EI{ei}",
+                        "detail": f"Van {subtype} ghi EI{ei} (Bọc thêm tấm cách nhiệt KSH dày 10mm)"
+                    })
+                    total_issues += 1
+
                 if cat == "VAN_GIO" and subtype in ("FD", "MFD", "MFSD", "MFD_LOUVER"):
                     if subtype == "FD" and ei == 0:
                         report["fd_mfd_no_ei_or_motor"].append({
@@ -246,20 +255,35 @@ def print_report(report):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Sử dụng: ./venv/bin/python3 src/swind_boq_doctor.py \"input/TEN_FILE_BOQ.xlsx\"")
-        sys.exit(1)
-
-    boq_path = sys.argv[1]
-    report = run_diagnostic(boq_path)
-    print_report(report)
-
-    # Lưu JSON report vào thư mục dự án trong data/projects/ (không làm rác thư mục input/)
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    base_name = os.path.splitext(os.path.basename(boq_path))[0]
-    proj_dir = os.path.join(base_dir, "data", "projects", base_name)
-    os.makedirs(proj_dir, exist_ok=True)
-    json_path = os.path.join(proj_dir, "BOQ_DOCTOR_REPORT.json")
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(report, f, ensure_ascii=False, indent=2)
-    print(f"💾 Báo cáo JSON đã lưu: {json_path}")
+    boq_paths = []
+    if len(sys.argv) < 2 or sys.argv[1] == "--from-images":
+        from agent_01b_image_boq_reader import Agent01B_ImageBOQReader
+        reader = Agent01B_ImageBOQReader(base_dir)
+        res = reader.process_image_folder(split_per_image=True)
+        boq_paths = res.get("excel_paths") or []
+        if not boq_paths:
+            print("Sử dụng: ./venv/bin/python3 src/swind_boq_doctor.py \"input/TEN_FILE_BOQ.xlsx\" (hoặc --from-images)")
+            sys.exit(1)
+    else:
+        boq_path = sys.argv[1]
+        if os.path.isdir(boq_path):
+            from agent_01b_image_boq_reader import Agent01B_ImageBOQReader
+            reader = Agent01B_ImageBOQReader(base_dir)
+            res = reader.process_image_folder(image_dir=boq_path, split_per_image=True)
+            boq_paths = res.get("excel_paths") or [boq_path]
+        else:
+            boq_paths = [boq_path]
+
+    for bp in boq_paths:
+        report = run_diagnostic(bp)
+        print_report(report)
+
+        # Lưu JSON report vào thư mục dự án trong data/projects/ (không làm rác thư mục input/)
+        base_name = os.path.splitext(os.path.basename(bp))[0]
+        proj_dir = os.path.join(base_dir, "data", "projects", base_name)
+        os.makedirs(proj_dir, exist_ok=True)
+        json_path = os.path.join(proj_dir, "BOQ_DOCTOR_REPORT.json")
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(report, f, ensure_ascii=False, indent=2)
+        print(f"💾 Báo cáo JSON đã lưu: {json_path}")

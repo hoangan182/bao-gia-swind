@@ -114,7 +114,7 @@ class SwindExcelBuilder:
         self.ws_06.append([idx, mat_id, name, category, price])
         self.ws_06.cell(row=r, column=5).number_format = "#,##0"
 
-    def add_boq_summary_row(self, stt, item_id, group, name, size, unit, qty, margin=0.18, labor_rate=0.25, overhead_rate=0.10, note="", override_price=0):
+    def add_boq_summary_row(self, stt, item_id, group, name, size, unit, qty, margin=0.18, labor_rate=0.25, overhead_rate=0.10, note="", override_price=0, box_combo_add_price=0):
         """
         Thêm dòng vào bảng tổng hợp báo giá với công thức sống liên kết 100%.
         Tách biệt tỷ lệ nhân công (labor_rate) và chi phí xưởng (overhead_rate) cho từng nhóm mặt hàng.
@@ -147,6 +147,9 @@ class SwindExcelBuilder:
         # Q: Đơn giá bán = (Giá vốn cơ khí * (1 + margin) + Chi phí động cơ thương mại) / Số lượng
         if override_price > 0:
             f_gia_ban = override_price
+        elif box_combo_add_price > 0:
+            f_calc = f"IF(G{r}>0, ROUNDUP(ROUND(((N{r}-{act_expr})*(1+P{r})+{act_expr})/G{r}, 0), -2), 0)"
+            f_gia_ban = f"={box_combo_add_price:.0f}+{f_calc}"
         else:
             f_gia_ban = f"=IF(G{r}>0, ROUNDUP(ROUND(((N{r}-{act_expr})*(1+P{r})+{act_expr})/G{r}, 0), -2), 0)"
         
@@ -368,6 +371,9 @@ class SwindExcelBuilder:
                 ws_orig = wb_orig[keep_sheet]
             except Exception:
                 ws_orig = None
+        zone_col_map = {"BASEMENT": 42, "A TOWER": 43, "B TOWER": 44, "LANDSCAPE": 45}
+        if ws_orig is not None and self.source_sheet in zone_col_map and not getattr(ws_orig, "_forced_qty_col", None):
+            ws_orig._forced_qty_col = zone_col_map[self.source_sheet]
 
         def _write_row_cells(r_num, vals_std, vals_fslf=None, vals_bfn=None, is_section=False):
             for ws, mode in worksheets:
@@ -508,6 +514,16 @@ class SwindExcelBuilder:
                     if orig_q is None and orig_u not in (None, 0, "0", "") and "qty_alt" in col_map:
                         orig_q = ws_orig.cell(r, col_map["qty_alt"]).value
                     orig_name = orig_b if (orig_b is not None and str(orig_b).strip() != "") else orig_c
+                    if (orig_name is None or str(orig_name).strip() == "") and name_col == 13 and orig_u in (None, 0, "0", ""):
+                        k_val = ws_orig.cell(r, 11).value
+                        a_val = ws_orig.cell(r, 1).value
+                        if k_val not in (None, 0, "0", ""):
+                            orig_name = k_val
+                            c2_cell = ws_orig.cell(r, 11)
+                        elif isinstance(a_val, str) and a_val.strip() not in ("", "0"):
+                            orig_name = a_val
+                            orig_stt = None
+                            c2_cell = ws_orig.cell(r, 1)
                     orig_name_str = str(orig_name).strip() if orig_name is not None else ""
                     orig_u_val = orig_u if (orig_u not in (None, 0, "0") and str(orig_u).strip() != "") else None
                     orig_q_val = orig_q if (orig_q is not None and (not isinstance(orig_q, str) or orig_q.strip() != "")) else None

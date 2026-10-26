@@ -1,4 +1,5 @@
 ---
+trigger: always_on
 priority: high
 description: Rules for Damper Quotation Modes (Standard vs Dual Blade Options) and Multi-Sheet BOQ Separation
 ---
@@ -19,6 +20,9 @@ Tài liệu quy tắc bắt buộc áp dụng cho toàn bộ các Agent (`Agent 
     + BOQ ghi loại van nào, model nào thì áp dụng định mức cơ khí và động cơ chính xác cho loại đó.
     + Van động cơ MD, MFD, FD và van chống cháy: Mặc định độ dày tôn 1.15mm (trừ khi BOQ ghi rõ độ dày khác).
     + Van cơ VCD, NRD (1 chiều), PRD (xả áp): Áp dụng dải độ dày $\le$ 600x300 (0.75mm), từ 600x600 -> 600x900 (0.95mm), còn lại (1.15mm).
+    + Van FD có tiêu chuẩn chống cháy EI ghi đường kính tròn (`D...`) thì mặc định quy về kích thước vuông tương ứng (`DxD`) và áp mã `SWIND-2.01- E-FD-EI120`.
+    + **Lưới lọc G4 rời:** Không báo giá các hạng mục lưới lọc / bộ lọc bụi G4 đứng độc lập (bỏ qua không báo).
+    + **Ghi chú Cửa gió kèm lọc bụi:** Khi cửa gió có kèm lưới lọc bụi thì phần Ghi chú bắt buộc ghi là **"Cửa ... kèm lưới lọc bụi thô"** (thay vì "phin lọc bụi" hay "lưới lọc bụi").
 
 - **Khi có yêu cầu rõ ràng (Explicit Dual-Option Request):**
   - Chỉ khi người dùng yêu cầu (ví dụ flag `--dual-options`, `--dual-blade`, hoặc dự án có chỉ định riêng như Haus Dalat), hệ thống mới kích hoạt tính toán so sánh và xuất đồng thời 2 sheet:
@@ -49,3 +53,14 @@ Tài liệu quy tắc bắt buộc áp dụng cho toàn bộ các Agent (`Agent 
   6. `05_DANH_MUC_KY_THUAT_GOC` (Master Tech Data tham chiếu)
   7. `06_BANG_GIA_VAT_TU_AP_DUNG` (Master Price Data tham chiếu)
   *(Nếu có yêu cầu dual-option mới bổ sung thêm 2 sheet `BG Đơn Cánh ĐC FSLF 24V` và `BG Đa Cánh BFN 24`).*
+
+- **Quy tắc với BOQ gộp nhiều tòa/tầng/phân khu thành các cột khối lượng trên cùng 1 Sheet (ví dụ MKS BP05a: `BASEMENT`, `A TOWER`, `B TOWER`, `LANDSCAPE`):**
+  - Tách từng cột khối lượng phân khu thành từng file báo giá riêng biệt tương ứng (`BASEMENT`, `A TOWER`, `B TOWER`, `LANDSCAPE`).
+  - Sau đó dùng script `src/swind_merge_quotations.py` gộp 4 file thành phần này thành **1 file báo giá cuối cùng duy nhất** (`<Project_Name>_BAO_GIA.xlsx`) chia thành **4 sheet tương ứng** (`BASEMENT`, `A TOWER`, `B TOWER`, `LANDSCAPE`).
+
+---
+
+## 3. Quy Tắc Xuất Báo Cáo Cho Người Dùng (Output Reporting Policy)
+
+1. **Chỉ liệt kê File Báo Giá Cuối Cùng:** Chỉ đưa link duy nhất file báo giá cuối cùng (`<Project_Name>_BAO_GIA.xlsx`), không liệt kê tất cả các file báo giá thành phần hay file dự toán trung gian đã tạo trong thư mục.
+2. **Chỉ in Bảng Tổng Hợp Giá Trị:** Chỉ trình bày **Bảng Tổng Hợp Giá Trị Dự Án** (Số dòng, Trước VAT, VAT 8%, Tổng sau VAT), bỏ bảng kết quả báo giá chi tiết từng dòng.

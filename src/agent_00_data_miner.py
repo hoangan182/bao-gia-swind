@@ -363,8 +363,9 @@ class SwindDataMinerAgent:
                 json.dump(current_price, f, indent=4, ensure_ascii=False)
             print(f"  -> Lưu phiên bản giá lịch sử tại: {history_price_path}")
                 
-            with open(mfg_path, "w", encoding="utf-8") as f:
-                json.dump(self.manufacturable_products, f, indent=4, ensure_ascii=False)
+            if not os.path.exists(mfg_path):
+                with open(mfg_path, "w", encoding="utf-8") as f:
+                    json.dump(self.manufacturable_products, f, indent=4, ensure_ascii=False)
             with open(com_path, "w", encoding="utf-8") as f:
                 json.dump(self.commercial_products, f, indent=4, ensure_ascii=False)
                 

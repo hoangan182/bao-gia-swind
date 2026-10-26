@@ -50,7 +50,7 @@ class Agent03_InputAuditor:
             is_valid_qty = False
             try:
                 qty_val = float(clean_qty_str)
-                if qty_val > 0:
+                if qty_val >= 0:
                     is_valid_qty = True
             except ValueError:
                 is_valid_qty = False

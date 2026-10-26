@@ -1,3 +1,9 @@
+---
+trigger: always_on
+priority: high
+description: Rules for KLB / Viweco Actuators (MFD 1.03 5Nm and MD 10Nm Module Splitting)
+---
+
 # QUY TẮC ĐỘNG CƠ KLB / VIWECO (FOXCOM & CÁC DỰ ÁN TƯƠNG ĐƯƠNG)
 > Tài liệu chuẩn hóa kiến thức trích xuất từ file báo giá chuẩn: `BG1_SLAND-KDVN_NM FOXCOM BG GD4_25052026.xlsx`
 

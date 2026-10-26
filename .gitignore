@@ -45,3 +45,8 @@ Thumbs.db
 HSKT/
 scratch/
 page_1.png
+
+# Customer IO & Project Data
+input/
+output/
+data/projects/

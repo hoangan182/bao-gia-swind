@@ -25,7 +25,7 @@ class Agent06_DiffuserBOM:
     """
 
     @staticmethod
-    def calculate_diffuser_bom(parent_id, diffuser_type, w, h, profile_type="BD", has_obd=False, has_mesh=False, has_filter=False, is_double_layer=False, is_black_2nd_layer=False):
+    def calculate_diffuser_bom(parent_id, diffuser_type, w, h, profile_type="BD", has_obd=False, has_mesh=False, has_filter=False, is_double_layer=False, is_black_2nd_layer=False, is_removable=False):
         from swind_utils import get_master_price_map, get_master_bom_rules
         mat_price_map = get_master_price_map()
         diffuser_rules = get_master_bom_rules().get("diffuser_rules", {})
@@ -57,6 +57,26 @@ class Agent06_DiffuserBOM:
                 "calc_qty": mesh_qty,
                 "unit": "m2",
                 "note": f"Lưới chắn côn trùng {F:.0f}x{G:.0f}mm"
+            })
+            total_alu_kg = 0.0
+            has_mesh = False
+            has_obd = False
+            D, E = F, G
+
+        elif profile_type == "FILTER_G4":
+            F, G = w_val, h_val
+            D, E = w_val, h_val
+            p_filter_master = mat_price_map.get("MAT-FILTER-G4", 220000.0)
+            target_filter_sell = _excel_round((F / 1000.0) * (G / 1000.0) * 200000.0, -3)
+            filter_qty = max(0.001, target_filter_sell / (p_filter_master * mfg_markup))
+            components.append({
+                "sub_key": f"{parent_id}-FILTER",
+                "name": "Lưới lọc bụi sơ cấp G4 kèm khung nhôm",
+                "category": "PHỤ_KIỆN_CỬA",
+                "mat_id": "MAT-FILTER-G4",
+                "calc_qty": filter_qty,
+                "unit": "m2",
+                "note": f"Lưới lọc bụi thô G4 {F:.0f}x{G:.0f}mm"
             })
             total_alu_kg = 0.0
             has_mesh = False
@@ -143,22 +163,32 @@ class Agent06_DiffuserBOM:
             N, O = F / 1000.0, G / 1000.0
             d_m, e_m = D / 1000.0, E / 1000.0
 
-            raw_frame_kg = 2.0 * (N + O) * 0.202 + 2.0 * (d_m + e_m) * 0.14
-            wt_luoi = d_m * e_m * (1.32 / 0.3025)
-            frame_kg = raw_frame_kg * (160000.0 * 1.25) / (p_alu_bd_master * mfg_markup)
-            core_m2 = (d_m * e_m) * (750000.0 * 1.25) / (p_core_master * mfg_markup)
-            paint_m2 = (raw_frame_kg + wt_luoi) * (20000.0 * 1.25) / (p_paint_master * mfg_markup)
-            acc_bo = (5000.0 * 1.25) / (p_acc_master * mfg_markup)
+            if is_removable:
+                raw_frame_cost = (2.0 * N + O) * 0.202 * 150000.0 + 4.0 * (N + O) * 0.14 * 150000.0
+                raw_acc_cost = 15000.0
+            else:
+                raw_frame_cost = 2.0 * (N + O) * 0.202 * 160000.0 + 2.0 * (N + O) * 0.14 * 150000.0
+                raw_acc_cost = 5000.0
+            raw_core_cost = (d_m * e_m) * 750000.0
+            raw_paint_wt = 2.0 * (N + O) * (0.202 + 0.14) + (e_m / 0.02) * N * 0.08
+            raw_paint_cost = raw_paint_wt * 20000.0
+            unrounded_ecg_sell = (raw_frame_cost + raw_core_cost + raw_acc_cost + raw_paint_cost) * 1.25
+            target_ecg_sell = _excel_round(unrounded_ecg_sell, -3)
+            scale_ecg = (target_ecg_sell / unrounded_ecg_sell) if unrounded_ecg_sell > 0 else 1.0
+            frame_kg = (raw_frame_cost * 1.25 * scale_ecg) / (p_alu_bd_master * mfg_markup)
+            core_m2 = (raw_core_cost * 1.25 * scale_ecg) / (p_core_master * mfg_markup)
+            paint_m2 = (raw_paint_cost * 1.25 * scale_ecg) / (p_paint_master * mfg_markup)
+            acc_bo = (raw_acc_cost * 1.25 * scale_ecg) / (p_acc_master * mfg_markup)
 
             components.extend([
                 {
                     "sub_key": f"{parent_id}-FRAME",
-                    "name": "Khung nhôm & nẹp U cửa sọt trứng (SEEG)",
+                    "name": f"Khung nhôm & nẹp U cửa sọt trứng ({'Tháo lắp' if is_removable else 'Cố định'} SEEG)",
                     "category": "NHÔM_ĐỊNH_HÌNH",
                     "mat_id": "MAT-ALU-KHUNG-BD",
                     "calc_qty": frame_kg,
                     "unit": "kg",
-                    "note": f"Khung bao {F:.0f}x{G:.0f}mm + U bọc lõi"
+                    "note": f"Khung bao {F:.0f}x{G:.0f}mm + U bọc lõi{' tháo lắp' if is_removable else ''}"
                 },
                 {
                     "sub_key": f"{parent_id}-CORE",
@@ -208,14 +238,13 @@ class Agent06_DiffuserBOM:
             raw_frame_kg = 2.0 * (N + O) * 0.20
             raw_blade_kg = n_nan * d_m * 0.08 + n_suot * e_m * 0.07
             p_alu_slb = float(diffuser_rules.get("aluminum_selling_price_per_kg", 165000.0))
-            if not is_black_2nd_layer:
-                unrounded_slb_sell = ((raw_frame_kg + raw_blade_kg) * p_alu_slb + 5000.0 + (raw_frame_kg + raw_blade_kg) * 20000.0) * 1.25
-                target_slb_sell = _excel_round(unrounded_slb_sell, -3)
-                mult_slb = (target_slb_sell / unrounded_slb_sell) if unrounded_slb_sell > 0 else 1.0
-            frame_kg = raw_frame_kg * (p_alu_slb * 1.25 * mult_slb) / (p_alu_bd_master * mfg_markup)
-            blade_kg = raw_blade_kg * (p_alu_slb * 1.25 * mult_slb) / (p_alu_bd_master * mfg_markup)
-            paint_m2 = (raw_frame_kg + raw_blade_kg) * (20000.0 * 1.25 * mult_slb) / (p_paint_master * mfg_markup)
-            acc_bo = (5000.0 * 1.25 * mult_slb) / (p_acc_master * mfg_markup)
+            unrounded_slb_sell = ((raw_frame_kg + raw_blade_kg) * p_alu_slb + 5000.0 + (raw_frame_kg + raw_blade_kg) * 20000.0) * 1.25 * mult_slb
+            target_slb_sell = _excel_round(unrounded_slb_sell, -3)
+            scale_slb = (target_slb_sell / unrounded_slb_sell) if unrounded_slb_sell > 0 else 1.0
+            frame_kg = raw_frame_kg * (p_alu_slb * 1.25 * mult_slb * scale_slb) / (p_alu_bd_master * mfg_markup)
+            blade_kg = raw_blade_kg * (p_alu_slb * 1.25 * mult_slb * scale_slb) / (p_alu_bd_master * mfg_markup)
+            paint_m2 = (raw_frame_kg + raw_blade_kg) * (20000.0 * 1.25 * mult_slb * scale_slb) / (p_paint_master * mfg_markup)
+            acc_bo = (5000.0 * 1.25 * mult_slb * scale_slb) / (p_acc_master * mfg_markup)
 
             components.extend([
                 {
@@ -259,17 +288,21 @@ class Agent06_DiffuserBOM:
 
         elif profile_type == "T":
             F, G = w_val, h_val
-            D, E = (w_val - 150.0 if w_val >= 300.0 else w_val), (h_val - 150.0 if h_val >= 300.0 else h_val)
+            D, E = ((w_val - 150.0) if (w_val >= 300.0 and h_val >= 300.0) else max(50.0, w_val - 50.0)), ((h_val - 150.0) if (w_val >= 300.0 and h_val >= 300.0) else max(50.0, h_val - 50.0))
             N, O = F / 1000.0, G / 1000.0
             n_chao = max(1, int((N - 0.185) / 0.09 + 0.5))
             k_scd = float(diffuser_rules.get("scd_markup_ratio", 1.19587))
 
             raw_frame_kg = 2.0 * (N + O) * 0.258 + 2.0 * (1.2 * N) * 0.106
             raw_blade_kg = max(0.2, 2.0 * (0.28 * n_chao * (N + O - 0.43 * n_chao)))
-            frame_kg = raw_frame_kg * k_scd
-            blade_kg = raw_blade_kg * k_scd
-            paint_m2 = (raw_frame_kg + raw_blade_kg) * (23100.0 / p_paint_master) * k_scd
-            acc_bo = ((24000.0 + (0.0 if D * E < 1_000_000.0 else 10000.0)) / p_acc_master) * k_scd
+            raw_acc_scd = 24000.0 + (0.0 if D * E < 1_000_000.0 else 10000.0)
+            unrounded_scd_sell = ((raw_frame_kg + raw_blade_kg) * (p_alu_bd_master + 23100.0) + raw_acc_scd) * k_scd * mfg_markup
+            target_scd_sell = _excel_round(unrounded_scd_sell, -3)
+            scale_scd = (target_scd_sell / unrounded_scd_sell) if unrounded_scd_sell > 0 else 1.0
+            frame_kg = raw_frame_kg * k_scd * scale_scd
+            blade_kg = raw_blade_kg * k_scd * scale_scd
+            paint_m2 = (raw_frame_kg + raw_blade_kg) * (23100.0 / p_paint_master) * k_scd * scale_scd
+            acc_bo = (raw_acc_scd / p_acc_master) * k_scd * scale_scd
 
             components.extend([
                 {
@@ -326,6 +359,14 @@ class Agent06_DiffuserBOM:
                 frame_mat_id = "MAT-ALU-KHUNG-Z-2-LOP"
                 p_alu_bd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 165000.0))
                 raw_acc_cost = 5000.0
+            elif is_removable:
+                n_nan_1 = max(1, _excel_round((e_m / 0.02) - 1, 0))
+                raw_frame_only_kg = 2.0 * (N + O) * 0.2547 * 1.5
+                raw_frame_kg = raw_frame_only_kg
+                raw_blade_kg = n_nan_1 * d_m * 0.058
+                frame_mat_id = "MAT-ALU-KHUNG-Z-2-LOP"
+                p_alu_bd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 165000.0))
+                raw_acc_cost = 5000.0
             else:
                 raw_frame_only_kg = 2.0 * (N + O) * 0.18
                 raw_frame_kg = raw_frame_only_kg + 1.0 * (O * 1.1) * 0.08
@@ -345,7 +386,7 @@ class Agent06_DiffuserBOM:
             components.extend([
                 {
                     "sub_key": f"{parent_id}-FRAME",
-                    "name": f"Khung nhôm định hình ({'2 lớp' if is_double_layer else '1 lớp'} BD)",
+                    "name": f"Khung nhôm định hình ({'2 lớp' if is_double_layer else ('1 lớp tháo lắp' if is_removable else '1 lớp')} BD)",
                     "category": "NHÔM_ĐỊNH_HÌNH",
                     "mat_id": frame_mat_id,
                     "calc_qty": frame_kg,
@@ -383,23 +424,29 @@ class Agent06_DiffuserBOM:
             total_alu_kg = frame_kg + blade_kg
 
         if has_mesh and profile_type != "Z":
+            p_mesh_master = mat_price_map.get("MAT-MESH-INOX-304", 150000.0)
+            target_mesh_sell = _excel_round((D / 1000.0) * (E / 1000.0) * 150000.0, -3)
+            mesh_qty = max(0.001, target_mesh_sell / (p_mesh_master * mfg_markup))
             components.append({
                 "sub_key": f"{parent_id}-MESH",
                 "name": "Lưới chắn côn trùng Inox 304 (LCCT)",
                 "category": "PHỤ_KIỆN_CỬA",
                 "mat_id": "MAT-MESH-INOX-304",
-                "calc_qty": max(0.01, (D * E / 1_000_000.0) * k_std),
+                "calc_qty": mesh_qty,
                 "unit": "m2",
                 "note": f"Lưới chắn côn trùng cổ {D:.0f}x{E:.0f}mm"
             })
 
         if has_filter:
+            p_filter_master = mat_price_map.get("MAT-FILTER-G4", 220000.0)
+            target_filter_sell = _excel_round((D / 1000.0) * (E / 1000.0) * 200000.0, -3)
+            filter_qty = max(0.001, target_filter_sell / (p_filter_master * mfg_markup))
             components.append({
                 "sub_key": f"{parent_id}-FILTER",
                 "name": "Lưới lọc bụi sơ cấp G4 kèm khung nhôm",
                 "category": "PHỤ_KIỆN_CỬA",
                 "mat_id": "MAT-FILTER-G4",
-                "calc_qty": max(0.01, (D * E / 1_000_000.0) * k_std),
+                "calc_qty": filter_qty,
                 "unit": "m2",
                 "note": f"Phin lọc bụi cổ {D:.0f}x{E:.0f}mm"
             })

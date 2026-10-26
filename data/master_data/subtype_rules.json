@@ -4,43 +4,61 @@
         {"keywords": ["mfsd", "motorized fire smoke"], "subtype": "MFSD"},
         {"keywords": ["mfd", "ngăn cháy có động cơ", "chặn lửa có động cơ", "chặn lửa bằng động cơ", "chặn lửa kèm động cơ", "chặn lửa đóng mở bằng mo tơ", "chặn lửa đóng mở bằng mô tơ", "chặn lửa đóng mở bằng motor", "chặn lửa đóng mở bằng động cơ"], "subtype": "MFD"},
         {"keywords": ["md", "động cơ", "điện", "mô tơ", "môtơ", "mo tơ", "motor", "van on/off", "van on-off"], "subtype": "MD"},
-        {"keywords": ["fd", "lửa", "chống cháy", "dập lửa", "ngăn cháy"], "subtype": "FD"},
-        {"keywords": ["prd", "xả áp"], "subtype": "PRD"},
-        {"keywords": ["nrd", "1 chiều", "một chiều"], "subtype": "NRD"},
-        {"keywords": ["vcd", "vd", "điều chỉnh", "lưu lượng"], "subtype": "VCD"}
+        {"keywords": ["fd", "lửa", "chống cháy", "dập lửa", "ngăn cháy", "cầu chì"], "subtype": "FD"},
+        {"keywords": ["prd", "xả áp", "tràn áp", "cân bằng áp"], "subtype": "PRD"},
+        {"keywords": ["nrd", "1 chiều", "một chiều", "backdraft"], "subtype": "NRD"},
+        {"keywords": ["obd", "sobd", "van điều chỉnh cửa gió"], "subtype": "OBD"},
+        {"keywords": ["trục vít", "bánh vít", "tay vặn trục vít"], "subtype": "VCD_VIT"},
+        {"keywords": ["vcd", "vd", "điều chỉnh", "lưu lượng", "tay gạt"], "subtype": "VCD"}
     ],
     "ONG_MEM": [
-        {"keywords": ["không cách", "không bảo", "bare", "non_insul"], "subtype": "NON_INSUL"},
+        {"keywords": ["không cách", "không bảo", "không có bảo", "không có cách", "bare", "non_insul"], "subtype": "NON_INSUL"},
         {"keywords": ["cách nhiệt", "bảo ôn", "insul"], "subtype": "INSUL"}
     ],
     "CUA_GIO": [
-        {"keywords": ["cửa hồi", "miệng hồi", "hút hồi", "rag", "hồi gió", "gió hồi"], "subtype": "BD"},
-        {"keywords": ["khuếch tán", "sad", "ead", "scd"], "subtype": "T"},
-        {"keywords": ["louver", "luover", "louvre", "fal", "eal", "oal", "wl", "chớp", "lam", "ngoài trời", "nan z"], "subtype": "Z"},
-        {"keywords": ["sọt trứng", "eggcrate", "ecg"], "subtype": "ECG"},
-        {"keywords": ["linear", "slb", "nan t ", "nan t-", "khe dài", "tuyến tính", "slot"], "subtype": "SLB"},
-        {"keywords": ["bầu dục", "nan thẳng", "seag", "seg", "oag", "mag", "pag", "sag", "srg", "sdg", "obd", "eag"], "subtype": "BD"}
+        {"keywords": ["cửa hồi", "miệng hồi", "hút hồi", "rag", "hồi gió", "gió hồi", "hồi lạnh"], "subtype": "BD"},
+        {"keywords": ["khuếch tán tròn", "miệng gió tròn", "cửa gió tròn", "srd"], "subtype": "SRD"},
+        {"keywords": ["khuếch tán", "sad", "ead", "scd", "skd", "4 hướng"], "subtype": "T"},
+        {"keywords": ["louver", "luover", "louvre", "fal", "eal", "oal", "wl", "swl", "chớp", "lam", "ngoài trời", "nan z"], "subtype": "Z"},
+        {"keywords": ["sọt trứng", "sọt trưng", "eggcrate", "ecg", "seeg"], "subtype": "ECG"},
+        {"keywords": ["khe", "slot", "sld", "lsd"], "subtype": "SLD"},
+        {"keywords": ["linear", "slb", "nan t ", "nan t-", "khe dài", "tuyến tính"], "subtype": "SLB"},
+        {"keywords": ["bầu dục", "nan thẳng", "seag", "seg", "oag", "mag", "pag", "sag", "dag", "srg", "sdg", "obd", "eag"], "subtype": "BD"}
+    ],
+    "ONG_GIO": [
+        {"keywords": ["hộp gió", "box cửa gió", "box gió", "hộp góp gió", "hộp tĩnh áp", "plenum"], "subtype": "PLENUM_BOX"},
+        {"keywords": ["chuyển vuông tròn", "côn vuông tròn", "vuông sang tròn", "tròn sang vuông", "v-t", "cvt"], "subtype": "SQUARE_TO_ROUND"},
+        {"keywords": ["bịt đầu", "nắp bịt"], "subtype": "END_CAP_SQ"},
+        {"keywords": ["măng xông", "mang xong"], "subtype": "COUPLING_RT"},
+        {"keywords": ["chạc 3", "chạc ba", "chạc y", "ống quần", "y vuông", "y tròn"], "subtype": "WYE_SQ"},
+        {"keywords": ["tê vuông", "tê tròn", "tê đều", "tê thu", "tê ống", "tee"], "subtype": "TEE_SQ"},
+        {"keywords": ["ống lượn", "lượn ống gió", "lượn z", "z chuyển cao độ", "z chuyển hướng", "offset"], "subtype": "OFFSET_Z"},
+        {"keywords": ["cút", "co 90", "co 45", "co vuông", "co tròn", "chếch", "bs90", "bs45", "bt90", "bt45"], "subtype": "ELBOW_SQ"},
+        {"keywords": ["chân rẽ", "gót giày", "cổ trích", "chân trích"], "subtype": "SHOE_TAP"},
+        {"keywords": ["côn thu", "côn giảm", "côn phẳng", "giảm vuông", "giảm tròn", "côn lệch", "côn đồng tâm", "thu vuông"], "subtype": "REDUCER_SQ"},
+        {"keywords": ["tròn xoắn", "ống tròn", "ống gió tròn"], "subtype": "SPIRAL_DUCT"},
+        {"keywords": ["ống gió", "ống bù", "ống vuông", "ống tôn", "tole", "tôn"], "subtype": "DUCT_RECT"}
     ],
     "HEADER_ALIASES": {
-        "name_keywords": ["sản phẩm", "hạng mục", "quy cách", "công tác", "nội dung", "diễn giải", "mô tả", "tên vật tư", "tên hàng", "danh mục"],
-        "name_cand_keywords": ["sản phẩm", "hạng mục", "danh mục", "công tác", "nội dung", "diễn giải", "mô tả", "tên vật tư", "tên hàng"],
-        "qty_keywords": ["số lượng", "q'ty", "q.ty", "qty", "khối lượng", "sl", "kl"],
+        "name_keywords": ["sản phẩm", "hạng mục", "quy cách", "công tác", "nội dung", "diễn giải", "mô tả", "tên vật tư", "tên vật liệu", "vật tư yêu cầu", "danh mục", "tên hàng"],
+        "name_cand_keywords": ["sản phẩm", "hạng mục", "danh mục", "công tác", "nội dung", "diễn giải", "mô tả", "tên vật tư", "tên vật liệu", "vật tư yêu cầu", "tên hàng"],
+        "qty_keywords": ["số lượng", "q'ty", "q.ty", "qty", "khối lượng", "tổng kl", "lũy kế đến hết kỳ này", "sl", "kl", "quantity", "quanttiy"],
         "stt_keywords": ["stt", "tt", "no", "no."],
-        "spec_keywords": ["thông số", "quy cách", "đặc tính", "kỹ thuật"],
-        "model_keywords": ["model", "mã hiệu"],
+        "spec_keywords": ["thông số", "quy cách", "chi tiết", "đặc tính", "kỹ thuật"],
+        "model_keywords": ["model", "mã hiệu", "ký hiệu", "mã sp"],
         "brand_keywords": ["thương hiệu", "nhãn hiệu", "xuất xứ"],
         "size_keywords": ["kích thước", "size"],
-        "thickness_keywords": ["độ dày"],
-        "unit_keywords": ["unit", "đơn vị", "đvt", "dvt"],
+        "thickness_keywords": ["độ dày", "độ dầy", "dày (mm)"],
+        "unit_keywords": ["unit", "đơn vị", "đvt", "dvt", "đv tính"],
         "price_keywords": ["đơn giá", "price"],
         "total_keywords": ["thành tiền", "total"],
-        "remarks_keywords": ["ghi chú", "remarks"]
+        "remarks_keywords": ["ghi chú", "remarks", "remark"]
     },
     "COMBO_AND_DETECTION_RULES": {
-        "missing_qty_cv_keywords": ["louver", "luover", "louvre", "miệng gió", "miệng hút", "miệng lấy", "miệng cấp", "miệng thải", "miệng hồi", "cửa gió", "cửa nan", "van ", "vcd", "mfd", "mfsd", "nrd", "prd"],
+        "missing_qty_cv_keywords": ["louver", "luover", "louvre", "miệng gió", "miệng hút", "miệng lấy", "miệng cấp", "miệng thải", "miệng hồi", "cửa gió", "mặt gió", "cửa nan", "van ", "vcd", "mfd", "mfsd", "nrd", "prd", "ống gió", "cút", "côn", "chân rẽ", "tê", "hộp gió"],
         "missing_qty_cv_regex": "\\b(fd|md|sag|rag|eag|oag|pag|seg|eal|oal|fal)\\b",
-        "combo_diffuser_regex": "\\bmiệng\\s*gió\\b|\\bcửa\\s*gió\\b|\\bcửa\\s*nan\\b|\\blouver\\b|\\bluover\\b|\\blouvre\\b|cửa\\s*(?:nan|thẳng|gió|\\+)",
-        "combo_damper_regex": "\\b(mfd|mfsd|md|fd|prd|nrd|vcd)\\b|van\\s+(?:on/off|on-off|chống\\s*cháy|chặn\\s*lửa|động\\s*cơ|một\\s*chiều|1\\s*chiều|xả\\s*áp)",
+        "combo_diffuser_regex": "\\bmiệng\\s*gió\\b|\\bcửa\\s*gió\\b|\\bmặt\\s*gió\\b|\\bcửa\\s*nan\\b|\\blouver\\b|\\bluover\\b|\\blouvre\\b|\\bgrille\\b|\\bgriller\\b|\\bdiffuser\\b|\\b(?:sag|rag|fag|eag|seag|kag|mag|fal|eal|oal)\\b|cửa\\s*(?:nan|thẳng|gió|hút|cấp|hồi|thải|lấy|xả|tăng\\s*áp|tạo\\s*áp|\\+)",
+        "combo_damper_regex": "\\b(mfd|mfsd|md|fd|prd|nrd|vcd)\\b|van\\s+(?:on/off|on-off|chống\\s*cháy|chặn\\s*lửa|ngăn\\s*cháy|động\\s*cơ|một\\s*chiều|1\\s*chiều|xả\\s*áp)",
         "inline_combo_dampers": ["MD", "FD", "VCD"],
         "combo_model_suffix": {
             "MD": "+MD",
@@ -54,14 +72,16 @@
         },
         "ktc_regex": "\\bktc\\b|kích\\s*thước\\s*cổ",
         "single_dim_damper_regex": "\\b(?:vcd|fd|nrd|prd|md|obd|mfd|mfsd)\\s+(\\d{2,4})\\b",
-        "louver_z_keywords": ["nan z", "louver", "luover", "louvre", "chớp", "fal", "oal", "eal", "wl"],
-        "mesh_keywords": ["lưới", "chắn côn trùng", "lcct", "+n", "+ n", "+is", "is"],
+        "louver_z_keywords": ["nan z", "louver", "luover", "louvre", "chớp", "fal", "oal", "eal", "wl", "swl"],
+        "mesh_keywords": ["lưới", "chắn côn trùng", "côn trùng", "lcct", "+n", "+ n", "+is", "+ is", "i.s", "insect screen", "c/w is", "c/w i.s", "is"],
         "filter_keywords": ["phin lọc", "lọc bụi", "+f", "g4"],
-        "combo_box_keywords": ["kèm hộp gió", "kèm hộp", "kèm box", "có hộp gió", "gắn hộp gió", "hộp và cửa", "hộp miệng gió", "hộp kèm cửa", "hộp + cửa"],
+        "combo_box_keywords": ["kèm hộp gió", "kèm hộp", "kèm box", "có hộp gió", "gắn hộp gió", "hộp và cửa", "hộp miệng gió", "hộp kèm cửa", "hộp + cửa", "air boot", "plenum box", "hộp hòa trộn", "bao gồm hộp"],
         "hvac_sheet_keywords": [
-            "dhkk", "hvac", "thong gio", "thông gió", "thong_gio",
+            "dhkk", "dhtg", "hvac", "thong gio", "thông gió", "thong_gio",
             "hut khoi", "hút khói", "hut_khoi", "tang ap", "tăng áp", "tang áp", "tăng ap",
-            "tang_ap", "duct", "lanh", "lạnh", "ventilation", "m.4 duct"
+            "tang_ap", "duct", "lanh", "lạnh", "ventilation", "m.4 duct", "ống gió", "ong gio",
+            "ôg", "og", "gió", "gio-", "rop", "báo giá", "bao gia", "boq",
+            "basement", "a tower", "b tower", "landscape"
         ]
     }
 }

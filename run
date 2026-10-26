@@ -1,2 +1,2 @@
 #!/bin/bash
-python3 src/swind_master_runner.py
+./venv/bin/python src/swind_master_runner.py "$@"

@@ -8,9 +8,18 @@ import argparse
 import shutil
 from datetime import datetime
 
+try:
+    import openpyxl
+except ImportError:
+    _venv_py = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "venv", "bin", "python")
+    if os.path.exists(_venv_py) and os.path.abspath(sys.executable) != os.path.abspath(_venv_py):
+        os.execv(_venv_py, [_venv_py] + sys.argv)
+    raise
+
 # Quy trình B: Lập Báo Giá Dự Án từ BOQ Khách Hàng (Agent 01 -> Agent 08)
 # Chỉ nhận file BOQ của khách hàng, phân tích và áp giá dựa theo bộ file Master Data đã có sẵn.
 # (Quy trình A - Agent 00 giải mã Bảng tính chuẩn 1 lần & Agent 09 cập nhật giá theo yêu cầu được tách độc lập)
+from agent_00b_input_normalizer import Agent00B_InputNormalizer
 from agent_01_boq_extractor import Agent01_BOQExtractor
 from agent_02_boq_reviewer import Agent02_BOQReviewer, find_ambiguous_items, resolve_ambiguous_interactive
 from agent_03_input_auditor import Agent03_InputAuditor
@@ -121,6 +130,16 @@ def select_input_file():
     input_dir = resolve_path("input")
     if not os.path.exists(input_dir):
         os.makedirs(input_dir, exist_ok=True)
+
+    img_dir = resolve_path("input picture")
+    if os.path.exists(img_dir):
+        try:
+            from agent_01b_image_boq_reader import Agent01B_ImageBOQReader
+            reader = Agent01B_ImageBOQReader(os.path.dirname(input_dir))
+            if reader.list_customer_images(img_dir):
+                reader.process_image_folder(img_dir, split_per_image=True)
+        except Exception as e:
+            print(f"[CẢNH BÁO] Không thể tự động đọc ảnh trong 'input picture/': {e}")
         
     candidates = []
     for ext in ["*.xlsx", "*.xls"]:
@@ -253,7 +272,14 @@ def process_single_sheet_estimation(
         d = item.get("d", 0)
         thk = item["thickness"]
         spec = item["resolved_spec"]
-        dim_str = f"D{int(d)}" if d > 0 else (f"{int(w)}x{int(h)}" if w > 0 else "-")
+        if w > 0 and h > 0 and d > 0 and (w != d or h != d):
+            dim_str = f"{int(w)}x{int(h)}/D{int(d)}"
+        elif d > 0:
+            dim_str = f"D{int(d)}"
+        elif w > 0:
+            dim_str = f"{int(w)}x{int(h)}"
+        else:
+            dim_str = "-"
 
         # Tạo ITEM_ID chuẩn
         if cat == "ONG_GIO":
@@ -283,18 +309,32 @@ def process_single_sheet_estimation(
 
         item_id = f"{prefix}-{item_counter:03d}"
 
+        is_box_combo = spec.get("is_box_combo") or item.get("is_box_combo") or (
+            any(k in raw_name.lower() for k in ("kèm hộp gió", "kèm hộp", "kèm box", "có hộp gió", "gắn hộp gió"))
+            and any(k in raw_name.lower() for k in ("cửa gió", "miệng gió", "cửa cấp", "miệng cấp", "cửa hồi", "miệng hồi"))
+        )
         override_price = 0
-        if cat in ["THUONG_MAI", "ONG_MEM", "KHAC"]:
-            try:
-                p_ref = float(item.get("ref_price") or 0)
-                if p_ref > 0:
+        box_combo_add_price = 0
+        try:
+            p_ref = float(item.get("ref_price") or 0)
+            if p_ref > 0:
+                if is_box_combo and cat == "CUA_GIO":
+                    box_combo_add_price = int(math.ceil(p_ref / 100.0) * 100)
+                elif cat in ["THUONG_MAI", "ONG_MEM", "KHAC"]:
                     override_price = int(math.ceil(p_ref / 100.0) * 100)
-            except:
-                override_price = 0
+        except:
+            override_price = 0
+            box_combo_add_price = 0
 
         note_str = spec.get("note_std") or spec.get("note_fslf") or ""
         if not note_str:
             note_str = "Hàng thương mại" if cat == "THUONG_MAI" else "Ống mềm" if cat == "ONG_MEM" else ""
+
+        if is_box_combo and cat == "CUA_GIO":
+            if box_combo_add_price > 0:
+                note_str = f"{note_str} (ĐG bao gồm Hộp gió đã báo {box_combo_add_price:,.0f}đ + Cửa gió Swind)" if note_str else f"ĐG bao gồm Hộp gió đã báo {box_combo_add_price:,.0f}đ + Cửa gió Swind"
+            else:
+                note_str = f"{note_str} (ĐG chỉ bao gồm phần Cửa gió Swind)" if note_str else "ĐG chỉ bao gồm phần Cửa gió Swind"
 
         labor_rate, overhead_rate, margin_rate = get_financial_rates(cat)
         builder.add_boq_summary_row(
@@ -309,22 +349,27 @@ def process_single_sheet_estimation(
             labor_rate=labor_rate,
             overhead_rate=overhead_rate,
             note=note_str,
-            override_price=override_price
+            override_price=override_price,
+            box_combo_add_price=box_combo_add_price
         )
 
         # Bóc tách chi tiết BOM theo Xưởng chuyên môn
         if cat == "ONG_GIO":
             is_fitting = spec["is_fitting"]
+            sub_t = spec.get("subtype")
             bom = Agent04_DuctworkBOM.calculate_duct_bom(
                 parent_id=item_id,
-                w=w if w > 0 else 500,
-                h=h if h > 0 else 500,
+                w=w if w > 0 else (d if d > 0 else 500),
+                h=h if h > 0 else (d if d > 0 else 500),
                 l=l if l > 0 else (300 if is_fitting else 1120),
                 brand="PN",
                 flange_type="TDF",
                 is_fitting=is_fitting,
                 unit=unit,
-                specified_thickness=thk
+                specified_thickness=thk,
+                d=d,
+                subtype=sub_t,
+                item=item
             )
             for comp in bom["components"]:
                 builder.add_subsheet_component(
@@ -338,6 +383,50 @@ def process_single_sheet_estimation(
                     calc_qty_per_item=comp["calc_qty"],
                     note=comp.get("note", "")
                 )
+            if spec.get("has_mesh"):
+                w_m = w if w > 0 else (d if d > 0 else 300)
+                h_m = h if h > 0 else (d if d > 0 else 300)
+                lcct_bom = Agent06_DiffuserBOM.calculate_diffuser_bom(
+                    parent_id=f"{item_id}-LCCT",
+                    diffuser_type="LCCT",
+                    w=w_m,
+                    h=h_m,
+                    profile_type="LCCT"
+                )
+                for comp in lcct_bom["components"]:
+                    builder.add_subsheet_component(
+                        sheet_type="CUA",
+                        sub_key=comp["sub_key"],
+                        parent_id=item_id,
+                        comp_name=comp["name"],
+                        category=comp["category"],
+                        mat_id=comp["mat_id"],
+                        unit=comp["unit"],
+                        calc_qty_per_item=comp["calc_qty"],
+                        note=comp.get("note", "")
+                    )
+            if spec.get("has_filter"):
+                w_f = w if w > 0 else (d if d > 0 else 300)
+                h_f = h if h > 0 else (d if d > 0 else 300)
+                flt_bom = Agent06_DiffuserBOM.calculate_diffuser_bom(
+                    parent_id=f"{item_id}-G4",
+                    diffuser_type="FILTER_G4",
+                    w=w_f,
+                    h=h_f,
+                    profile_type="FILTER_G4"
+                )
+                for comp in flt_bom["components"]:
+                    builder.add_subsheet_component(
+                        sheet_type="CUA",
+                        sub_key=comp["sub_key"],
+                        parent_id=item_id,
+                        comp_name=comp["name"],
+                        category=comp["category"],
+                        mat_id=comp["mat_id"],
+                        unit=comp["unit"],
+                        calc_qty_per_item=comp["calc_qty"],
+                        note=comp.get("note", "")
+                    )
         elif cat == "VAN_GIO":
             damper_type = spec["subtype"]
             ei_rating = 0 if damper_type == "MD" else item.get("ei_rating", 0)
@@ -418,11 +507,13 @@ def process_single_sheet_estimation(
             mat_id = f"MAT-{cat}-{clean_name}"
             comp_unit = unit
             calc_qty_per_item = 1.0
+            comm_markup = (1.0 + overhead_rate + labor_rate) * (1.0 + margin_rate)
             if cat == "ONG_MEM" and spec.get("dia_val"):
-                mat_id = f"FLEX_DUCT_D{spec['dia_val']}_{spec['subtype']}"
+                nearest_d = min((100, 150, 200, 250, 300, 350, 400), key=lambda k: abs(k - int(spec["dia_val"])))
+                mat_id = f"FLEX_DUCT_D{nearest_d}_{spec['subtype']}"
                 comp_unit = "ống"
-                if unit.lower() in ["m", "md", "mét", "met"]:
-                    calc_qty_per_item = 0.125
+                base_factor = 0.125 if unit.lower() in ["m", "md", "mét", "met"] else 1.0
+                calc_qty_per_item = base_factor / comm_markup if comm_markup > 0 else base_factor
             builder.add_subsheet_component(
                 sheet_type="ONG",
                 sub_key=f"{item_id}-TM",
@@ -432,13 +523,21 @@ def process_single_sheet_estimation(
                 mat_id=mat_id,
                 unit=comp_unit,
                 calc_qty_per_item=calc_qty_per_item,
-                note="Ống mềm quy đổi chuẩn 8m/ống" if mat_id.startswith("FLEX_DUCT_") and calc_qty_per_item == 0.125 else "Hàng thương mại mua ngoài",
+                note="Ống mềm quy đổi chuẩn 8m/ống" if mat_id.startswith("FLEX_DUCT_") else "Hàng thương mại mua ngoài",
                 ref_price=override_price
             )
         elif cat == "CANVAS":
-            canvas_w = (math.pi * float(d)) / 4.0 if d > 0 else (w if w > 0 else 500)
-            canvas_h = canvas_w if d > 0 else (h if h > 0 else 500)
-            bom = Agent04_DuctworkBOM.calculate_canvas_bom(parent_id=item_id, w=canvas_w, h=canvas_h, l=l if l > 0 else 200)
+            bom = Agent04_DuctworkBOM.calculate_canvas_bom(
+                parent_id=item_id,
+                w=w,
+                h=h,
+                l=l if l > 0 else 200,
+                is_fire_resistant=bool(spec.get("is_fire_canvas")),
+                d=d,
+                raw_name=f"{raw_name} {item.get('note_boq', '')}".strip(),
+                unit=unit,
+                item=item
+            )
             for comp in bom["components"]:
                 builder.add_subsheet_component(
                     sheet_type="ONG",
@@ -458,7 +557,11 @@ def process_single_sheet_estimation(
                 h=h if h > 0 else 1000,
                 l=l if l > 0 else 1000,
                 unit=unit,
-                include_casing=("tiêu âm trong" not in raw_name.lower())
+                include_casing=("tiêu âm trong" not in raw_name.lower()),
+                is_box=("hộp" in raw_name.lower()),
+                d=d,
+                raw_name=f"{raw_name} {item.get('note_boq', '')}".strip(),
+                item=item
             )
             for comp in bom["components"]:
                 builder.add_subsheet_component(
@@ -483,7 +586,8 @@ def process_single_sheet_estimation(
                 has_mesh=spec["has_mesh"],
                 has_filter=spec["has_filter"],
                 is_double_layer=spec["is_double_layer"],
-                is_black_2nd_layer=spec["is_black_2nd_layer"]
+                is_black_2nd_layer=spec["is_black_2nd_layer"],
+                is_removable=bool(spec.get("is_removable"))
             )
             for comp in bom["components"]:
                 builder.add_subsheet_component(
@@ -590,6 +694,10 @@ def process_single_sheet_estimation(
             item["calc_sell_unit"] = int(override_price)
             item["calc_sell_mat"] = int(override_price)
             item["calc_sell_lab"] = 0
+        elif box_combo_add_price > 0:
+            item["calc_sell_mat"] = math.floor(((m_cost + o_cost - mot_cost) * (1 + mg_rate) + mot_cost) + 0.5) + int(box_combo_add_price)
+            item["calc_sell_lab"] = math.floor(l_cost * (1 + mg_rate) + 0.5)
+            item["calc_sell_unit"] = int(box_combo_add_price + diff_sell_unit)
         else:
             item["calc_sell_mat"] = math.floor(((m_cost + o_cost - mot_cost) * (1 + mg_rate) + mot_cost) + 0.5)
             item["calc_sell_lab"] = math.floor(l_cost * (1 + mg_rate) + 0.5)
@@ -1009,7 +1117,7 @@ def export_customer_boq_quotation_files(
     return customer_files
 
 
-def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None):
+def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None):
     """
     Hàm điều phối Quy trình B: Nhận file BOQ khách hàng -> Phân tích & Áp giá từ Master Data có sẵn (Agent 01 -> Agent 08).
     """
@@ -1033,6 +1141,27 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     print(f"  • Thời gian chạy: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
     # -------------------------------------------------------------
+    # BƯỚC 0B: AGENT 00B - INPUT NORMALIZER (CHUẨN HÓA ĐẦU VÀO)
+    # -------------------------------------------------------------
+    try:
+        agent_00b = Agent00B_InputNormalizer(boq_file, interactive=interactive)
+        normalized_file, norm_report = agent_00b.normalize()
+        if normalized_file != boq_file:
+            internal_dir = os.path.join(project_dir, "internal_estimation")
+            os.makedirs(internal_dir, exist_ok=True)
+            norm_dest = os.path.join(internal_dir, f"{project_name}_NORMALIZED.xlsx")
+            if os.path.exists(normalized_file) and os.path.abspath(normalized_file) != os.path.abspath(norm_dest):
+                shutil.move(normalized_file, norm_dest)
+                normalized_file = norm_dest
+                norm_report["output_file"] = norm_dest
+            norm_report_path = os.path.join(internal_dir, "INPUT_NORMALIZATION_REPORT.json")
+            with open(norm_report_path, "w", encoding="utf-8") as f:
+                json.dump(norm_report, f, ensure_ascii=False, indent=2, default=str)
+            boq_file = normalized_file
+    except Exception as e:
+        print(f"  [Agent 00B] Cảnh báo: Không thể normalize ({e}). Tiếp tục với file gốc.")
+
+    # -------------------------------------------------------------
     # BƯỚC 1: AGENT 01 - BOQ EXTRACTOR & SPEC RESOLVER
     # -------------------------------------------------------------
     print("\n" + "-" * 60)
@@ -1040,12 +1169,20 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     print("-" * 60)
     agent_01 = Agent01_BOQExtractor(boq_file=boq_file, project_name=project_name)
     target_sheets, all_items = agent_01.detect_and_parse(sheet_names=sheet_names)
-    if motor_brand or mfd_model:
-        for it in all_items:
-            if motor_brand:
-                it["motor_brand_override"] = str(motor_brand).strip().upper()
-            if mfd_model:
-                it["mfd_model_override"] = str(mfd_model).strip()
+    for it in all_items:
+        if motor_brand:
+            it["motor_brand_override"] = str(motor_brand).strip().upper()
+        if mfd_model:
+            it["mfd_model_override"] = str(mfd_model).strip()
+        r_ov = (row_overrides or {}).get(it.get("source_row"))
+        if r_ov:
+            for k_ov, v_ov in r_ov.items():
+                if k_ov in ("w", "h", "d", "l", "thickness", "qty", "ref_price"):
+                    it[k_ov] = float(v_ov)
+                elif k_ov == "skip":
+                    it["is_skipped_ei"] = bool(int(v_ov))
+                else:
+                    it[k_ov] = v_ov
     print(f"  -> Các sheet được chọn xử lý: {target_sheets}")
     print(f"  -> Tổng số dòng sản phẩm bóc tách: {len(all_items)} dòng.")
 
@@ -1059,6 +1196,8 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
         print("=" * 75)
         all_items = [it for it in all_items if it.get("category") in ("CUA_GIO", "VAN_GIO")]
         print(f"  -> Số dòng sản phẩm sau khi lọc: {len(all_items)} dòng (chỉ Cửa gió & Van gió).")
+
+    target_sheets = [sh for sh in target_sheets if any(it.get("source_sheet") == sh for it in all_items)]
 
     if not motor_brand and not mfd_model:
         print("  -> [Rule Mặc Định Cố Định] Các van động cơ chưa chỉ định hãng/mã trong BOQ sẽ tự động áp dụng: Mã MFD 1.02 - Động cơ BELIMO.")
@@ -1165,11 +1304,94 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
         template_wb=agent_01.parser.wb
     )
 
+    final_customer_file = customer_files[-1][1] if customer_files else ""
+    if final_customer_file and os.path.exists(final_customer_file):
+        output_dir = resolve_path("output")
+        os.makedirs(output_dir, exist_ok=True)
+        # Copy toàn bộ thư mục dự án (bao gồm internal_estimation/) sang output/
+        out_project_dir = os.path.join(output_dir, project_name)
+        if os.path.exists(out_project_dir):
+            shutil.rmtree(out_project_dir)
+        shutil.copytree(project_dir, out_project_dir)
+
+        # Dọn output: chỉ giữ file BAO_GIA tổng hợp ở gốc, các file thành phần
+        # từng sheet đưa vào thư mục con thanh_phan/
+        final_basename = os.path.basename(final_customer_file)
+        thanh_phan_dir = os.path.join(out_project_dir, "thanh_phan")
+        os.makedirs(thanh_phan_dir, exist_ok=True)
+        for f in os.listdir(out_project_dir):
+            if f.endswith("_BAO_GIA.xlsx") and f != final_basename:
+                shutil.move(
+                    os.path.join(out_project_dir, f),
+                    os.path.join(thanh_phan_dir, f),
+                )
+
+        # Cập nhật đường dẫn file báo giá cuối cùng trỏ sang output/
+        out_dest = os.path.join(out_project_dir, final_basename)
+        final_customer_file = out_dest
+        customer_files[-1] = (customer_files[-1][0], out_dest)
     print("\n" + "=" * 75)
-    print("🎉 TỔNG KẾT CÁC FILE BÁO GIÁ GỬI KHÁCH HÀNG (CHỈ CHỨA DUY NHẤT BẢNG BOQ GỐC):")
-    for sh_name, sh_out in customer_files:
-        print(f"  • Sheet '{sh_name}': {sh_out}")
+    print(f"🎉 FILE BÁO GIÁ CUỐI CÙNG GỬI KHÁCH HÀNG: {final_customer_file}")
     print("=" * 75 + "\n")
+
+    print_quotation_summary_table(target_sheets, all_items, customer_files)
+
+
+def print_quotation_summary_table(target_sheets, all_items, customer_files=None):
+    """
+    In trực tiếp Bảng tổng hợp giá trị dự án (Số dòng, Trước VAT, VAT 8%, Tổng sau VAT)
+    và đường dẫn File báo giá cuối cùng ra màn hình console ở định dạng Markdown.
+    """
+    final_file = customer_files[-1][1] if customer_files else ""
+    project_summary = []
+
+    for sh_name in target_sheets:
+        sh_items = [it for it in all_items if it.get("source_sheet") == sh_name]
+        if not sh_items:
+            continue
+
+        sub_total = 0
+        active_count = 0
+        for it in sh_items:
+            qty = float(it.get("qty") or 0)
+            is_missing_qty = bool(it.get("is_missing_qty"))
+            if not is_missing_qty and qty > 0:
+                active_count += 1
+            unit_price = int(it.get("calc_sell_unit", 0))
+            line_total = 0 if is_missing_qty else int(round(qty * unit_price))
+            sub_total += line_total
+
+        vat_amt = int(round(sub_total * 0.08))
+        grand_total = sub_total + vat_amt
+
+        project_summary.append({
+            "sheet": sh_name,
+            "count": active_count if active_count > 0 else len(sh_items),
+            "sub_total": sub_total,
+            "vat": vat_amt,
+            "grand_total": grand_total
+        })
+
+    if project_summary:
+        print("=" * 95)
+        print("📈 BẢNG TỔNG HỢP GIÁ TRỊ BÁO GIÁ DỰ ÁN")
+        if final_file:
+            print(f"📁 File Báo Giá Cuối Cùng: {final_file}")
+        print("=" * 95)
+        print("| STT | Tên Sheet | Số dòng | Trước VAT (VNĐ) | VAT 8% (VNĐ) | Tổng sau VAT (VNĐ) |")
+        print("| :---: | :--- | ---: | ---: | ---: | ---: |")
+        tot_items = 0
+        tot_sub = 0
+        tot_vat = 0
+        tot_grand = 0
+        for s_idx, ps in enumerate(project_summary, 1):
+            tot_items += ps["count"]
+            tot_sub += ps["sub_total"]
+            tot_vat += ps["vat"]
+            tot_grand += ps["grand_total"]
+            print(f"| {s_idx} | {ps['sheet']} | {ps['count']} | {ps['sub_total']:,} | {ps['vat']:,} | {ps['grand_total']:,} |")
+        print(f"| | **TỔNG CỘNG TOÀN DỰ ÁN** | **{tot_items}** | **{tot_sub:,}** | **{tot_vat:,}** | **{tot_grand:,}** |")
+        print()
 
 
 def main():
@@ -1183,32 +1405,109 @@ def main():
     parser.add_argument("--only-cua-van", action="store_true", help="Chỉ báo giá Cửa gió & Van gió (loại bỏ Ống gió và Hàng thương mại mua ngoài)")
     parser.add_argument("--motor-brand", default=None, help="Hãng động cơ van chỉ định theo yêu cầu (BELIMO, KLB, HONEYWELL)")
     parser.add_argument("--mfd-model", default=None, help="Mã đốt van MFD chỉ định theo yêu cầu (1.01, 1.02, 1.03, 1.04, 1.05)")
+    parser.add_argument("--allow-ei", action="store_true", help="Tương thích cờ cho phép áp giá chống cháy EI (Mặc định Swind tự động nhận diện EI theo BOQ)")
+    parser.add_argument("--from-images", action="store_true", help="Đọc trực tiếp ảnh khách gửi trong 'input picture/' và chạy báo giá")
+    parser.add_argument("--duct-formula", choices=["mpq", "og_mb", "both"], default="mpq", help="Công thức tính ống gió: 'mpq' (BG PKV chuẩn), 'og_mb' (Diện tích m2 theo ÔG MB Z3), hoặc 'both' (xuất cả 2)")
+    parser.add_argument("--override", default=None, help="Ghi đè nhanh theo dòng BOQ (VD: '7:w=600,h=600;10:skip=1')")
 
     args = parser.parse_args()
+    row_overrides = {}
+    if args.override:
+        for rule_str in str(args.override).split(";"):
+            if ":" in rule_str:
+                r_part, kv_part = rule_str.split(":", 1)
+                if r_part.strip().isdigit():
+                    r_num = int(r_part.strip())
+                    row_overrides[r_num] = {}
+                    for kv in kv_part.split(","):
+                        if "=" in kv:
+                            k, v = kv.split("=", 1)
+                            row_overrides[r_num][k.strip()] = v.strip()
 
     boq_path = args.boq_file
-    if not boq_path:
-        boq_path = select_input_file()
-    else:
-        boq_path = resolve_path(boq_path)
-        if not os.path.exists(boq_path):
-            print(f"[LỖI] Không tìm thấy file: {boq_path}")
+    boq_paths = []
+    if args.from_images or (boq_path and os.path.isdir(resolve_path(boq_path))):
+        from agent_01b_image_boq_reader import Agent01B_ImageBOQReader
+        ws_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        reader = Agent01B_ImageBOQReader(ws_root)
+        img_folder = resolve_path(boq_path) if (boq_path and os.path.isdir(resolve_path(boq_path))) else None
+        res = reader.process_image_folder(image_dir=img_folder, split_per_image=True)
+        boq_paths = res.get("excel_paths") or []
+        if not boq_paths:
+            print("[LỖI] Không trích xuất được BOQ từ thư mục ảnh.")
             sys.exit(1)
+    elif not boq_path:
+        boq_paths = [select_input_file()]
+    else:
+        resolved_bp = resolve_path(boq_path)
+        if not os.path.exists(resolved_bp):
+            print(f"[LỖI] Không tìm thấy file: {resolved_bp}")
+            sys.exit(1)
+        if resolved_bp.lower().endswith('.pdf'):
+            from swind_pdf_reader import pdf_to_images
+            ws_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            pdf_stem = os.path.splitext(os.path.basename(resolved_bp))[0]
+            pdf_img_dir = os.path.join(ws_root, "input picture", f"_pdf_{pdf_stem}")
+            pdf_result = pdf_to_images(resolved_bp, output_dir=pdf_img_dir, scale=3)
+            if pdf_result["status"] != "OK":
+                print(f"[LỖI] Không thể đọc file PDF: {pdf_result.get('error', 'Unknown')}")
+                sys.exit(1)
+            from agent_01b_image_boq_reader import Agent01B_ImageBOQReader
+            reader = Agent01B_ImageBOQReader(ws_root)
+            res = reader.process_image_folder(image_dir=pdf_img_dir, split_per_image=True)
+            boq_paths = res.get("excel_paths") or []
+            if not boq_paths:
+                print("[LỖI] Không trích xuất được BOQ từ file PDF.")
+                sys.exit(1)
+        elif resolved_bp.lower().endswith(('.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tiff')):
+            from agent_01b_image_boq_reader import Agent01B_ImageBOQReader
+            ws_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            reader = Agent01B_ImageBOQReader(ws_root)
+            res = reader.process_image_folder(image_dir=resolved_bp, split_per_image=True)
+            boq_paths = res.get("excel_paths") or []
+        else:
+            boq_paths = [resolved_bp]
 
     sheets = args.sheets.split(",") if args.sheets else None
     interactive = not args.non_interactive
 
-    run_master_pipeline(
-        boq_file=boq_path,
-        sheet_names=sheets,
-        interactive=interactive,
-        auto_accept=args.auto_accept,
-        dual_options=args.dual_options,
-        merge_sheets=args.merge_sheets,
-        only_cua_van=args.only_cua_van,
-        motor_brand=args.motor_brand,
-        mfd_model=args.mfd_model
-    )
+    for bp in boq_paths:
+        if args.duct_formula == "both":
+            Agent04_DuctworkBOM.DUCT_FORMULA_MODE = "OG_MB_M2"
+            run_master_pipeline(
+                boq_file=bp,
+                sheet_names=sheets,
+                interactive=interactive,
+                auto_accept=args.auto_accept,
+                dual_options=args.dual_options,
+                merge_sheets=args.merge_sheets,
+                only_cua_van=args.only_cua_van,
+                motor_brand=args.motor_brand,
+                mfd_model=args.mfd_model,
+                row_overrides=row_overrides
+            )
+            proj_name_tmp = os.path.splitext(os.path.basename(bp))[0].strip()
+            proj_dir_tmp = resolve_path(f"data/projects/{proj_name_tmp}")
+            for bg_f in glob.glob(os.path.join(proj_dir_tmp, "*.xlsx")):
+                shutil.copy2(bg_f, bg_f[:-5] + "_THEO_M2_OG_MB.xlsx")
+            Agent04_DuctworkBOM.DUCT_FORMULA_MODE = "MPQ_STD"
+        elif args.duct_formula == "og_mb":
+            Agent04_DuctworkBOM.DUCT_FORMULA_MODE = "OG_MB_M2"
+        else:
+            Agent04_DuctworkBOM.DUCT_FORMULA_MODE = "MPQ_STD"
+
+        run_master_pipeline(
+            boq_file=bp,
+            sheet_names=sheets,
+            interactive=interactive,
+            auto_accept=args.auto_accept,
+            dual_options=args.dual_options,
+            merge_sheets=args.merge_sheets,
+            only_cua_van=args.only_cua_van,
+            motor_brand=args.motor_brand,
+            mfd_model=args.mfd_model,
+            row_overrides=row_overrides
+        )
 
 
 if __name__ == "__main__":

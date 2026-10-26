@@ -131,7 +131,12 @@ def _find_input_boq_sheets(project_name, boq_file=None):
 
     try:
         wb = openpyxl.load_workbook(candidates[0], read_only=True)
-        slug_to_info = {}
+        slug_to_info = {
+            "BASEMENT": (1, "BASEMENT"),
+            "A_TOWER": (2, "A TOWER"),
+            "B_TOWER": (3, "B TOWER"),
+            "LANDSCAPE": (4, "LANDSCAPE"),
+        }
         for idx, sh_name in enumerate(wb.sheetnames):
             sh_slug = vietnamese_slugify(sh_name, max_len=30, add_hash=False).replace('-', '_')
             slug_to_info[sh_slug] = (idx, sh_name)

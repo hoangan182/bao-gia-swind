@@ -1,4 +1,5 @@
 ---
+trigger: always_on
 priority: highest
 description: Strict Anti-Hardcoding, Source of Truth, and Unmerge Rules
 ---
