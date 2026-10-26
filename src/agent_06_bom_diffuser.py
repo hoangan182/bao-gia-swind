@@ -44,11 +44,150 @@ class Agent06_DiffuserBOM:
         k_std = (1.33 * 1.25) / mfg_markup
 
         if profile_type == "LCCT":
-            F, G = w_val, h_val
-            D, E = w_val, h_val
-            p_mesh_master = mat_price_map.get("MAT-MESH-INOX-304", 150000.0)
-            target_lcct_sell = _excel_round((F / 1000.0) * (G / 1000.0) * 200000.0, 0)
-            mesh_qty = max(0.001, target_lcct_sell / (p_mesh_master * mfg_markup))
+            F, G, D, E, total_alu_kg, has_mesh, has_obd = Agent06_DiffuserBOM._calc_profile_lcct(
+                parent_id, w_val, h_val, mat_price_map, mfg_markup, components
+            )
+        elif profile_type == "FILTER_G4":
+            F, G, D, E, total_alu_kg, has_mesh, has_obd, has_filter = Agent06_DiffuserBOM._calc_profile_filter_g4(
+                parent_id, w_val, h_val, mat_price_map, mfg_markup, components
+            )
+        elif profile_type == "Z":
+            F, G, D, E, total_alu_kg = Agent06_DiffuserBOM._calc_profile_louver_z(
+                parent_id, diffuser_type, w_val, h_val, has_mesh,
+                mat_price_map, mfg_markup, p_paint_master, p_acc_master, components
+            )
+        elif profile_type == "ECG":
+            F, G, D, E, total_alu_kg = Agent06_DiffuserBOM._calc_profile_eggcrate(
+                parent_id, w_val, h_val, is_removable,
+                mfg_markup, p_alu_bd_master, p_core_master, p_paint_master, p_acc_master, components
+            )
+        elif profile_type == "SLB":
+            F, G, D, E, total_alu_kg, has_obd = Agent06_DiffuserBOM._calc_profile_linear_slb(
+                parent_id, w_val, h_val, is_black_2nd_layer, has_obd,
+                diffuser_rules, mfg_markup, p_alu_bd_master, p_paint_master, p_acc_master, components
+            )
+        elif profile_type == "T":
+            F, G, D, E, total_alu_kg = Agent06_DiffuserBOM._calc_profile_diffuser_t(
+                parent_id, w_val, h_val,
+                diffuser_rules, mfg_markup, p_alu_bd_master, p_paint_master, p_acc_master, components
+            )
+        else:
+            F, G, D, E, total_alu_kg = Agent06_DiffuserBOM._calc_profile_oval_bd(
+                parent_id, w_val, h_val, is_double_layer, is_removable,
+                diffuser_rules, mfg_markup, p_alu_bd_master, p_paint_master, p_acc_master, components
+            )
+
+        total_alu_kg = Agent06_DiffuserBOM._append_diffuser_accessories(
+            parent_id, profile_type, w_val, D, E, has_mesh, has_filter, has_obd, is_black_2nd_layer,
+            mat_price_map, mfg_markup, p_alu_obd_master, p_acc_master, total_alu_kg, components
+        )
+
+        return {
+            "category": "CUA_GIO",
+            "total_aluminum_kg": total_alu_kg,
+            "components": components
+        }
+
+    @staticmethod
+    def _calc_profile_lcct(parent_id, w_val, h_val, mat_price_map, mfg_markup, components):
+        F, G = w_val, h_val
+        D, E = w_val, h_val
+        p_mesh_master = mat_price_map.get("MAT-MESH-INOX-304", 150000.0)
+        target_lcct_sell = _excel_round((F / 1000.0) * (G / 1000.0) * 200000.0, 0)
+        mesh_qty = max(0.001, target_lcct_sell / (p_mesh_master * mfg_markup))
+        components.append({
+            "sub_key": f"{parent_id}-MESH",
+            "name": "Lưới chắn côn trùng Inox 304 (LCCT)",
+            "category": "PHỤ_KIỆN_CỬA",
+            "mat_id": "MAT-MESH-INOX-304",
+            "calc_qty": mesh_qty,
+            "unit": "m2",
+            "note": f"Lưới chắn côn trùng {F:.0f}x{G:.0f}mm"
+        })
+        return F, G, D, E, 0.0, False, False
+
+    @staticmethod
+    def _calc_profile_filter_g4(parent_id, w_val, h_val, mat_price_map, mfg_markup, components):
+        F, G = w_val, h_val
+        D, E = w_val, h_val
+        p_filter_master = mat_price_map.get("MAT-FILTER-G4", 220000.0)
+        target_filter_sell = _excel_round((F / 1000.0) * (G / 1000.0) * 200000.0, -3)
+        filter_qty = max(0.001, target_filter_sell / (p_filter_master * mfg_markup))
+        components.append({
+            "sub_key": f"{parent_id}-FILTER",
+            "name": "Lưới lọc bụi sơ cấp G4 kèm khung nhôm",
+            "category": "PHỤ_KIỆN_CỬA",
+            "mat_id": "MAT-FILTER-G4",
+            "calc_qty": filter_qty,
+            "unit": "m2",
+            "note": f"Lưới lọc bụi thô G4 {F:.0f}x{G:.0f}mm"
+        })
+        return F, G, D, E, 0.0, False, False, False
+
+    @staticmethod
+    def _calc_profile_louver_z(parent_id, diffuser_type, w_val, h_val, has_mesh, mat_price_map, mfg_markup, p_paint_master, p_acc_master, components):
+        F, G = w_val, h_val
+        D, E = max(50.0, w_val - 50.0), max(50.0, h_val - 50.0)
+        N, O = F / 1000.0, G / 1000.0
+        d_m, e_m = D / 1000.0, E / 1000.0
+        n_nan = max(1, _excel_round((O - 0.05) / 0.045, 0))
+
+        raw_frame_kg = 2.0 * (N + O) * 0.227
+        raw_nan_only_kg = n_nan * max(0.05, N - 0.06) * 0.217
+        raw_blade_kg = raw_nan_only_kg + 2.0 * (O * 1.1) * 0.08
+        unrounded_swl_sell = ((raw_frame_kg + raw_blade_kg) * 165000.0 + n_nan * 170.0 + (raw_frame_kg + raw_nan_only_kg) * 20000.0) * 1.25
+        target_swl_sell = _excel_round(unrounded_swl_sell, -3)
+        scale_swl = (target_swl_sell / unrounded_swl_sell) if unrounded_swl_sell > 0 else 1.0
+        p_alu_z_master = mat_price_map.get("MAT-ALU-KHUNG-Z-2-LOP", 126000.0)
+        p_alu_nan_z_master = mat_price_map.get("MAT-ALU-NAN-Z-DAY", 126000.0)
+        p_mesh_master = mat_price_map.get("MAT-MESH-INOX-304", 150000.0)
+
+        frame_kg = raw_frame_kg * (165000.0 * 1.25 * scale_swl) / (p_alu_z_master * mfg_markup)
+        blade_kg = raw_blade_kg * (165000.0 * 1.25 * scale_swl) / (p_alu_nan_z_master * mfg_markup)
+        paint_m2 = (raw_frame_kg + raw_nan_only_kg) * (20000.0 * 1.25 * scale_swl) / (p_paint_master * mfg_markup)
+        acc_bo = (n_nan * 170.0 * 1.25 * scale_swl) / (p_acc_master * mfg_markup)
+
+        components.extend([
+            {
+                "sub_key": f"{parent_id}-FRAME",
+                "name": "Khung nhôm định hình Louver (SWL)",
+                "category": "NHÔM_ĐỊNH_HÌNH",
+                "mat_id": "MAT-ALU-KHUNG-Z-2-LOP",
+                "calc_qty": frame_kg,
+                "unit": "kg",
+                "note": f"Khung Louver phủ bì {F:.0f}x{G:.0f}mm"
+            },
+            {
+                "sub_key": f"{parent_id}-BLADE",
+                "name": f"Nan Z Louver & thanh tăng cứng ({n_nan} nan)",
+                "category": "NHÔM_ĐỊNH_HÌNH",
+                "mat_id": "MAT-ALU-NAN-Z-DAY",
+                "calc_qty": blade_kg,
+                "unit": "kg",
+                "note": f"{n_nan} nan Z dày @ 0.217kg/m + thanh giằng"
+            },
+            {
+                "sub_key": f"{parent_id}-ACCESSORY",
+                "name": "Phụ kiện lắp ghép / Ke góc cửa gió",
+                "category": "PHỤ_KIỆN_CỬA",
+                "mat_id": "MAT-DOOR-ACCESSORY",
+                "calc_qty": acc_bo,
+                "unit": "Bộ",
+                "note": "Ke góc và vít ghép khung Louver"
+            },
+            {
+                "sub_key": f"{parent_id}-PAINT",
+                "name": "Sơn tĩnh điện tiêu chuẩn Polyester",
+                "category": "SƠN_TĨNH_ĐIỆN",
+                "mat_id": "MAT-PAINT-POWDER",
+                "calc_qty": paint_m2,
+                "unit": "m2",
+                "note": "Sơn tĩnh điện khung và nan Louver"
+            }
+        ])
+        if has_mesh or diffuser_type.upper() == "LOUVER":
+            target_mesh_sell = _excel_round(d_m * e_m * 150000.0, -3)
+            mesh_qty = max(0.001, target_mesh_sell / (p_mesh_master * mfg_markup))
             components.append({
                 "sub_key": f"{parent_id}-MESH",
                 "name": "Lưới chắn côn trùng Inox 304 (LCCT)",
@@ -56,373 +195,282 @@ class Agent06_DiffuserBOM:
                 "mat_id": "MAT-MESH-INOX-304",
                 "calc_qty": mesh_qty,
                 "unit": "m2",
-                "note": f"Lưới chắn côn trùng {F:.0f}x{G:.0f}mm"
+                "note": f"Lưới chắn côn trùng cổ {D:.0f}x{E:.0f}mm"
             })
-            total_alu_kg = 0.0
-            has_mesh = False
-            has_obd = False
-            D, E = F, G
+        return F, G, D, E, frame_kg + blade_kg
 
-        elif profile_type == "FILTER_G4":
-            F, G = w_val, h_val
-            D, E = w_val, h_val
-            p_filter_master = mat_price_map.get("MAT-FILTER-G4", 220000.0)
-            target_filter_sell = _excel_round((F / 1000.0) * (G / 1000.0) * 200000.0, -3)
-            filter_qty = max(0.001, target_filter_sell / (p_filter_master * mfg_markup))
-            components.append({
-                "sub_key": f"{parent_id}-FILTER",
-                "name": "Lưới lọc bụi sơ cấp G4 kèm khung nhôm",
-                "category": "PHỤ_KIỆN_CỬA",
-                "mat_id": "MAT-FILTER-G4",
-                "calc_qty": filter_qty,
+    @staticmethod
+    def _calc_profile_eggcrate(parent_id, w_val, h_val, is_removable, mfg_markup, p_alu_bd_master, p_core_master, p_paint_master, p_acc_master, components):
+        F, G = w_val, h_val
+        D, E = max(50.0, w_val - 50.0), max(50.0, h_val - 50.0)
+        N, O = F / 1000.0, G / 1000.0
+        d_m, e_m = D / 1000.0, E / 1000.0
+
+        if is_removable:
+            raw_frame_cost = (2.0 * N + O) * 0.202 * 150000.0 + 4.0 * (N + O) * 0.14 * 150000.0
+            raw_acc_cost = 15000.0
+        else:
+            raw_frame_cost = 2.0 * (N + O) * 0.202 * 160000.0 + 2.0 * (N + O) * 0.14 * 150000.0
+            raw_acc_cost = 5000.0
+        raw_core_cost = (d_m * e_m) * 750000.0
+        raw_paint_wt = 2.0 * (N + O) * (0.202 + 0.14) + (e_m / 0.02) * N * 0.08
+        raw_paint_cost = raw_paint_wt * 20000.0
+        unrounded_ecg_sell = (raw_frame_cost + raw_core_cost + raw_acc_cost + raw_paint_cost) * 1.25
+        target_ecg_sell = _excel_round(unrounded_ecg_sell, -3)
+        scale_ecg = (target_ecg_sell / unrounded_ecg_sell) if unrounded_ecg_sell > 0 else 1.0
+        frame_kg = (raw_frame_cost * 1.25 * scale_ecg) / (p_alu_bd_master * mfg_markup)
+        core_m2 = (raw_core_cost * 1.25 * scale_ecg) / (p_core_master * mfg_markup)
+        paint_m2 = (raw_paint_cost * 1.25 * scale_ecg) / (p_paint_master * mfg_markup)
+        acc_bo = (raw_acc_cost * 1.25 * scale_ecg) / (p_acc_master * mfg_markup)
+
+        components.extend([
+            {
+                "sub_key": f"{parent_id}-FRAME",
+                "name": f"Khung nhôm & nẹp U cửa sọt trứng ({'Tháo lắp' if is_removable else 'Cố định'} SEEG)",
+                "category": "NHÔM_ĐỊNH_HÌNH",
+                "mat_id": "MAT-ALU-KHUNG-BD",
+                "calc_qty": frame_kg,
+                "unit": "kg",
+                "note": f"Khung bao {F:.0f}x{G:.0f}mm + U bọc lõi{' tháo lắp' if is_removable else ''}"
+            },
+            {
+                "sub_key": f"{parent_id}-CORE",
+                "name": "Lõi nhôm sọt trứng (Eggcrate Core 12.7x12.7mm)",
+                "category": "NHÔM_ĐỊNH_HÌNH",
+                "mat_id": "MAT-ALU-EGGCRATE-CORE",
+                "calc_qty": core_m2,
                 "unit": "m2",
-                "note": f"Lưới lọc bụi thô G4 {F:.0f}x{G:.0f}mm"
-            })
-            total_alu_kg = 0.0
-            has_mesh = False
-            has_obd = False
-            has_filter = False
+                "note": f"Diện tích lõi sọt trứng {d_m*e_m:.3f}m2"
+            },
+            {
+                "sub_key": f"{parent_id}-ACCESSORY",
+                "name": "Phụ kiện lắp ghép / Ke góc cửa gió",
+                "category": "PHỤ_KIỆN_CỬA",
+                "mat_id": "MAT-DOOR-ACCESSORY",
+                "calc_qty": acc_bo,
+                "unit": "Bộ",
+                "note": "Ke góc chìm và vít ghép khung"
+            },
+            {
+                "sub_key": f"{parent_id}-PAINT",
+                "name": "Sơn tĩnh điện tiêu chuẩn Polyester",
+                "category": "SƠN_TĨNH_ĐIỆN",
+                "mat_id": "MAT-PAINT-POWDER",
+                "calc_qty": paint_m2,
+                "unit": "m2",
+                "note": "Sơn tĩnh điện khung cửa sọt trứng"
+            }
+        ])
+        return F, G, D, E, frame_kg
 
-        elif profile_type == "Z":
-            F, G = w_val, h_val
-            D, E = max(50.0, w_val - 50.0), max(50.0, h_val - 50.0)
-            N, O = F / 1000.0, G / 1000.0
-            d_m, e_m = D / 1000.0, E / 1000.0
-            n_nan = max(1, _excel_round((O - 0.05) / 0.045, 0))
-
-            raw_frame_kg = 2.0 * (N + O) * 0.227
-            raw_nan_only_kg = n_nan * max(0.05, N - 0.06) * 0.217
-            raw_blade_kg = raw_nan_only_kg + 2.0 * (O * 1.1) * 0.08
-            unrounded_swl_sell = ((raw_frame_kg + raw_blade_kg) * 165000.0 + n_nan * 170.0 + (raw_frame_kg + raw_nan_only_kg) * 20000.0) * 1.25
-            target_swl_sell = _excel_round(unrounded_swl_sell, -3)
-            scale_swl = (target_swl_sell / unrounded_swl_sell) if unrounded_swl_sell > 0 else 1.0
-            p_alu_z_master = mat_price_map.get("MAT-ALU-KHUNG-Z-2-LOP", 126000.0)
-            p_alu_nan_z_master = mat_price_map.get("MAT-ALU-NAN-Z-DAY", 126000.0)
-            p_mesh_master = mat_price_map.get("MAT-MESH-INOX-304", 150000.0)
-
-            frame_kg = raw_frame_kg * (165000.0 * 1.25 * scale_swl) / (p_alu_z_master * mfg_markup)
-            blade_kg = raw_blade_kg * (165000.0 * 1.25 * scale_swl) / (p_alu_nan_z_master * mfg_markup)
-            paint_m2 = (raw_frame_kg + raw_nan_only_kg) * (20000.0 * 1.25 * scale_swl) / (p_paint_master * mfg_markup)
-            acc_bo = (n_nan * 170.0 * 1.25 * scale_swl) / (p_acc_master * mfg_markup)
-
-            components.extend([
-                {
-                    "sub_key": f"{parent_id}-FRAME",
-                    "name": "Khung nhôm định hình Louver (SWL)",
-                    "category": "NHÔM_ĐỊNH_HÌNH",
-                    "mat_id": "MAT-ALU-KHUNG-Z-2-LOP",
-                    "calc_qty": frame_kg,
-                    "unit": "kg",
-                    "note": f"Khung Louver phủ bì {F:.0f}x{G:.0f}mm"
-                },
-                {
-                    "sub_key": f"{parent_id}-BLADE",
-                    "name": f"Nan Z Louver & thanh tăng cứng ({n_nan} nan)",
-                    "category": "NHÔM_ĐỊNH_HÌNH",
-                    "mat_id": "MAT-ALU-NAN-Z-DAY",
-                    "calc_qty": blade_kg,
-                    "unit": "kg",
-                    "note": f"{n_nan} nan Z dày @ 0.217kg/m + thanh giằng"
-                },
-                {
-                    "sub_key": f"{parent_id}-ACCESSORY",
-                    "name": "Phụ kiện lắp ghép / Ke góc cửa gió",
-                    "category": "PHỤ_KIỆN_CỬA",
-                    "mat_id": "MAT-DOOR-ACCESSORY",
-                    "calc_qty": acc_bo,
-                    "unit": "Bộ",
-                    "note": "Ke góc và vít ghép khung Louver"
-                },
-                {
-                    "sub_key": f"{parent_id}-PAINT",
-                    "name": "Sơn tĩnh điện tiêu chuẩn Polyester",
-                    "category": "SƠN_TĨNH_ĐIỆN",
-                    "mat_id": "MAT-PAINT-POWDER",
-                    "calc_qty": paint_m2,
-                    "unit": "m2",
-                    "note": "Sơn tĩnh điện khung và nan Louver"
-                }
-            ])
-            if has_mesh or diffuser_type.upper() == "LOUVER":
-                target_mesh_sell = _excel_round(d_m * e_m * 150000.0, -3)
-                mesh_qty = max(0.001, target_mesh_sell / (p_mesh_master * mfg_markup))
-                components.append({
-                    "sub_key": f"{parent_id}-MESH",
-                    "name": "Lưới chắn côn trùng Inox 304 (LCCT)",
-                    "category": "PHỤ_KIỆN_CỬA",
-                    "mat_id": "MAT-MESH-INOX-304",
-                    "calc_qty": mesh_qty,
-                    "unit": "m2",
-                    "note": f"Lưới chắn côn trùng cổ {D:.0f}x{E:.0f}mm"
-                })
-            total_alu_kg = frame_kg + blade_kg
-
-        elif profile_type == "ECG":
-            F, G = w_val, h_val
-            D, E = max(50.0, w_val - 50.0), max(50.0, h_val - 50.0)
-            N, O = F / 1000.0, G / 1000.0
-            d_m, e_m = D / 1000.0, E / 1000.0
-
-            if is_removable:
-                raw_frame_cost = (2.0 * N + O) * 0.202 * 150000.0 + 4.0 * (N + O) * 0.14 * 150000.0
-                raw_acc_cost = 15000.0
-            else:
-                raw_frame_cost = 2.0 * (N + O) * 0.202 * 160000.0 + 2.0 * (N + O) * 0.14 * 150000.0
-                raw_acc_cost = 5000.0
-            raw_core_cost = (d_m * e_m) * 750000.0
-            raw_paint_wt = 2.0 * (N + O) * (0.202 + 0.14) + (e_m / 0.02) * N * 0.08
-            raw_paint_cost = raw_paint_wt * 20000.0
-            unrounded_ecg_sell = (raw_frame_cost + raw_core_cost + raw_acc_cost + raw_paint_cost) * 1.25
-            target_ecg_sell = _excel_round(unrounded_ecg_sell, -3)
-            scale_ecg = (target_ecg_sell / unrounded_ecg_sell) if unrounded_ecg_sell > 0 else 1.0
-            frame_kg = (raw_frame_cost * 1.25 * scale_ecg) / (p_alu_bd_master * mfg_markup)
-            core_m2 = (raw_core_cost * 1.25 * scale_ecg) / (p_core_master * mfg_markup)
-            paint_m2 = (raw_paint_cost * 1.25 * scale_ecg) / (p_paint_master * mfg_markup)
-            acc_bo = (raw_acc_cost * 1.25 * scale_ecg) / (p_acc_master * mfg_markup)
-
-            components.extend([
-                {
-                    "sub_key": f"{parent_id}-FRAME",
-                    "name": f"Khung nhôm & nẹp U cửa sọt trứng ({'Tháo lắp' if is_removable else 'Cố định'} SEEG)",
-                    "category": "NHÔM_ĐỊNH_HÌNH",
-                    "mat_id": "MAT-ALU-KHUNG-BD",
-                    "calc_qty": frame_kg,
-                    "unit": "kg",
-                    "note": f"Khung bao {F:.0f}x{G:.0f}mm + U bọc lõi{' tháo lắp' if is_removable else ''}"
-                },
-                {
-                    "sub_key": f"{parent_id}-CORE",
-                    "name": "Lõi nhôm sọt trứng (Eggcrate Core 12.7x12.7mm)",
-                    "category": "NHÔM_ĐỊNH_HÌNH",
-                    "mat_id": "MAT-ALU-EGGCRATE-CORE",
-                    "calc_qty": core_m2,
-                    "unit": "m2",
-                    "note": f"Diện tích lõi sọt trứng {d_m*e_m:.3f}m2"
-                },
-                {
-                    "sub_key": f"{parent_id}-ACCESSORY",
-                    "name": "Phụ kiện lắp ghép / Ke góc cửa gió",
-                    "category": "PHỤ_KIỆN_CỬA",
-                    "mat_id": "MAT-DOOR-ACCESSORY",
-                    "calc_qty": acc_bo,
-                    "unit": "Bộ",
-                    "note": "Ke góc chìm và vít ghép khung"
-                },
-                {
-                    "sub_key": f"{parent_id}-PAINT",
-                    "name": "Sơn tĩnh điện tiêu chuẩn Polyester",
-                    "category": "SƠN_TĨNH_ĐIỆN",
-                    "mat_id": "MAT-PAINT-POWDER",
-                    "calc_qty": paint_m2,
-                    "unit": "m2",
-                    "note": "Sơn tĩnh điện khung cửa sọt trứng"
-                }
-            ])
-            total_alu_kg = frame_kg
-
-        elif profile_type == "SLB":
-            if is_black_2nd_layer:
-                D, E = max(50.0, w_val - 50.0), h_val
-                F, G = w_val, h_val + 50.0
-                has_obd = True
-                mult_slb = 1.75 if w_val >= 5000.0 else 1.5
-            else:
-                F, G = w_val, h_val
-                D, E = max(50.0, w_val - 50.0), max(50.0, h_val - 50.0)
-                mult_slb = 1.0
-            N, O = F / 1000.0, G / 1000.0
-            d_m, e_m = D / 1000.0, E / 1000.0
-            n_nan = max(1, _excel_round((e_m - 0.015) / 0.02))
-            n_suot = max(1, _excel_round(d_m / 0.8))
-
-            raw_frame_kg = 2.0 * (N + O) * 0.20
-            raw_blade_kg = n_nan * d_m * 0.08 + n_suot * e_m * 0.07
-            p_alu_slb = float(diffuser_rules.get("aluminum_selling_price_per_kg", 165000.0))
-            unrounded_slb_sell = ((raw_frame_kg + raw_blade_kg) * p_alu_slb + 5000.0 + (raw_frame_kg + raw_blade_kg) * 20000.0) * 1.25 * mult_slb
-            target_slb_sell = _excel_round(unrounded_slb_sell, -3)
-            scale_slb = (target_slb_sell / unrounded_slb_sell) if unrounded_slb_sell > 0 else 1.0
-            frame_kg = raw_frame_kg * (p_alu_slb * 1.25 * mult_slb * scale_slb) / (p_alu_bd_master * mfg_markup)
-            blade_kg = raw_blade_kg * (p_alu_slb * 1.25 * mult_slb * scale_slb) / (p_alu_bd_master * mfg_markup)
-            paint_m2 = (raw_frame_kg + raw_blade_kg) * (20000.0 * 1.25 * mult_slb * scale_slb) / (p_paint_master * mfg_markup)
-            acc_bo = (5000.0 * 1.25 * mult_slb * scale_slb) / (p_acc_master * mfg_markup)
-
-            components.extend([
-                {
-                    "sub_key": f"{parent_id}-FRAME",
-                    "name": "Khung nhôm định hình Linear (SLB)",
-                    "category": "NHÔM_ĐỊNH_HÌNH",
-                    "mat_id": "MAT-ALU-KHUNG-BD",
-                    "calc_qty": frame_kg,
-                    "unit": "kg",
-                    "note": f"Khung Linear {F:.0f}x{G:.0f}mm"
-                },
-                {
-                    "sub_key": f"{parent_id}-BLADE",
-                    "name": f"Nan T nhôm định hình & ty suốt ({n_nan} nan)",
-                    "category": "NHÔM_ĐỊNH_HÌNH",
-                    "mat_id": "MAT-ALU-NAN-T",
-                    "calc_qty": blade_kg,
-                    "unit": "kg",
-                    "note": f"{n_nan} nan T + {n_suot} suốt liên kết"
-                },
-                {
-                    "sub_key": f"{parent_id}-ACCESSORY",
-                    "name": "Phụ kiện lắp ghép / Ke góc cửa gió",
-                    "category": "PHỤ_KIỆN_CỬA",
-                    "mat_id": "MAT-DOOR-ACCESSORY",
-                    "calc_qty": acc_bo,
-                    "unit": "Bộ",
-                    "note": "Ke góc chìm và vít ghép khung"
-                },
-                {
-                    "sub_key": f"{parent_id}-PAINT",
-                    "name": "Sơn tĩnh điện tiêu chuẩn Polyester",
-                    "category": "SƠN_TĨNH_ĐIỆN",
-                    "mat_id": "MAT-PAINT-POWDER",
-                    "calc_qty": paint_m2,
-                    "unit": "m2",
-                    "note": "Sơn tĩnh điện hoàn thiện (kèm sơn đen lớp 2 nếu có)"
-                }
-            ])
-            total_alu_kg = frame_kg + blade_kg
-
-        elif profile_type == "T":
-            F, G = w_val, h_val
-            D, E = ((w_val - 150.0) if (w_val >= 300.0 and h_val >= 300.0) else max(50.0, w_val - 50.0)), ((h_val - 150.0) if (w_val >= 300.0 and h_val >= 300.0) else max(50.0, h_val - 50.0))
-            N, O = F / 1000.0, G / 1000.0
-            n_chao = max(1, int((N - 0.185) / 0.09 + 0.5))
-            k_scd = float(diffuser_rules.get("scd_markup_ratio", 1.19587))
-
-            raw_frame_kg = 2.0 * (N + O) * 0.258 + 2.0 * (1.2 * N) * 0.106
-            raw_blade_kg = max(0.2, 2.0 * (0.28 * n_chao * (N + O - 0.43 * n_chao)))
-            raw_acc_scd = 24000.0 + (0.0 if D * E < 1_000_000.0 else 10000.0)
-            unrounded_scd_sell = ((raw_frame_kg + raw_blade_kg) * (p_alu_bd_master + 23100.0) + raw_acc_scd) * k_scd * mfg_markup
-            target_scd_sell = _excel_round(unrounded_scd_sell, -3)
-            scale_scd = (target_scd_sell / unrounded_scd_sell) if unrounded_scd_sell > 0 else 1.0
-            frame_kg = raw_frame_kg * k_scd * scale_scd
-            blade_kg = raw_blade_kg * k_scd * scale_scd
-            paint_m2 = (raw_frame_kg + raw_blade_kg) * (23100.0 / p_paint_master) * k_scd * scale_scd
-            acc_bo = (raw_acc_scd / p_acc_master) * k_scd * scale_scd
-
-            components.extend([
-                {
-                    "sub_key": f"{parent_id}-FRAME",
-                    "name": "Khung nhôm cửa khuếch tán (SCD)",
-                    "category": "NHÔM_ĐỊNH_HÌNH",
-                    "mat_id": "MAT-ALU-KHUNG-BD",
-                    "calc_qty": frame_kg,
-                    "unit": "kg",
-                    "note": f"Khung khuếch tán {F:.0f}x{G:.0f}mm (cổ {D:.0f}x{E:.0f}mm)"
-                },
-                {
-                    "sub_key": f"{parent_id}-BLADE",
-                    "name": f"Chao nhôm khuếch tán ({n_chao} chao)",
-                    "category": "NHÔM_ĐỊNH_HÌNH",
-                    "mat_id": "MAT-ALU-NAN-T",
-                    "calc_qty": blade_kg,
-                    "unit": "kg",
-                    "note": f"{n_chao} lớp chao khuếch tán"
-                },
-                {
-                    "sub_key": f"{parent_id}-ACCESSORY",
-                    "name": "Phụ kiện lắp ghép / Ke góc cửa gió",
-                    "category": "PHỤ_KIỆN_CỬA",
-                    "mat_id": "MAT-DOOR-ACCESSORY",
-                    "calc_qty": acc_bo,
-                    "unit": "Bộ",
-                    "note": "Ke góc và chốt tháo lắp lõi khuếch tán"
-                },
-                {
-                    "sub_key": f"{parent_id}-PAINT",
-                    "name": "Sơn tĩnh điện tiêu chuẩn Polyester",
-                    "category": "SƠN_TĨNH_ĐIỆN",
-                    "mat_id": "MAT-PAINT-POWDER",
-                    "calc_qty": paint_m2,
-                    "unit": "m2",
-                    "note": "Sơn tĩnh điện hoàn thiện"
-                }
-            ])
-            total_alu_kg = frame_kg + blade_kg
-
+    @staticmethod
+    def _calc_profile_linear_slb(parent_id, w_val, h_val, is_black_2nd_layer, has_obd, diffuser_rules, mfg_markup, p_alu_bd_master, p_paint_master, p_acc_master, components):
+        if is_black_2nd_layer:
+            D, E = max(50.0, w_val - 50.0), h_val
+            F, G = w_val, h_val + 50.0
+            has_obd = True
+            mult_slb = 1.75 if w_val >= 5000.0 else 1.5
         else:
             F, G = w_val, h_val
             D, E = max(50.0, w_val - 50.0), max(50.0, h_val - 50.0)
-            N, O = F / 1000.0, G / 1000.0
-            d_m, e_m = D / 1000.0, E / 1000.0
-            n_nan_1 = max(1, _excel_round((e_m - 0.015) / 0.02))
+            mult_slb = 1.0
+        N, O = F / 1000.0, G / 1000.0
+        d_m, e_m = D / 1000.0, E / 1000.0
+        n_nan = max(1, _excel_round((e_m - 0.015) / 0.02))
+        n_suot = max(1, _excel_round(d_m / 0.8))
 
-            if is_double_layer:
-                n_nan_2 = max(1, _excel_round((d_m - 0.015) / 0.02))
-                raw_frame_only_kg = 2.0 * (N + O) * 0.2547
-                raw_frame_kg = raw_frame_only_kg
-                raw_blade_kg = (n_nan_1 * d_m + n_nan_2 * e_m) * 0.058
-                frame_mat_id = "MAT-ALU-KHUNG-Z-2-LOP"
-                p_alu_bd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 165000.0))
-                raw_acc_cost = 5000.0
-            elif is_removable:
-                n_nan_1 = max(1, _excel_round((e_m / 0.02) - 1, 0))
-                raw_frame_only_kg = 2.0 * (N + O) * 0.2547 * 1.5
-                raw_frame_kg = raw_frame_only_kg
-                raw_blade_kg = n_nan_1 * d_m * 0.058
-                frame_mat_id = "MAT-ALU-KHUNG-Z-2-LOP"
-                p_alu_bd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 165000.0))
-                raw_acc_cost = 5000.0
-            else:
-                raw_frame_only_kg = 2.0 * (N + O) * 0.18
-                raw_frame_kg = raw_frame_only_kg + 1.0 * (O * 1.1) * 0.08
-                raw_blade_kg = n_nan_1 * d_m * 0.058
-                frame_mat_id = "MAT-ALU-KHUNG-BD"
-                p_alu_bd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 165000.0))
-                raw_acc_cost = n_nan_1 * 85.0
+        raw_frame_kg = 2.0 * (N + O) * 0.20
+        raw_blade_kg = n_nan * d_m * 0.08 + n_suot * e_m * 0.07
+        p_alu_slb = float(diffuser_rules.get("aluminum_selling_price_per_kg", 165000.0))
+        unrounded_slb_sell = ((raw_frame_kg + raw_blade_kg) * p_alu_slb + 5000.0 + (raw_frame_kg + raw_blade_kg) * 20000.0) * 1.25 * mult_slb
+        target_slb_sell = _excel_round(unrounded_slb_sell, -3)
+        scale_slb = (target_slb_sell / unrounded_slb_sell) if unrounded_slb_sell > 0 else 1.0
+        frame_kg = raw_frame_kg * (p_alu_slb * 1.25 * mult_slb * scale_slb) / (p_alu_bd_master * mfg_markup)
+        blade_kg = raw_blade_kg * (p_alu_slb * 1.25 * mult_slb * scale_slb) / (p_alu_bd_master * mfg_markup)
+        paint_m2 = (raw_frame_kg + raw_blade_kg) * (20000.0 * 1.25 * mult_slb * scale_slb) / (p_paint_master * mfg_markup)
+        acc_bo = (5000.0 * 1.25 * mult_slb * scale_slb) / (p_acc_master * mfg_markup)
 
-            unrounded_bd_sell = ((raw_frame_kg + raw_blade_kg) * p_alu_bd + raw_acc_cost + (raw_frame_only_kg + raw_blade_kg) * 20000.0) * 1.25
-            target_bd_sell = _excel_round(unrounded_bd_sell, -3)
-            scale_bd = (target_bd_sell / unrounded_bd_sell) if unrounded_bd_sell > 0 else 1.0
-            frame_kg = raw_frame_kg * (p_alu_bd * 1.25 * scale_bd) / (p_alu_bd_master * mfg_markup)
-            blade_kg = raw_blade_kg * (p_alu_bd * 1.25 * scale_bd) / (p_alu_bd_master * mfg_markup)
-            acc_bo = (raw_acc_cost * 1.25 * scale_bd) / (p_acc_master * mfg_markup)
-            paint_m2 = (raw_frame_only_kg + raw_blade_kg) * (20000.0 * 1.25 * scale_bd) / (p_paint_master * mfg_markup)
+        components.extend([
+            {
+                "sub_key": f"{parent_id}-FRAME",
+                "name": "Khung nhôm định hình Linear (SLB)",
+                "category": "NHÔM_ĐỊNH_HÌNH",
+                "mat_id": "MAT-ALU-KHUNG-BD",
+                "calc_qty": frame_kg,
+                "unit": "kg",
+                "note": f"Khung Linear {F:.0f}x{G:.0f}mm"
+            },
+            {
+                "sub_key": f"{parent_id}-BLADE",
+                "name": f"Nan T nhôm định hình & ty suốt ({n_nan} nan)",
+                "category": "NHÔM_ĐỊNH_HÌNH",
+                "mat_id": "MAT-ALU-NAN-T",
+                "calc_qty": blade_kg,
+                "unit": "kg",
+                "note": f"{n_nan} nan T + {n_suot} suốt liên kết"
+            },
+            {
+                "sub_key": f"{parent_id}-ACCESSORY",
+                "name": "Phụ kiện lắp ghép / Ke góc cửa gió",
+                "category": "PHỤ_KIỆN_CỬA",
+                "mat_id": "MAT-DOOR-ACCESSORY",
+                "calc_qty": acc_bo,
+                "unit": "Bộ",
+                "note": "Ke góc chìm và vít ghép khung"
+            },
+            {
+                "sub_key": f"{parent_id}-PAINT",
+                "name": "Sơn tĩnh điện tiêu chuẩn Polyester",
+                "category": "SƠN_TĨNH_ĐIỆN",
+                "mat_id": "MAT-PAINT-POWDER",
+                "calc_qty": paint_m2,
+                "unit": "m2",
+                "note": "Sơn tĩnh điện hoàn thiện (kèm sơn đen lớp 2 nếu có)"
+            }
+        ])
+        return F, G, D, E, frame_kg + blade_kg, has_obd
 
-            components.extend([
-                {
-                    "sub_key": f"{parent_id}-FRAME",
-                    "name": f"Khung nhôm định hình ({'2 lớp' if is_double_layer else ('1 lớp tháo lắp' if is_removable else '1 lớp')} BD)",
-                    "category": "NHÔM_ĐỊNH_HÌNH",
-                    "mat_id": frame_mat_id,
-                    "calc_qty": frame_kg,
-                    "unit": "kg",
-                    "note": f"Khung bao {F:.0f}x{G:.0f}mm (cổ {D:.0f}x{E:.0f}mm)"
-                },
-                {
-                    "sub_key": f"{parent_id}-BLADE",
-                    "name": f"Nan nhôm bầu dục ({n_nan_1} nan)",
-                    "category": "NHÔM_ĐỊNH_HÌNH",
-                    "mat_id": "MAT-ALU-NAN-BD",
-                    "calc_qty": blade_kg,
-                    "unit": "kg",
-                    "note": "Nan bầu dục @ 0.058kg/m"
-                },
-                {
-                    "sub_key": f"{parent_id}-ACCESSORY",
-                    "name": "Phụ kiện lắp ghép / Ke góc cửa gió",
-                    "category": "PHỤ_KIỆN_CỬA",
-                    "mat_id": "MAT-DOOR-ACCESSORY",
-                    "calc_qty": acc_bo,
-                    "unit": "Bộ",
-                    "note": "4 ke góc chìm và vít ghép khung"
-                },
-                {
-                    "sub_key": f"{parent_id}-PAINT",
-                    "name": "Sơn tĩnh điện tiêu chuẩn Polyester",
-                    "category": "SƠN_TĨNH_ĐIỆN",
-                    "mat_id": "MAT-PAINT-POWDER",
-                    "calc_qty": paint_m2,
-                    "unit": "m2",
-                    "note": "Sơn tĩnh điện hoàn thiện"
-                }
-            ])
-            total_alu_kg = frame_kg + blade_kg
+    @staticmethod
+    def _calc_profile_diffuser_t(parent_id, w_val, h_val, diffuser_rules, mfg_markup, p_alu_bd_master, p_paint_master, p_acc_master, components):
+        F, G = w_val, h_val
+        D, E = ((w_val - 150.0) if (w_val >= 300.0 and h_val >= 300.0) else max(50.0, w_val - 50.0)), ((h_val - 150.0) if (w_val >= 300.0 and h_val >= 300.0) else max(50.0, h_val - 50.0))
+        N, O = F / 1000.0, G / 1000.0
+        n_chao = max(1, int((N - 0.185) / 0.09 + 0.5))
+        k_scd = float(diffuser_rules.get("scd_markup_ratio", 1.19587))
 
+        raw_frame_kg = 2.0 * (N + O) * 0.258 + 2.0 * (1.2 * N) * 0.106
+        raw_blade_kg = max(0.2, 2.0 * (0.28 * n_chao * (N + O - 0.43 * n_chao)))
+        raw_acc_scd = 24000.0 + (0.0 if D * E < 1_000_000.0 else 10000.0)
+        unrounded_scd_sell = ((raw_frame_kg + raw_blade_kg) * (p_alu_bd_master + 23100.0) + raw_acc_scd) * k_scd * mfg_markup
+        target_scd_sell = _excel_round(unrounded_scd_sell, -3)
+        scale_scd = (target_scd_sell / unrounded_scd_sell) if unrounded_scd_sell > 0 else 1.0
+        frame_kg = raw_frame_kg * k_scd * scale_scd
+        blade_kg = raw_blade_kg * k_scd * scale_scd
+        paint_m2 = (raw_frame_kg + raw_blade_kg) * (23100.0 / p_paint_master) * k_scd * scale_scd
+        acc_bo = (raw_acc_scd / p_acc_master) * k_scd * scale_scd
+
+        components.extend([
+            {
+                "sub_key": f"{parent_id}-FRAME",
+                "name": "Khung nhôm cửa khuếch tán (SCD)",
+                "category": "NHÔM_ĐỊNH_HÌNH",
+                "mat_id": "MAT-ALU-KHUNG-BD",
+                "calc_qty": frame_kg,
+                "unit": "kg",
+                "note": f"Khung khuếch tán {F:.0f}x{G:.0f}mm (cổ {D:.0f}x{E:.0f}mm)"
+            },
+            {
+                "sub_key": f"{parent_id}-BLADE",
+                "name": f"Chao nhôm khuếch tán ({n_chao} chao)",
+                "category": "NHÔM_ĐỊNH_HÌNH",
+                "mat_id": "MAT-ALU-NAN-T",
+                "calc_qty": blade_kg,
+                "unit": "kg",
+                "note": f"{n_chao} lớp chao khuếch tán"
+            },
+            {
+                "sub_key": f"{parent_id}-ACCESSORY",
+                "name": "Phụ kiện lắp ghép / Ke góc cửa gió",
+                "category": "PHỤ_KIỆN_CỬA",
+                "mat_id": "MAT-DOOR-ACCESSORY",
+                "calc_qty": acc_bo,
+                "unit": "Bộ",
+                "note": "Ke góc và chốt tháo lắp lõi khuếch tán"
+            },
+            {
+                "sub_key": f"{parent_id}-PAINT",
+                "name": "Sơn tĩnh điện tiêu chuẩn Polyester",
+                "category": "SƠN_TĨNH_ĐIỆN",
+                "mat_id": "MAT-PAINT-POWDER",
+                "calc_qty": paint_m2,
+                "unit": "m2",
+                "note": "Sơn tĩnh điện hoàn thiện"
+            }
+        ])
+        return F, G, D, E, frame_kg + blade_kg
+
+    @staticmethod
+    def _calc_profile_oval_bd(parent_id, w_val, h_val, is_double_layer, is_removable, diffuser_rules, mfg_markup, p_alu_bd_master, p_paint_master, p_acc_master, components):
+        F, G = w_val, h_val
+        D, E = max(50.0, w_val - 50.0), max(50.0, h_val - 50.0)
+        N, O = F / 1000.0, G / 1000.0
+        d_m, e_m = D / 1000.0, E / 1000.0
+        n_nan_1 = max(1, _excel_round((e_m - 0.015) / 0.02))
+
+        if is_double_layer:
+            n_nan_2 = max(1, _excel_round((d_m - 0.015) / 0.02))
+            raw_frame_only_kg = 2.0 * (N + O) * 0.2547
+            raw_frame_kg = raw_frame_only_kg
+            raw_blade_kg = (n_nan_1 * d_m + n_nan_2 * e_m) * 0.058
+            frame_mat_id = "MAT-ALU-KHUNG-Z-2-LOP"
+            p_alu_bd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 165000.0))
+            raw_acc_cost = 5000.0
+        elif is_removable:
+            n_nan_1 = max(1, _excel_round((e_m / 0.02) - 1, 0))
+            raw_frame_only_kg = 2.0 * (N + O) * 0.2547 * 1.5
+            raw_frame_kg = raw_frame_only_kg
+            raw_blade_kg = n_nan_1 * d_m * 0.058
+            frame_mat_id = "MAT-ALU-KHUNG-Z-2-LOP"
+            p_alu_bd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 165000.0))
+            raw_acc_cost = 5000.0
+        else:
+            raw_frame_only_kg = 2.0 * (N + O) * 0.18
+            raw_frame_kg = raw_frame_only_kg + 1.0 * (O * 1.1) * 0.08
+            raw_blade_kg = n_nan_1 * d_m * 0.058
+            frame_mat_id = "MAT-ALU-KHUNG-BD"
+            p_alu_bd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 165000.0))
+            raw_acc_cost = n_nan_1 * 85.0
+
+        unrounded_bd_sell = ((raw_frame_kg + raw_blade_kg) * p_alu_bd + raw_acc_cost + (raw_frame_only_kg + raw_blade_kg) * 20000.0) * 1.25
+        target_bd_sell = _excel_round(unrounded_bd_sell, -3)
+        scale_bd = (target_bd_sell / unrounded_bd_sell) if unrounded_bd_sell > 0 else 1.0
+        frame_kg = raw_frame_kg * (p_alu_bd * 1.25 * scale_bd) / (p_alu_bd_master * mfg_markup)
+        blade_kg = raw_blade_kg * (p_alu_bd * 1.25 * scale_bd) / (p_alu_bd_master * mfg_markup)
+        acc_bo = (raw_acc_cost * 1.25 * scale_bd) / (p_acc_master * mfg_markup)
+        paint_m2 = (raw_frame_only_kg + raw_blade_kg) * (20000.0 * 1.25 * scale_bd) / (p_paint_master * mfg_markup)
+
+        components.extend([
+            {
+                "sub_key": f"{parent_id}-FRAME",
+                "name": f"Khung nhôm định hình ({'2 lớp' if is_double_layer else ('1 lớp tháo lắp' if is_removable else '1 lớp')} BD)",
+                "category": "NHÔM_ĐỊNH_HÌNH",
+                "mat_id": frame_mat_id,
+                "calc_qty": frame_kg,
+                "unit": "kg",
+                "note": f"Khung bao {F:.0f}x{G:.0f}mm (cổ {D:.0f}x{E:.0f}mm)"
+            },
+            {
+                "sub_key": f"{parent_id}-BLADE",
+                "name": f"Nan nhôm bầu dục ({n_nan_1} nan)",
+                "category": "NHÔM_ĐỊNH_HÌNH",
+                "mat_id": "MAT-ALU-NAN-BD",
+                "calc_qty": blade_kg,
+                "unit": "kg",
+                "note": "Nan bầu dục @ 0.058kg/m"
+            },
+            {
+                "sub_key": f"{parent_id}-ACCESSORY",
+                "name": "Phụ kiện lắp ghép / Ke góc cửa gió",
+                "category": "PHỤ_KIỆN_CỬA",
+                "mat_id": "MAT-DOOR-ACCESSORY",
+                "calc_qty": acc_bo,
+                "unit": "Bộ",
+                "note": "4 ke góc chìm và vít ghép khung"
+            },
+            {
+                "sub_key": f"{parent_id}-PAINT",
+                "name": "Sơn tĩnh điện tiêu chuẩn Polyester",
+                "category": "SƠN_TĨNH_ĐIỆN",
+                "mat_id": "MAT-PAINT-POWDER",
+                "calc_qty": paint_m2,
+                "unit": "m2",
+                "note": "Sơn tĩnh điện hoàn thiện"
+            }
+        ])
+        return F, G, D, E, frame_kg + blade_kg
+
+    @staticmethod
+    def _append_diffuser_accessories(parent_id, profile_type, w_val, D, E, has_mesh, has_filter, has_obd, is_black_2nd_layer, mat_price_map, mfg_markup, p_alu_obd_master, p_acc_master, total_alu_kg, components):
         if has_mesh and profile_type != "Z":
             p_mesh_master = mat_price_map.get("MAT-MESH-INOX-304", 150000.0)
             target_mesh_sell = _excel_round((D / 1000.0) * (E / 1000.0) * 150000.0, -3)
@@ -495,8 +543,4 @@ class Agent06_DiffuserBOM:
             ])
             total_alu_kg += (obd_frame_kg + obd_blade_kg)
 
-        return {
-            "category": "CUA_GIO",
-            "total_aluminum_kg": total_alu_kg,
-            "components": components
-        }
+        return total_alu_kg

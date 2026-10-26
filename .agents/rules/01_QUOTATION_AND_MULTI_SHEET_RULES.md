@@ -60,7 +60,22 @@ Tài liệu quy tắc bắt buộc áp dụng cho toàn bộ các Agent (`Agent 
 
 ---
 
-## 3. Quy Tắc Xuất Báo Cáo Cho Người Dùng (Output Reporting Policy)
+## 3. Quy Tắc Quét Toàn Bộ BOQ, Kế Thừa Title Cha & Kiểm Toán Chống Sót Dòng (Full-BOQ Scan & Zero-Omission Policy)
 
-1. **Chỉ liệt kê File Báo Giá Cuối Cùng:** Chỉ đưa link duy nhất file báo giá cuối cùng (`<Project_Name>_BAO_GIA.xlsx`), không liệt kê tất cả các file báo giá thành phần hay file dự toán trung gian đã tạo trong thư mục.
+- **Nguyên tắc bắt buộc cho mọi dự án mới (vì mỗi chủ đầu tư/tư vấn có thể trình bày BOQ theo một cấu trúc khác nhau):**
+  1. **Quét toàn bộ các cột trên từng dòng BOQ (Multi-Column & Bilingual Scanning):**
+     - Không chỉ đọc duy nhất cột Tên vật tư chính (`col_map["name"]`), mà bắt buộc phải quét đồng thời cột Mô tả phụ/tiếng Anh (`DESCRIPTION` nếu có), cột Thông số kỹ thuật (`SPEC` / `Quy cách`), cột Model và cột Ghi chú (`Remarks`).
+  2. **Quét và kế thừa 100% ngữ cảnh từ dòng Title / Hạng mục cha (Hierarchical Title Context Inheritance):**
+     - Nhiều BOQ tách thông số kỹ thuật lên dòng Title cha (ví dụ: `"Miệng gió thẳng gắn OBD, sơn màu xám nhạt"`, `"Cửa gió thẳng kèm van OBD"`, `"Cửa chớp có/kèm lưới chắn chim"`, `"Van chặn lửa MFD EI90"`, `"Ống gió tôn Hoa Sen dày 1.15mm"...), còn các dòng item con bên dưới chỉ ghi tên chung chung (`"Miệng gió nhôm"`, `"Cửa chớp nhôm"`, hoặc chỉ ghi kích thước `800x300`).
+     - Hệ thống bắt buộc phải nhận diện mọi dòng Title cha (kể cả khi dòng Title bị điền nhầm số vào cột ĐVT hoặc đặt ở cột đầu tiên) và **ghép đầy đủ ngữ cảnh Title cha (cả tiếng Việt & tiếng Anh)** vào toàn bộ các dòng item con bên dưới cho đến khi gặp dòng Title cha mới.
+  3. **Kiểm toán độ phủ 100% dòng BOQ chống bỏ sót (`Full-BOQ Coverage Audit`):**
+     - Khi chạy báo giá bất kỳ dự án nào, bắt buộc đối chiếu 1-1 toàn bộ các dòng trên Sheet BOQ gốc với danh sách dòng đã báo giá trên Sheet `BG` (`[Agent 01 - Full-BOQ Coverage Audit]`):
+       + Kiểm tra danh sách `Danh mục Title cha đã quét & kế thừa` xem đã khớp với toàn bộ các mục lớn trong BOQ chưa, và các dòng con đã nhận đúng mã phụ kiện (`+O` OBD, `+N` lưới chắn côn trùng/chắn chim, `+F` lọc bụi G4, tiêu chuẩn `EI`, độ dày...) từ Title cha chưa.
+       + Nếu xuất hiện bất kỳ cảnh báo `⚠️ [CẢNH BÁO SÓT DÒNG]` (dòng có khối lượng hoặc kích thước thuộc phạm vi báo giá nhưng chưa được bóc tách/áp giá) hoặc dòng bị lệch cột khối lượng, Agent **bắt buộc phải kiểm tra nguyên nhân và cập nhật bộ lọc/từ khóa ngay lập tức** rồi chạy lại cho đến khi đạt **100% độ phủ BOQ (0 dòng bị sót)** trước khi bàn giao file cho người dùng.
+
+---
+
+## 4. Quy Tắc Xuất Báo Cáo Cho Người Dùng (Output Reporting Policy)
+
+1. **Chỉ liệt kê File Báo Giá Cuối Cùng:** Chỉ đưa link duy nhất file báo giá cuối cùng (`output/<Project_Name>/<Original_File_Name>.xlsx`), không liệt kê tất cả các file báo giá thành phần hay file dự toán trung gian đã tạo trong thư mục.
 2. **Chỉ in Bảng Tổng Hợp Giá Trị:** Chỉ trình bày **Bảng Tổng Hợp Giá Trị Dự Án** (Số dòng, Trước VAT, VAT 8%, Tổng sau VAT), bỏ bảng kết quả báo giá chi tiết từng dòng.

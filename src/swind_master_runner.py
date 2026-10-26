@@ -924,29 +924,38 @@ def export_customer_boq_quotation_files(
     project_name,
     target_sheets,
     all_items,
-    template_wb=None
+    template_wb=None,
+    orig_boq_file=None
 ):
     """
-    Xuất trực tiếp các file Báo giá gửi khách hàng từ Sheet 'BẢNG BÁO GIÁ TIÊU CHUẨN':
-    - Tách riêng từng Sheet kỹ thuật thành 1 file Excel báo giá độc lập.
-    - File chỉ chứa DUY NHẤT 1 Sheet: 'BẢNG BÁO GIÁ TIÊU CHUẨN' (Format chuẩn 16 cột A..P của Swind).
-    - Toàn bộ đầu mục công việc và vị trí dòng khớp với BOQ của khách gửi.
-    - Chỉ fill Model, Thương hiệu, Kích thước (A1..B2), Modul, L, Độ dày, Đơn giá, Thành tiền, Ghi chú cho Cửa gió & Van gió.
+    Xuất trực tiếp các file Báo giá gửi khách hàng:
+    - Giữ nguyên tên file gốc (không thêm hậu tố _BAO_GIA).
+    - File báo giá gồm 2 Sheet:
+      1. Sheet BOQ gốc giữ nguyên không thay đổi.
+      2. Sheet báo giá của Swind với tên sheet là 'BG' (Format chuẩn 16 cột A..P của Swind, đóng khung đầy đủ).
     """
     print("\n" + "=" * 75)
     print("📦 [SWIND MASTER] XUẤT CÁC FILE BÁO GIÁ TIÊU CHUẨN GỬI KHÁCH HÀNG")
     print("=" * 75)
 
     customer_files = []
+    src_boq = orig_boq_file if (orig_boq_file and os.path.exists(orig_boq_file) and orig_boq_file.lower().endswith(('.xlsx', '.xlsm'))) else boq_file
+    orig_stem = os.path.splitext(os.path.basename(orig_boq_file or boq_file))[0].strip() if (orig_boq_file or boq_file) else project_name
+
+    # Dọn các file *_BAO_GIA.xlsx cũ trong project_dir nếu có
+    for old_bg in glob.glob(os.path.join(project_dir, "*_BAO_GIA.xlsx")):
+        try:
+            os.remove(old_bg)
+        except Exception:
+            pass
 
     for sh_name in target_sheets:
         sh_slug = vietnamese_slugify(sh_name, max_len=30, add_hash=False).replace('-', '_')
         if len(target_sheets) == 1:
             est_file = os.path.join(project_dir, "internal_estimation", f"{project_name}_ESTIMATION.xlsx")
-            out_file = os.path.join(project_dir, f"{project_name}_BAO_GIA.xlsx")
+            out_file = os.path.join(project_dir, f"{orig_stem}.xlsx")
             if not os.path.exists(est_file):
                 est_file = os.path.join(project_dir, "internal_estimation", f"{project_name}_{sh_slug}_ESTIMATION.xlsx")
-                out_file = os.path.join(project_dir, f"{project_name}_{sh_slug}_BAO_GIA.xlsx")
         else:
             est_file = os.path.join(project_dir, "internal_estimation", f"{project_name}_{sh_slug}_ESTIMATION.xlsx")
             out_file = os.path.join(project_dir, f"{project_name}_{sh_slug}_BAO_GIA.xlsx")
@@ -955,12 +964,13 @@ def export_customer_boq_quotation_files(
             continue
 
         wb = openpyxl.load_workbook(est_file)
-        keep_sheet = "BẢNG BÁO GIÁ TIÊU CHUẨN" if "BẢNG BÁO GIÁ TIÊU CHUẨN" in wb.sheetnames else wb.sheetnames[0]
+        keep_sheet = "BG" if "BG" in wb.sheetnames else ("BẢNG BÁO GIÁ TIÊU CHUẨN" if "BẢNG BÁO GIÁ TIÊU CHUẨN" in wb.sheetnames else wb.sheetnames[0])
         for s in list(wb.sheetnames):
             if s != keep_sheet:
                 wb.remove(wb[s])
 
         ws = wb[keep_sheet]
+        ws.title = "BG"
         sh_items = [it for it in all_items if it.get("source_sheet") == sh_name]
         q_row_price = {idx + 1: int(it.get("calc_sell_unit", 0)) for idx, it in enumerate(sh_items, 1)}
 
@@ -978,16 +988,17 @@ def export_customer_boq_quotation_files(
             if ws.views.sheetView:
                 ws.views.sheetView[0].tabSelected = True
 
-        # Nếu BOQ gốc chứa sheet báo giá riêng của nhà thầu đối tác (ví dụ: Minh Triết BG),
-        # giữ nguyên sheet báo giá của đối tác và thêm 1 sheet báo giá tiêu chuẩn của Swind trong cùng 1 file Excel
-        if boq_file and os.path.exists(boq_file) and "minh triết" in sh_name.lower():
+        # Luôn xuất file gồm 2 Sheet: Sheet BOQ gốc (chỉ copy không thay đổi) + Sheet báo giá 'BG' của Swind
+        if src_boq and os.path.exists(src_boq):
             from copy import copy
             import zipfile
-            wb_cust = openpyxl.load_workbook(boq_file)
+            wb_cust = openpyxl.load_workbook(src_boq)
+            orig_keep = sh_name if sh_name in wb_cust.sheetnames else wb_cust.sheetnames[0]
             for s in list(wb_cust.sheetnames):
-                if s != sh_name:
+                if s != orig_keep:
                     wb_cust.remove(wb_cust[s])
-            ws_swind = wb_cust.create_sheet(keep_sheet)
+            bg_title = "BG" if "BG" not in wb_cust.sheetnames else "BG_SWIND"
+            ws_swind = wb_cust.create_sheet(bg_title)
             if ws.views.sheetView and ws_swind.views.sheetView:
                 ws_swind.views.sheetView[0].showGridLines = ws.views.sheetView[0].showGridLines
             for col_l, dim in ws.column_dimensions.items():
@@ -998,22 +1009,24 @@ def export_customer_boq_quotation_files(
                 ws_swind.merge_cells(str(m_range))
             for row in ws.iter_rows():
                 for cell in row:
-                    new_c = ws_swind.cell(cell.row, cell.column, value=cell.value)
+                    new_c = ws_swind.cell(cell.row, cell.column)
+                    if not isinstance(cell, MergedCell) and not isinstance(new_c, MergedCell):
+                        new_c.value = cell.value
                     if cell.has_style:
                         new_c.font = copy(cell.font)
                         new_c.fill = copy(cell.fill)
                         new_c.border = copy(cell.border)
                         new_c.alignment = copy(cell.alignment)
                         new_c.number_format = cell.number_format
-            wb_cust.active = 0
+            wb_cust.active = 1 if len(wb_cust.worksheets) > 1 else 0
             for idx_s, w_s in enumerate(wb_cust.worksheets):
                 if w_s.views.sheetView:
-                    w_s.views.sheetView[0].tabSelected = (idx_s == 0)
+                    w_s.views.sheetView[0].tabSelected = (idx_s == wb_cust.active_sheet_index if hasattr(wb_cust, "active_sheet_index") else (idx_s == (1 if len(wb_cust.worksheets) > 1 else 0)))
             wb_cust.save(out_file)
 
-            # Khôi phục hình ảnh/logo (drawing1.xml & media) trên sheet gốc của Minh Triết
+            # Khôi phục hình ảnh/logo (drawing1.xml & media) trên sheet BOQ gốc nếu có
             try:
-                with zipfile.ZipFile(boq_file, 'r') as zorig:
+                with zipfile.ZipFile(src_boq, 'r') as zorig:
                     orig_names = set(zorig.namelist())
                     if 'xl/drawings/drawing1.xml' in orig_names and 'xl/worksheets/_rels/sheet1.xml.rels' in orig_names:
                         tmp_zip = out_file + ".tmp.zip"
@@ -1041,13 +1054,12 @@ def export_customer_boq_quotation_files(
             except Exception as e_draw:
                 print(f"  [Cảnh báo] Không thể khôi phục drawing gốc: {e_draw}")
 
-            customer_files.append((f"{sh_name} + {keep_sheet}", out_file))
-            print(f"  -> File Báo giá gửi khách (Gồm sheet '{sh_name}' giữ nguyên & sheet '{keep_sheet}' của Swind): {out_file}")
-            continue
-
-        wb.save(out_file)
-        customer_files.append((sh_name, out_file))
-        print(f"  -> File Báo giá chuẩn gửi khách: {out_file}")
+            customer_files.append((sh_name, out_file))
+            print(f"  -> File Báo giá chuẩn gửi khách (Sheet '{orig_keep}' gốc + Sheet '{bg_title}'): {out_file}")
+        else:
+            wb.save(out_file)
+            customer_files.append((sh_name, out_file))
+            print(f"  -> File Báo giá chuẩn gửi khách: {out_file}")
 
         # Nếu BOQ gốc là định dạng bảng so sánh nhà thầu (ví dụ Ecoba: có cột ECOBA LỰA CHỌN & PHƯƠNG ÁN 1),
         # đồng thời xuất thêm 1 bản điền trực tiếp trên form gốc của khách hàng
@@ -1107,7 +1119,8 @@ def export_customer_boq_quotation_files(
             project_dir=project_dir,
             project_name=project_name,
             sheet_files=customer_files,
-            boq_file=boq_file
+            output_file=os.path.join(project_dir, f"{orig_stem}.xlsx"),
+            boq_file=src_boq
         )
         if merged_out:
             customer_files.append(("TỔNG HỢP (GỘP CÁC SHEET)", merged_out))
@@ -1117,11 +1130,66 @@ def export_customer_boq_quotation_files(
     return customer_files
 
 
+def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items, only_cua_van=False):
+    """
+    Quét toàn bộ 100% các dòng trên từng Sheet BOQ gốc để kiểm tra độ phủ,
+    kế thừa ngữ cảnh Title cha và phát hiện sớm các dòng có khối lượng/kích thước bị bỏ sót.
+    """
+    from swind_utils import detect_boq_header
+    print("\n" + "-" * 60)
+    print("[Agent 01 - Full-BOQ Coverage Audit] Quét 100% dòng BOQ & đối chiếu chống sót...")
+    print("-" * 60)
+    for sh_name in target_sheets:
+        if sh_name not in boq_wb.sheetnames:
+            continue
+        ws = boq_wb[sh_name]
+        header_row, col_map, hidden_rows, _, _ = detect_boq_header(ws)
+        raw_map = {it.get("source_row"): it for it in raw_all_items if it.get("source_sheet") == sh_name}
+        quoted_map = {it.get("source_row"): it for it in filtered_items if it.get("source_sheet") == sh_name}
+        titles_inherited = sorted({it.get("section", "") for it in filtered_items if it.get("source_sheet") == sh_name and it.get("section") and it.get("section") != "SẢN PHẨM"})
+        missing_qty_notes = []
+        suspect_unparsed = []
+        for r in range((header_row or 1) + 1, ws.max_row + 1):
+            if r in hidden_rows:
+                continue
+            if r in quoted_map:
+                if quoted_map[r].get("is_missing_qty"):
+                    missing_qty_notes.append(f"Dòng {r}: '{quoted_map[r].get('raw_name')}' (Title: '{quoted_map[r].get('section')}') — đã áp đơn giá, cột KL gốc để trống")
+                continue
+            if r in raw_map:
+                continue
+            nm_v = ws.cell(r, col_map.get("name", 2)).value
+            sp_v = ws.cell(r, col_map["spec"]).value if "spec" in col_map else None
+            qt_v = ws.cell(r, col_map["qty"]).value if "qty" in col_map else None
+            un_v = ws.cell(r, col_map["unit"]).value if "unit" in col_map else None
+            row_txt = f"{nm_v or ''} {sp_v or ''}".strip()
+            if not row_txt or "tổng cộng" in row_txt.lower():
+                continue
+            has_pos_qty = isinstance(qt_v, (int, float)) and qt_v > 0
+            has_dim = bool(re.search(r'(\d{2,4}\s*[xX*]\s*\d{2,4}|\b[dD]\d{2,4}\b)', row_txt))
+            if has_pos_qty or has_dim:
+                if only_cua_van and any(k in row_txt.lower() for k in ("ống chờ", "ống lồng", "ống nối mềm", "mềm ei", "khớp nối mềm", "sleeve", "flexible")):
+                    continue
+                suspect_unparsed.append(f"Dòng {r}: Tên='{nm_v}' | Spec='{sp_v}' | ĐVT='{un_v}' | KL={qt_v}")
+        print(f"  -> Sheet '{sh_name}': Đã báo giá={len(quoted_map)} dòng | Đã lọc ngoài phạm vi={len(raw_map) - len(quoted_map)} dòng | Title cha kế thừa={len(titles_inherited)}")
+        if titles_inherited:
+            print(f"     • Danh mục Title cha đã quét & kế thừa: {titles_inherited}")
+        for mq in missing_qty_notes:
+            print(f"     • [Lưu ý KL trống] {mq}")
+        if suspect_unparsed:
+            print(f"     ⚠️ [CẢNH BÁO SÓT DÒNG] Phát hiện {len(suspect_unparsed)} dòng có KL/Kích thước chưa được bóc tách:")
+            for su in suspect_unparsed:
+                print(f"        - {su}")
+        else:
+            print("     ✅ Đạt 100% độ phủ BOQ: Không có dòng Cửa/Van/Vật tư mục tiêu nào bị bỏ sót!")
+
+
 def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None):
     """
     Hàm điều phối Quy trình B: Nhận file BOQ khách hàng -> Phân tích & Áp giá từ Master Data có sẵn (Agent 01 -> Agent 08).
     """
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    orig_boq_file = boq_file
     base_name = os.path.basename(boq_file)
     project_name = base_name.replace("_BOQ_MEP (NCC).xlsx", "").replace(".xlsm", "").replace(".xlsx", "").replace(".xls", "").strip()
     if "CAND" in project_name.upper():
@@ -1190,6 +1258,7 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
         print("[LỖI] Không bóc tách được dòng sản phẩm nào từ các sheet trên. Dừng quy trình.")
         return
 
+    raw_extracted_items = list(all_items)
     if only_cua_van:
         print("\n" + "=" * 75)
         print("🎯 ÁP DỤNG RULE: CHỈ BÁO GIÁ CỬA GIÓ & VAN GIÓ (KHÔNG BÁO ỐNG GIÓ & HÀNG THƯƠNG MẠI)")
@@ -1198,6 +1267,10 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
         print(f"  -> Số dòng sản phẩm sau khi lọc: {len(all_items)} dòng (chỉ Cửa gió & Van gió).")
 
     target_sheets = [sh for sh in target_sheets if any(it.get("source_sheet") == sh for it in all_items)]
+    try:
+        audit_full_boq_coverage(agent_01.parser.wb, target_sheets, raw_extracted_items, all_items, only_cua_van=only_cua_van)
+    except Exception as e_cov:
+        print(f"  [Cảnh báo Coverage Audit] {e_cov}")
 
     if not motor_brand and not mfd_model:
         print("  -> [Rule Mặc Định Cố Định] Các van động cơ chưa chỉ định hãng/mã trong BOQ sẽ tự động áp dụng: Mã MFD 1.02 - Động cơ BELIMO.")
@@ -1301,7 +1374,8 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
         project_name=project_name,
         target_sheets=target_sheets,
         all_items=all_items,
-        template_wb=agent_01.parser.wb
+        template_wb=agent_01.parser.wb,
+        orig_boq_file=orig_boq_file
     )
 
     final_customer_file = customer_files[-1][1] if customer_files else ""

@@ -15,81 +15,20 @@ def _excel_round(value, ndigits=0):
 class Agent05_DamperBOM:
     """
     SWIND-AGENT-05: Kỹ sư Dự toán Xưởng Van Gió & PCCC (Damper BOM Maker)
-    - Chuyên trách bóc tách: VCD, MD, NRD, FD, MFD (Phương án đơn cánh FSLF24V & đa cánh BFN 24).
+    - Chuyên trách bóc tách: VCD, MD, NRD, PRD, OBD, FD, MFD (Phương án đơn cánh FSLF24V & đa cánh BFN 24).
     - Tích hợp chuẩn công thức 'BG VAN ' (BẢNG TÍNH GIÁ SWIND chuẩn 2026).
     """
 
     @staticmethod
     def calculate_damper_bom(parent_id, damper_type, w, h, brand="PN", ei_rating=0, mfd_mode="multi_bfn24", model_code=None, motor_brand="BELIMO", d=0, raw_name="", allow_ei=None, ei_damper_mode=None, split_module=None):
         """
-        Bóc tách Van Gió (VCD, MD, NRD, FD, MFD):
-        - Quy tắc kích thước tối thiểu FD/MFD: W, H < 150mm được tính ở 150mm kèm thu côn 2 đầu (BCTN 4761 / 2390).
-        - Quy tắc chia Modul van ngăn cháy MFD & FD:
-          + MFD 1.04, 1.05 (EI120 đa cánh - BCTN 2390): Tiêu chuẩn 1 thân tối đa 1700x1000mm. Vượt 1700x1000 mới chia modul.
-          + MFD 1.02, 1.03 (EI60/EI90 đơn/đa cánh - BCTN 4752) & FD 2.01 (cầu chì - BCTN 4761): Tiêu chuẩn 1 thân tối đa 1500x800mm. Vượt 1500x800 mới chia modul.
-        - Chiều dài vỏ van: FD/MFD L=200mm (bọc cách nhiệt L+100=300mm), VCD/MD/NRD L=210mm, Van tròn L=D+50mm (D120 L=175mm).
-        - Cánh van FD/MFD: Phương án đơn cánh (mfd_mode='single_fslf24' hoặc H_mod <= 250) vs đa cánh (H_mod - 5)/149.
-        - Bọc chống cháy EI cho FD/MFD và VCD/NRD/PRD có chỉ số EI.
+        Bóc tách Van Gió (VCD, MD, NRD, PRD, OBD, FD, MFD) theo chuẩn Swind:
+        - Điều phối qua các hàm con độc lập để dễ dàng tra cứu & kiểm tra từng công thức.
         """
         dtype_u = damper_type.upper()
         name_lower = str(raw_name or "").lower()
         if dtype_u in ("OBD", "SOBD"):
-            a_m = float(w or 200.0) / 1000.0
-            b_m = float(h or 200.0) / 1000.0
-            raw_obd_frame_kg = 2.0 * (a_m + b_m) * 0.158
-            raw_obd_blade_kg = (a_m / 0.04) * b_m * 0.10
-            raw_obd_acc_cost = (a_m / 0.04) * 1500.0 + 5000.0
-            unrounded_obd_sell = ((raw_obd_frame_kg + raw_obd_blade_kg) * 160000.0 + raw_obd_acc_cost) * 1.15
-            target_obd_sell = _excel_round(unrounded_obd_sell, -3)
-            from swind_utils import get_master_price_map, get_master_bom_rules
-            mat_price_map = get_master_price_map()
-            mfg_markup = float(get_master_bom_rules().get("damper_rules", {}).get("mfg_markup_factor", 1.593))
-            p_alu_obd_master = mat_price_map.get("MAT-ALU-KHUNG-OBD", 133000.0)
-            p_acc_master = mat_price_map.get("MAT-DOOR-ACCESSORY", 15000.0)
-            scale_obd = (target_obd_sell / unrounded_obd_sell) if unrounded_obd_sell > 0 else 1.0
-            obd_frame_kg = raw_obd_frame_kg * (160000.0 * 1.15 * scale_obd) / (p_alu_obd_master * mfg_markup)
-            obd_blade_kg = raw_obd_blade_kg * (160000.0 * 1.15 * scale_obd) / (p_alu_obd_master * mfg_markup)
-            obd_acc_bo = (raw_obd_acc_cost * 1.15 * scale_obd) / (p_acc_master * mfg_markup)
-            return {
-                "category": "VAN_GIO",
-                "modules_count": 1,
-                "mod_w": 1,
-                "mod_h": 1,
-                "w_eff": float(w or 200.0),
-                "h_eff": float(h or 200.0),
-                "l_body": 56,
-                "thickness_body": 0.8,
-                "is_single_blade": False,
-                "components": [
-                    {
-                        "sub_key": f"{parent_id}-OBD-FRAME",
-                        "name": "Khung nhôm van OBD (SOBD)",
-                        "category": "NHÔM_ĐỊNH_HÌNH",
-                        "mat_id": "MAT-ALU-KHUNG-OBD",
-                        "calc_qty": obd_frame_kg,
-                        "unit": "kg",
-                        "note": f"Khung OBD {float(w or 200):.0f}x{float(h or 200):.0f}mm"
-                    },
-                    {
-                        "sub_key": f"{parent_id}-OBD-BLADE",
-                        "name": "Nan nhôm & thanh truyền van OBD (SOBD)",
-                        "category": "NHÔM_ĐỊNH_HÌNH",
-                        "mat_id": "MAT-ALU-NAN-OBD",
-                        "calc_qty": obd_blade_kg,
-                        "unit": "kg",
-                        "note": "Nan OBD đối xứng & thanh liên kết"
-                    },
-                    {
-                        "sub_key": f"{parent_id}-OBD-ACC",
-                        "name": "Bánh răng nhựa & phụ kiện van OBD",
-                        "category": "PHỤ_KIỆN_CỬA",
-                        "mat_id": "MAT-DOOR-ACCESSORY",
-                        "calc_qty": obd_acc_bo,
-                        "unit": "Bộ",
-                        "note": "Cơ cấu bánh răng đóng mở OBD"
-                    }
-                ]
-            }
+            return Agent05_DamperBOM._calc_obd_damper(parent_id, w, h)
 
         is_fd = (dtype_u == "FD")
         is_fd_ei = is_fd and (ei_rating > 0 or str(model_code or "") == "2.01")
@@ -104,10 +43,8 @@ class Agent05_DamperBOM:
         d_eff = float(d or 0)
 
         if is_round:
-            w_eff = d_eff
-            h_eff = d_eff
+            w_eff, h_eff = d_eff, d_eff
             is_clamped = False
-            mod_w, mod_h = 1, 1
         else:
             w_eff = max(150.0, float(w)) if (is_fd_ei or is_mfd) else float(w)
             h_eff = max(150.0, float(h)) if (is_fd_ei or is_mfd) else float(h)
@@ -116,33 +53,162 @@ class Agent05_DamperBOM:
         if is_mfd and not model_code:
             model_code = "1.03" if motor_brand.upper() == "KLB" else ("1.04" if motor_brand.upper() == "HONEYWELL" else "1.02")
 
-        from swind_utils import get_master_bom_rules
+        from swind_utils import get_master_price_map, get_master_bom_rules
+        mat_price_map = get_master_price_map()
         damper_rules = get_master_bom_rules().get("damper_rules", {})
         split_rules = damper_rules.get("module_split_rules", {})
+        mfg_markup = float(damper_rules.get("mfg_markup_factor", 1.593))
 
+        mod_w, mod_h, modules_count, w_mod, h_mod = Agent05_DamperBOM._calculate_damper_modules(
+            w_eff, h_eff, is_round, is_fd_ei, is_mfd, is_md, is_nrd, is_prd,
+            is_fd_normal, is_vcd_vit, is_fd_vcd, damper_type, model_code, motor_brand, split_rules
+        )
+
+        l_body, thickness_body, is_single_blade, blade_factor_per_mod, mod_note, components = (
+            Agent05_DamperBOM._calc_body_and_blade_specs(
+                parent_id, damper_type, brand, w, h, w_eff, h_eff, d_eff,
+                w_mod, h_mod, modules_count, is_round, is_clamped,
+                is_mfd, is_fd, is_fd_ei, is_md, is_nrd, is_prd, is_vcd_vit, is_fd_vcd,
+                ei_rating, mfd_mode, model_code, motor_brand
+            )
+        )
+
+        Agent05_DamperBOM._append_actuator_or_mechanism(
+            parent_id, w_mod, h_mod, modules_count, mod_note,
+            is_md, is_fd, is_mfd, is_nrd, is_prd, is_single_blade,
+            mfd_mode, model_code, motor_brand, components
+        )
+
+        z_total_m2 = ((w_eff + h_eff) * 2.0 * 300.0 + w_eff * h_eff) / 1_000_000.0
+        Agent05_DamperBOM._append_fire_insulation_components(
+            parent_id, damper_type, w_eff, h_eff, w_mod, h_mod, l_body,
+            modules_count, mod_note, z_total_m2, blade_factor_per_mod,
+            is_single_blade, is_fd_ei, is_mfd, is_md, ei_rating, mat_price_map, components
+        )
+
+        if is_round:
+            target_mech_sell = Agent05_DamperBOM._price_round_damper(
+                d_eff, l_body, is_fd, is_mfd, is_fd_ei, is_fd_vcd, is_vcd_vit,
+                is_nrd, is_prd, is_md, ei_rating, damper_rules
+            )
+        elif is_fd_ei or is_mfd:
+            target_mech_sell = Agent05_DamperBOM._price_fire_damper_ei_or_mfd(
+                w_mod, h_mod, modules_count, blade_factor_per_mod, is_single_blade
+            )
+        elif is_fd_normal:
+            target_mech_sell = Agent05_DamperBOM._price_normal_fd_damper(w_eff, h_eff, z_total_m2)
+        else:
+            target_mech_sell = Agent05_DamperBOM._price_square_standard_damper(
+                w_eff, h_eff, z_total_m2, is_prd, is_nrd, is_vcd_vit,
+                is_md, is_fd_vcd, ei_rating, damper_rules
+            )
+
+        Agent05_DamperBOM._scale_components_to_target_sell(
+            components, target_mech_sell, mat_price_map, mfg_markup
+        )
+
+        return {
+            "category": "VAN_GIO",
+            "modules_count": modules_count,
+            "mod_w": mod_w,
+            "mod_h": mod_h,
+            "w_eff": w_eff,
+            "h_eff": h_eff,
+            "l_body": l_body,
+            "thickness_body": thickness_body,
+            "is_single_blade": is_single_blade,
+            "components": components
+        }
+
+    @staticmethod
+    def _calc_obd_damper(parent_id, w, h):
+        """Tính BOM và giá bán Van OBD rời bằng nhôm định hình sơn tĩnh điện (160,000 đ/kg, nan 0.10kg/m, x1.15)."""
+        a_m = float(w or 200.0) / 1000.0
+        b_m = float(h or 200.0) / 1000.0
+        raw_obd_frame_kg = 2.0 * (a_m + b_m) * 0.158
+        raw_obd_blade_kg = (a_m / 0.04) * b_m * 0.10
+        raw_obd_acc_cost = (a_m / 0.04) * 1500.0 + 5000.0
+        unrounded_obd_sell = ((raw_obd_frame_kg + raw_obd_blade_kg) * 160000.0 + raw_obd_acc_cost) * 1.15
+        target_obd_sell = _excel_round(unrounded_obd_sell, -3)
+        from swind_utils import get_master_price_map, get_master_bom_rules
+        mat_price_map = get_master_price_map()
+        mfg_markup = float(get_master_bom_rules().get("damper_rules", {}).get("mfg_markup_factor", 1.593))
+        p_alu_obd_master = mat_price_map.get("MAT-ALU-KHUNG-OBD", 133000.0)
+        p_acc_master = mat_price_map.get("MAT-DOOR-ACCESSORY", 15000.0)
+        scale_obd = (target_obd_sell / unrounded_obd_sell) if unrounded_obd_sell > 0 else 1.0
+        obd_frame_kg = raw_obd_frame_kg * (160000.0 * 1.15 * scale_obd) / (p_alu_obd_master * mfg_markup)
+        obd_blade_kg = raw_obd_blade_kg * (160000.0 * 1.15 * scale_obd) / (p_alu_obd_master * mfg_markup)
+        obd_acc_bo = (raw_obd_acc_cost * 1.15 * scale_obd) / (p_acc_master * mfg_markup)
+        return {
+            "category": "VAN_GIO",
+            "modules_count": 1,
+            "mod_w": 1,
+            "mod_h": 1,
+            "w_eff": float(w or 200.0),
+            "h_eff": float(h or 200.0),
+            "l_body": 56,
+            "thickness_body": 0.8,
+            "is_single_blade": False,
+            "components": [
+                {
+                    "sub_key": f"{parent_id}-OBD-FRAME",
+                    "name": "Khung nhôm van OBD (SOBD)",
+                    "category": "NHÔM_ĐỊNH_HÌNH",
+                    "mat_id": "MAT-ALU-KHUNG-OBD",
+                    "calc_qty": obd_frame_kg,
+                    "unit": "kg",
+                    "note": f"Khung OBD {float(w or 200):.0f}x{float(h or 200):.0f}mm"
+                },
+                {
+                    "sub_key": f"{parent_id}-OBD-BLADE",
+                    "name": "Nan nhôm & thanh truyền van OBD (SOBD)",
+                    "category": "NHÔM_ĐỊNH_HÌNH",
+                    "mat_id": "MAT-ALU-NAN-OBD",
+                    "calc_qty": obd_blade_kg,
+                    "unit": "kg",
+                    "note": "Nan OBD đối xứng & thanh liên kết"
+                },
+                {
+                    "sub_key": f"{parent_id}-OBD-ACC",
+                    "name": "Bánh răng nhựa & phụ kiện van OBD",
+                    "category": "PHỤ_KIỆN_CỬA",
+                    "mat_id": "MAT-DOOR-ACCESSORY",
+                    "calc_qty": obd_acc_bo,
+                    "unit": "Bộ",
+                    "note": "Cơ cấu bánh răng đóng mở OBD"
+                }
+            ]
+        }
+
+    @staticmethod
+    def _calculate_damper_modules(w_eff, h_eff, is_round, is_fd_ei, is_mfd, is_md, is_nrd, is_prd, is_fd_normal, is_vcd_vit, is_fd_vcd, damper_type, model_code, motor_brand, split_rules):
+        """
+        Quy tắc chia Modul van gió chuẩn Swind:
+          - MFD 1.04 (Honeywell, BCTN 1515): Tối đa 1750x1000mm.
+          - MFD 1.05 (Belimo BFN24, BCTN 2390): Tối đa 1700x1000mm.
+          - MFD 1.01, 1.02, 1.03 & FD 2.01 (BCTN 4752/4761/4651): Tối đa 1500x800mm.
+          - Van MD dùng động cơ KLB/VIWECO (Foxcom): Chia 1, 2, 4, 8 modul theo kích thước.
+          - Van cơ VCD, NRD, PRD, FD thường: 1 modul; MD thường > 2000x2000 mới chia modul.
+        """
         if is_round:
             mod_w, mod_h = 1, 1
         elif is_fd_ei or is_mfd:
             is_hw_104 = is_mfd and (model_code == "1.04" or motor_brand.upper() == "HONEYWELL")
             if is_hw_104:
-                # SWIND-1.04 (Honeywell, BCTN 1515): Tiêu chuẩn 1 thân tối đa 1750x1000mm
                 rule_cfg = split_rules.get("honeywell_104", {})
                 max_w_lim = float(rule_cfg.get("max_w_mm", 1750.0))
                 max_h_lim = float(rule_cfg.get("max_h_mm", 1000.0))
             elif is_mfd and model_code == "1.05":
-                # SWIND-1.05 (Belimo, BCTN 2390): Tiêu chuẩn 1 thân tối đa 1700x1000mm
                 rule_cfg = split_rules.get("large_105", {})
                 max_w_lim = float(rule_cfg.get("max_w_mm", 1700.0))
                 max_h_lim = float(rule_cfg.get("max_h_mm", 1000.0))
             else:
-                # SWIND-1.01, 1.02, 1.03 & FD 2.01: Tiêu chuẩn 1 thân tối đa 1500x800mm
                 rule_cfg = split_rules.get("standard_101_102_103_201", {})
                 max_w_lim = float(rule_cfg.get("max_w_mm", 1500.0))
                 max_h_lim = float(rule_cfg.get("max_h_mm", 800.0))
             mod_w = math.ceil(w_eff / max_w_lim) if w_eff > max_w_lim else 1
             mod_h = math.ceil(h_eff / max_h_lim) if h_eff > max_h_lim else 1
         elif is_md and motor_brand.upper() == "KLB":
-            # Phân chia modul cho Van MD dùng động cơ KLB/VIWECO (chuẩn dự án Foxcom):
             if w_eff >= 4000.0 and h_eff >= 1500.0:
                 mod_w, mod_h = 4, 2  # 8 modul
             elif (w_eff >= 2000.0 and h_eff > 1300.0) or (w_eff >= 4000.0 and h_eff <= 1500.0):
@@ -153,18 +219,22 @@ class Agent05_DamperBOM:
             else:
                 mod_w, mod_h = 1, 1  # 1 modul
         elif is_nrd or is_prd or is_fd_normal or is_vcd_vit or is_fd_vcd or damper_type.upper() == "VCD" or (is_md and w_eff <= 2000.0 and h_eff <= 2000.0):
-            mod_w = 1
-            mod_h = 1
+            mod_w, mod_h = 1, 1
         else:
             md_cfg = split_rules.get("standard_md", {})
             max_w_md = float(md_cfg.get("max_w_mm", 2000.0))
             max_h_md = float(md_cfg.get("max_h_mm", 2000.0))
             mod_w = math.ceil(w_eff / max_w_md) if w_eff > max_w_md else 1
             mod_h = math.ceil(h_eff / max_h_md) if h_eff > max_h_md else 1
+
         modules_count = mod_w * mod_h
         w_mod = w_eff / mod_w
         h_mod = h_eff / mod_h
+        return mod_w, mod_h, modules_count, w_mod, h_mod
 
+    @staticmethod
+    def _calc_body_and_blade_specs(parent_id, damper_type, brand, w, h, w_eff, h_eff, d_eff, w_mod, h_mod, modules_count, is_round, is_clamped, is_mfd, is_fd, is_fd_ei, is_md, is_nrd, is_prd, is_vcd_vit, is_fd_vcd, ei_rating, mfd_mode, model_code, motor_brand):
+        """Tính chiều dài vỏ van, độ dày tôn thân/cánh, lá cánh đơn/đa cánh, trục, bạc đồng và bánh răng."""
         if is_round:
             l_body = 175 if int(round(d_eff)) == 120 else int(round(d_eff + 50.0))
             if is_mfd or is_fd or ei_rating > 0 or d_eff > 500.0:
@@ -213,6 +283,7 @@ class Agent05_DamperBOM:
 
         thickness_blade = 1.15 if (is_mfd or is_fd or is_md or ei_rating > 0) else 0.75
         is_single_blade = (h_mod <= 250.0) or (model_code in ("1.01", "1.02", "1.03", "2.01")) or (is_mfd and (mfd_mode == "single_fslf24" or motor_brand.upper() == "KLB"))
+        blade_factor_per_mod = 1.0
         if is_fd_ei or is_mfd:
             if is_single_blade:
                 blade_factor_per_mod = 1.0
@@ -276,6 +347,11 @@ class Agent05_DamperBOM:
                 "note": f"Cơ cấu liên động cánh ({modules_count} bộ)"
             })
 
+        return l_body, thickness_body, is_single_blade, blade_factor_per_mod, mod_note, components
+
+    @staticmethod
+    def _append_actuator_or_mechanism(parent_id, w_mod, h_mod, modules_count, mod_note, is_md, is_fd, is_mfd, is_nrd, is_prd, is_single_blade, mfd_mode, model_code, motor_brand, components):
+        """Chọn động cơ van (Belimo / KLB / Honeywell), cầu chì FD, đối trọng PRD/NRD hoặc tay gạt VCD."""
         cross_section_mod_m2 = (w_mod * h_mod) / 1_000_000.0
         if is_md:
             if motor_brand.upper() == "KLB":
@@ -322,7 +398,6 @@ class Agent05_DamperBOM:
                 "note": f"Cầu chì kiểm định PCCC ({modules_count} cái)"
             })
         elif is_mfd:
-            s_mod_m2 = (w_mod * h_mod) / 1_000_000.0
             if model_code == "1.03" or motor_brand.upper() == "KLB":
                 act_id = "MAT-ACTUATOR-KLB-V6006FS500S"
                 act_name = "Động cơ chặn lửa ON/OFF KLB (Swin V6006FS500S EI90) 5Nm"
@@ -379,7 +454,9 @@ class Agent05_DamperBOM:
                 "note": f"Tay gạt khóa vị trí nan (S={cross_section_mod_m2:.2f}m2)"
             })
 
-        z_total_m2 = ((w_eff + h_eff) * 2.0 * 300.0 + w_eff * h_eff) / 1_000_000.0
+    @staticmethod
+    def _append_fire_insulation_components(parent_id, damper_type, w_eff, h_eff, w_mod, h_mod, l_body, modules_count, mod_note, z_total_m2, blade_factor_per_mod, is_single_blade, is_fd_ei, is_mfd, is_md, ei_rating, mat_price_map, components):
+        """Bọc tấm chống cháy 10mm/20mm cho FD EI & MFD, hoặc bọc EI 320,000 đ/m2 cho VCD/NRD/PRD có EI."""
         if is_fd_ei or is_mfd:
             area_fb10_body = ((w_mod + h_mod) * 2.0 * (l_body + 100.0) / 1_000_000.0) * 2.0 * modules_count
             components.append({
@@ -419,7 +496,6 @@ class Agent05_DamperBOM:
                 "unit": "m2",
                 "note": f"Ốp 2 mặt cánh tấm 10mm ({blade_fb_note})"
             })
-
             components.append({
                 "sub_key": f"{parent_id}-SPRING-BOX",
                 "name": "Hộp lò xo van chặn lửa FD/MFD",
@@ -439,8 +515,7 @@ class Agent05_DamperBOM:
                 "note": f"Keo silicon chống cháy & phụ kiện lắp ghép ({modules_count} bộ)"
             })
         elif ei_rating > 0 and not is_md and max(w_eff, h_eff) > 150.0:
-            from swind_utils import get_master_price_map
-            p_fb10 = get_master_price_map().get("MAT-FIREBOARD-10MM-BODY", 518500.0)
+            p_fb10 = mat_price_map.get("MAT-FIREBOARD-10MM-BODY", 518500.0)
             area_fb10_ei = (z_total_m2 * 320000.0) / (p_fb10 * 1.593)
             components.append({
                 "sub_key": f"{parent_id}-FB10-EI",
@@ -452,115 +527,118 @@ class Agent05_DamperBOM:
                 "note": f"Bọc chống cháy EI{ei_rating} quanh thân van{mod_note}"
             })
 
-        from swind_utils import get_master_price_map, get_master_bom_rules
-        mat_price_map = get_master_price_map()
-        damper_rules = get_master_bom_rules().get("damper_rules", {})
-        mfg_markup = float(damper_rules.get("mfg_markup_factor", 1.593))
-
-        if is_round:
-            round_tbl = damper_rules.get("round_damper_table", {})
-            d_key = str(int(round(d_eff)))
-            z_round_m2 = (3.14 * d_eff * l_body + d_eff * d_eff) / 1_000_000.0
-            if d_key in round_tbl:
-                row_t = round_tbl[d_key]
-                if is_fd or is_mfd:
-                    base_round_sell = float(row_t.get("fd", 192000.0))
-                elif is_fd_vcd:
-                    base_round_sell = float(row_t.get("fd_vcd", float(row_t.get("vcd", 103000.0)) + 100000.0))
-                elif is_vcd_vit:
-                    base_round_sell = float(row_t.get("vcd_vit", 245000.0))
-                elif is_nrd or is_prd:
-                    base_round_sell = float(row_t.get("nrd", 74000.0))
-                elif is_md:
-                    base_round_sell = float(row_t.get("md_body", 79000.0))
-                else:
-                    base_round_sell = float(row_t.get("vcd", 103000.0))
+    @staticmethod
+    def _price_round_damper(d_eff, l_body, is_fd, is_mfd, is_fd_ei, is_fd_vcd, is_vcd_vit, is_nrd, is_prd, is_md, ei_rating, damper_rules):
+        """Tính giá cơ khí van tròn chuẩn Swind (tra bảng round_damper_table hoặc tính theo diện tích z_round_m2)."""
+        round_tbl = damper_rules.get("round_damper_table", {})
+        d_key = str(int(round(d_eff)))
+        z_round_m2 = (3.14 * d_eff * l_body + d_eff * d_eff) / 1_000_000.0
+        if d_key in round_tbl:
+            row_t = round_tbl[d_key]
+            if is_fd or is_mfd:
+                base_round_sell = float(row_t.get("fd", 192000.0))
+            elif is_fd_vcd:
+                base_round_sell = float(row_t.get("fd_vcd", float(row_t.get("vcd", 103000.0)) + 100000.0))
+            elif is_vcd_vit:
+                base_round_sell = float(row_t.get("vcd_vit", 245000.0))
+            elif is_nrd or is_prd:
+                base_round_sell = float(row_t.get("nrd", 74000.0))
+            elif is_md:
+                base_round_sell = float(row_t.get("md_body", 79000.0))
             else:
-                if d_eff > 500.0:
-                    pkv_r = 400200.0
-                    c_acc_r = 136000.0 if is_nrd else (152000.0 if is_prd else (270000.0 if is_vcd_vit else (210000.0 if (is_fd or is_mfd) else (160000.0 if is_md else 156000.0))))
-                else:
-                    pkv_r = 236628.0 if d_eff <= 300.0 else (271026.0 if d_eff <= 400.0 else 321300.0)
-                    c_acc_r = 55000.0 if (is_nrd or is_prd) else (220000.0 if is_vcd_vit else (156000.0 if (is_fd or is_mfd) else 86000.0))
-                base_round_sell = _excel_round((z_round_m2 * pkv_r + c_acc_r) * 1.15, -3)
-                if is_fd_vcd:
-                    base_round_sell += 100000.0
-            ei_rate = float(damper_rules.get("vcd_nrd_ei_wrapping_rate_per_m2", 320000.0))
-            ei_sell = (z_round_m2 * ei_rate) if (ei_rating > 0 and not (is_fd_ei or is_mfd)) else 0.0
-            target_mech_sell = base_round_sell + ei_sell
-        elif is_fd_ei or is_mfd:
-            # Công thức gốc BG VAN chuẩn 2026 (R30..R34, R36..R41)
-            # Thay thế đa thức chia 149 (legacy Haus Dalat) bằng tính từng thành phần:
-            #   O  = ROUND((Z_m2 × pkv + c_acc) × 1.15, -3)   ← vỏ + phụ kiện
-            #   AQ = chu_vi × 4 × 300mm × 700,000               ← tấm 10mm bọc thân (2 lớp)
-            #   AR = diện tích tấm 20mm lõi cánh × 800,000
-            #   AS = diện tích tấm 10mm ốp 2 mặt cánh × 700,000
-            #   AY = pkv × S_m2 × 2                             ← tôn tấm bọc
-            #   + 100,000 (hộp lò xo) × 1.25 (mult)
-            z_mod_m2 = ((w_mod + h_mod) * 2.0 * 300.0 + w_mod * h_mod) / 1_000_000.0
-            o_mod = _excel_round((z_mod_m2 * 321300.0 + 153000.0) * 1.15, -3)
-            aq_mod = (w_mod + h_mod) * 4.0 * 300.0 / 1_000_000.0 * 700000.0
-            if is_single_blade:
-                ar_mod = (w_mod / 1000.0) * (h_mod / 1000.0) * 800000.0
-                as_mod = (w_mod / 1000.0) * (h_mod / 1000.0) * 2.0 * 700000.0
-            else:
-                ar_mod = ((w_mod - 20.0) / 1000.0 * 0.21 * blade_factor_per_mod) * 1.1 * 800000.0
-                as_mod = ((w_mod / 1000.0) * 0.21 * blade_factor_per_mod * 2.0) * 1.1 * 700000.0
-            ay_mod = 321300.0 * (w_mod / 1000.0) * (h_mod / 1000.0) * 2.0
-            target_mech_sell = (o_mod + aq_mod + ar_mod + as_mod + ay_mod + 100000.0) * 1.25 * modules_count
-        elif is_fd_normal:
-            pkv = 321300.0
-            if w_eff > 2000.0 or h_eff > 2000.0:
-                c_acc = 566000.0
-                mult = 1.50
-            elif w_eff >= 1000.0 or h_eff >= 1000.0:
-                c_acc = 366000.0
-                mult = 1.25
-            elif h_eff > 600.0:
-                c_acc = 250000.0
-                mult = 1.0
-            elif h_eff > 400.0:
-                c_acc = 242000.0
-                mult = 1.0
-            elif h_eff > 250.0:
-                c_acc = 191000.0
-                mult = 1.0
-            else:
-                c_acc = 153000.0
-                mult = 1.0
-            target_mech_sell = _excel_round((z_total_m2 * pkv + c_acc) * 1.15, -3) * mult
+                base_round_sell = float(row_t.get("vcd", 103000.0))
         else:
-            if w_eff > 2000.0 or h_eff > 2000.0:
-                pkv = 321300.0
-                c_acc = 622000.0 if is_prd else (452000.0 if is_nrd else (676000.0 if is_vcd_vit else (577000.0 if is_md else 545000.0)))
-                mult = 1.25 if is_md else 1.50
-            elif w_eff >= 1000.0 or h_eff >= 1000.0:
-                pkv = 321300.0
-                c_acc = 422000.0 if is_prd else (252000.0 if is_nrd else (476000.0 if is_vcd_vit else 345000.0))
-                mult = 1.15 if is_prd else (1.25 if (is_nrd or is_vcd_vit or ei_rating > 0 or h_eff > 300.0) else 1.10)
-            elif h_eff > 600.0:
-                pkv = 321300.0
-                c_acc = 252000.0 if is_prd else (152000.0 if is_nrd else (360000.0 if is_vcd_vit else 261000.0))
-                mult = 1.0
-            elif h_eff > 400.0:
-                pkv = 271026.0
-                c_acc = 232000.0 if is_prd else (148000.0 if is_nrd else (352000.0 if is_vcd_vit else 224000.0))
-                mult = 1.0
-            elif h_eff > 250.0:
-                pkv = 236628.0
-                c_acc = 154000.0 if is_prd else (97000.0 if is_nrd else (301000.0 if is_vcd_vit else (156000.0 if (h_eff >= 400.0 and w_eff >= 400.0) else 146000.0)))
-                mult = 1.0
+            if d_eff > 500.0:
+                pkv_r = 400200.0
+                c_acc_r = 136000.0 if is_nrd else (152000.0 if is_prd else (270000.0 if is_vcd_vit else (210000.0 if (is_fd or is_mfd) else (160000.0 if is_md else 156000.0))))
             else:
-                pkv = 236628.0
-                c_acc = 95000.0 if is_prd else (59000.0 if is_nrd else (213000.0 if is_vcd_vit else 101000.0))
-                mult = 1.0
-            base_mech_sell = _excel_round((z_total_m2 * pkv + c_acc) * 1.15, -3) * mult
+                pkv_r = 236628.0 if d_eff <= 300.0 else (271026.0 if d_eff <= 400.0 else 321300.0)
+                c_acc_r = 55000.0 if (is_nrd or is_prd) else (220000.0 if is_vcd_vit else (156000.0 if (is_fd or is_mfd) else 86000.0))
+            base_round_sell = _excel_round((z_round_m2 * pkv_r + c_acc_r) * 1.15, -3)
             if is_fd_vcd:
-                base_mech_sell += 100000.0
-            ei_rate = float(damper_rules.get("vcd_nrd_ei_wrapping_rate_per_m2", 320000.0))
-            ei_sell = (z_total_m2 * ei_rate) if (ei_rating > 0 and not is_md and max(w_eff, h_eff) > 150.0) else 0.0
-            target_mech_sell = base_mech_sell + ei_sell
+                base_round_sell += 100000.0
+        ei_rate = float(damper_rules.get("vcd_nrd_ei_wrapping_rate_per_m2", 320000.0))
+        ei_sell = (z_round_m2 * ei_rate) if (ei_rating > 0 and not (is_fd_ei or is_mfd)) else 0.0
+        return base_round_sell + ei_sell
 
+    @staticmethod
+    def _price_fire_damper_ei_or_mfd(w_mod, h_mod, modules_count, blade_factor_per_mod, is_single_blade):
+        """
+        Công thức gốc BG VAN chuẩn 2026 Swind (R30..R34, R36..R41) cho FD EI & MFD:
+          - O  = ROUND((Z_m2 * 321,300 + 153,000) * 1.15, -3)
+          - AQ = chu_vi * 4 * 300mm * 700,000 (tấm 10mm bọc thân 2 lớp)
+          - AR = diện tích tấm 20mm lõi cánh * 800,000
+          - AS = diện tích tấm 10mm ốp 2 mặt cánh * 700,000
+          - AY = 321,300 * S_m2 * 2 (tôn tấm bọc)
+          - Tổng cơ khí = (O + AQ + AR + AS + AY + 100,000) * 1.25 * modules_count
+        """
+        z_mod_m2 = ((w_mod + h_mod) * 2.0 * 300.0 + w_mod * h_mod) / 1_000_000.0
+        o_mod = _excel_round((z_mod_m2 * 321300.0 + 153000.0) * 1.15, -3)
+        aq_mod = (w_mod + h_mod) * 4.0 * 300.0 / 1_000_000.0 * 700000.0
+        if is_single_blade:
+            ar_mod = (w_mod / 1000.0) * (h_mod / 1000.0) * 800000.0
+            as_mod = (w_mod / 1000.0) * (h_mod / 1000.0) * 2.0 * 700000.0
+        else:
+            ar_mod = ((w_mod - 20.0) / 1000.0 * 0.21 * blade_factor_per_mod) * 1.1 * 800000.0
+            as_mod = ((w_mod / 1000.0) * 0.21 * blade_factor_per_mod * 2.0) * 1.1 * 700000.0
+        ay_mod = 321300.0 * (w_mod / 1000.0) * (h_mod / 1000.0) * 2.0
+        return (o_mod + aq_mod + ar_mod + as_mod + ay_mod + 100000.0) * 1.25 * modules_count
+
+    @staticmethod
+    def _price_normal_fd_damper(w_eff, h_eff, z_total_m2):
+        """Tính giá cơ khí van chặn lửa cầu chì thường FD (không EI)."""
+        pkv = 321300.0
+        if w_eff > 2000.0 or h_eff > 2000.0:
+            c_acc, mult = 566000.0, 1.50
+        elif w_eff >= 1000.0 or h_eff >= 1000.0:
+            c_acc, mult = 366000.0, 1.25
+        elif h_eff > 600.0:
+            c_acc, mult = 250000.0, 1.0
+        elif h_eff > 400.0:
+            c_acc, mult = 242000.0, 1.0
+        elif h_eff > 250.0:
+            c_acc, mult = 191000.0, 1.0
+        else:
+            c_acc, mult = 153000.0, 1.0
+        return _excel_round((z_total_m2 * pkv + c_acc) * 1.15, -3) * mult
+
+    @staticmethod
+    def _price_square_standard_damper(w_eff, h_eff, z_total_m2, is_prd, is_nrd, is_vcd_vit, is_md, is_fd_vcd, ei_rating, damper_rules):
+        """Tính giá cơ khí van vuông VCD, VCD trục vít, NRD, PRD, MD, FD+VCD theo bậc kích thước + bọc EI nếu có."""
+        if w_eff > 2000.0 or h_eff > 2000.0:
+            pkv = 321300.0
+            c_acc = 622000.0 if is_prd else (452000.0 if is_nrd else (676000.0 if is_vcd_vit else (577000.0 if is_md else 545000.0)))
+            mult = 1.25 if is_md else 1.50
+        elif w_eff >= 1000.0 or h_eff >= 1000.0:
+            pkv = 321300.0
+            c_acc = 422000.0 if is_prd else (252000.0 if is_nrd else (476000.0 if is_vcd_vit else 345000.0))
+            mult = 1.15 if is_prd else (1.25 if (is_nrd or is_vcd_vit or ei_rating > 0 or h_eff > 300.0) else 1.10)
+        elif h_eff > 600.0:
+            pkv = 321300.0
+            c_acc = 252000.0 if is_prd else (152000.0 if is_nrd else (360000.0 if is_vcd_vit else 261000.0))
+            mult = 1.0
+        elif h_eff > 400.0:
+            pkv = 271026.0
+            c_acc = 232000.0 if is_prd else (148000.0 if is_nrd else (352000.0 if is_vcd_vit else 224000.0))
+            mult = 1.0
+        elif h_eff > 250.0:
+            pkv = 236628.0
+            c_acc = 154000.0 if is_prd else (97000.0 if is_nrd else (301000.0 if is_vcd_vit else (156000.0 if (h_eff >= 400.0 and w_eff >= 400.0) else 146000.0)))
+            mult = 1.0
+        else:
+            pkv = 236628.0
+            c_acc = 95000.0 if is_prd else (59000.0 if is_nrd else (213000.0 if is_vcd_vit else 101000.0))
+            mult = 1.0
+        base_mech_sell = _excel_round((z_total_m2 * pkv + c_acc) * 1.15, -3) * mult
+        if is_fd_vcd:
+            base_mech_sell += 100000.0
+        ei_rate = float(damper_rules.get("vcd_nrd_ei_wrapping_rate_per_m2", 320000.0))
+        ei_sell = (z_total_m2 * ei_rate) if (ei_rating > 0 and not is_md and max(w_eff, h_eff) > 150.0) else 0.0
+        return base_mech_sell + ei_sell
+
+    @staticmethod
+    def _scale_components_to_target_sell(components, target_mech_sell, mat_price_map, mfg_markup):
+        """Quy đổi định mức các thành phần vật tư liên tục để giá bán cơ khí khớp 100% target_mech_sell."""
         continuous_suffixes = ("-BODY", "-BLADE", "-AXLE", "-FB10-BODY", "-FB20-BLADE", "-FB10-BLADE")
         cont_sell = 0.0
         disc_sell = 0.0
@@ -585,16 +663,3 @@ class Agent05_DamperBOM:
             for comp in components:
                 if "MAT-ACTUATOR" not in comp["mat_id"]:
                     comp["calc_qty"] *= scale_all
-
-        return {
-            "category": "VAN_GIO",
-            "modules_count": modules_count,
-            "mod_w": mod_w,
-            "mod_h": mod_h,
-            "w_eff": w_eff,
-            "h_eff": h_eff,
-            "l_body": l_body,
-            "thickness_body": thickness_body,
-            "is_single_blade": is_single_blade,
-            "components": components
-        }

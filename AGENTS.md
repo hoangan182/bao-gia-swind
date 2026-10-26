@@ -10,9 +10,12 @@
      ./venv/bin/python src/swind_master_runner.py "<đường_dẫn_file_BOQ>" --non-interactive --auto-accept [các_cờ_tùy_chọn]
      ```
      *(Hoặc `python3 src/swind_master_runner.py ...` — script đã tự động kích hoạt `./venv/bin/python`).*
-   - **TUYỆT ĐỐI KHÔNG** viết thêm script Python phụ để mở lại file `_BAO_GIA.xlsx` đọc giá sau khi chạy xong! `src/swind_master_runner.py` đã tự động in trực tiếp **BẢNG TỔNG HỢP GIÁ TRỊ BÁO GIÁ DỰ ÁN** (Số dòng, Trước VAT, VAT 8%, Tổng sau VAT) và đường dẫn **File Báo Giá Cuối Cùng** ở định dạng Markdown ngay trên màn hình console.
+   - **TUYỆT ĐỐI KHÔNG** viết thêm script Python phụ để mở lại file báo giá đọc giá sau khi chạy xong! `src/swind_master_runner.py` đã tự động in trực tiếp **BÁO CÁO QUÉT TOÀN BỘ BOQ (`Full-BOQ Coverage Audit`)**, **BẢNG TỔNG HỢP GIÁ TRỊ BÁO GIÁ DỰ ÁN** (Số dòng, Trước VAT, VAT 8%, Tổng sau VAT) và đường dẫn **File Báo Giá Cuối Cùng** ở định dạng Markdown ngay trên màn hình console.
+   - **QUY TẮC QUÉT TOÀN BỘ BOQ & CHỐNG SÓT DÒNG (ZERO-OMISSION & TITLE INHERITANCE):**
+     1. Hệ thống và Agent bắt buộc quét toàn bộ các cột của BOQ (cột Tên tiếng Việt, cột `DESCRIPTION` tiếng Anh, cột `SPEC`/Quy cách, Ghi chú) và toàn bộ các dòng **Title / Hạng mục cha** để kế thừa 100% thông số kỹ thuật (`OBD`, `lưới chắn chim / LCCT`, `lọc G4`, `EI`, `độ dày`...) xuống các dòng item con bên dưới.
+     2. Kiểm tra mục `[Agent 01 - Full-BOQ Coverage Audit]` trên console sau khi chạy: nếu phát hiện bất kỳ dòng nào có khối lượng/kích thước thuộc phạm vi báo giá bị cảnh báo `⚠️ [CẢNH BÁO SÓT DÒNG]` hoặc chưa kế thừa đúng Title cha (do cách trình bày mới của từng dự án), phải kiểm tra và cập nhật rule bóc tách ngay để không bỏ sót bất kỳ mặt hàng nào.
    - **QUY TẮC XUẤT BÁO CÁO CHO NGƯỜI DÙNG:**
-     1. **Chỉ liệt kê duy nhất File Báo Giá Cuối Cùng** (`<Project_Name>_BAO_GIA.xlsx`), tuyệt đối không liệt kê hàng loạt các file báo giá thành phần hay file dự toán nội bộ trung gian.
+     1. **Chỉ liệt kê duy nhất File Báo Giá Cuối Cùng** (`output/<Project_Name>/<Original_File_Name>.xlsx` giữ nguyên tên file gốc, gồm Sheet BOQ gốc + Sheet `BG` đã đóng khung), tuyệt đối không liệt kê hàng loạt các file báo giá thành phần hay file dự toán nội bộ trung gian.
      2. **Về giá trị: Chỉ in Bảng Tổng Hợp** (theo các sheet/phân khu và Tổng cộng toàn dự án), **bỏ Bảng kết quả báo giá chi tiết** từng mặt hàng.
 
 ### Bảng tham số CLI đầy đủ của `src/swind_master_runner.py`:
@@ -25,6 +28,24 @@
 - `--dual-options`: Tính đồng thời 2 phương án Đơn cánh và Đa cánh (Mặc định: Báo giá chuẩn theo BOQ).
 - `--merge-sheets`: Gộp tất cả các sheet vào 1 file duy nhất (Mặc định: Tách riêng từng sheet).
 - `--allow-ei`: Cờ tương thích cho phép áp giá chống cháy EI (Mặc định Swind tự động nhận diện EI theo BOQ).
+- `--duct-formula <standard|bienia|cand>`: Chọn bộ công thức tính diện tích phụ kiện ống gió (`standard` mặc định Swind, `bienia`, hoặc `cand`).
+
+---
+
+## 🛠️ QUY TẮC TỐC ĐA KHI KIỂM TRA / SỬA / THÊM CÔNG THỨC TÍNH (`03_FORMULA_INDEX.md` + `swind_item_inspector.py`)
+
+Khi người dùng hỏi *"Sao mặt hàng X ra diện tích/giá như vậy?"* hoặc yêu cầu *"Điều chỉnh/thêm công thức tính cho phụ kiện/cửa/van Y"*:
+1. **KHÔNG ĐỌC TOÀN BỘ FILE LỚN:** Các công thức trong `src/agent_04_bom_duct.py`, `src/agent_05_bom_damper.py`, `src/agent_06_bom_diffuser.py` và `src/agent_01_boq_extractor.py` đã được chia nhỏ thành từng hàm độc lập (15–115 dòng/hàm). Hãy tra bảng tọa độ dòng trong [`.agents/rules/03_FORMULA_INDEX.md`](file:///Users/hoangan/work/PCCC/swind/.agents/rules/03_FORMULA_INDEX.md) và chỉ gọi `read_file(Path, StartLine, EndLine)` đúng hàm cần sửa.
+2. **DÙNG NGAY `src/swind_item_inspector.py` ĐỂ SOI VẾT CÔNG THỨC TRONG 0.1 GIÂY** (in ra cả tên file & số dòng code của hàm tính):
+   ```bash
+   ./venv/bin/python src/swind_item_inspector.py "Cút 90 độ 800x400 tôn 0.75"
+   ./venv/bin/python src/swind_item_inspector.py "Van chặn lửa động cơ MFD 1200x800 EI90"
+   ```
+3. **CHẠY KIỂM THỬ HỒI QUY 53 MẶT HÀNG CHUẨN TRƯỚC & SAU KHI SỬA CÔNG THỨC:**
+   ```bash
+   ./venv/bin/python src/swind_item_inspector.py --self-test
+   ```
+   *(Nếu chủ đích thay đổi công thức đã được duyệt, cập nhật lại baseline bằng `./venv/bin/python src/swind_item_inspector.py --save-baseline`).*
 
 ---
 

@@ -240,39 +240,60 @@ class SwindExcelBuilder:
         title_font = Font(name="Times New Roman", size=16, bold=True, color="002060")
         tbl_header_font = Font(name="Times New Roman", size=10, bold=True, color="FFFFFF")
         tbl_header_fill = PatternFill("solid", fgColor="002060")
+        thin_side = Side(style='thin', color='000000')
         thin_border = Border(
-            left=Side(style='thin', color='BFBFBF'),
-            right=Side(style='thin', color='BFBFBF'),
-            top=Side(style='thin', color='BFBFBF'),
-            bottom=Side(style='thin', color='BFBFBF')
+            left=thin_side,
+            right=thin_side,
+            top=thin_side,
+            bottom=thin_side
         )
+        bottom_line_border = Border(bottom=thin_side)
 
         ws.cell(2, 3, "CÔNG TY CỔ PHẦN TẬP ĐOÀN QUỐC TẾ SLAND").font = navy_font
         ws.cell(3, 3, "VPGD: SỐ 49, Ngõ 1295 Giải Phóng, Phường Hoàng Mai, TP Hà Nội").font = normal_font
         ws.cell(4, 3, "Nhà máy: Thôn Nhân Hiền - xã Thường Tín - TP Hà Nội").font = normal_font
         ws.cell(5, 3, "Hotline: 082 5577 999").font = bold_font
+        ws.merge_cells("B3:B4")
         for r_idx in range(2, 6):
             ws.merge_cells(start_row=r_idx, start_column=3, end_row=r_idx, end_column=16)
+        for c_idx in range(1, 17):
+            ws.cell(5, c_idx).border = bottom_line_border
 
-        ws.cell(6, 1, f"BẢNG BÁO GIÁ ({option_label})").font = title_font
+        title_text = "BẢNG BÁO GIÁ" if (not option_label or "TIÊU CHUẨN" in option_label) else f"BẢNG BÁO GIÁ ({option_label})"
+        ws.cell(6, 1, title_text).font = title_font
         ws.merge_cells("A6:P6")
         ws.cell(6, 1).alignment = Alignment(horizontal="center", vertical="center")
-        ws.row_dimensions[6].height = 28
+        ws.row_dimensions[6].height = 30
 
         ws.cell(7, 1, "Khách hàng : ").font = bold_font
         ws.merge_cells("A7:L7")
-        ws.cell(7, 13, "Số hiệu").font = bold_font
+        ws.cell(7, 13, "Seri number\n Số hiệu").font = bold_font
+        ws.merge_cells("N7:P7")
         ws.cell(8, 1, "Địa chỉ :").font = bold_font
         ws.merge_cells("A8:L8")
-        ws.cell(8, 13, "PT Kinh doanh").font = bold_font
+        ws.cell(8, 13, "Sales executive\n PT Kinh doanh").font = bold_font
+        ws.merge_cells("N8:P8")
         ws.cell(9, 1, "Người nhận : ").font = bold_font
         ws.merge_cells("A9:L9")
-        ws.cell(9, 13, "Điện thoại").font = bold_font
+        ws.cell(9, 13, "Mobile\n Điện thoại").font = bold_font
+        ws.merge_cells("N9:P9")
         ws.cell(10, 1, "Email: ").font = bold_font
         ws.merge_cells("A10:B10")
         ws.cell(10, 3, "Số điện thoại :").font = bold_font
         ws.merge_cells("C10:L10")
         ws.cell(10, 13, "Dự án").font = bold_font
+        ws.merge_cells("N10:P10")
+
+        for r_idx, r_h in ((7, 26), (8, 22), (9, 22), (10, 24)):
+            ws.row_dimensions[r_idx].height = r_h
+            for c_idx in range(1, 17):
+                c_info = ws.cell(r_idx, c_idx)
+                c_info.border = thin_border
+                c_info.alignment = Alignment(
+                    horizontal="center" if c_idx == 13 else "left",
+                    vertical="center",
+                    wrap_text=True
+                )
 
         # Table Headers (Rows 11..13)
         ws.cell(11, 1, "STT")
@@ -337,7 +358,7 @@ class SwindExcelBuilder:
             self._setup_quotation_sheet_header(ws_bfn, "PHƯƠNG ÁN 2: VAN MFD ĐA CÁNH - ĐỘNG CƠ BELIMO BFN24")
             worksheets = [(ws_fslf, "fslf"), (ws_bfn, "bfn")]
         else:
-            ws_std = self.wb.create_sheet("BẢNG BÁO GIÁ TIÊU CHUẨN", 0)
+            ws_std = self.wb.create_sheet("BG", 0)
             self._setup_quotation_sheet_header(ws_std, "BẢNG BÁO GIÁ THIẾT BỊ VÀ VẬT TƯ HVAC (TIÊU CHUẨN BOQ)")
             worksheets = [(ws_std, "std")]
 
@@ -347,11 +368,25 @@ class SwindExcelBuilder:
         section_fill = PatternFill("solid", fgColor="D9E1F2")
         section_font = Font(name="Times New Roman", size=10, bold=True, color="002060")
         row_font = Font(name="Times New Roman", size=10, bold=False)
+        thin_side = Side(style='thin', color='000000')
+        hair_side = Side(style='hair', color='000000')
         thin_border = Border(
-            left=Side(style='thin', color='D9D9D9'),
-            right=Side(style='thin', color='D9D9D9'),
-            top=Side(style='thin', color='D9D9D9'),
-            bottom=Side(style='thin', color='D9D9D9')
+            left=thin_side,
+            right=thin_side,
+            top=thin_side,
+            bottom=thin_side
+        )
+        item_border = Border(
+            left=thin_side,
+            right=thin_side,
+            top=hair_side,
+            bottom=hair_side
+        )
+        first_item_border = Border(
+            left=thin_side,
+            right=thin_side,
+            top=thin_side,
+            bottom=hair_side
         )
 
         current_section = None
@@ -389,10 +424,11 @@ class SwindExcelBuilder:
                         ws.cell(r_num, c_i).border = thin_border
                 else:
                     r_vals = vals_std if mode == "std" else ((vals_fslf or vals_std) if mode == "fslf" else (vals_bfn or vals_std))
+                    row_bdr = first_item_border if r_num == 14 else item_border
                     for c_i, val in enumerate(r_vals, 1):
                         cell = ws.cell(r_num, c_i, value=val)
                         cell.font = row_font
-                        cell.border = thin_border
+                        cell.border = row_bdr
                         if c_i in (1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12):
                             cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
                         elif c_i in (13, 14, 15):
@@ -443,7 +479,7 @@ class SwindExcelBuilder:
             def _is_sec_hdr(c2_cell, orig_name_s, orig_c_v, orig_u_v, orig_q_v):
                 if orig_q_v is not None and (not isinstance(orig_q_v, str) or orig_q_v.strip() != ""):
                     return False
-                if orig_u_v is not None and str(orig_u_v).strip() != "":
+                if orig_u_v is not None and str(orig_u_v).strip() != "" and not str(orig_u_v).strip().replace('.', '').isdigit():
                     return False
                 if orig_c_v is not None and str(orig_c_v).strip() != "":
                     return False
@@ -589,24 +625,65 @@ class SwindExcelBuilder:
                 _write_row_cells(curr_row, row_std, row_fslf, row_bfn, is_section=False)
                 curr_row += 1
 
-        # Footer Totals on quotation sheets
+        # Footer Totals on quotation sheets (đóng khung chuẩn mẫu Swind)
         last_item_row = curr_row - 1
-        total_font = Font(name="Times New Roman", size=11, bold=True, color="FF0000")
+        total_font = Font(name="Times New Roman", size=10, bold=True)
+        total_fill = PatternFill("solid", fgColor="FFC000")
+        tot_sub_bdr = Border(left=thin_side, right=thin_side, top=thin_side, bottom=hair_side)
+        tot_vat_bdr = Border(left=thin_side, right=thin_side, top=hair_side, bottom=hair_side)
+        tot_end_bdr = Border(left=thin_side, right=thin_side, top=hair_side, bottom=thin_side)
+
+        note_hdr_font = Font(name="Times New Roman", size=11, bold=True)
+        note_txt_font = Font(name="Times New Roman", size=9, bold=False)
+        note_it_font = Font(name="Times New Roman", size=9, bold=False, italic=True)
+        note_ul_font = Font(name="Times New Roman", size=9, bold=True, underline="single")
+        confirm_font = Font(name="Arial", size=10, bold=True, italic=True, underline="single")
+
         for ws, _ in worksheets:
-            r_sub = curr_row + 1
-            r_vat = curr_row + 2
-            r_tot = curr_row + 3
-            ws.cell(r_sub, 2, "TỔNG CỘNG (CHƯA BAO GỒM VAT):").font = total_font
+            r_sub = curr_row
+            r_vat = curr_row + 1
+            r_tot = curr_row + 2
+
+            ws.cell(r_sub, 1, "Total/ Tổng Trước thuế").font = total_font
             ws.cell(r_sub, 15, f"=SUBTOTAL(9,O14:O{last_item_row})").font = total_font
             ws.cell(r_sub, 15).number_format = "#,##0"
 
-            ws.cell(r_vat, 2, "THUẾ GTGT (VAT 8%):").font = total_font
+            ws.cell(r_vat, 1, "VAT 8%").font = total_font
             ws.cell(r_vat, 15, f"=ROUND(O{r_sub}*0.08, 0)").font = total_font
             ws.cell(r_vat, 15).number_format = "#,##0"
 
-            ws.cell(r_tot, 2, "TỔNG CỘNG THANH TOÁN (ĐÃ GỒM VAT 8%):").font = total_font
+            ws.cell(r_tot, 1, "Total Amount (including VAT 8%)/ Tổng sau thuế").font = total_font
             ws.cell(r_tot, 15, f"=O{r_sub}+O{r_vat}").font = total_font
             ws.cell(r_tot, 15).number_format = "#,##0"
+
+            for r_t, bdr_t in ((r_sub, tot_sub_bdr), (r_vat, tot_vat_bdr), (r_tot, tot_end_bdr)):
+                ws.merge_cells(f"A{r_t}:N{r_t}")
+                ws.row_dimensions[r_t].height = 28
+                ws.cell(r_t, 1).alignment = Alignment(horizontal="right", vertical="center")
+                ws.cell(r_t, 15).alignment = Alignment(horizontal="right", vertical="center")
+                for c_i in range(1, 17):
+                    c_tot = ws.cell(r_t, c_i)
+                    c_tot.fill = total_fill
+                    c_tot.border = bdr_t
+
+            # Khối điều khoản & thông tin thụ hưởng bên dưới bảng tổng
+            r_f = r_tot + 2
+            ws.cell(r_f, 2, "- Ghi chú : ").font = note_hdr_font
+            ws.cell(r_f + 1, 2, "* Thời hạn báo giá: Báo giá có giá trị trong vòng 30 ngày kể từ ngày báo.").font = note_txt_font
+            ws.cell(r_f + 1, 14, "XÁC NHẬN ĐẶT HÀNG").font = confirm_font
+            ws.merge_cells(f"N{r_f+1}:O{r_f+1}")
+            ws.cell(r_f + 1, 14).alignment = Alignment(horizontal="center", vertical="center")
+            ws.cell(r_f + 2, 2, "* Thời gian giao hàng: theo thực tế từng đơn hàng").font = note_txt_font
+            ws.cell(r_f + 3, 2, " - Van gió & Phụ kiện : Tôn Hoa Sen Z08/Z18").font = note_txt_font
+            ws.cell(r_f + 4, 2, " - Cửa gió và Phụ kiện : Nhôm A6063 T5 - Sơn Tĩnh điện mầu trắng .").font = note_txt_font
+            ws.cell(r_f + 5, 2, "ĐIỀU KHOẢN THANH TOÁN VÀ GIAO HÀNG").font = note_ul_font
+            ws.cell(r_f + 6, 2, "* Điều kiện thanh toán: Tạm ứng 30%, Thanh toán bằng bảo lãnh thanh toán thời hạn 35 ngày ").font = note_txt_font
+            ws.cell(r_f + 7, 2, "Xin vui lòng liên hệ với chúng tôi nếu quý khách có cần thêm các yêu cầu nào khác.").font = note_it_font
+            ws.cell(r_f + 8, 2, " Đơn vị thụ hưởng : ").font = note_hdr_font
+            ws.cell(r_f + 9, 2, "Công ty Cổ phần tập đoàn quốc tế Sland").font = note_txt_font
+            ws.cell(r_f + 10, 2, "Trụ sở: Thôn 1B, xã Nam Phù, TP Hà Nội").font = note_txt_font
+            ws.cell(r_f + 11, 2, "- Số tài khoản : 1359 666 888 ").font = note_txt_font
+            ws.cell(r_f + 12, 2, "- Mở tại :  Ngân hàng TMCP Á Châu ( ACB ) chi nhánh Hà Nội").font = note_txt_font
 
     def save(self):
         from openpyxl.worksheet.datavalidation import DataValidation

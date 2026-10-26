@@ -63,9 +63,9 @@ def copy_sheet_content(src_ws, dst_ws):
 
     for row in src_ws.iter_rows():
         for cell in row:
-            if isinstance(cell, MergedCell):
-                continue
-            dst_cell = dst_ws.cell(row=cell.row, column=cell.column, value=cell.value)
+            dst_cell = dst_ws.cell(row=cell.row, column=cell.column)
+            if not isinstance(cell, MergedCell) and not isinstance(dst_cell, MergedCell):
+                dst_cell.value = cell.value
             if cell.has_style:
                 dst_cell.font = copy(cell.font)
                 dst_cell.fill = copy(cell.fill)

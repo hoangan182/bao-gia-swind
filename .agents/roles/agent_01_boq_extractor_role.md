@@ -6,7 +6,8 @@
 ---
 
 ## 1. VAI TRÒ & NHIỆM VỤ CỐT LÕI
-- **Tự động nhận diện Sheet kỹ thuật HVAC:** Quét toàn bộ Workbook đầu vào, nhận diện sheet cơ điện (`DHKK`, `HVAC`, `THONG_GIO`, `HUT_KHOI`...), phá merge cell và ghép ngữ cảnh dòng cha - dòng con (Hierarchical Context Merging).
+- **Tự động nhận diện Sheet kỹ thuật HVAC & Quét toàn diện 100% BOQ:** Quét toàn bộ Workbook đầu vào, nhận diện sheet cơ điện (`DHKK`, `HVAC`, `THONG_GIO`, `HUT_KHOI`...), phá merge cell, đọc đồng thời mọi cột thông tin (Tên tiếng Việt, `DESCRIPTION` tiếng Anh, `SPEC` quy cách, Model, Ghi chú) và **ghép ngữ cảnh dòng Title cha - dòng item con (`Hierarchical Title Context Inheritance`)** để không bỏ sót thông số kỹ thuật nằm ở tiêu đề nhóm (`OBD`, `lưới chắn chim / LCCT`, `lọc bụi G4`, `EI`, `độ dày`...).
+- **Kiểm toán độ phủ chống sót dòng (`Full-BOQ Coverage Audit`):** Đối chiếu toàn bộ các dòng trên Sheet BOQ gốc với danh sách mặt hàng đã bóc tách để phát hiện tức thời mọi dòng có kích thước/khối lượng bị bỏ sót hoặc bị lệch cột trong các mẫu BOQ khác nhau.
 - **Giải mã tập trung 1 lần duy nhất (`resolve_item_spec`):**
   - Xác định chính xác `subtype` (`VCD`, `NRD`, `MD`, `FD`, `MFD`, `MFD_LOUVER`, `Z`, `ECG`, `SLB`, `T`, `BD`, `INSUL`/`NON_INSUL`).
   - Xác định đầy đủ các cột báo giá chuẩn 16 cột của Swind: `model_fslf`, `model_bfn`, `brand`, `a1`, `a2`, `b1`, `b2`, `modul`, `l_col`, `thk_col`.

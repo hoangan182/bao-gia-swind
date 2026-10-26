@@ -60,7 +60,7 @@ class SwindBOQParser:
         # 1. Nhận diện Header BOQ (dùng hàm chung từ swind_utils)
         header_row, col_map, hidden_rows, hidden_cols, max_scan_col = detect_boq_header(ws)
         combo_cfg = get_subtype_rules().get("COMBO_AND_DETECTION_RULES", {})
-        cv_kws = tuple(combo_cfg.get("missing_qty_cv_keywords", ("louver", "luover", "louvre", "miệng gió", "cửa gió", "cửa nan", "van ", "vcd", "mfd", "mfsd", "nrd", "prd")))
+        cv_kws = tuple(combo_cfg.get("missing_qty_cv_keywords", ("louver", "luover", "louvre", "miệng gió", "cửa gió", "cửa nan", "van ", "vcd", "mfd", "mfsd", "nrd", "prd"))) + ("cửa chớp", "chớp nhôm")
         cv_rx = combo_cfg.get("missing_qty_cv_regex", r'\b(fd|md|sag|rag|eag|oag|pag|seg|eal|oal|fal)\b')
 
         image_rows = set()
@@ -85,6 +85,7 @@ class SwindBOQParser:
             
         items = []
         current_section = "SẢN PHẨM"
+        current_section_aux = ""
         empty_streak = 0
         sheet_default_flange = ""
         for ws_chk in [ws] + [self.wb[sn] for sn in self.wb.sheetnames if sn != sheet_name]:
@@ -106,6 +107,10 @@ class SwindBOQParser:
             name_val = ws.cell(r, col_map.get("name", 2)).value
             qty_val = ws.cell(r, col_map["qty"]).value if "qty" in col_map else None
             unit_val = ws.cell(r, col_map["unit"]).value if "unit" in col_map else None
+            col1_val = ws.cell(r, 1).value if (col_map.get("name", 2) > 1 and "stt" not in col_map) else None
+            col1_str = unicodedata.normalize('NFC', str(col1_val).strip()) if isinstance(col1_val, str) and len(str(col1_val).strip()) > 2 and not re.match(r'^(?:[\dIVXLC]+(?:[\.\-]\d+)*\.?|CT\d+)$', str(col1_val).strip(), re.IGNORECASE) else ""
+            if not name_val and col1_str and qty_val is None and unit_val is None:
+                name_val = col1_str
             
             if not name_val:
                 if qty_val is None and unit_val is None:
@@ -143,9 +148,12 @@ class SwindBOQParser:
                     else:
                         qty_val = 1.0
                 else:
-                    if not unit_val and not is_pure_dim and "tổng cộng" not in nl_chk:
+                    is_valid_unit_str = isinstance(unit_val, str) and unit_val.strip() != "" and not unit_val.strip().replace('.', '').isdigit()
+                    is_parent_title_kw = (not has_cv_dim) and any(k in nl_chk for k in ("cửa", "miệng", "van", "ống", "louver", "luover", "louvre", "grille", "diffuser", "damper", "khớp nối", "tiêu âm"))
+                    if (not is_valid_unit_str or is_parent_title_kw) and not is_pure_dim and "tổng cộng" not in nl_chk:
                         if len(name_str) > 2:
                             current_section = name_str
+                            current_section_aux = col1_str if col1_str.lower() != name_str.lower() else ""
                     continue
                 
             if not unit_val:
@@ -211,9 +219,10 @@ class SwindBOQParser:
                 full_name_str = f"{clean_section} {name_str}"
                 
             # Phân loại sản phẩm (Category detection) động từ Master Catalog
+            aux_context = " ".join(x for x in (current_section_aux, col1_str if col1_str.lower() != raw_name_str.lower() else "") if x).strip()
             name_lower = name_str.lower().replace('ồ', 'ố')
-            full_name_lower = full_name_str.lower()
-            sec_lower = current_section.lower().replace('ồ', 'ố')
+            full_name_lower = f"{full_name_str} {aux_context}".lower().strip()
+            sec_lower = f"{current_section} {current_section_aux}".lower().replace('ồ', 'ố').strip()
             model_str = str(model_val).strip() if model_val is not None else ""
             category = "KHAC"
             
@@ -270,15 +279,15 @@ class SwindBOQParser:
                                 break
 
                 # 2b. Box / Hộp tĩnh áp tôn mạ kẽm hoặc Phụ kiện ống gió đầu dòng (Cút, Côn, Tê, Bịt ống, Nối ống...) -> ONG_GIO
-                if category == "KHAC" and name_lower.startswith(("box ", "hộp ", "hôp ")) and not name_lower.startswith(("hộp và cửa", "hộp + cửa", "hộp kèm cửa", "box và cửa", "box + cửa")) and "tiêu âm" not in name_lower:
+                if category == "KHAC" and name_lower.startswith(("box ", "hộp ", "hôp ")) and not name_lower.startswith(("hộp và cửa", "hộp + cửa", "hộp kèm cửa", "box và cửa", "box + cửa", "hộp quạt", "hộp điện", "hộp nối", "hộp cứu hỏa", "hộp chữa cháy")) and "tiêu âm" not in name_lower:
                     category = "ONG_GIO"
                 if category == "KHAC" and not is_plumbing_item and "tiêu âm" not in name_lower and name_lower.startswith(("cút ", "co ", "chếch ", "côn ", "tê ", "chạc ", "chân rẽ", "gót giày", "cổ trích", "bịt đầu", "bịt ống", "nắp bịt", "măng xông", "măng sông", "nối ống", "zét ", "ống lượn")):
                     if re.search(r'\b(?:[dD][nN]?|Ø|phi\s*)\d{2,4}\b|\b\d{2,4}\s*[xX*]\s*\d{2,4}\b', name_str, re.IGNORECASE):
                         category = "ONG_GIO"
 
-                if category == "KHAC" and any(k in name_lower or k in note_boq.lower() for k in ("access door", "cửa công tác", "cửa thăm", "cửa kiểm tra")):
+                if category == "KHAC" and any(k in name_lower or k in note_boq.lower() for k in ("access door", "cửa công tác", "cửa thăm", "cửa kiểm tra", "cửa chớp", "chớp nhôm")):
                     category = "CUA_GIO"
-                if category == "KHAC" and any(k in sec_lower for k in ("cửa gió", "miệng gió", "louver", "luover", "louvre", "grille", "griller", "diffuser", "insect screen", "i.s", "lcct", "lưới chắn côn trùng", "fag", "sag", "rag", "eag", "seag", "kag", "mag", "fal", "eal", "oal")):
+                if category == "KHAC" and any(k in sec_lower for k in ("cửa gió", "miệng gió", "cửa chớp", "chớp nhôm", "lưới chắn chim", "louver", "luover", "louvre", "grille", "griller", "diffuser", "insect screen", "i.s", "lcct", "lưới chắn côn trùng", "fag", "sag", "rag", "eag", "seag", "kag", "mag", "fal", "eal", "oal")):
                     if not name_lower.startswith(("van ", "damper", "volume control", "fire damper", "motorized damper", "non-return", "ống ", "cút ", "côn ", "tê ", "chân rẽ", "hộp ")) and not any(k in name_lower for k in ("volume control damper", "fire damper", "motorized damper", "non-return damper")):
                         category = "CUA_GIO"
 
@@ -469,23 +478,24 @@ class SwindBOQParser:
                 category = "THUONG_MAI"
             elif category == "CUA_GIO" and d_val > 0 and any(k in full_name_lower for k in ("ead",)):
                 category = "THUONG_MAI"
-            if category == "ONG_GIO" and w == 0 and h == 0 and d_val == 0 and "kẹp bích" in name_lower:
+            if category == "ONG_GIO" and w == 0 and h == 0 and d_val == 0 and ("kẹp bích" in name_lower or (name_lower.startswith(("box ", "hộp ", "hôp ")) and str(unit_val).strip().lower() not in ("m2", "m²"))):
                 category = "THUONG_MAI"
             if any(k in name_lower for k in ("măng xông", "mang xong", "măng sông", "mang song")):
                 unit_val = "cái"
 
-            # Trích xuất chỉ số chống cháy EI (EI30, EI60, EI90, EI120)
+            # Trích xuất chỉ số chống cháy EI (EI30, EI60, EI90, EI120) — quét cả dòng con và tiêu đề cha
+            full_dim_search_text = f"{full_name_str} {model_str} {note_boq}"
             ei_rating = 0
-            ei_match = re.search(r'(?<![a-zA-Z])EI\s*[-:]?\s*(\d{2,3})\b', dim_search_text, re.IGNORECASE)
+            ei_match = re.search(r'(?<![a-zA-Z])EI\s*[-:]?\s*(\d{2,3})\b', dim_search_text, re.IGNORECASE) or re.search(r'(?<![a-zA-Z])EI\s*[-:]?\s*(\d{2,3})\b', full_dim_search_text, re.IGNORECASE)
             if ei_match:
                 ei_rating = int(ei_match.group(1))
-            elif "cấp bù gió khi có cháy" in name_lower:
+            elif "cấp bù gió khi có cháy" in full_name_lower:
                 ei_rating = 120
 
-            # Trích xuất độ dày từ tên sản phẩm hoặc model nếu có chỉ định rõ
-            thk_match = re.search(r'(?:tole|tôn|zam|dày|day|thk|độ dày)\s*(\d+[.,]\d+)\s*mm', dim_search_text, re.IGNORECASE)
+            # Trích xuất độ dày từ tên sản phẩm, tiêu đề cha hoặc model nếu có chỉ định rõ
+            thk_match = re.search(r'(?:tole|tôn|zam|dày|day|thk|độ dày)\s*(\d+[.,]\d+)\s*mm', dim_search_text, re.IGNORECASE) or re.search(r'(?:tole|tôn|zam|dày|day|thk|độ dày)\s*(\d+[.,]\d+)\s*mm', full_dim_search_text, re.IGNORECASE)
             if not thk_match:
-                thk_match = re.search(r'(\d+[.,]\d+)\s*mm', dim_search_text, re.IGNORECASE)
+                thk_match = re.search(r'(\d+[.,]\d+)\s*mm', dim_search_text, re.IGNORECASE) or re.search(r'(\d+[.,]\d+)\s*mm', full_dim_search_text, re.IGNORECASE)
             if thk_match:
                 try:
                     parsed_thk = float(thk_match.group(1).replace(',', '.'))
@@ -556,6 +566,7 @@ class SwindBOQParser:
                     "section": current_section,
                     "raw_name": raw_name_str,
                     "name": name_str,
+                    "aux_text": aux_context,
                     "note_boq": note_boq,
                     "category": "CUA_GIO",
                     "combo_damper": sorted_dampers[0],
@@ -592,6 +603,7 @@ class SwindBOQParser:
                         "section": current_section,
                         "raw_name": raw_name_str,
                         "name": name_str,
+                        "aux_text": aux_context,
                         "note_boq": note_boq,
                         "category": "VAN_GIO",
                         "model": primary_type,
@@ -616,6 +628,7 @@ class SwindBOQParser:
                         "section": current_section,
                         "raw_name": raw_name_str,
                         "name": name_str,
+                        "aux_text": aux_context,
                         "note_boq": note_boq,
                         "category": category,
                         "orig_category": orig_category,
@@ -659,6 +672,7 @@ class SwindBOQParser:
                     "section": current_section,
                     "raw_name": raw_name_str,
                     "name": name_str,
+                    "aux_text": aux_context,
                     "note_boq": note_boq,
                     "category": category,
                     "orig_category": orig_category,

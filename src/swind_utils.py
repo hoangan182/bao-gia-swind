@@ -175,7 +175,7 @@ def detect_boq_header(ws):
                     elif any(k in v for k in THK_KEYWORDS) or "độ dầy" in v or "độ dày tole" in v:
                         col_map["thickness"] = c
                         matched_sub = True
-                    elif any(k in v for k in SPEC_KEYWORDS):
+                    elif any(k in v for k in SPEC_KEYWORDS) or v in ("spec", "specs", "specification", "specifications"):
                         if "spec" not in col_map: col_map["spec"] = c
                         matched_sub = True
                     elif any(k in v for k in MODEL_KEYWORDS):
@@ -321,16 +321,17 @@ def detect_boq_header(ws):
                 if order_qty:
                     col_map["qty"] = max(order_qty, key=lambda col_c: (_count_pos_qty(col_c), col_c))
                     col_map["is_order_sheet"] = True
+                elif lan_cands:
+                    col_map["qty"] = max(lan_cands)[1]
+                    col_map["is_order_sheet"] = True
                 elif total_qty:
                     col_map["qty"] = max(total_qty, key=lambda col_c: (_count_pos_qty(col_c), col_c))
                     col_map["is_order_sheet"] = True
                 elif std_qty:
                     col_map["qty"] = max(std_qty, key=lambda col_c: (_count_pos_qty(col_c), col_c))
-                elif lan_cands:
-                    col_map["qty"] = max(lan_cands)[1]
                 else:
                     col_map["qty"] = max(valid_qty, key=lambda col_c: (_count_pos_qty(col_c), col_c))
-                if len(valid_qty) > 1:
+                if len(valid_qty) > 1 and not col_map.get("is_order_sheet"):
                     alt_cands = [c for c in valid_qty if c != col_map["qty"]]
                     if alt_cands:
                         col_map["qty_alt"] = alt_cands[0]

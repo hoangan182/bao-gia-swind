@@ -284,6 +284,8 @@ class FormatDetector:
         """Kiểm tra xem có header phân nhóm 'Ống gió tôn dày X mm' không."""
         start = max(start_row or 5, 1)
         for r in range(start, min(start + 200, ws.max_row + 1)):
+            if ws.row_dimensions[r].hidden:
+                continue
             v = ws.cell(r, 2).value  # Cột B thường chứa section header
             if v:
                 txt = unicodedata.normalize('NFC', str(v)).lower()
@@ -322,6 +324,8 @@ class FormatDetector:
         qty_nonzero = 0
 
         for r in range(header_row + 1, min(header_row + 500, ws.max_row + 1)):
+            if ws.row_dimensions[r].hidden:
+                continue
             name_v = ws.cell(r, name_col).value
             if not name_v:
                 continue
@@ -337,7 +341,8 @@ class FormatDetector:
             is_consumable = any(ck in name_lower for ck in CONSUMABLE_KEYWORDS)
             is_equip = (unit_v == "Bộ") or any(
                 ek in name_lower for ek in ("quạt", "bộ lọc", "máy lạnh", "dàn lạnh", "fcu", "pau", "ahu",
-                                            "ống đồng", "ống nước", "ống nhựa", "upvc", "ppr", "van nước", "van bướm", "y lọc")
+                                            "ống đồng", "ống nước", "ống nhựa", "upvc", "ppr", "van nước", "van bướm", "y lọc",
+                                            "ống pvc", "pvc", "emt", "ống g.i", "ống gi", "ống luồn", "ống thép")
             )
             is_grille_or_damper = any(
                 gk in name_lower for gk in ("cửa gió", "miệng gió", "louver", "côn trùng", "van ", "damper", "grille", "diffuser")
@@ -397,6 +402,8 @@ class FormatDetector:
                 parser_qty_count = 0
                 our_qty_count = 0
                 for r in range(h_row + 1, min(h_row + 60, _ws_check.max_row + 1)):
+                    if _ws_check.row_dimensions[r].hidden:
+                        continue
                     pv = _ws_check.cell(r, parser_qty_col).value
                     ov = _ws_check.cell(r, our_qty_col).value
                     if isinstance(pv, (int, float)) and pv > 0:
@@ -600,6 +607,8 @@ class StructureNormalizer:
 
         stt = 0
         for r in range(header_row + 1, ws_src.max_row + 1):
+            if ws_src.row_dimensions[r].hidden:
+                continue
             name_v = ws_src.cell(r, name_col).value
             if not name_v:
                 continue
@@ -690,6 +699,8 @@ class StructureNormalizer:
         # ------ Thu thập tất cả data items trước ------
         items = []
         for r in range(header_row + 1, ws_src.max_row + 1):
+            if ws_src.row_dimensions[r].hidden:
+                continue
             name_v = ws_src.cell(r, name_col).value
             if not name_v:
                 continue

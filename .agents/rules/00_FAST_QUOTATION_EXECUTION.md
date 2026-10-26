@@ -11,9 +11,13 @@ description: Fast-path execution protocol for running Swind BOQ quotations witho
 - Khi bắt đầu phiên trò chuyện mới hoặc khi người dùng yêu cầu *"Chạy báo giá dự án..."*, *"Tính giá file..."*, *"Lập báo giá..."*:
   1. **TUYỆT ĐỐI KHÔNG** dùng `read_file` hay `grep` để đọc mã nguồn `src/swind_master_runner.py` hay `src/agent_01..08.py` để "tìm hiểu cấu trúc hệ thống" trước khi chạy (trừ khi người dùng yêu cầu sửa lỗi hoặc thay đổi logic code).
   2. **CHỈ CẦN XÁC ĐỊNH FILE BOQ VÀ CHẠY NGAY LẬP TỨC** câu lệnh CLI dưới đây bằng `run_command`.
-  3. **TUYỆT ĐỐI KHÔNG** viết thêm script Python phụ để mở lại file `_BAO_GIA.xlsx` đọc giá sau khi chạy xong! `src/swind_master_runner.py` đã tự động in trực tiếp **BẢNG TỔNG HỢP GIÁ TRỊ BÁO GIÁ DỰ ÁN** (Số dòng, Trước VAT, VAT 8%, Tổng sau VAT 8%) và **File Báo Giá Cuối Cùng** ra màn hình console ở định dạng Markdown.
-  4. **QUY TẮC BÁO CÁO KẾT QUẢ CHO NGƯỜI DÙNG (BẮT BUỘC):**
-     - **Chỉ liệt kê duy nhất File Báo Giá Cuối Cùng** (`data/projects/<Project_Name>/<Project_Name>_BAO_GIA.xlsx`). Không liệt kê các file báo giá thành phần từng sheet/tháp hay file dự toán nội bộ trung gian (vì đã có sẵn trong thư mục dự án).
+  3. **TUYỆT ĐỐI KHÔNG** viết thêm script Python phụ để mở lại file `_BAO_GIA.xlsx` đọc giá sau khi chạy xong! `src/swind_master_runner.py` đã tự động in trực tiếp **BÁO CÁO ĐỘ PHỦ BOQ (`Full-BOQ Coverage Audit`)**, **BẢNG TỔNG HỢP GIÁ TRỊ BÁO GIÁ DỰ ÁN** (Số dòng, Trước VAT, VAT 8%, Tổng sau VAT 8%) và **File Báo Giá Cuối Cùng** ra màn hình console ở định dạng Markdown.
+  4. **KIỂM TRA CHỐNG SÓT DÒNG & KẾ THỪA TITLE CHA (BẮT BUỘC TRƯỚC KHI TRẢ KẾT QUẢ):**
+     - Quan sát log `[Agent 01 - Full-BOQ Coverage Audit]` trên màn hình console:
+       + Đảm bảo toàn bộ các dòng **Title / Hạng mục cha** trong BOQ đã được quét và truyền đầy đủ thông số kỹ thuật (`OBD`, `lưới chắn chim / côn trùng`, `lọc G4`, `EI`, `độ dày`...) xuống các dòng item con.
+       + Nếu có bất kỳ cảnh báo `⚠️ [CẢNH BÁO SÓT DÒNG]` nào (dòng có khối lượng/kích thước thuộc phạm vi báo giá nhưng bị bỏ sót do từ khóa mới hoặc lệch cột trong BOQ của dự án mới), **bắt buộc phải kiểm tra dòng đó và bổ sung rule xử lý ngay** để đạt độ phủ 100% trước khi báo cáo.
+  5. **QUY TẮC BÁO CÁO KẾT QUẢ CHO NGƯỜI DÙNG (BẮT BUỘC):**
+     - **Chỉ liệt kê duy nhất File Báo Giá Cuối Cùng** (`output/<Project_Name>/<Original_File_Name>.xlsx` gồm Sheet BOQ gốc giữ nguyên + Sheet `BG` đóng khung chuẩn mẫu). Không liệt kê các file báo giá thành phần từng sheet/tháp hay file dự toán nội bộ trung gian.
      - **Chỉ in Bảng Tổng Hợp Giá Trị Báo Giá**, **BỎ Bảng kết quả báo giá chi tiết** từng mặt hàng.
 
 ## 2. Câu Lệnh Thực Thi Chuẩn & Đầy Đủ Tham Số CLI

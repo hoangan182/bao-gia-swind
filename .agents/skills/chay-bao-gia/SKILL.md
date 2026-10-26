@@ -10,9 +10,11 @@ Hệ thống báo giá tự động Swind (`src/swind_master_runner.py` và chu�
 ## 1. Nguyên Tắc Tốc Độ Tối Đa
 1. **KHÔNG đọc lại code** (`src/swind_master_runner.py`, `src/agent_01..08.py`) trước khi chạy.
 2. **CHẠY NGAY LẬP TỨC** câu lệnh CLI dưới đây với `run_command`.
-3. **KHÔNG viết script Python phụ** để đọc lại file `_BAO_GIA.xlsx` sau khi chạy xong, vì `src/swind_master_runner.py` đã in sẵn **BẢNG TỔNG HỢP GIÁ TRỊ BÁO GIÁ DỰ ÁN** và **File Báo Giá Cuối Cùng** ra màn hình console ở định dạng Markdown.
-4. **Khi báo cáo cho người dùng:**
-   - **Chỉ liệt kê duy nhất File Báo Giá Cuối Cùng** (`<Project_Name>_BAO_GIA.xlsx`), không liệt kê các file thành phần trong thư mục.
+3. **KHÔNG viết script Python phụ** để đọc lại file báo giá sau khi chạy xong, vì `src/swind_master_runner.py` đã in sẵn **BÁO CÁO ĐỘ PHỦ BOQ (`Full-BOQ Coverage Audit`)**, **BẢNG TỔNG HỢP GIÁ TRỊ BÁO GIÁ DỰ ÁN** và **File Báo Giá Cuối Cùng** ra màn hình console ở định dạng Markdown.
+4. **Kiểm tra chống sót dòng & kế thừa Title cha (`Full-BOQ Coverage Audit`):**
+   - Luôn kiểm tra kết quả `[Agent 01 - Full-BOQ Coverage Audit]` trên console để đảm bảo 100% các dòng Title cha đã truyền thông số (`OBD`, `lưới chắn chim/LCCT`, `lọc G4`, `EI`, `độ dày`...) xuống dòng item con và **0 dòng có khối lượng/kích thước bị bỏ sót** (`⚠️ [CẢNH BÁO SÓT DÒNG]`). Nếu dự án mới phát sinh cấu trúc/từ khóa lạ gây sót dòng, phải xử lý triệt để trước khi trả kết quả.
+5. **Khi báo cáo cho người dùng:**
+   - **Chỉ liệt kê duy nhất File Báo Giá Cuối Cùng** (`output/<Project_Name>/<Original_File_Name>.xlsx`), không liệt kê các file thành phần trong thư mục.
    - **Chỉ in Bảng Tổng Hợp Giá Trị**, bỏ Bảng kết quả báo giá chi tiết.
 
 ## 2. Câu Lệnh Thực Thi Chuẩn
