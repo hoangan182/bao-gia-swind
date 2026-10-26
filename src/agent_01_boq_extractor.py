@@ -101,6 +101,8 @@ class Agent01_BOQExtractor:
             damper_type = "MFSD"
         elif model_item == "MFD" or any(k in model_item for k in ("1.02", "1.03", "1.04", "1.05")):
             damper_type = "MFD"
+        elif model_item in ("MPRD", "M-PRD") or any(k in raw_search.lower() for k in ("mprd", "m-prd")):
+            damper_type = "MPRD"
         elif model_item in ("OBD", "VCD", "MD", "NRD", "PRD"):
             damper_type = model_item
         else:
@@ -109,6 +111,8 @@ class Agent01_BOQExtractor:
                 rs_low = raw_search.lower()
                 if any(fk in rs_low for fk in ("chặn lửa", "ngăn cháy", "dập lửa")) and any(mk in rs_low for mk in ("động cơ", "mô tơ", "môtơ", "mo tơ", "motor")):
                     damper_type = "MFD"
+        if damper_type == "PRD" and any(k in raw_search.lower() for k in ("mprd", "m-prd", "xả áp động cơ")):
+            damper_type = "MPRD"
         subtype = damper_type
         eff_type = "MFD" if damper_type == "MFD_LOUVER" else damper_type
         w_use = w if w > 0 else (d if d > 0 else 300.0)
@@ -277,6 +281,14 @@ class Agent01_BOQExtractor:
                 act_nm = "5Nm" if s_mod <= 0.8 else ("10Nm" if s_mod <= 1.8 else "20Nm")
                 mod_dmp_txt = f", chia {mod_cnt} modul ({mod_cnt} động cơ)" if mod_cnt > 1 else ""
                 note_fslf = note_bfn = f"Van động cơ ON-OFF BELIMO {act_nm} (đóng mở 150s), điện áp 230V, xuất xứ Thụy Sỹ{mod_dmp_txt}"
+        elif eff_type == "MPRD":
+            model_fslf = model_bfn = "M-PRD"
+            s_mod = (w_mod * h_mod) / 1_000_000.0
+            act_nm = "5Nm" if s_mod <= 0.8 else ("10Nm" if s_mod <= 1.8 else "20Nm")
+            if ei_rating > 0:
+                note_fslf = note_bfn = f"Van xả áp động cơ, thân van bọc tấm KSH 10mm, không có kiểm định. Động cơ Belimo On/Off {act_nm}"
+            else:
+                note_fslf = note_bfn = f"Van xả áp động cơ tôn mạ kẽm. Động cơ Belimo On/Off {act_nm}"
         elif eff_type == "NRD":
             model_fslf = model_bfn = "NRD"
             note_fslf = note_bfn = "Van 1 chiều tôn mạ kẽm. ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm" if ei_rating > 0 else "Van 1 chiều tôn mạ kẽm"
@@ -338,27 +350,8 @@ class Agent01_BOQExtractor:
         combined_search = (raw_search + " " + full_search).lower()
         combo_cfg = (subtype_rules or {}).get("COMBO_AND_DETECTION_RULES") or get_subtype_rules().get("COMBO_AND_DETECTION_RULES", {})
 
-        # Rule 1: KTC vs KTM check (nếu ghi KTC hoặc cửa bù khí nan Z thì cộng thêm mỗi cạnh 50)
-        if not item.get("is_ktc_applied"):
-            ktc_rx = combo_cfg.get("ktc_regex", r'\bktc\b|kích\s*thước\s*cổ')
-            is_makeup_air_z = (
-                any(k in raw_search for k in ("cấp khí bù", "bù khí", "cấp gió bù", "bù gió"))
-                and not any(k in raw_search for k in ("fag", "sag", "rag", "oag", "pag", "seg", "eag", "sdg", "obd", "nan thẳng", "bầu dục"))
-            )
-            is_ktc = bool(re.search(ktc_rx, combined_search, re.IGNORECASE)) or is_makeup_air_z
-            if is_ktc:
-                if w > 0: w += 50.0
-                if h > 0: h += 50.0
-                if d > 0: d += 50.0
-                item["w"] = w
-                item["h"] = h
-                item["d"] = d
-                a1 = "Ø" if d > 0 else (int(w) if w > 0 else None)
-                a2 = int(d) if d > 0 else (int(h) if h > 0 else None)
-            item["is_ktc_applied"] = True
-
-        mesh_kws = tuple(combo_cfg.get("mesh_keywords", ("lưới", "chắn côn trùng", "côn trùng", "lcct", "+n", "+ n", "+is", "+ is", "i.s", "insect screen", "c/w is", "c/w i.s", "is"))) + ("chắn chim", "against bird", "bird screen")
-        filter_kws = tuple(combo_cfg.get("filter_keywords", ("phin lọc", "lọc bụi", "+f", "g4")))
+        mesh_kws = tuple(combo_cfg.get("mesh_keywords", ("lưới", "chắn côn trùng", "côn trùng", "lcct", "+n", "+ n", "+is", "+ is", "i.s", "insect screen", "c/w is", "c/w i.s", "is"))) + ("lccct", "c/w ls", "c/w l.s", "chắn chim", "against bird", "bird screen")
+        filter_kws = tuple(combo_cfg.get("filter_keywords", ("phin lọc", "lọc bụi", "+f", "g4"))) + ("filter", "lọc thô", "lọc sơ cấp")
         louver_kws = tuple(combo_cfg.get("louver_z_keywords", ("nan z", "louver", "luover", "louvre", "chớp", "fal", "oal", "eal", "wl"))) + ("cửa chớp", "chớp nhôm")
 
         has_obd = (
@@ -369,7 +362,7 @@ class Agent01_BOQExtractor:
         mesh_search = re.sub(r'lưới\s+(?:lọc|gió)', '', combined_search)
         has_mesh = (
             any(k in mesh_search for k in mesh_kws if k != "is")
-            or bool(re.search(r'\b(?:i\.s\.?|lcct)\b|(?:c/w|\+|kèm|with)\s*is\b', mesh_search))
+            or bool(re.search(r'\b(?:i\.s\.?|l\.s\.?|lc+t)\b|(?:c/w|\+|kèm|with)\s*(?:is|ls)\b', mesh_search))
         )
         has_filter = any(k in filter_search for k in filter_kws)
         is_double_layer = ("2 lớp" in combined_search or "hai lớp" in combined_search)
@@ -399,12 +392,41 @@ class Agent01_BOQExtractor:
         # Rule 5: Cửa khuếch tán mã SD (vuông 600x600, 450x450, 300x300 hoặc khuếch tán)
         is_thoi_kt = ("cửa thổi khuếch tán" in combined_search)
         is_sq_ac_diffuser = (
-            not is_thoi_kt and w > 0 and w == h and int(w) in (600, 450, 300)
+            not is_thoi_kt and not is_standalone_lcct and not is_standalone_filter
+            and w > 0 and w == h and int(w) in (600, 450, 300)
             and not is_return_grille and not is_louver_z and not is_press_or_smoke
             and (not has_obd or any(k in combined_search for k in ("cấp", "lạnh", "điều hòa", "sag", "sad", "scd", "khuếch tán", "450", "150")))
             and not any(k in combined_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd", "sọt trứng", "sọt trưng", "eggcrate", "ecg", "linear", "nan t", "dạng nan", "格栅", "kiểm tra", "检查", "access door", "cửa công tác", "cửa thăm", "tháo lắp", "inspection"))
         )
-        is_diffuser_sq = (not is_thoi_kt) and (any(k in combined_search for k in ("khuếch tán", "scd", "sad", "diffuser")) or is_sq_ac_diffuser or (w == 600 and h == 600 and "sag" in combined_search))
+        is_diffuser_sq = (not is_thoi_kt and not is_standalone_lcct and not is_standalone_filter) and (any(k in combined_search for k in ("khuếch tán", "scd", "sad", "diffuser")) or is_sq_ac_diffuser or (w == 600 and h == 600 and "sag" in combined_search))
+
+        # Rule 1: KTC vs KTM check (nếu ghi KTC, --neck-size, hoặc cửa bù khí nan Z thì cộng thêm viền ra kích thước mặt)
+        if not item.get("is_ktc_applied"):
+            ktc_rx = combo_cfg.get("ktc_regex", r'\bktc\b|kích\s*thước\s*cổ')
+            is_makeup_air_z = (
+                any(k in raw_search for k in ("cấp khí bù", "bù khí", "cấp gió bù", "bù gió"))
+                and not any(k in raw_search for k in ("fag", "sag", "rag", "oag", "pag", "seg", "eag", "sdg", "obd", "nan thẳng", "bầu dục"))
+            )
+            is_area_inferred = bool(re.search(r'\d+(?:\.\d+)?\s*(?:m2|m²)\b', raw_search)) and not bool(re.search(r'\d+\s*[xX*×]\s*\d+', raw_search))
+            is_ktc = bool(re.search(ktc_rx, combined_search, re.IGNORECASE)) or is_makeup_air_z or bool(item.get("neck_size_override"))
+            if is_ktc and not is_standalone_lcct and not is_standalone_filter and not is_area_inferred:
+                if (item.get("combo_dampers") or item.get("combo_damper")):
+                    if not item.get("w_damper") and w > 0:
+                        item["w_damper"] = w
+                    if not item.get("h_damper") and h > 0:
+                        item["h_damper"] = h
+                    if not item.get("d_damper") and d > 0:
+                        item["d_damper"] = d
+                ktc_offset = 150.0 if (is_diffuser_sq and ((w >= 150.0 and h >= 150.0) or d >= 150.0)) else 50.0
+                if w > 0: w += ktc_offset
+                if h > 0: h += ktc_offset
+                if d > 0: d += ktc_offset
+                item["w"] = w
+                item["h"] = h
+                item["d"] = d
+                a1 = "Ø" if d > 0 else (int(w) if w > 0 else None)
+                a2 = int(d) if d > 0 else (int(h) if h > 0 else None)
+                item["is_ktc_applied"] = True
 
         # Rule 5b: Cửa gió kiểm tra / cửa tháo lắp (检查风门) → SDGK
         is_inspection_door = any(k in combined_search for k in ("kiểm tra", "检查", "检查风门", "inspection", "access door", "cửa công tác", "cửa thăm", "sdgk"))

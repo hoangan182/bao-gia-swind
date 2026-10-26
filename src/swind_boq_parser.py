@@ -452,7 +452,13 @@ class SwindBOQParser:
                 if area_match:
                     try:
                         area_m2 = float(area_match.group(1).replace(',', '.'))
-                        if area_m2 >= 1.0:
+                        if area_m2 >= 20.0:
+                            w = 10000.0
+                            h = round((area_m2 / 10.0) * 1000.0)
+                        elif area_m2 >= 10.0:
+                            w = round((area_m2 / 2.0) * 1000.0)
+                            h = 2000.0
+                        elif area_m2 >= 1.0:
                             w = round(area_m2 * 1000.0)
                             h = 1000.0
                         elif area_m2 > 0:
@@ -585,7 +591,7 @@ class SwindBOQParser:
                     "qty": float(qty_val),
                     "is_missing_qty": is_missing_qty,
                     "ref_price": ws.cell(r, col_map["price"]).value if "price" in col_map else None,
-                    "is_ktc_applied": True,
+                    "is_ktc_applied": bool(is_ktc),
                     "has_embedded_image": (r in image_rows)
                 })
 
@@ -693,7 +699,7 @@ class SwindBOQParser:
                     "qty": float(qty_val),
                     "is_missing_qty": is_missing_qty,
                     "ref_price": ws.cell(r, col_map["price"]).value if "price" in col_map else None,
-                    "is_ktc_applied": True if category == "CUA_GIO" else False,
+                    "is_ktc_applied": bool(category == "CUA_GIO" and is_ktc),
                     "has_embedded_image": (r in image_rows),
                     "fitting_geom": fitting_geom
                 }

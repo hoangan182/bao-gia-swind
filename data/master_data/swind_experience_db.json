@@ -158,9 +158,9 @@
         "above_D500": 1.15
       }
     },
-    "ALUMINUM_SELLING_PRICE_165K": {
-      "rule": "Giá nhôm tính giá bán cửa gió (đặc biệt mã SDG / SLB / SWL trong BG Cửa) thống nhất fix chuẩn 165,000 VNĐ/kg (thay vì 150,000 VNĐ/kg ở bảng cũ).",
-      "aluminum_selling_price_per_kg": 165000
+    "ALUMINUM_SELLING_PRICE_168K": {
+      "rule": "Giá nhôm tính giá bán cửa gió và van OBD nhôm trong toàn bộ hệ thống thống nhất mặc định 168,000 VNĐ/kg.",
+      "aluminum_selling_price_per_kg": 168000
     },
     "UNSPECIFIED_DIMENSION_DAMPER_EXCLUSION": {
       "rule": "Các mục Cửa gió / Van gió không ghi kích thước trong BOQ (w=0, h=0, d=0, ví dụ 'Van xả áp cơ cho quạt tăng áp thang máy' không có KT) thì bỏ trống không báo giá (chuyển về THUONG_MAI)."

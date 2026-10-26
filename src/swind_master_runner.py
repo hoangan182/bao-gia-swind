@@ -993,6 +993,7 @@ def export_customer_boq_quotation_files(
             from copy import copy
             import zipfile
             wb_cust = openpyxl.load_workbook(src_boq)
+            orig_first_sheet = wb_cust.sheetnames[0] if wb_cust.sheetnames else None
             orig_keep = sh_name if sh_name in wb_cust.sheetnames else wb_cust.sheetnames[0]
             for s in list(wb_cust.sheetnames):
                 if s != orig_keep:
@@ -1026,31 +1027,32 @@ def export_customer_boq_quotation_files(
 
             # Khôi phục hình ảnh/logo (drawing1.xml & media) trên sheet BOQ gốc nếu có
             try:
-                with zipfile.ZipFile(src_boq, 'r') as zorig:
-                    orig_names = set(zorig.namelist())
-                    if 'xl/drawings/drawing1.xml' in orig_names and 'xl/worksheets/_rels/sheet1.xml.rels' in orig_names:
-                        tmp_zip = out_file + ".tmp.zip"
-                        with zipfile.ZipFile(out_file, 'r') as zin, zipfile.ZipFile(tmp_zip, 'w', compression=zipfile.ZIP_DEFLATED) as zout:
-                            existing_out = set(zin.namelist())
-                            for item in zin.infolist():
-                                data = zin.read(item.filename)
-                                if item.filename == 'xl/worksheets/sheet1.xml':
-                                    s1_txt = data.decode('utf-8')
-                                    if '<drawing ' not in s1_txt:
-                                        s1_txt = s1_txt.replace('</worksheet>', '<drawing xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId1"/></worksheet>')
-                                    data = s1_txt.encode('utf-8')
-                                elif item.filename == '[Content_Types].xml':
-                                    ct_txt = data.decode('utf-8')
-                                    if 'Extension="jpeg"' not in ct_txt:
-                                        ct_txt = ct_txt.replace('<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">', '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="jpeg" ContentType="image/jpeg"/><Default Extension="png" ContentType="image/png"/>')
-                                    if '/xl/drawings/drawing1.xml' not in ct_txt:
-                                        ct_txt = ct_txt.replace('</Types>', '<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>')
-                                    data = ct_txt.encode('utf-8')
-                                zout.writestr(item, data)
-                            for copy_name in ('xl/worksheets/_rels/sheet1.xml.rels', 'xl/drawings/drawing1.xml', 'xl/drawings/_rels/drawing1.xml.rels', 'xl/media/image1.jpeg'):
-                                if copy_name in orig_names and copy_name not in existing_out:
-                                    zout.writestr(copy_name, zorig.read(copy_name))
-                        shutil.move(tmp_zip, out_file)
+                if orig_first_sheet == orig_keep:
+                    with zipfile.ZipFile(src_boq, 'r') as zorig:
+                        orig_names = set(zorig.namelist())
+                        if 'xl/drawings/drawing1.xml' in orig_names and 'xl/worksheets/_rels/sheet1.xml.rels' in orig_names:
+                            tmp_zip = out_file + ".tmp.zip"
+                            with zipfile.ZipFile(out_file, 'r') as zin, zipfile.ZipFile(tmp_zip, 'w', compression=zipfile.ZIP_DEFLATED) as zout:
+                                existing_out = set(zin.namelist())
+                                for item in zin.infolist():
+                                    data = zin.read(item.filename)
+                                    if item.filename == 'xl/worksheets/sheet1.xml':
+                                        s1_txt = data.decode('utf-8')
+                                        if '<drawing ' not in s1_txt:
+                                            s1_txt = s1_txt.replace('</worksheet>', '<drawing xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId1"/></worksheet>')
+                                        data = s1_txt.encode('utf-8')
+                                    elif item.filename == '[Content_Types].xml':
+                                        ct_txt = data.decode('utf-8')
+                                        if 'Extension="jpeg"' not in ct_txt:
+                                            ct_txt = ct_txt.replace('<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">', '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="jpeg" ContentType="image/jpeg"/><Default Extension="png" ContentType="image/png"/>')
+                                        if '/xl/drawings/drawing1.xml' not in ct_txt:
+                                            ct_txt = ct_txt.replace('</Types>', '<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>')
+                                        data = ct_txt.encode('utf-8')
+                                    zout.writestr(item, data)
+                                for copy_name in ('xl/worksheets/_rels/sheet1.xml.rels', 'xl/drawings/drawing1.xml', 'xl/drawings/_rels/drawing1.xml.rels', 'xl/media/image1.jpeg'):
+                                    if copy_name in orig_names and copy_name not in existing_out:
+                                        zout.writestr(copy_name, zorig.read(copy_name))
+                            shutil.move(tmp_zip, out_file)
             except Exception as e_draw:
                 print(f"  [Cảnh báo] Không thể khôi phục drawing gốc: {e_draw}")
 
@@ -1184,7 +1186,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
             print("     ✅ Đạt 100% độ phủ BOQ: Không có dòng Cửa/Van/Vật tư mục tiêu nào bị bỏ sót!")
 
 
-def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None):
+def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None, neck_size=False):
     """
     Hàm điều phối Quy trình B: Nhận file BOQ khách hàng -> Phân tích & Áp giá từ Master Data có sẵn (Agent 01 -> Agent 08).
     """
@@ -1242,6 +1244,8 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
             it["motor_brand_override"] = str(motor_brand).strip().upper()
         if mfd_model:
             it["mfd_model_override"] = str(mfd_model).strip()
+        if neck_size:
+            it["neck_size_override"] = True
         r_ov = (row_overrides or {}).get(it.get("source_row"))
         if r_ov:
             for k_ov, v_ov in r_ov.items():
@@ -1295,7 +1299,6 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     rep_dst = os.path.join(project_dir, "internal_estimation", "INPUT_AUDIT_REPORT.json")
     if os.path.exists(rep_src):
         os.makedirs(os.path.join(project_dir, "internal_estimation"), exist_ok=True)
-        import shutil
         shutil.move(rep_src, rep_dst)
 
     # -------------------------------------------------------------
@@ -1482,6 +1485,7 @@ def main():
     parser.add_argument("--allow-ei", action="store_true", help="Tương thích cờ cho phép áp giá chống cháy EI (Mặc định Swind tự động nhận diện EI theo BOQ)")
     parser.add_argument("--from-images", action="store_true", help="Đọc trực tiếp ảnh khách gửi trong 'input picture/' và chạy báo giá")
     parser.add_argument("--duct-formula", choices=["mpq", "og_mb", "both"], default="mpq", help="Công thức tính ống gió: 'mpq' (BG PKV chuẩn), 'og_mb' (Diện tích m2 theo ÔG MB Z3), hoặc 'both' (xuất cả 2)")
+    parser.add_argument("--neck-size", action="store_true", help="Quy định kích thước cửa gió trong BOQ là kích thước cổ (Neck Size -> cộng thêm viền ra kích thước mặt)")
     parser.add_argument("--override", default=None, help="Ghi đè nhanh theo dòng BOQ (VD: '7:w=600,h=600;10:skip=1')")
 
     args = parser.parse_args()
@@ -1558,7 +1562,8 @@ def main():
                 only_cua_van=args.only_cua_van,
                 motor_brand=args.motor_brand,
                 mfd_model=args.mfd_model,
-                row_overrides=row_overrides
+                row_overrides=row_overrides,
+                neck_size=args.neck_size
             )
             proj_name_tmp = os.path.splitext(os.path.basename(bp))[0].strip()
             proj_dir_tmp = resolve_path(f"data/projects/{proj_name_tmp}")
@@ -1580,7 +1585,8 @@ def main():
             only_cua_van=args.only_cua_van,
             motor_brand=args.motor_brand,
             mfd_model=args.mfd_model,
-            row_overrides=row_overrides
+            row_overrides=row_overrides,
+            neck_size=args.neck_size
         )
 
 

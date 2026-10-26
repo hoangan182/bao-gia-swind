@@ -54,12 +54,12 @@ class Agent06_DiffuserBOM:
         elif profile_type == "Z":
             F, G, D, E, total_alu_kg = Agent06_DiffuserBOM._calc_profile_louver_z(
                 parent_id, diffuser_type, w_val, h_val, has_mesh,
-                mat_price_map, mfg_markup, p_paint_master, p_acc_master, components
+                diffuser_rules, mat_price_map, mfg_markup, p_paint_master, p_acc_master, components
             )
         elif profile_type == "ECG":
             F, G, D, E, total_alu_kg = Agent06_DiffuserBOM._calc_profile_eggcrate(
                 parent_id, w_val, h_val, is_removable,
-                mfg_markup, p_alu_bd_master, p_core_master, p_paint_master, p_acc_master, components
+                diffuser_rules, mfg_markup, p_alu_bd_master, p_core_master, p_paint_master, p_acc_master, components
             )
         elif profile_type == "SLB":
             F, G, D, E, total_alu_kg, has_obd = Agent06_DiffuserBOM._calc_profile_linear_slb(
@@ -79,7 +79,7 @@ class Agent06_DiffuserBOM:
 
         total_alu_kg = Agent06_DiffuserBOM._append_diffuser_accessories(
             parent_id, profile_type, w_val, D, E, has_mesh, has_filter, has_obd, is_black_2nd_layer,
-            mat_price_map, mfg_markup, p_alu_obd_master, p_acc_master, total_alu_kg, components
+            diffuser_rules, mat_price_map, mfg_markup, p_alu_obd_master, p_acc_master, total_alu_kg, components
         )
 
         return {
@@ -125,25 +125,26 @@ class Agent06_DiffuserBOM:
         return F, G, D, E, 0.0, False, False, False
 
     @staticmethod
-    def _calc_profile_louver_z(parent_id, diffuser_type, w_val, h_val, has_mesh, mat_price_map, mfg_markup, p_paint_master, p_acc_master, components):
+    def _calc_profile_louver_z(parent_id, diffuser_type, w_val, h_val, has_mesh, diffuser_rules, mat_price_map, mfg_markup, p_paint_master, p_acc_master, components):
         F, G = w_val, h_val
         D, E = max(50.0, w_val - 50.0), max(50.0, h_val - 50.0)
         N, O = F / 1000.0, G / 1000.0
         d_m, e_m = D / 1000.0, E / 1000.0
         n_nan = max(1, _excel_round((O - 0.05) / 0.045, 0))
 
+        p_alu_swl = float(diffuser_rules.get("aluminum_selling_price_per_kg", 168000.0))
         raw_frame_kg = 2.0 * (N + O) * 0.227
         raw_nan_only_kg = n_nan * max(0.05, N - 0.06) * 0.217
         raw_blade_kg = raw_nan_only_kg + 2.0 * (O * 1.1) * 0.08
-        unrounded_swl_sell = ((raw_frame_kg + raw_blade_kg) * 165000.0 + n_nan * 170.0 + (raw_frame_kg + raw_nan_only_kg) * 20000.0) * 1.25
+        unrounded_swl_sell = ((raw_frame_kg + raw_blade_kg) * p_alu_swl + n_nan * 170.0 + (raw_frame_kg + raw_nan_only_kg) * 20000.0) * 1.25
         target_swl_sell = _excel_round(unrounded_swl_sell, -3)
         scale_swl = (target_swl_sell / unrounded_swl_sell) if unrounded_swl_sell > 0 else 1.0
         p_alu_z_master = mat_price_map.get("MAT-ALU-KHUNG-Z-2-LOP", 126000.0)
         p_alu_nan_z_master = mat_price_map.get("MAT-ALU-NAN-Z-DAY", 126000.0)
         p_mesh_master = mat_price_map.get("MAT-MESH-INOX-304", 150000.0)
 
-        frame_kg = raw_frame_kg * (165000.0 * 1.25 * scale_swl) / (p_alu_z_master * mfg_markup)
-        blade_kg = raw_blade_kg * (165000.0 * 1.25 * scale_swl) / (p_alu_nan_z_master * mfg_markup)
+        frame_kg = raw_frame_kg * (p_alu_swl * 1.25 * scale_swl) / (p_alu_z_master * mfg_markup)
+        blade_kg = raw_blade_kg * (p_alu_swl * 1.25 * scale_swl) / (p_alu_nan_z_master * mfg_markup)
         paint_m2 = (raw_frame_kg + raw_nan_only_kg) * (20000.0 * 1.25 * scale_swl) / (p_paint_master * mfg_markup)
         acc_bo = (n_nan * 170.0 * 1.25 * scale_swl) / (p_acc_master * mfg_markup)
 
@@ -200,17 +201,18 @@ class Agent06_DiffuserBOM:
         return F, G, D, E, frame_kg + blade_kg
 
     @staticmethod
-    def _calc_profile_eggcrate(parent_id, w_val, h_val, is_removable, mfg_markup, p_alu_bd_master, p_core_master, p_paint_master, p_acc_master, components):
+    def _calc_profile_eggcrate(parent_id, w_val, h_val, is_removable, diffuser_rules, mfg_markup, p_alu_bd_master, p_core_master, p_paint_master, p_acc_master, components):
         F, G = w_val, h_val
         D, E = max(50.0, w_val - 50.0), max(50.0, h_val - 50.0)
         N, O = F / 1000.0, G / 1000.0
         d_m, e_m = D / 1000.0, E / 1000.0
+        p_alu_ecg = float(diffuser_rules.get("aluminum_selling_price_per_kg", 168000.0))
 
         if is_removable:
-            raw_frame_cost = (2.0 * N + O) * 0.202 * 150000.0 + 4.0 * (N + O) * 0.14 * 150000.0
+            raw_frame_cost = (2.0 * N + O) * 0.202 * p_alu_ecg + 4.0 * (N + O) * 0.14 * p_alu_ecg
             raw_acc_cost = 15000.0
         else:
-            raw_frame_cost = 2.0 * (N + O) * 0.202 * 160000.0 + 2.0 * (N + O) * 0.14 * 150000.0
+            raw_frame_cost = 2.0 * (N + O) * 0.202 * p_alu_ecg + 2.0 * (N + O) * 0.14 * p_alu_ecg
             raw_acc_cost = 5000.0
         raw_core_cost = (d_m * e_m) * 750000.0
         raw_paint_wt = 2.0 * (N + O) * (0.202 + 0.14) + (e_m / 0.02) * N * 0.08
@@ -281,7 +283,7 @@ class Agent06_DiffuserBOM:
 
         raw_frame_kg = 2.0 * (N + O) * 0.20
         raw_blade_kg = n_nan * d_m * 0.08 + n_suot * e_m * 0.07
-        p_alu_slb = float(diffuser_rules.get("aluminum_selling_price_per_kg", 165000.0))
+        p_alu_slb = float(diffuser_rules.get("aluminum_selling_price_per_kg", 168000.0))
         unrounded_slb_sell = ((raw_frame_kg + raw_blade_kg) * p_alu_slb + 5000.0 + (raw_frame_kg + raw_blade_kg) * 20000.0) * 1.25 * mult_slb
         target_slb_sell = _excel_round(unrounded_slb_sell, -3)
         scale_slb = (target_slb_sell / unrounded_slb_sell) if unrounded_slb_sell > 0 else 1.0
@@ -338,14 +340,15 @@ class Agent06_DiffuserBOM:
         n_chao = max(1, int((N - 0.185) / 0.09 + 0.5))
         k_scd = float(diffuser_rules.get("scd_markup_ratio", 1.19587))
 
+        p_alu_scd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 168000.0))
         raw_frame_kg = 2.0 * (N + O) * 0.258 + 2.0 * (1.2 * N) * 0.106
         raw_blade_kg = max(0.2, 2.0 * (0.28 * n_chao * (N + O - 0.43 * n_chao)))
         raw_acc_scd = 24000.0 + (0.0 if D * E < 1_000_000.0 else 10000.0)
-        unrounded_scd_sell = ((raw_frame_kg + raw_blade_kg) * (p_alu_bd_master + 23100.0) + raw_acc_scd) * k_scd * mfg_markup
+        unrounded_scd_sell = ((raw_frame_kg + raw_blade_kg) * (p_alu_scd * 1.25 + 23100.0 * mfg_markup) + raw_acc_scd * mfg_markup) * k_scd
         target_scd_sell = _excel_round(unrounded_scd_sell, -3)
         scale_scd = (target_scd_sell / unrounded_scd_sell) if unrounded_scd_sell > 0 else 1.0
-        frame_kg = raw_frame_kg * k_scd * scale_scd
-        blade_kg = raw_blade_kg * k_scd * scale_scd
+        frame_kg = raw_frame_kg * (p_alu_scd * 1.25 * k_scd * scale_scd) / (p_alu_bd_master * mfg_markup)
+        blade_kg = raw_blade_kg * (p_alu_scd * 1.25 * k_scd * scale_scd) / (p_alu_bd_master * mfg_markup)
         paint_m2 = (raw_frame_kg + raw_blade_kg) * (23100.0 / p_paint_master) * k_scd * scale_scd
         acc_bo = (raw_acc_scd / p_acc_master) * k_scd * scale_scd
 
@@ -403,7 +406,7 @@ class Agent06_DiffuserBOM:
             raw_frame_kg = raw_frame_only_kg
             raw_blade_kg = (n_nan_1 * d_m + n_nan_2 * e_m) * 0.058
             frame_mat_id = "MAT-ALU-KHUNG-Z-2-LOP"
-            p_alu_bd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 165000.0))
+            p_alu_bd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 168000.0))
             raw_acc_cost = 5000.0
         elif is_removable:
             n_nan_1 = max(1, _excel_round((e_m / 0.02) - 1, 0))
@@ -411,14 +414,14 @@ class Agent06_DiffuserBOM:
             raw_frame_kg = raw_frame_only_kg
             raw_blade_kg = n_nan_1 * d_m * 0.058
             frame_mat_id = "MAT-ALU-KHUNG-Z-2-LOP"
-            p_alu_bd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 165000.0))
+            p_alu_bd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 168000.0))
             raw_acc_cost = 5000.0
         else:
             raw_frame_only_kg = 2.0 * (N + O) * 0.18
             raw_frame_kg = raw_frame_only_kg + 1.0 * (O * 1.1) * 0.08
             raw_blade_kg = n_nan_1 * d_m * 0.058
             frame_mat_id = "MAT-ALU-KHUNG-BD"
-            p_alu_bd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 165000.0))
+            p_alu_bd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 168000.0))
             raw_acc_cost = n_nan_1 * 85.0
 
         unrounded_bd_sell = ((raw_frame_kg + raw_blade_kg) * p_alu_bd + raw_acc_cost + (raw_frame_only_kg + raw_blade_kg) * 20000.0) * 1.25
@@ -470,7 +473,7 @@ class Agent06_DiffuserBOM:
         return F, G, D, E, frame_kg + blade_kg
 
     @staticmethod
-    def _append_diffuser_accessories(parent_id, profile_type, w_val, D, E, has_mesh, has_filter, has_obd, is_black_2nd_layer, mat_price_map, mfg_markup, p_alu_obd_master, p_acc_master, total_alu_kg, components):
+    def _append_diffuser_accessories(parent_id, profile_type, w_val, D, E, has_mesh, has_filter, has_obd, is_black_2nd_layer, diffuser_rules, mat_price_map, mfg_markup, p_alu_obd_master, p_acc_master, total_alu_kg, components):
         if has_mesh and profile_type != "Z":
             p_mesh_master = mat_price_map.get("MAT-MESH-INOX-304", 150000.0)
             target_mesh_sell = _excel_round((D / 1000.0) * (E / 1000.0) * 150000.0, -3)
@@ -501,15 +504,16 @@ class Agent06_DiffuserBOM:
 
         if has_obd:
             d_m, e_m = D / 1000.0, E / 1000.0
+            p_alu_obd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 168000.0))
             obd_mult = (1.75 if w_val >= 5000.0 else 1.5) if (profile_type == "SLB" and is_black_2nd_layer) else 1.0
             raw_obd_frame_kg = 2.0 * (d_m + e_m) * 0.158
             raw_obd_blade_kg = (d_m / 0.04) * e_m * 0.10
             raw_obd_acc_cost = (d_m / 0.04) * 1500.0 + 5000.0
-            unrounded_obd_sell = ((raw_obd_frame_kg + raw_obd_blade_kg) * 160000.0 + raw_obd_acc_cost) * 1.15 * obd_mult
+            unrounded_obd_sell = ((raw_obd_frame_kg + raw_obd_blade_kg) * p_alu_obd + raw_obd_acc_cost) * 1.15 * obd_mult
             target_obd_sell = _excel_round(unrounded_obd_sell, -3)
             scale_obd = (target_obd_sell / unrounded_obd_sell) if unrounded_obd_sell > 0 else 1.0
-            obd_frame_kg = raw_obd_frame_kg * (160000.0 * 1.15 * obd_mult * scale_obd) / (p_alu_obd_master * mfg_markup)
-            obd_blade_kg = raw_obd_blade_kg * (160000.0 * 1.15 * obd_mult * scale_obd) / (p_alu_obd_master * mfg_markup)
+            obd_frame_kg = raw_obd_frame_kg * (p_alu_obd * 1.15 * obd_mult * scale_obd) / (p_alu_obd_master * mfg_markup)
+            obd_blade_kg = raw_obd_blade_kg * (p_alu_obd * 1.15 * obd_mult * scale_obd) / (p_alu_obd_master * mfg_markup)
             obd_acc_bo = (raw_obd_acc_cost * 1.15 * obd_mult * scale_obd) / (p_acc_master * mfg_markup)
 
             components.extend([

@@ -33,7 +33,8 @@ class Agent05_DamperBOM:
         is_fd = (dtype_u == "FD")
         is_fd_ei = is_fd and (ei_rating > 0 or str(model_code or "") == "2.01")
         is_fd_normal = is_fd and not is_fd_ei
-        is_md = (dtype_u in ("MD", "MVD", "MCD"))
+        is_mprd = (dtype_u in ("MPRD", "M-PRD"))
+        is_md = (dtype_u in ("MD", "MVD", "MCD")) or is_mprd
         is_nrd = (dtype_u == "NRD")
         is_prd = (dtype_u == "PRD")
         is_vcd_vit = (dtype_u == "VCD_VIT") or (dtype_u == "VCD" and any(k in name_lower for k in ("trục vít", "bánh vít", "tay vặn trục vít")))
@@ -80,16 +81,17 @@ class Agent05_DamperBOM:
         )
 
         z_total_m2 = ((w_eff + h_eff) * 2.0 * 300.0 + w_eff * h_eff) / 1_000_000.0
+        ei_wrap_rating = 0 if (is_md and not is_mprd) else ei_rating
         Agent05_DamperBOM._append_fire_insulation_components(
             parent_id, damper_type, w_eff, h_eff, w_mod, h_mod, l_body,
             modules_count, mod_note, z_total_m2, blade_factor_per_mod,
-            is_single_blade, is_fd_ei, is_mfd, is_md, ei_rating, mat_price_map, components
+            is_single_blade, is_fd_ei, is_mfd, (is_md and not is_mprd), ei_wrap_rating, mat_price_map, components
         )
 
         if is_round:
             target_mech_sell = Agent05_DamperBOM._price_round_damper(
                 d_eff, l_body, is_fd, is_mfd, is_fd_ei, is_fd_vcd, is_vcd_vit,
-                is_nrd, is_prd, is_md, ei_rating, damper_rules
+                is_nrd, is_prd, is_md, ei_wrap_rating, damper_rules
             )
         elif is_fd_ei or is_mfd:
             target_mech_sell = Agent05_DamperBOM._price_fire_damper_ei_or_mfd(
@@ -100,7 +102,7 @@ class Agent05_DamperBOM:
         else:
             target_mech_sell = Agent05_DamperBOM._price_square_standard_damper(
                 w_eff, h_eff, z_total_m2, is_prd, is_nrd, is_vcd_vit,
-                is_md, is_fd_vcd, ei_rating, damper_rules
+                is_md, is_fd_vcd, ei_wrap_rating, damper_rules
             )
 
         Agent05_DamperBOM._scale_components_to_target_sell(
@@ -122,22 +124,24 @@ class Agent05_DamperBOM:
 
     @staticmethod
     def _calc_obd_damper(parent_id, w, h):
-        """Tính BOM và giá bán Van OBD rời bằng nhôm định hình sơn tĩnh điện (160,000 đ/kg, nan 0.10kg/m, x1.15)."""
+        """Tính BOM và giá bán Van OBD rời bằng nhôm định hình sơn tĩnh điện (168,000 đ/kg, nan 0.10kg/m, x1.15)."""
         a_m = float(w or 200.0) / 1000.0
         b_m = float(h or 200.0) / 1000.0
         raw_obd_frame_kg = 2.0 * (a_m + b_m) * 0.158
         raw_obd_blade_kg = (a_m / 0.04) * b_m * 0.10
         raw_obd_acc_cost = (a_m / 0.04) * 1500.0 + 5000.0
-        unrounded_obd_sell = ((raw_obd_frame_kg + raw_obd_blade_kg) * 160000.0 + raw_obd_acc_cost) * 1.15
-        target_obd_sell = _excel_round(unrounded_obd_sell, -3)
         from swind_utils import get_master_price_map, get_master_bom_rules
         mat_price_map = get_master_price_map()
-        mfg_markup = float(get_master_bom_rules().get("damper_rules", {}).get("mfg_markup_factor", 1.593))
+        bom_rules = get_master_bom_rules()
+        p_alu_obd = float(bom_rules.get("diffuser_rules", {}).get("aluminum_selling_price_per_kg", 168000.0))
+        unrounded_obd_sell = ((raw_obd_frame_kg + raw_obd_blade_kg) * p_alu_obd + raw_obd_acc_cost) * 1.15
+        target_obd_sell = _excel_round(unrounded_obd_sell, -3)
+        mfg_markup = float(bom_rules.get("damper_rules", {}).get("mfg_markup_factor", 1.593))
         p_alu_obd_master = mat_price_map.get("MAT-ALU-KHUNG-OBD", 133000.0)
         p_acc_master = mat_price_map.get("MAT-DOOR-ACCESSORY", 15000.0)
         scale_obd = (target_obd_sell / unrounded_obd_sell) if unrounded_obd_sell > 0 else 1.0
-        obd_frame_kg = raw_obd_frame_kg * (160000.0 * 1.15 * scale_obd) / (p_alu_obd_master * mfg_markup)
-        obd_blade_kg = raw_obd_blade_kg * (160000.0 * 1.15 * scale_obd) / (p_alu_obd_master * mfg_markup)
+        obd_frame_kg = raw_obd_frame_kg * (p_alu_obd * 1.15 * scale_obd) / (p_alu_obd_master * mfg_markup)
+        obd_blade_kg = raw_obd_blade_kg * (p_alu_obd * 1.15 * scale_obd) / (p_alu_obd_master * mfg_markup)
         obd_acc_bo = (raw_obd_acc_cost * 1.15 * scale_obd) / (p_acc_master * mfg_markup)
         return {
             "category": "VAN_GIO",
@@ -633,7 +637,7 @@ class Agent05_DamperBOM:
         if is_fd_vcd:
             base_mech_sell += 100000.0
         ei_rate = float(damper_rules.get("vcd_nrd_ei_wrapping_rate_per_m2", 320000.0))
-        ei_sell = (z_total_m2 * ei_rate) if (ei_rating > 0 and not is_md and max(w_eff, h_eff) > 150.0) else 0.0
+        ei_sell = (z_total_m2 * ei_rate) if (ei_rating > 0 and max(w_eff, h_eff) > 150.0) else 0.0
         return base_mech_sell + ei_sell
 
     @staticmethod

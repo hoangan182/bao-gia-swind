@@ -253,7 +253,7 @@ class Agent04_DuctworkBOM:
         if subtype in ("SILENCER_SQ", "SILENCER_RT"):
             return cls._calc_silencer_item(
                 subtype, raw_name, full_text, unit, w1, h1, w2, h2, d1,
-                length, radius, angle, explicit_thk, def_w, def_h, d_in, w2_in, h2_in
+                length, radius, angle, explicit_thk, def_w, def_h, d_in, w2_in, h2_in, ei_rating
             )
 
         if subtype in ("DUCT_M2", "FITTING_M2"):
@@ -360,7 +360,7 @@ class Agent04_DuctworkBOM:
         }
 
     @classmethod
-    def _calc_silencer_item(cls, subtype, raw_name, full_text, unit, w1, h1, w2, h2, d1, length, radius, angle, explicit_thk, def_w, def_h, d_in, w2_in, h2_in):
+    def _calc_silencer_item(cls, subtype, raw_name, full_text, unit, w1, h1, w2, h2, d1, length, radius, angle, explicit_thk, def_w, def_h, d_in, w2_in, h2_in, ei_rating=0):
         L_val = length if length > 0 else 1000.0
         if subtype == "SILENCER_RT" or (d1 > 0 and (w1 == 0 or w1 == d1)):
             D_outer = d1 if d1 > 0 else w1
@@ -373,6 +373,9 @@ class Agent04_DuctworkBOM:
             cost_core = s_inner * (55000.0 + 65000.0 + 15000.0)
             cost_labor = (cost_shell + cost_core) * 0.45
             unit_price = excel_round(cost_shell + cost_core + cost_labor, -3)
+            if ei_rating > 0:
+                ei_surcharge = {30: 345000.0, 45: 420000.0, 60: 520000.0, 90: 680000.0, 120: 850000.0}.get(ei_rating, 345000.0)
+                unit_price = excel_round(unit_price + s_outer * ei_surcharge, -2)
             if unit in ("m2", "m²") and s_outer > 0:
                 unit_price = excel_round(unit_price / s_outer, -2)
             return {
@@ -383,7 +386,7 @@ class Agent04_DuctworkBOM:
                 "b1": "Ø", "b2": int(D_inner),
                 "area_m2": round(s_outer, 3),
                 "unit_price": unit_price,
-                "spec_note": f"Tiêu âm tròn D{int(D_outer)}xL{int(L_val)}, tôn Hoa Sen dày {thk:.2f}mm, bông khoáng 60kg/m3 + vải thủy tinh + tôn đục lỗ",
+                "spec_note": f"Tiêu âm tròn D{int(D_outer)}xL{int(L_val)}, tôn Hoa Sen dày {thk:.2f}mm, bông khoáng 60kg/m3 + vải thủy tinh + tôn đục lỗ" + (f", bọc chống cháy EI{ei_rating}" if ei_rating > 0 else ""),
                 "trace": f"BG TIEU AM (Tròn): S_vỏ={s_outer:.3f}m2, S_ruột={s_inner:.3f}m2, Tôn={thk}mm"
             }
         else:
@@ -434,6 +437,9 @@ class Agent04_DuctworkBOM:
                 l_out_s = int(L_s)
 
             silencer_rate = 950000.0 * 1.3 if is_silencer_fitting else 950000.0
+            if ei_rating > 0:
+                ei_surcharge = {30: 345000.0, 45: 420000.0, 60: 520000.0, 90: 680000.0, 120: 850000.0}.get(ei_rating, 345000.0)
+                silencer_rate += ei_surcharge
             if unit in ("m2", "m²"):
                 unit_price = excel_round(silencer_rate, -2)
             else:
@@ -447,7 +453,7 @@ class Agent04_DuctworkBOM:
                 "b2": int(H_inner) if h1_s > 0 else None,
                 "area_m2": round(s_outer, 3),
                 "unit_price": unit_price,
-                "spec_note": f"{'Phụ kiện tiêu âm vuông' if is_silencer_fitting else 'Hộp tiêu âm vuông'} {int(W_outer)}x{int(H_outer)}" + (f" R={l_out_s}" if (is_silencer_fitting and any(k in t_name_low for k in ('cút', 'cut ', 'co ', 'chếch', 'chech'))) else (f"xL{l_out_s}" if l_out_s else "")) + f", tôn Hoa Sen dày {thk:.2f}mm, bông khoáng 60kg/m3 + vải thủy tinh + tôn đục lỗ",
+                "spec_note": f"{'Phụ kiện tiêu âm vuông' if is_silencer_fitting else 'Hộp tiêu âm vuông'}" + (f" {int(W_outer)}x{int(H_outer)}" if (w1_s > 0 and h1_s > 0) else "") + (f" R={l_out_s}" if (is_silencer_fitting and any(k in t_name_low for k in ('cút', 'cut ', 'co ', 'chếch', 'chech'))) else (f"xL{l_out_s}" if l_out_s else "")) + f", tôn Hoa Sen dày {thk:.2f}mm, bông khoáng 60kg/m3 + vải thủy tinh + tôn đục lỗ" + (f", bọc chống cháy EI{ei_rating}" if ei_rating > 0 else ""),
                 "trace": f"BG TIEU AM ({'Phụ kiện tiêu âm vuông x1.3' if is_silencer_fitting else 'Tiêu âm vuông'}): S={s_outer:.3f}m2 x {silencer_rate:,.0f} đ/m2 = {unit_price:,.0f} đ"
             }
 
