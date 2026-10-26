@@ -221,7 +221,7 @@
       "rule": "Những dòng thuộc Cửa gió và Van gió có tên và kích thước rõ ràng nhưng chưa có khối lượng (ô Số lượng / Đơn vị trống trong BOQ) vẫn giữ nguyên trong bảng báo giá, để trống cột Số lượng và điền đầy đủ Đơn giá."
     },
     "AIR_CONDITIONING_SQUARE_DIFFUSER_SD_RULE": {
-      "rule": "Đối với hạng mục cửa dành cho hệ điều hòa, cửa vuông các kích thước 600x600 (cổ 450x450), 450x450 (cổ 300x300), 300x300 (cổ 150x150) mặc định áp dụng mã cửa khuếch tán vuông SD (profile type 'T', B1=W-150, B2=H-150), trừ trường hợp là cửa tăng áp/hút khói kèm OBD hoặc ghi rõ nan thẳng/bầu dục/sọt trứng/linear. Cửa hồi / miệng hồi (bao gồm cả từ khóa 'hồi lạnh') mặc định là cửa nan thẳng bầu dục kèm lưới lọc bụi (mã SDG+F, profile type 'BD', has_filter=True)."
+      "rule": "Đối với hạng mục cửa dành cho hệ điều hòa, cửa vuông các kích thước 600x600 (cổ 450x450), 450x450 (cổ 300x300), 300x300 (cổ 150x150) mặc định áp dụng mã cửa khuếch tán vuông SD (profile type 'T', B1=W-150, B2=H-150), trừ trường hợp là cửa tăng áp/hút khói kèm OBD hoặc ghi rõ nan thẳng/bầu dục/sọt trứng (dạng lưới)/linear. Cửa dạng lưới mặc định là cửa nan sọt trứng (ECG). Cửa hồi / miệng hồi (bao gồm cả từ khóa 'hồi lạnh') mặc định là cửa nan thẳng bầu dục kèm lưới lọc bụi (mã SDG+F, profile type 'BD', has_filter=True), nhưng nếu khách đã ghi kèm van OBD thì chỉ báo kèm OBD (SDG+O) chứ không tự báo thêm lưới lọc."
     },
     "COMBO_DIFFUSER_WITH_PLENUM_BOX_RULE": {
       "rule": "Khi BOQ có 'Cửa gió kèm hộp gió' hoặc 'Miệng gió kèm hộp gió': Swind chỉ báo giá phần Cửa gió trên sheet báo giá của Swind (hoặc cộng giá hộp gió đã báo khi ref_price > 0), ghi chú rõ quy cách."

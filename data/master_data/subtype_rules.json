@@ -16,11 +16,11 @@
         {"keywords": ["cách nhiệt", "bảo ôn", "insul"], "subtype": "INSUL"}
     ],
     "CUA_GIO": [
+        {"keywords": ["sọt trứng", "sọt trưng", "dạng lưới", "eggcrate", "egg crate", "ecg", "seeg"], "subtype": "ECG"},
         {"keywords": ["cửa hồi", "miệng hồi", "hút hồi", "rag", "hồi gió", "gió hồi", "hồi lạnh"], "subtype": "BD"},
         {"keywords": ["khuếch tán tròn", "miệng gió tròn", "cửa gió tròn", "srd"], "subtype": "SRD"},
         {"keywords": ["khuếch tán", "sad", "ead", "scd", "skd", "4 hướng"], "subtype": "T"},
         {"keywords": ["louver", "luover", "louvre", "fal", "eal", "oal", "wl", "swl", "chớp", "lam", "ngoài trời", "nan z"], "subtype": "Z"},
-        {"keywords": ["sọt trứng", "sọt trưng", "eggcrate", "ecg", "seeg"], "subtype": "ECG"},
         {"keywords": ["khe", "slot", "sld", "lsd"], "subtype": "SLD"},
         {"keywords": ["linear", "slb", "nan t ", "nan t-", "khe dài", "tuyến tính"], "subtype": "SLB"},
         {"keywords": ["bầu dục", "nan thẳng", "seag", "seg", "oag", "mag", "pag", "sag", "dag", "srg", "sdg", "obd", "eag"], "subtype": "BD"}
@@ -74,7 +74,7 @@
         "single_dim_damper_regex": "\\b(?:vcd|fd|nrd|prd|md|obd|mfd|mfsd)\\s+(\\d{2,4})\\b",
         "louver_z_keywords": ["nan z", "louver", "luover", "louvre", "chớp", "fal", "oal", "eal", "wl", "swl"],
         "mesh_keywords": ["lưới", "chắn côn trùng", "côn trùng", "lcct", "+n", "+ n", "+is", "+ is", "i.s", "insect screen", "c/w is", "c/w i.s", "is"],
-        "filter_keywords": ["phin lọc", "lọc bụi", "+f", "g4"],
+        "filter_keywords": ["phin lọc", "lọc bụi", "lọc sơ cấp", "lưới lọc", "+f", "g4"],
         "combo_box_keywords": ["kèm hộp gió", "kèm hộp", "kèm box", "có hộp gió", "gắn hộp gió", "hộp và cửa", "hộp miệng gió", "hộp kèm cửa", "hộp + cửa", "air boot", "plenum box", "hộp hòa trộn", "bao gồm hộp"],
         "hvac_sheet_keywords": [
             "dhkk", "dhtg", "hvac", "thong gio", "thông gió", "thong_gio",

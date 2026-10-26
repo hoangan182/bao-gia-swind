@@ -351,7 +351,7 @@ class Agent01_BOQExtractor:
         combo_cfg = (subtype_rules or {}).get("COMBO_AND_DETECTION_RULES") or get_subtype_rules().get("COMBO_AND_DETECTION_RULES", {})
 
         mesh_kws = tuple(combo_cfg.get("mesh_keywords", ("lưới", "chắn côn trùng", "côn trùng", "lcct", "+n", "+ n", "+is", "+ is", "i.s", "insect screen", "c/w is", "c/w i.s", "is"))) + ("lccct", "c/w ls", "c/w l.s", "chắn chim", "against bird", "bird screen")
-        filter_kws = tuple(combo_cfg.get("filter_keywords", ("phin lọc", "lọc bụi", "+f", "g4"))) + ("filter", "lọc thô", "lọc sơ cấp")
+        filter_kws = tuple(combo_cfg.get("filter_keywords", ("phin lọc", "lọc bụi", "lọc sơ cấp", "lưới lọc", "+f", "g4"))) + ("filter", "lọc thô", "lọc sơ cấp", "lưới lọc")
         louver_kws = tuple(combo_cfg.get("louver_z_keywords", ("nan z", "louver", "luover", "louvre", "chớp", "fal", "oal", "eal", "wl"))) + ("cửa chớp", "chớp nhôm")
 
         has_obd = (
@@ -359,7 +359,7 @@ class Agent01_BOQExtractor:
             or bool(re.search(r'\+\s*o\b|(?:c/w|\+|kèm|gắn|with)\s*obd\b|van\s+điều\s*ch[ỉi]nh\s*lưu\s*lượng|van\s+ch[ỉi]nh\s*lưu\s*lượng', combined_search))
         )
         filter_search = re.sub(r'không\s+kèm\s+lọc[^\.,\n]*', '', combined_search)
-        mesh_search = re.sub(r'lưới\s+(?:lọc|gió)', '', combined_search)
+        mesh_search = re.sub(r'(?:dạng\s+lưới|lưới\s+(?:lọc|gió))', '', combined_search)
         has_mesh = (
             any(k in mesh_search for k in mesh_kws if k != "is")
             or bool(re.search(r'\b(?:i\.s\.?|l\.s\.?|lc+t)\b|(?:c/w|\+|kèm|with)\s*(?:is|ls)\b', mesh_search))
@@ -372,20 +372,21 @@ class Agent01_BOQExtractor:
 
         # Rule 2: Cửa tăng áp, cửa hút khói kèm OBD -> nan thẳng bầu dục kèm van OBD mã SDG+O
         is_press_or_smoke = any(k in combined_search for k in ("tăng áp", "tạo áp", "hút khói", "thải khói", "cấp bù", "pag", "seg", "spg", "seag", "smoke"))
+        is_eggcrate = any(k in combined_search for k in ("sọt trứng", "sọt trưng", "dạng lưới", "eggcrate", "egg crate", "ecg", "seeg"))
 
         # Rule 3: Cửa ghi nan Z, louver hoặc miệng cấp khí bù ngoài trời hoặc cửa nan 1 lớp khổ lớn >= 3000mm -> cửa nan Z mã WL / WL+N
         is_louver_z = (
             any(k in combined_search for k in louver_kws)
             or (any(k in raw_search for k in ("cấp khí bù", "bù khí", "cấp gió bù", "bù gió")) and not any(k in raw_search for k in ("fag", "sag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "sdg", "nan thẳng", "bầu dục", "nan bd")))
-            or (max(w, h) >= 3000.0 and not has_obd and not is_double_layer and not any(k in combined_search for k in ("nan thẳng", "bầu dục", "nan bd", "linear", "sọt trứng", "sọt trưng", "khuếch tán")))
-            or (has_mesh and not has_obd and not has_filter and not is_double_layer and not any(k in combined_search for k in ("cover", "nan thẳng", "bầu dục", "nan bd", "linear", "sọt trứng", "sọt trưng", "khuếch tán", "fag", "sag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "return", "supply", "insect screen", "i.s", "lcct")))
+            or (max(w, h) >= 3000.0 and not has_obd and not is_double_layer and not is_eggcrate and not any(k in combined_search for k in ("nan thẳng", "bầu dục", "nan bd", "linear", "sọt trứng", "sọt trưng", "khuếch tán")))
+            or (has_mesh and not has_obd and not has_filter and not is_double_layer and not is_eggcrate and not any(k in combined_search for k in ("cover", "nan thẳng", "bầu dục", "nan bd", "linear", "sọt trứng", "sọt trưng", "khuếch tán", "fag", "sag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "return", "supply", "insect screen", "i.s", "lcct")))
         )
         is_standalone_lcct = has_mesh and not any(k in raw_search for k in louver_kws + ("cửa", "miệng", "mặt gió", "sag", "fag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "cover", "nan "))
         is_standalone_filter = has_filter and not has_mesh and not has_obd and not any(k in raw_search for k in louver_kws + ("cửa", "miệng", "mặt gió", "sag", "fag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "cover", "nan "))
 
-        # Rule 4: Cửa hồi là cửa nan thẳng bầu dục kèm lưới lọc bụi thô mã SDG+F
+        # Rule 4: Cửa hồi là cửa nan thẳng bầu dục kèm lưới lọc bụi thô mã SDG+F (nếu khách đã ghi kèm OBD thì không tự báo thêm lưới)
         is_return_grille = any(k in combined_search for k in ("cửa hồi", "miệng hồi", "hút hồi", "rag", "hồi gió", "gió hồi", "hồi lạnh", "cửa gió hồi", "cửa gió hôi", "return air", "return grille"))
-        if is_return_grille and not has_mesh:
+        if is_return_grille and not has_mesh and not has_obd and not is_eggcrate:
             has_filter = True
         has_img_slb = bool(item.get("has_embedded_image")) or any(k in combined_search for k in ("linear", "slb", "nan t ", "nan t-", "khe dài", "tuyến tính", "slot"))
 
@@ -394,7 +395,7 @@ class Agent01_BOQExtractor:
         is_sq_ac_diffuser = (
             not is_thoi_kt and not is_standalone_lcct and not is_standalone_filter
             and w > 0 and w == h and int(w) in (600, 450, 300)
-            and not is_return_grille and not is_louver_z and not is_press_or_smoke
+            and not is_return_grille and not is_louver_z and not is_press_or_smoke and not is_eggcrate
             and (not has_obd or any(k in combined_search for k in ("cấp", "lạnh", "điều hòa", "sag", "sad", "scd", "khuếch tán", "450", "150")))
             and not any(k in combined_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd", "sọt trứng", "sọt trưng", "eggcrate", "ecg", "linear", "nan t", "dạng nan", "格栅", "kiểm tra", "检查", "access door", "cửa công tác", "cửa thăm", "tháo lắp", "inspection"))
         )
@@ -457,6 +458,20 @@ class Agent01_BOQExtractor:
             b1, b2 = None, None
             note_fslf = note_bfn = "Lưới lọc bụi thô G4 kèm khung nhôm"
 
+        elif is_eggcrate:
+            profile_type = "ECG"
+            if has_obd and has_filter:
+                model_fslf = model_bfn = "ECG+O+F+N" if has_mesh else "ECG+O+F"
+            elif has_obd:
+                model_fslf = model_bfn = "ECG+O+N" if has_mesh else "ECG+O"
+            elif has_filter:
+                model_fslf = model_bfn = "ECG+F+N" if has_mesh else "ECG+F"
+            else:
+                model_fslf = model_bfn = "ECG+N" if has_mesh else "ECG"
+            if w > 0 and h > 0:
+                b1, b2 = int(max(50, w - 50)), int(max(50, h - 50))
+            note_fslf = note_bfn = "Cửa nan sọt trứng" + (" lõi tháo lắp" if is_removable else "") + (" kèm van OBD" if has_obd else "") + (" kèm LCCT" if has_mesh else "") + (" kèm lưới lọc bụi thô" if has_filter else "") + box_note
+
         elif is_press_or_smoke and has_obd and not has_img_slb:
             profile_type = "BD"
             has_obd = True
@@ -467,7 +482,7 @@ class Agent01_BOQExtractor:
 
         elif is_louver_z:
             profile_type = "Z"
-            has_mesh = bool(has_mesh or any(k in combined_search for k in ("lưới", "côn trùng", "chắn chim", "against bird", "bird screen", "lcct", "i.s", "insect screen")))
+            has_mesh = bool(has_mesh or any(k in mesh_search for k in ("lưới", "côn trùng", "chắn chim", "against bird", "bird screen", "lcct", "i.s", "insect screen")))
             if has_obd and has_mesh:
                 model_fslf = model_bfn = "WL+O+N"
             elif has_obd:
@@ -482,14 +497,16 @@ class Agent01_BOQExtractor:
 
         elif is_return_grille and not has_img_slb:
             profile_type = "BD"
-            if not has_mesh:
+            if not has_mesh and not has_obd:
                 has_filter = True
             if has_obd and has_filter and has_mesh:
                 model_fslf = model_bfn = "SDG+O+F+N"
+            elif has_obd and has_filter:
+                model_fslf = model_bfn = "SDG+O+F"
             elif has_obd and has_mesh:
                 model_fslf = model_bfn = "SDG+O+N"
             elif has_obd:
-                model_fslf = model_bfn = "SDG+O+F"
+                model_fslf = model_bfn = "SDG+O"
             elif has_filter and has_mesh:
                 model_fslf = model_bfn = "SDG+F+N"
             elif has_mesh:
@@ -499,8 +516,17 @@ class Agent01_BOQExtractor:
             if w > 0 and h > 0:
                 b1, b2 = int(max(50, w - 50)), int(max(50, h - 50))
             rem_txt = " khung tháo lắp" if is_removable else ""
-            ret_acc = "kèm lưới lọc bụi thô và LCCT Inox 304" if (has_filter and has_mesh) else ("kèm lưới chắn côn trùng Inox 304" if has_mesh else "kèm lưới lọc bụi thô")
-            note_fslf = note_bfn = f"Cửa hồi nan thẳng bầu dục{rem_txt} {ret_acc}{' và van OBD' if has_obd else ''}" + box_note
+            if has_filter and has_mesh:
+                ret_acc = "kèm lưới lọc bụi thô và LCCT Inox 304" + (" và van OBD" if has_obd else "")
+            elif has_mesh:
+                ret_acc = "kèm lưới chắn côn trùng Inox 304" + (" và van OBD" if has_obd else "")
+            elif has_filter:
+                ret_acc = "kèm lưới lọc bụi thô" + (" và van OBD" if has_obd else "")
+            elif has_obd:
+                ret_acc = "kèm van OBD"
+            else:
+                ret_acc = ""
+            note_fslf = note_bfn = f"Cửa hồi nan thẳng bầu dục{rem_txt} {ret_acc}".strip() + box_note
 
         elif is_diffuser_sq:
             profile_type = "T"
