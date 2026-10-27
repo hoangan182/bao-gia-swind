@@ -587,7 +587,8 @@ def process_single_sheet_estimation(
                 has_filter=spec["has_filter"],
                 is_double_layer=spec["is_double_layer"],
                 is_black_2nd_layer=spec["is_black_2nd_layer"],
-                is_removable=bool(spec.get("is_removable"))
+                is_removable=bool(spec.get("is_removable")),
+                n_slots=int(spec.get("n_slots") or 0)
             )
             for comp in bom["components"]:
                 builder.add_subsheet_component(
@@ -982,6 +983,9 @@ def export_customer_boq_quotation_files(
                     q_row = int(m_q.group(1))
                     ws.cell(r, 14).value = q_row_price.get(q_row, 0)
                     ws.cell(r, 14).number_format = "#,##0"
+            val_p = ws.cell(r, 16).value
+            if isinstance(val_p, str) and "FSLF24V US" in val_p:
+                ws.cell(r, 16).value = val_p.replace("FSLF24V US", "FSLF US")
 
         if wb.worksheets:
             wb.active = 0
@@ -1150,6 +1154,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
         quoted_map = {it.get("source_row"): it for it in filtered_items if it.get("source_sheet") == sh_name}
         titles_inherited = sorted({it.get("section", "") for it in filtered_items if it.get("source_sheet") == sh_name and it.get("section") and it.get("section") != "SẢN PHẨM"})
         missing_qty_notes = []
+        missing_dim_notes = []
         suspect_unparsed = []
         for r in range((header_row or 1) + 1, ws.max_row + 1):
             if r in hidden_rows:
@@ -1157,6 +1162,9 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
             if r in quoted_map:
                 if quoted_map[r].get("is_missing_qty"):
                     missing_qty_notes.append(f"Dòng {r}: '{quoted_map[r].get('raw_name')}' (Title: '{quoted_map[r].get('section')}') — đã áp đơn giá, cột KL gốc để trống")
+                if quoted_map[r].get("is_missing_dims") and float(quoted_map[r].get("qty") or 0) > 0:
+                    sp_col_v = ws.cell(r, col_map["spec"]).value if "spec" in col_map else None
+                    missing_dim_notes.append(f"Dòng {r}: Tên='{quoted_map[r].get('raw_name')}' | Spec='{sp_col_v}' | KL={quoted_map[r].get('qty')}")
                 continue
             if r in raw_map:
                 continue
@@ -1178,6 +1186,8 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
             print(f"     • Danh mục Title cha đã quét & kế thừa: {titles_inherited}")
         for mq in missing_qty_notes:
             print(f"     • [Lưu ý KL trống] {mq}")
+        if missing_dim_notes:
+            print(f"     • [Lưu ý thiếu kích thước ({len(missing_dim_notes)} dòng KL>0)]: {', '.join(missing_dim_notes[:6])}{' ...' if len(missing_dim_notes) > 6 else ''}")
         if suspect_unparsed:
             print(f"     ⚠️ [CẢNH BÁO SÓT DÒNG] Phát hiện {len(suspect_unparsed)} dòng có KL/Kích thước chưa được bóc tách:")
             for su in suspect_unparsed:

@@ -25,6 +25,10 @@ Trước hoặc sau khi sửa bất kỳ công thức nào, chạy lệnh sau đ
 ./venv/bin/python src/swind_item_inspector.py "Van chặn lửa động cơ MFD 1200x800 EI90" --motor KLB
 ./venv/bin/python src/swind_item_inspector.py "Van chặn lửa cầu chì FD 800x600 EI120"
 ./venv/bin/python src/swind_item_inspector.py "Cửa gió khuếch tán 600x600 kèm OBD"
+./venv/bin/python src/swind_item_inspector.py "Miệng gió cấp 1000mm D150"
+
+# Quét nhanh toàn bộ BOQ trong 0.2s để gom nhóm Model/Subtype & kiểm tra dòng thiếu kích thước (không cần viết script phụ):
+./venv/bin/python src/swind_item_inspector.py --audit-boq "input/A4_BOQ_Van gió.xlsx"
 
 # Chạy kiểm thử tự động 53 mặt hàng chuẩn (so khớp với data/master_data/formula_regression_baseline.json):
 ./venv/bin/python src/swind_item_inspector.py --self-test
@@ -97,10 +101,11 @@ File `src/agent_06_bom_diffuser.py` đã được chia nhỏ thành **8 hàm ri�
 | **Lọc bụi G4 rời (`FILTER_G4`)** | `_calc_profile_filter_g4` | `110..125` | Khung lọc bụi G4 rời `max(150000, round((S*150000 + P*60000)*1.3, -3))` |
 | **Cửa Louver nan Z (`Z` / `WL`)** | `_calc_profile_louver_z` | `128..200` | Khung Z (`0.55 kg/m`), nan Z (`0.33 kg/m`), bước nan `40mm`, thanh liên kết, sơn `20,000`, công thức giá bán `WL` / `WL+N` (`* 1.2`) |
 | **Cửa sọt trứng (`ECG`)** | `_calc_profile_eggcrate` | `203..264` | Khung bầu dục (`0.50` hoặc tháo lắp `0.93 kg/m`), lõi sọt trứng `125,000 đ/m2`, bản lề + chốt nếu tháo lắp |
-| **Cửa Linear nan T (`SLB`)** | `_calc_profile_linear_slb` | `267..331` | Khung SLB (`0.42 kg/m`), nan T (`0.23 kg/m`, bước `20mm`), tăng cứng, sơn đen lớp 2 (`+15%`) |
-| **Cửa khuếch tán vuông/tròn (`T` / `SD` / `SRD`)** | `_calc_profile_diffuser_t` | `334..390` | Cửa khuếch tán vuông 4 hướng `SD` (khung KT `0.63 kg/m`, bước nan `37.5mm`) & khuếch tán tròn `SRD` |
-| **Cửa nan bầu dục 1 lớp / 2 lớp / cửa thăm (`BD` / `SDG` / `SDGK`)** | `_calc_profile_oval_bd` | `393..470` | Cửa cấp/hồi nan bầu dục 1 lớp, 2 lớp (`is_double_layer`), cửa kiểm tra tháo lắp (`is_removable` -> `SDGK`) |
-| **Phụ kiện cửa gió (`+O`, `+N`, `+F`)** | `_append_diffuser_accessories` | `473..546` | Cộng thêm Van OBD gắn kèm (`+O`), Lưới chắn côn trùng Inox 304 (`+N`), Lưới lọc bụi G4 (`+F`) và quy đổi `target_sell` |
+| **Cửa Linear nan T (`SLB`)** | `_calc_profile_linear_slb` | `267..338` | Khung SLB (`0.42 kg/m`), nan T (`0.23 kg/m`, bước `20mm`), tăng cứng, sơn đen lớp 2 (`+15%`) |
+| **Cửa gió kiểu khe hẹp Slot (`SLD` / `DLS`)** | `_calc_profile_slot_sld` | `341..415` | 4 hệ nhôm Slot (`SH8061 0.30`, `SH8060 0.25`, `SH8083 0.15`, `SH8057B 0.22 kg/m`), chia `1 slot` (`<150`), `2 slot` (`150..<200`), `3 slot` (`>=200`), phụ kiện `5,000 + 10,000*N`, hệ số `1.25` |
+| **Cửa khuếch tán vuông/tròn (`T` / `SD` / `SRD`)** | `_calc_profile_diffuser_t` | `418..474` | Cửa khuếch tán vuông 4 hướng `SD` (khung KT `0.63 kg/m`, bước nan `37.5mm`) & khuếch tán tròn `SRD` |
+| **Cửa nan bầu dục 1 lớp / 2 lớp / cửa thăm (`BD` / `SDG` / `SDGK`)** | `_calc_profile_oval_bd` | `477..554` | Cửa cấp/hồi nan bầu dục 1 lớp, 2 lớp (`is_double_layer`), cửa kiểm tra tháo lắp (`is_removable` -> `SDGK`) |
+| **Phụ kiện cửa gió (`+O`, `+N`, `+F`)** | `_append_diffuser_accessories` | `557..630` | Cộng thêm Van OBD gắn kèm (`+O`), Lưới chắn côn trùng Inox 304 (`+N`), Lưới lọc bụi G4 (`+F`) và quy đổi `target_sell` |
 
 ---
 

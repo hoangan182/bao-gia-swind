@@ -134,9 +134,10 @@ DIFFUSER_METHOD_MAP = {
     "FILTER_G4": "_calc_profile_filter_g4 (L110-125)",
     "Z": "_calc_profile_louver_z (L128-200)",
     "ECG": "_calc_profile_eggcrate (L203-264)",
-    "SLB": "_calc_profile_linear_slb (L267-331)",
-    "T": "_calc_profile_diffuser_t (L334-390)",
-    "BD": "_calc_profile_oval_bd (L393-470)",
+    "SLB": "_calc_profile_linear_slb (L267-338)",
+    "SLD": "_calc_profile_slot_sld (L341-415)",
+    "T": "_calc_profile_diffuser_t (L418-474)",
+    "BD": "_calc_profile_oval_bd (L477-554)",
 }
 
 
@@ -338,7 +339,8 @@ def inspect_batch_items(cases, formula_mode=None):
                 has_filter=spec["has_filter"],
                 is_double_layer=spec["is_double_layer"],
                 is_black_2nd_layer=spec["is_black_2nd_layer"],
-                is_removable=bool(spec.get("is_removable"))
+                is_removable=bool(spec.get("is_removable")),
+                n_slots=int(spec.get("n_slots") or 0)
             )
             components.extend(bom["components"])
             combo_dmps = item.get("combo_dampers") or ([item["combo_damper"]] if item.get("combo_damper") else [])
@@ -491,7 +493,30 @@ def main():
     ap.add_argument("--json", action="store_true", help="Xuất kết quả dạng JSON")
     ap.add_argument("--self-test", action="store_true", help="Chạy kiểm thử 100% công thức đối chiếu với baseline")
     ap.add_argument("--save-baseline", action="store_true", help="Cập nhật file baseline chuẩn")
+    ap.add_argument("--audit-boq", default=None, help="Quét nhanh toàn bộ các mẫu mặt hàng & kích thước trong 1 file BOQ Excel (chỉ mất 0.2s)")
     args = ap.parse_args()
+
+    if args.audit_boq:
+        with contextlib.redirect_stdout(io.StringIO()):
+            parser = SwindBOQParser(args.audit_boq)
+            subtype_rules = get_subtype_rules()
+            price_map = get_master_price_map()
+        for sh in parser.wb.sheetnames:
+            with contextlib.redirect_stdout(io.StringIO()):
+                items = parser.parse_sheet(sh)
+            if not items:
+                continue
+            Agent01_BOQExtractor.enrich_all_items(items, subtype_rules, [{"MAT_ID": k, "Price": v} for k, v in price_map.items()])
+            groups = {}
+            for it in items:
+                sp = it["resolved_spec"]
+                key = (it["category"], sp["subtype"], sp["model_std"], sp["note_std"])
+                g = groups.setdefault(key, {"count": 0, "sample_row": it.get("source_row"), "sample_name": it.get("raw_name"), "sample_dims": (sp["a1"], sp["a2"])})
+                g["count"] += 1
+            print(f"=== AUDIT NHANH SHEET '{sh}' ({len(items)} dòng) ===")
+            for (cat, sub, mod, note), g in groups.items():
+                print(f"  • [{cat}/{sub}] Model={mod!r} | SL dòng={g['count']} | Mẫu R{g['sample_row']}: {g['sample_name']!r} A={g['sample_dims']} | Note={note!r}")
+        sys.exit(0)
 
     if args.self_test or args.save_baseline:
         ok = run_self_test(save_baseline=args.save_baseline)

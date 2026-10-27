@@ -25,7 +25,7 @@ class Agent06_DiffuserBOM:
     """
 
     @staticmethod
-    def calculate_diffuser_bom(parent_id, diffuser_type, w, h, profile_type="BD", has_obd=False, has_mesh=False, has_filter=False, is_double_layer=False, is_black_2nd_layer=False, is_removable=False):
+    def calculate_diffuser_bom(parent_id, diffuser_type, w, h, profile_type="BD", has_obd=False, has_mesh=False, has_filter=False, is_double_layer=False, is_black_2nd_layer=False, is_removable=False, n_slots=0):
         from swind_utils import get_master_price_map, get_master_bom_rules
         mat_price_map = get_master_price_map()
         diffuser_rules = get_master_bom_rules().get("diffuser_rules", {})
@@ -64,6 +64,11 @@ class Agent06_DiffuserBOM:
         elif profile_type == "SLB":
             F, G, D, E, total_alu_kg, has_obd = Agent06_DiffuserBOM._calc_profile_linear_slb(
                 parent_id, w_val, h_val, is_black_2nd_layer, has_obd,
+                diffuser_rules, mfg_markup, p_alu_bd_master, p_paint_master, p_acc_master, components
+            )
+        elif profile_type == "SLD":
+            F, G, D, E, total_alu_kg = Agent06_DiffuserBOM._calc_profile_slot_sld(
+                parent_id, w_val, h_val, n_slots,
                 diffuser_rules, mfg_markup, p_alu_bd_master, p_paint_master, p_acc_master, components
             )
         elif profile_type == "T":
@@ -331,6 +336,84 @@ class Agent06_DiffuserBOM:
             }
         ])
         return F, G, D, E, frame_kg + blade_kg, has_obd
+
+    @staticmethod
+    def _calc_profile_slot_sld(parent_id, w_val, h_val, n_slots, diffuser_rules, mfg_markup, p_alu_bd_master, p_paint_master, p_acc_master, components):
+        F, G = w_val, h_val
+        D, E = max(50.0, w_val - 50.0), max(30.0, h_val - 50.0)
+        N, O = F / 1000.0, G / 1000.0
+        b_dim = min(w_val, h_val)
+        if n_slots and int(n_slots) > 0:
+            k = int(n_slots)
+        elif b_dim < 150.0:
+            k = 1
+        elif b_dim < 200.0:
+            k = 2
+        else:
+            k = 3
+
+        sld_cfg = diffuser_rules.get("slot_diffuser_sld", {})
+        wt_frame = float(sld_cfg.get("frame_sh8061_kg_per_m", 0.30))
+        wt_t_bar = float(sld_cfg.get("t_bar_sh8060_kg_per_m", 0.25))
+        wt_blade = float(sld_cfg.get("blade_sh8083_kg_per_m", 0.15))
+        wt_holder = float(sld_cfg.get("blade_holder_sh8057b_kg_per_m", 0.22))
+        acc_base = float(sld_cfg.get("acc_base_vnd", 5000.0))
+        acc_per_slot = float(sld_cfg.get("acc_per_slot_vnd", 10000.0))
+
+        raw_frame_kg = 2.0 * (N + O) * wt_frame + max(0, k - 1) * N * wt_t_bar
+        raw_blade_kg = 2.0 * k * N * wt_blade + k * N * wt_holder
+        raw_acc_cost = acc_base + acc_per_slot * k
+        raw_paint_cost = 2.0 * N * O * 75000.0
+        p_alu_sld = float(diffuser_rules.get("aluminum_selling_price_per_kg", 168000.0))
+
+        unrounded_sld_sell = ((raw_frame_kg + raw_blade_kg) * p_alu_sld + raw_acc_cost + raw_paint_cost) * 1.25
+        target_sld_sell = _excel_round(unrounded_sld_sell, -3)
+        scale_sld = (target_sld_sell / unrounded_sld_sell) if unrounded_sld_sell > 0 else 1.0
+
+        frame_kg = raw_frame_kg * (p_alu_sld * 1.25 * scale_sld) / (p_alu_bd_master * mfg_markup)
+        blade_kg = raw_blade_kg * (p_alu_sld * 1.25 * scale_sld) / (p_alu_bd_master * mfg_markup)
+        paint_m2 = (raw_paint_cost * 1.25 * scale_sld) / (p_paint_master * mfg_markup)
+        acc_bo = (raw_acc_cost * 1.25 * scale_sld) / (p_acc_master * mfg_markup)
+
+        components.extend([
+            {
+                "sub_key": f"{parent_id}-FRAME",
+                "name": f"Khung nhôm SH8061 & Nan T chia khe SH8060 ({k} slot)",
+                "category": "NHÔM_ĐỊNH_HÌNH",
+                "mat_id": "MAT-ALU-KHUNG-BD",
+                "calc_qty": frame_kg,
+                "unit": "kg",
+                "note": f"Khung bao SH8061 {F:.0f}x{G:.0f}mm + {max(0, k-1)} nan T giữa SH8060"
+            },
+            {
+                "sub_key": f"{parent_id}-BLADE",
+                "name": f"Cánh chỉnh hướng SH8083 & Đỡ cánh SH8057B ({k} slot)",
+                "category": "NHÔM_ĐỊNH_HÌNH",
+                "mat_id": "MAT-ALU-NAN-T",
+                "calc_qty": blade_kg,
+                "unit": "kg",
+                "note": f"{2*k} cánh chỉnh hướng SH8083 + {k} đỡ cánh SH8057B"
+            },
+            {
+                "sub_key": f"{parent_id}-ACCESSORY",
+                "name": "Phụ kiện lắp ghép / Ke góc cửa gió",
+                "category": "PHỤ_KIỆN_CỬA",
+                "mat_id": "MAT-DOOR-ACCESSORY",
+                "calc_qty": acc_bo,
+                "unit": "Bộ",
+                "note": f"Ke góc và phụ kiện gối đỡ {k} slot"
+            },
+            {
+                "sub_key": f"{parent_id}-PAINT",
+                "name": "Sơn tĩnh điện tiêu chuẩn Polyester",
+                "category": "SƠN_TĨNH_ĐIỆN",
+                "mat_id": "MAT-PAINT-POWDER",
+                "calc_qty": paint_m2,
+                "unit": "m2",
+                "note": "Sơn tĩnh điện hoàn thiện (khung trắng + cánh đen)"
+            }
+        ])
+        return F, G, D, E, frame_kg + blade_kg
 
     @staticmethod
     def _calc_profile_diffuser_t(parent_id, w_val, h_val, diffuser_rules, mfg_markup, p_alu_bd_master, p_paint_master, p_acc_master, components):

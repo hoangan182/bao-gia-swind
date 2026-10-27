@@ -437,6 +437,23 @@ class SwindBOQParser:
                 elif dim_typo:
                     w = float(dim_typo.group(1))
                     h = float(dim_typo.group(2))
+                elif category == "CUA_GIO":
+                    m_rect_d = re.search(r'\b(\d{3,4})\s*mm\s*[,;-]?\s*[dD](\d{2,3})\b', dim_clean_text, re.IGNORECASE)
+                    m_lb = re.search(r'\bLB\s*(\d{2,3})\b', dim_clean_text, re.IGNORECASE)
+                    m_sl = re.search(r'\b(?:SL|LS)\s*(\d)\b', dim_clean_text, re.IGNORECASE)
+                    m_len = re.search(r'\b(\d{3,4})\s*mm\b', dim_clean_text, re.IGNORECASE)
+                    if m_rect_d:
+                        w = float(m_rect_d.group(1))
+                        h = float(m_rect_d.group(2))
+                        d_match = None
+                    elif m_lb and m_len:
+                        w = float(m_len.group(1))
+                        h = float(m_lb.group(1))
+                    elif m_sl and m_len:
+                        n_slots = int(m_sl.group(1))
+                        if 1 <= n_slots <= 6:
+                            w = float(m_len.group(1))
+                            h = float(50 * n_slots + 50)
 
             if d_match and w == 0 and h == 0:
                 parsed_d = float(d_match.group(1))
