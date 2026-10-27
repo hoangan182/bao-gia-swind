@@ -1012,6 +1012,25 @@ def export_customer_boq_quotation_files(
             for s in list(wb_cust.sheetnames):
                 if s != orig_keep:
                     wb_cust.remove(wb_cust[s])
+            try:
+                wb_cust.defined_names.clear()
+                ws_clean = wb_cust[orig_keep]
+                if ws_clean.auto_filter and ws_clean.auto_filter.ref:
+                    ws_clean.auto_filter.ref = None
+                real_max_c = max((c for (r, c), cell in ws_clean._cells.items() if cell.value is not None), default=20)
+                real_max_r = max((r for (r, c), cell in ws_clean._cells.items() if cell.value is not None), default=100)
+                for m_r in ws_clean.merged_cells.ranges:
+                    real_max_c = max(real_max_c, m_r.max_col)
+                    real_max_r = max(real_max_r, m_r.max_row)
+                phantom_keys = [k for k in ws_clean._cells if k[1] > real_max_c + 2 or k[0] > real_max_r + 10]
+                for pk in phantom_keys:
+                    del ws_clean._cells[pk]
+                from openpyxl.utils import column_index_from_string
+                for col_l in list(ws_clean.column_dimensions.keys()):
+                    if column_index_from_string(col_l) > real_max_c + 2:
+                        del ws_clean.column_dimensions[col_l]
+            except Exception:
+                pass
             bg_title = "BG" if "BG" not in wb_cust.sheetnames else "BG_SWIND"
             ws_swind = wb_cust.create_sheet(bg_title)
             if ws.views.sheetView and ws_swind.views.sheetView:
@@ -1034,6 +1053,12 @@ def export_customer_boq_quotation_files(
                         new_c.alignment = copy(cell.alignment)
                         new_c.number_format = cell.number_format
             wb_cust.active = 1 if len(wb_cust.worksheets) > 1 else 0
+            if wb_cust.views:
+                wb_cust.views[0].firstSheet = 0
+                wb_cust.views[0].activeTab = 1 if len(wb_cust.worksheets) > 1 else 0
+                wb_cust.views[0].showSheetTabs = True
+            if wb_cust.security:
+                wb_cust.security.lockStructure = False
             for idx_s, w_s in enumerate(wb_cust.worksheets):
                 if w_s.views.sheetView:
                     w_s.views.sheetView[0].tabSelected = (idx_s == wb_cust.active_sheet_index if hasattr(wb_cust, "active_sheet_index") else (idx_s == (1 if len(wb_cust.worksheets) > 1 else 0)))
