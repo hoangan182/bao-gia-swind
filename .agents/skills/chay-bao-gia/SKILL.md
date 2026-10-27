@@ -28,6 +28,7 @@ Hệ thống báo giá tự động Swind (`src/swind_master_runner.py` và chu�
 - `--sheets "Sheet1,Sheet2"`: Chỉ chạy các sheet chỉ định (mặc định tự động dò mọi sheet HVAC).
 - `--only-cua-van`: Chỉ báo giá Cửa gió & Van gió (loại bỏ Ống gió và Hàng thương mại).
 - `--motor-brand <BELIMO|KLB|HONEYWELL>`: Ép hãng động cơ van theo yêu cầu (mặc định `BELIMO`).
+- `--motor-price <số_tiền_VNĐ>`: Rẽ nhánh áp đơn giá gốc động cơ tùy chỉnh riêng cho dự án đang chạy (VD: `--motor-price 2300000`), giữ nguyên Master Data chuẩn.
 - `--mfd-model <1.01|1.02|1.03|1.04|1.05>`: Ép mã đốt van MFD theo yêu cầu (mặc định `1.02`).
 - `--dual-options`: Xuất đồng thời 2 phương án Đơn cánh và Đa cánh.
 - `--merge-sheets`: Gộp tất cả các sheet vào 1 file dự toán duy nhất.

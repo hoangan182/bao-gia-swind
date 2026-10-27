@@ -24,6 +24,7 @@
 - `--sheets "Sheet1,Sheet2"`: Chỉ định danh sách Sheet kỹ thuật cần xử lý (ngăn cách bằng dấu phẩy). Mặc định: Tự động dò tất cả Sheet kỹ thuật HVAC.
 - `--only-cua-van`: Chỉ lọc và báo giá **Cửa gió & Van gió** (`CUA_GIO`, `VAN_GIO`), loại bỏ Ống gió và Hàng thương mại mua ngoài.
 - `--motor-brand <BELIMO|KLB|HONEYWELL>`: Chỉ định hãng động cơ van theo yêu cầu (Mặc định: `BELIMO` nếu BOQ không ghi rõ).
+- `--motor-price <số_tiền_VNĐ>`: Rẽ nhánh áp đơn giá gốc động cơ tùy chỉnh riêng cho dự án đang chạy (VD: `--motor-price 2300000`), tuyệt đối không sửa giá gốc trong Master Data chuẩn.
 - `--mfd-model <1.01|1.02|1.03|1.04|1.05>`: Chỉ định mã đốt van MFD theo yêu cầu (`1.01`: Belimo BFN24 EI120, `1.02`: Belimo FSLF24V EI90 [Mặc định], `1.03`: KLB 5Nm EI90, `1.04`: Honeywell MS4609 EI60, `1.05`: Belimo BFN24 EI120).
 - `--dual-options`: Tính đồng thời 2 phương án Đơn cánh và Đa cánh (Mặc định: Báo giá chuẩn theo BOQ).
 - `--merge-sheets`: Gộp tất cả các sheet vào 1 file duy nhất (Mặc định: Tách riêng từng sheet).

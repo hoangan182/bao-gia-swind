@@ -131,17 +131,24 @@ def detect_boq_header(ws):
                 if v_s and not re.match(r'^\(\d+\)', v_s):
                     block_vals.setdefault(c_sub, []).append(v_s)
 
-        def is_qty_label(v_txt):
+        first_price_col = min(
+            (c for c, v in row_vals.items() if any(k in v for k in PRICE_KEYWORDS) or v in ("đg", "giá")),
+            default=9999
+        )
+
+        def is_qty_label(v_txt, col_idx=0):
             if any(bad_t in v_txt for bad_t in ("ngày", "thời gian", "tiến độ", "đơn giá", "thành tiền")):
                 return False
+            if v_txt in ("tổng", "tổng số", "tổng cộng", "total qty", "total q'ty") and col_idx < first_price_col:
+                return True
             return any(k in v_txt for k in QTY_KEYWORDS) or any(k in v_txt for k in ("cần về", "đặt hàng", "kl đặt", "sl đặt", "cung cấp đợt này", "yêu cầu cấp")) or bool(re.match(r'^lần\s*\d+$', v_txt))
 
         name_cols = [c for c, v in row_vals.items() if any(k in v for k in NAME_KEYWORDS)]
         qty_or_unit_cols = [
             c for c, vs in block_vals.items()
-            if c not in name_cols and any(is_qty_label(v) or any(k in v for k in UNIT_KEYWORDS) for v in vs)
+            if c not in name_cols and any(is_qty_label(v, c) or any(k in v for k in UNIT_KEYWORDS) for v in vs)
         ]
-        has_qty_in_block = any(any(is_qty_label(v) for v in vs) for c, vs in block_vals.items() if c not in name_cols)
+        has_qty_in_block = any(any(is_qty_label(v, c) for v in vs) for c, vs in block_vals.items() if c not in name_cols)
         if name_cols and qty_or_unit_cols and has_qty_in_block:
             header_row = r
             name_cands = []
@@ -188,7 +195,7 @@ def detect_boq_header(ws):
                         if "l" not in col_map: col_map["l"] = c
                     elif any(k in v for k in UNIT_KEYWORDS):
                         if "unit" not in col_map: col_map["unit"] = c
-                    elif is_qty_label(v):
+                    elif is_qty_label(v, c):
                         if c not in name_cands:
                             if c not in qty_cands: qty_cands.append(c)
                             qty_labels[c] = f"{qty_labels[c]} {v}".strip() if c in qty_labels else v

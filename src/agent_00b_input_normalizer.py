@@ -72,7 +72,7 @@ DUCT_ITEM_PATTERN = re.compile(
     r'(ống|côn|cút|chân rẽ|hộp gió|măng|chếch|bịt đầu|bịt ống|nối ống|tê đầu ống|tê đều ống|tiêu âm|nối mềm|canvas)',
     re.IGNORECASE
 )
-DIM_PATTERN = re.compile(r'(\d{2,4}\s*[xX×*]\s*\d{2,4}|[dDØø]\s*\d{2,4})')
+DIM_PATTERN = re.compile(r'([wWaAbB]?\s*\d{2,4}\s*[xX×*]\s*[hHbBwW]?\s*\d{2,4}|[dDØø][nN]?\s*\d{2,4})')
 
 # ---------------------------------------------------------------------------
 # Module 1: Format Detector & Classifier
@@ -173,14 +173,21 @@ class FormatDetector:
             found_name = False
             found_qty = False
             col_map = {}
+            name_cands = []
             qty_cands = []
+            first_price_col = min(
+                (c for c, txt in row_texts.items() if any(pk in txt for pk in ("đơn giá", "price")) or txt in ("đg", "giá")),
+                default=9999
+            )
 
             for c, txt in row_texts.items():
                 is_strict_qty = txt.startswith(("kl ", "sl ", "khối lượng", "số lượng", "q'ty", "qty"))
-                if not is_strict_qty and any(kw in txt for kw in NAME_KEYWORDS) and "name" not in col_map:
-                    col_map["name"] = c
-                    found_name = True
-                if any(kw in txt for kw in QTY_KEYWORDS):
+                if not is_strict_qty and any(kw in txt for kw in NAME_KEYWORDS):
+                    name_cands.append(c)
+                    if "name" not in col_map:
+                        col_map["name"] = c
+                        found_name = True
+                if any(kw in txt for kw in QTY_KEYWORDS) or (txt in ("tổng", "tổng số", "tổng cộng") and c < first_price_col):
                     qty_cands.append(c)
                     if "qty" not in col_map:
                         col_map["qty"] = c
@@ -191,6 +198,15 @@ class FormatDetector:
                     col_map["remarks"] = c
                 if "stt" in txt or txt in ("tt", "no", "no."):
                     col_map["stt"] = c
+
+            if len(name_cands) > 1:
+                col_map["name"] = max(
+                    name_cands,
+                    key=lambda nc: sum(
+                        1 for rr in range(r + 1, min(r + 40, ws.max_row + 1))
+                        if ws.cell(rr, nc).value not in (None, "")
+                    )
+                )
 
             # Nếu có nhiều cột qty candidate (VD: "KL diễn giải" và "KL tổng theo HĐ"), chọn cột có nhiều số dương nhất
             if len(qty_cands) > 1:

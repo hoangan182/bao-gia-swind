@@ -1168,7 +1168,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
             if not row_txt or "tổng cộng" in row_txt.lower():
                 continue
             has_pos_qty = isinstance(qt_v, (int, float)) and qt_v > 0
-            has_dim = bool(re.search(r'(\d{2,4}\s*[xX*]\s*\d{2,4}|\b[dD]\d{2,4}\b)', row_txt))
+            has_dim = bool(re.search(r'([wWaAbB]?\s*\d{2,4}\s*[xX*]\s*[hHbBwW]?\s*\d{2,4}|\b[dD][nN]?\s*\d{2,4}\b)', row_txt))
             if has_pos_qty or has_dim:
                 if only_cua_van and any(k in row_txt.lower() for k in ("ống chờ", "ống lồng", "ống nối mềm", "mềm ei", "khớp nối mềm", "sleeve", "flexible")):
                     continue
@@ -1186,7 +1186,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
             print("     ✅ Đạt 100% độ phủ BOQ: Không có dòng Cửa/Van/Vật tư mục tiêu nào bị bỏ sót!")
 
 
-def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None, neck_size=False):
+def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None, neck_size=False, motor_price=None):
     """
     Hàm điều phối Quy trình B: Nhận file BOQ khách hàng -> Phân tích & Áp giá từ Master Data có sẵn (Agent 01 -> Agent 08).
     """
@@ -1305,6 +1305,18 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     # BƯỚC 3: NẠP MASTER DATA & THỰC HIỆN DỰ TOÁN THEO RULE
     # -------------------------------------------------------------
     tech_records, price_records, acc_rules, subtype_rules, fin_policy = load_master_data()
+    if motor_price is not None and float(motor_price) > 0:
+        mp_val = float(motor_price)
+        mb_up = str(motor_brand or "").strip().upper()
+        target_act_ids = {"MAT-ACTUATOR-HONEYWELL", "MAT-ACTUATOR-HONEYWELL-5NM", "MAT-ACTUATOR-HONEYWELL-10NM", "MAT-ACTUATOR-HONEYWELL-20NM"} if mb_up == "HONEYWELL" else (
+            {"MAT-ACTUATOR-KLB-V6006FS500S", "MAT-ACTUATOR-SWIND-VIWECO"} if mb_up == "KLB" else (
+                {"MAT-ACTUATOR-BELIMO-FSLF24", "MAT-ACTUATOR-BELIMO-BFN24", "MAT-ACTUATOR-BELIMO-5NM", "MAT-ACTUATOR-BELIMO-10NM", "MAT-ACTUATOR-BELIMO-20NM"}
+            )
+        )
+        for pr in price_records:
+            if pr.get("MAT_ID") in target_act_ids:
+                pr["Price"] = mp_val
+                pr["Purchase_Price"] = mp_val
 
     generated_files = []
 
@@ -1486,6 +1498,7 @@ def main():
     parser.add_argument("--from-images", action="store_true", help="Đọc trực tiếp ảnh khách gửi trong 'input picture/' và chạy báo giá")
     parser.add_argument("--duct-formula", choices=["mpq", "og_mb", "both"], default="mpq", help="Công thức tính ống gió: 'mpq' (BG PKV chuẩn), 'og_mb' (Diện tích m2 theo ÔG MB Z3), hoặc 'both' (xuất cả 2)")
     parser.add_argument("--neck-size", action="store_true", help="Quy định kích thước cửa gió trong BOQ là kích thước cổ (Neck Size -> cộng thêm viền ra kích thước mặt)")
+    parser.add_argument("--motor-price", type=float, default=None, help="Ghi đè đơn giá gốc động cơ van cho dự án (VD: 2300000)")
     parser.add_argument("--override", default=None, help="Ghi đè nhanh theo dòng BOQ (VD: '7:w=600,h=600;10:skip=1')")
 
     args = parser.parse_args()
@@ -1563,7 +1576,8 @@ def main():
                 motor_brand=args.motor_brand,
                 mfd_model=args.mfd_model,
                 row_overrides=row_overrides,
-                neck_size=args.neck_size
+                neck_size=args.neck_size,
+                motor_price=args.motor_price
             )
             proj_name_tmp = os.path.splitext(os.path.basename(bp))[0].strip()
             proj_dir_tmp = resolve_path(f"data/projects/{proj_name_tmp}")
@@ -1586,7 +1600,8 @@ def main():
             motor_brand=args.motor_brand,
             mfd_model=args.mfd_model,
             row_overrides=row_overrides,
-            neck_size=args.neck_size
+            neck_size=args.neck_size,
+            motor_price=args.motor_price
         )
 
 

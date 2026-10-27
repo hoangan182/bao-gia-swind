@@ -140,7 +140,7 @@ class SwindBOQParser:
                 is_blank_qty = (qty_val is None or str(qty_val).strip() == "")
                 is_zero_qty_with_unit = (not col_map.get("is_order_sheet") and qty_val in (0, 0.0, "0") and unit_val not in (None, "", 0, "0"))
                 has_cv_kw = any(k in nl_chk for k in cv_kws) or bool(re.search(cv_rx, nl_chk))
-                has_cv_dim = bool(re.search(r'(\d+\s*[xX*]\s*\d+|\b[dD]\d{2,4}\b|\b(?:vcd|fd|nrd|prd|md)\s+\d{2,4}\b)', nl_chk))
+                has_cv_dim = bool(re.search(r'([wWaAbB]?\s*\d+\s*[xX*]\s*[hHbBwW]?\s*\d+|\b[dD][nN]?\s*\d{2,4}\b|\b(?:vcd|fd|nrd|prd|md)\s+\d{2,4}\b)', nl_chk))
                 if (is_zero_qty_with_unit or (is_blank_qty and not col_map.get("is_order_sheet") and has_cv_kw and has_cv_dim)) and "tổng cộng" not in nl_chk:
                     if "qty" in col_map:
                         is_missing_qty = is_blank_qty
@@ -418,11 +418,11 @@ class SwindBOQParser:
                 has_explicit_kt_bi = True
 
             if w == 0 and h == 0:
-                dim_3d = re.search(r'(\d+)\s*[xX*]\s*(\d+)\s*[xX*]\s*(\d+)', rect_primary_text)
-                dim_2d = re.search(r'(\d+)\s*[xX*]\s*(\d+)', rect_primary_text)
+                dim_3d = re.search(r'[wWaAbB]?\s*(\d+)\s*[xX*]\s*[hHbBwW]?\s*(\d+)\s*[xX*]\s*[lLdD]?\s*(\d+)', rect_primary_text)
+                dim_2d = re.search(r'[wWaAbB]?\s*(\d+)\s*[xX*]\s*[hHbBwW]?\s*(\d+)', rect_primary_text)
                 if not dim_3d and not dim_2d:
-                    dim_3d = re.search(r'(\d+)\s*[xX*]\s*(\d+)\s*[xX*]\s*(\d+)', rect_search_text)
-                    dim_2d = re.search(r'(\d+)\s*[xX*]\s*(\d+)', rect_search_text)
+                    dim_3d = re.search(r'[wWaAbB]?\s*(\d+)\s*[xX*]\s*[hHbBwW]?\s*(\d+)\s*[xX*]\s*[lLdD]?\s*(\d+)', rect_search_text)
+                    dim_2d = re.search(r'[wWaAbB]?\s*(\d+)\s*[xX*]\s*[hHbBwW]?\s*(\d+)', rect_search_text)
                 # Hỗ trợ bắt lỗi gõ nhầm chữ 'x' thành số '6' dạng 10006300 (4 chữ số + 6 + 3 chữ số tròn trăm)
                 dim_typo = re.search(r'\b(\d{3,4})6(\d00)\b', rect_search_text)
                 if dim_3d:
