@@ -173,11 +173,8 @@ def inspect_batch_items(cases, formula_mode=None):
     for i, c in enumerate(cases, 1):
         ws.append([i, c["name"], c.get("unit", "cái"), 1, None, None, c.get("note", "")])
 
-    tmp_path = "/tmp/_swind_inspect_tmp.xlsx"
-    wb.save(tmp_path)
-
     with contextlib.redirect_stdout(io.StringIO()):
-        parser = SwindBOQParser(tmp_path)
+        parser = SwindBOQParser(":memory:", wb=wb)
         items = parser.parse_sheet("BOQ")
     if not items:
         return []
@@ -197,6 +194,9 @@ def inspect_batch_items(cases, formula_mode=None):
             item["mfd_model_override"] = case_cfg["mfd_model"]
         if formula_mode:
             item["duct_formula_mode"] = formula_mode
+        for dim_k in ("w", "h", "l", "d", "thickness"):
+            if case_cfg.get(dim_k) and not item.get(dim_k):
+                item[dim_k] = case_cfg[dim_k]
 
         spec = Agent01_BOQExtractor.resolve_item_spec(item, subtype_rules, price_map=price_map, idx=idx)
         cat = item["category"]
@@ -482,19 +482,382 @@ def run_self_test(save_baseline=False):
     return True
 
 
+def _strip_accents(s):
+    import unicodedata
+    if not s:
+        return ""
+    s = str(s).replace("đ", "d").replace("Đ", "D")
+    return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn").lower()
+
+
+def search_system_data(query):
+    """
+    Tra cứu tức thì (<0.03s) toàn bộ giá vật tư, barem công thức, mặt hàng chuẩn và từ khóa đã có trong hệ thống.
+    """
+    q_raw = query.strip().lower()
+    q_norm = _strip_accents(q_raw)
+    tokens = [t for t in q_norm.split() if t]
+
+    def _match(text):
+        t_norm = _strip_accents(text)
+        return (q_norm in t_norm) or (all(tok in t_norm for tok in tokens) if tokens else False)
+
+    md_dir = os.path.join(PROJECT_ROOT, "data", "master_data")
+    print(f"🔎 KẾT QUẢ TRA CỨU HỆ THỐNG SWIND CHO TỪ KHÓA: {query!r}")
+    print("=" * 80)
+
+    # 1. Tra cứu Master Price & Tech Database
+    price_map = get_master_price_map()
+    tech_path = os.path.join(md_dir, "master_database_tech.json")
+    tech_list = []
+    if os.path.exists(tech_path):
+        with open(tech_path, "r", encoding="utf-8") as f:
+            tech_list = json.load(f)
+    tech_by_id = {t.get("MAT_ID"): t for t in tech_list if isinstance(t, dict) and t.get("MAT_ID")}
+
+    matched_mats = []
+    all_mat_ids = sorted(set(list(price_map.keys()) + list(tech_by_id.keys())))
+    for mid in all_mat_ids:
+        t_info = tech_by_id.get(mid, {})
+        m_name = t_info.get("Name") or t_info.get("name") or ""
+        m_unit = t_info.get("Unit") or t_info.get("unit") or ""
+        m_cat = t_info.get("Category") or t_info.get("category") or ""
+        p_val = price_map.get(mid, 0.0)
+        blob = f"{mid} {m_name} {m_cat} {p_val}"
+        if _match(blob):
+            matched_mats.append((mid, m_name, m_unit, p_val, m_cat))
+
+    print(f"1️⃣ ĐƠN GIÁ VẬT TƯ GỐC (`master_database_price.json` & `tech.json`): {len(matched_mats)} kết quả")
+    for mid, m_name, m_unit, p_val, m_cat in matched_mats[:30]:
+        sell_mfg = math.ceil((p_val * 1.35 * 1.18) / 100.0) * 100 if p_val else 0
+        print(f"   • [{mid}] {m_name} ({m_unit}) | Giá gốc: {p_val:,.0f} đ | Quy đổi SX (~x1.593): {sell_mfg:,.0f} đ | Nhóm: {m_cat}")
+
+    # 2. Tra cứu Barem & Hệ số định mức trong master_bom_rules.json
+    bom_rules_path = os.path.join(md_dir, "master_bom_rules.json")
+    matched_rules = []
+    if os.path.exists(bom_rules_path):
+        with open(bom_rules_path, "r", encoding="utf-8") as f:
+            bom_rules = json.load(f)
+        for sec_k, sec_v in bom_rules.items():
+            if sec_k.startswith("_"):
+                continue
+            if isinstance(sec_v, dict):
+                for sub_k, sub_v in sec_v.items():
+                    blob = f"{sec_k}.{sub_k} {json.dumps(sub_v, ensure_ascii=False)}"
+                    if _match(blob):
+                        matched_rules.append((f"{sec_k}.{sub_k}", sub_v))
+    print(f"\n2️⃣ BAREM & HỆ SỐ ĐỊNH MỨC (`data/master_data/master_bom_rules.json`): {len(matched_rules)} kết quả")
+    for r_path, r_val in matched_rules[:15]:
+        val_str = json.dumps(r_val, ensure_ascii=False)
+        if len(val_str) > 160:
+            val_str = val_str[:157] + "..."
+        print(f"   • {r_path}: {val_str}")
+
+    # 3. Tra cứu 53 Mặt hàng chuẩn trong Baseline & Experience DB
+    matched_base = []
+    if os.path.exists(BASELINE_PATH):
+        with open(BASELINE_PATH, "r", encoding="utf-8") as f:
+            base_list = json.load(f)
+        for b in base_list:
+            blob = f"{b.get('input_text')} {b.get('category')} {b.get('subtype')} {b.get('model_std')}"
+            if _match(blob):
+                matched_base.append(b)
+    print(f"\n3️⃣ MẶT HÀNG CHUẨN TRONG BASELINE (`formula_regression_baseline.json`): {len(matched_base)} kết quả")
+    for b in matched_base[:20]:
+        print(f"   • {b['input_text']!r} ({b['unit']}) -> [{b['category']}/{b['subtype']}] Model={b['model_std']} | S={b['area_m2']}m2 | Giá bán chuẩn: {b['sell_unit_price']:,.0f} đ")
+
+    # 4. Tra cứu Từ khóa nhận diện trong subtype_rules.json & boq_keyword_learning.json
+    subtype_rules = get_subtype_rules()
+    matched_kw = []
+    for sec_k, sec_v in subtype_rules.items():
+        blob = f"{sec_k} {json.dumps(sec_v, ensure_ascii=False)}"
+        if _match(blob):
+            matched_kw.append((f"subtype_rules.json :: {sec_k}", sec_v))
+    learn_path = os.path.join(md_dir, "boq_keyword_learning.json")
+    if os.path.exists(learn_path):
+        with open(learn_path, "r", encoding="utf-8") as f:
+            learn_db = json.load(f)
+        for lk, lv in learn_db.items():
+            if _match(f"{lk} {json.dumps(lv, ensure_ascii=False)}"):
+                matched_kw.append((f"boq_keyword_learning.json :: {lk}", lv))
+    print(f"\n4️⃣ TỪ KHÓA NHẬN DIỆN & QUY TẮC (`subtype_rules.json` / `boq_keyword_learning.json`): {len(matched_kw)} kết quả")
+    for k_path, k_val in matched_kw[:15]:
+        val_str = json.dumps(k_val, ensure_ascii=False)
+        if len(val_str) > 150:
+            val_str = val_str[:147] + "..."
+        print(f"   • {k_path}: {val_str}")
+    print("=" * 80)
+
+
+def locate_requirement_target(topic):
+    """
+    Quét trực tiếp AST (0.02s) toàn bộ `src/*.py` và `data/master_data/*.json` để chỉ ra chính xác
+    File + Hàm + Tọa độ dòng `StartLine..EndLine` sống khi cần thêm yêu cầu mới hoặc sửa công thức.
+    """
+    import ast
+    t_norm = _strip_accents(topic)
+    tokens = [t for t in t_norm.split() if t]
+
+    # Bản đồ định tuyến kiến trúc theo chủ đề yêu cầu
+    arch_guides = [
+        {
+            "tags": ["header", "cot", "column", "ten vat tu", "khoi luong", "dvt", "don vi", "boq"],
+            "title": "Nhận diện dòng Tiêu đề (Header) & Ánh xạ cột BOQ",
+            "json_targets": ["data/master_data/subtype_rules.json -> key 'HEADER_ALIASES'"],
+            "py_targets": [("src/swind_utils.py", "detect_boq_header"), ("src/agent_00b_input_normalizer.py", "normalize_sheet")]
+        },
+        {
+            "tags": ["tu khoa", "keyword", "phan loai", "category", "subtype", "khac", "nhan dien", "model"],
+            "title": "Thêm từ khóa nhận diện mặt hàng mới / Phân loại Category & Subtype",
+            "json_targets": [
+                "data/master_data/subtype_rules.json -> keys 'CATEGORY_KEYWORDS', 'DUCT_FITTING_SUBTYPES', 'DAMPER_SUBTYPES', 'DIFFUSER_SUBTYPES'",
+                "data/master_data/boq_keyword_learning.json"
+            ],
+            "py_targets": [("src/swind_boq_parser.py", "parse_sheet"), ("src/agent_01_boq_extractor.py", "resolve_item_spec")]
+        },
+        {
+            "tags": ["title", "ke thua", "cha con", "kich thuoc", "do day", "thickness", "obd", "luoi", "loc", "combo"],
+            "title": "Kế thừa thông số từ Title cha / Bóc tách kích thước, độ dày & phụ kiện đi kèm",
+            "json_targets": ["data/master_data/master_bom_rules.json -> 'ductwork_rules.tcvn_5687_thickness_mm'"],
+            "py_targets": [
+                ("src/swind_boq_parser.py", "parse_sheet"),
+                ("src/swind_utils.py", "extract_duct_fitting_geometry"),
+                ("src/agent_01_boq_extractor.py", "resolve_item_spec")
+            ]
+        },
+        {
+            "tags": ["ong", "cut", "con", "te", "chan re", "zet", "chac", "bit dau", "hop gio", "tieu am", "canvas", "ventcap", "ong mem", "dien tich"],
+            "title": "Công thức tính diện tích S (m2) & BOM Ống gió, Phụ kiện, Tiêu âm, Canvas (Agent 04)",
+            "json_targets": ["data/master_data/master_bom_rules.json -> 'ductwork_rules'"],
+            "py_targets": [("src/agent_04_bom_duct.py", None)]
+        },
+        {
+            "tags": ["van", "vcd", "mfd", "fd", "nrd", "prd", "md", "ei", "ei60", "ei90", "ei120", "belimo", "klb", "honeywell", "dong co", "modul"],
+            "title": "Công thức & Barem giá Van gió, Van chặn lửa EI, Chia Modul & Động cơ (Agent 05)",
+            "json_targets": ["data/master_data/master_bom_rules.json -> 'damper_rules'"],
+            "py_targets": [("src/agent_05_bom_damper.py", None), ("src/agent_01_boq_extractor.py", "_resolve_damper_spec")]
+        },
+        {
+            "tags": ["cua", "mieng gio", "louver", "linear", "slot", "sld", "slb", "khuech tan", "sot trung", "nan z", "bau duc", "nhom"],
+            "title": "Công thức định mức nhôm, sơn, nhân công & phụ kiện Cửa gió (Agent 06)",
+            "json_targets": ["data/master_data/master_bom_rules.json -> 'diffuser_rules'"],
+            "py_targets": [("src/agent_06_bom_diffuser.py", None), ("src/agent_01_boq_extractor.py", "_resolve_diffuser_spec")]
+        },
+        {
+            "tags": ["gia", "price", "vat tu", "markup", "loi nhuan", "nhan cong", "lam tron"],
+            "title": "Cập nhật Đơn giá vật tư gốc / Hệ số Nhân công - Quản lý - Lợi nhuận / Làm tròn giá bán",
+            "json_targets": [
+                "data/master_data/master_database_price.json",
+                "data/master_data/financial_policy.json"
+            ],
+            "py_targets": [
+                ("src/tool_price_updater.py", None),
+                ("src/swind_master_runner.py", "process_single_sheet_estimation")
+            ]
+        },
+        {
+            "tags": ["excel", "sheet", "bg", "copy", "format", " cli", "flag", "xuat file"],
+            "title": "Xuất file Excel Báo giá khách hàng (Sheet BG), Đóng khung & Tham số CLI",
+            "json_targets": ["data/master_data/format_learning_db.json"],
+            "py_targets": [
+                ("src/swind_master_runner.py", "export_customer_boq_quotation_files"),
+                ("src/agent_07_excel_builder.py", None)
+            ]
+        }
+    ]
+
+    # Quét AST toàn bộ src/*.py để lấy tọa độ dòng thực tế
+    src_files = [
+        "src/agent_01_boq_extractor.py",
+        "src/agent_04_bom_duct.py",
+        "src/agent_05_bom_damper.py",
+        "src/agent_06_bom_diffuser.py",
+        "src/agent_07_excel_builder.py",
+        "src/swind_boq_parser.py",
+        "src/swind_utils.py",
+        "src/swind_master_runner.py",
+        "src/agent_00b_input_normalizer.py",
+    ]
+    ast_index = {}
+    for rel_path in src_files:
+        abs_path = os.path.join(PROJECT_ROOT, rel_path)
+        if not os.path.exists(abs_path):
+            continue
+        with open(abs_path, "r", encoding="utf-8") as f:
+            source = f.read()
+        tree = ast.parse(source, filename=rel_path)
+        funcs = []
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                doc = ast.get_docstring(node) or ""
+                funcs.append({
+                    "name": node.name,
+                    "start": node.lineno,
+                    "end": getattr(node, "end_lineno", node.lineno + 30),
+                    "doc": doc.strip().splitlines()[0] if doc.strip() else ""
+                })
+        funcs.sort(key=lambda x: x["start"])
+        ast_index[rel_path] = funcs
+
+    print(f"🧭 ĐỊNH VỊ TỨC THÌ VỊ TRÍ CODE & DATA CHO YÊU CẦU: {topic!r}")
+    print("=" * 80)
+
+    matched_guides = []
+    for g in arch_guides:
+        if any(tag in t_norm for tag in g["tags"]) or any(tok in " ".join(g["tags"]) for tok in tokens):
+            matched_guides.append(g)
+    if not matched_guides:
+        matched_guides = arch_guides
+
+    for g in matched_guides:
+        print(f"📌 {g['title']}:")
+        for jt in g["json_targets"]:
+            print(f"   • [DATA JSON] {jt}")
+        for rel_p, fn_filter in g["py_targets"]:
+            fn_list = ast_index.get(rel_p, [])
+            if fn_filter:
+                fn_list = [fn for fn in fn_list if fn["name"] == fn_filter]
+            for fn in fn_list:
+                doc_sfx = f" — {fn['doc']}" if fn["doc"] else ""
+                print(f"   • [CODE PY]   {rel_p} :: def {fn['name']} (StartLine={fn['start']}, EndLine={fn['end']}){doc_sfx}")
+        print("-" * 80)
+
+
+def compare_excel_with_system(excel_path, sheet_filter=None, motor_brand=None, mfd_model=None, formula_mode=None):
+    """
+    Đối chiếu trực tiếp (0.2s) công thức & đơn giá trong 1 file Excel (BOQ hoặc Báo giá đã có giá)
+    với kết quả tính toán chuẩn trong hệ thống Swind.
+    """
+    if not os.path.exists(excel_path):
+        print(f"❌ Không tìm thấy file: {excel_path}")
+        return
+
+    wb = openpyxl.load_workbook(excel_path, data_only=True)
+    with contextlib.redirect_stdout(io.StringIO()):
+        parser = SwindBOQParser(excel_path, wb=wb)
+
+    target_sheets = [s.strip() for s in sheet_filter.split(",")] if sheet_filter else [
+        sh for sh in wb.sheetnames if getattr(wb[sh], "sheet_state", "visible") == "visible"
+    ]
+
+    for sh in target_sheets:
+        if sh not in wb.sheetnames:
+            continue
+        ws = wb[sh]
+        with contextlib.redirect_stdout(io.StringIO()):
+            items = parser.parse_sheet(sh)
+        if not items:
+            continue
+
+        # Tìm cột Đơn giá tham chiếu trong file (nếu có)
+        ref_price_col = None
+        for r_idx in range(1, min(25, ws.max_row + 1)):
+            for c_idx in range(1, min(30, ws.max_column + 1)):
+                val = _strip_accents(ws.cell(r_idx, c_idx).value or "")
+                if any(k in val for k in ("don gia", "unit price", "rate", "gia ban")):
+                    ref_price_col = c_idx
+                    break
+            if ref_price_col:
+                break
+
+        cases = []
+        for it in items:
+            cases.append({
+                "name": it.get("raw_name") or it.get("name") or "",
+                "unit": it.get("unit", "cái"),
+                "note": it.get("note_boq", ""),
+                "w": it.get("w"),
+                "h": it.get("h"),
+                "l": it.get("l"),
+                "d": it.get("d"),
+                "thickness": it.get("thickness"),
+                "motor_brand": motor_brand,
+                "mfd_model": mfd_model
+            })
+        sys_results = inspect_batch_items(cases, formula_mode=formula_mode)
+
+        print(f"\n📊 BẢNG ĐỐI CHIẾU SHEET '{sh}' ({len(items)} dòng mặt hàng) | Cột Đơn giá File: {ref_price_col or 'Chưa có'}")
+        print("=" * 105)
+        exact_cnt = 0
+        diff_rows = []
+        unrecognized_rows = []
+
+        for it, sys_r in zip(items, sys_results):
+            src_row = it.get("source_row", 0)
+            sys_price = sys_r["sell_unit_price"]
+            file_price = None
+            if ref_price_col and src_row:
+                raw_p = ws.cell(src_row, ref_price_col).value
+                if isinstance(raw_p, (int, float)) and not isinstance(raw_p, bool) and raw_p > 0:
+                    file_price = int(round(float(raw_p)))
+
+            if sys_r["category"] == "KHAC" or sys_price == 0:
+                unrecognized_rows.append((src_row, sys_r["input_text"], sys_r["category"], sys_r["subtype"]))
+
+            if file_price is not None:
+                if abs(file_price - sys_price) <= 100:
+                    exact_cnt += 1
+                else:
+                    diff_rows.append((src_row, sys_r, file_price, sys_price))
+            else:
+                diff_rows.append((src_row, sys_r, None, sys_price))
+
+        if ref_price_col and (exact_cnt > 0 or diff_rows):
+            print(f"✅ Khớp 100% với giá hệ thống: {exact_cnt}/{len(items)} dòng | ⚠️ Lệch giá hoặc chưa có giá: {len(diff_rows)} dòng")
+            for src_row, sys_r, f_p, s_p in diff_rows[:40]:
+                f_str = f"{f_p:,.0f}đ" if f_p is not None else "Trống"
+                delta = f"{(s_p - f_p):+,.0f}đ" if f_p is not None else "N/A"
+                print(
+                    f"  • R{src_row:<3d} | {sys_r['input_text'][:40]:<40s} | [{sys_r['category']}/{sys_r['subtype']}] "
+                    f"A=({sys_r['a1']},{sys_r['a2']}) | File={f_str:>11s} vs HệThống={s_p:>11,.0f}đ (Lệch: {delta}) | {sys_r['code_location']}"
+                )
+        else:
+            for src_row, sys_r, _, s_p in diff_rows[:30]:
+                print(
+                    f"  • R{src_row:<3d} | {sys_r['input_text'][:42]:<42s} | [{sys_r['category']}/{sys_r['subtype']}] "
+                    f"A=({sys_r['a1']},{sys_r['a2']}) | S={sys_r['area_m2']:.3f}m2 | Giá HệThống={s_p:>11,.0f}đ | {sys_r['code_location']}"
+                )
+
+        if unrecognized_rows:
+            print(f"\n⚠️ PHÁT HIỆN {len(unrecognized_rows)} DÒNG CHƯA CÓ GIÁ / CHƯA NHẬN DIỆN TRONG HỆ THỐNG:")
+            for r_no, txt, cat, sub in unrecognized_rows[:20]:
+                print(f"  - Dòng R{r_no}: {txt!r} (Category={cat}, Subtype={sub})")
+        print("=" * 105)
+
+
 def main():
-    ap = argparse.ArgumentParser(description="Công cụ kiểm tra nhanh công thức 1 mặt hàng & Regression Test Swind")
-    ap.add_argument("items", nargs="*", help="Một hoặc nhiều chuỗi mô tả vật tư cần kiểm tra công thức")
+    ap = argparse.ArgumentParser(description="Công cụ kiểm tra nhanh công thức, tra cứu dữ liệu & đối chiếu giá Swind")
+    ap.add_argument("items", nargs="*", help="Một hoặc nhiều chuỗi mô tả vật tư (có thể ngăn cách bằng dấu ';')")
     ap.add_argument("--unit", default="cái", help="Đơn vị tính (mặc định: cái)")
     ap.add_argument("--note", default="", help="Ghi chú BOQ đi kèm (nếu có)")
+    ap.add_argument("--sizes", default=None, help="Danh sách kích thước kiểm tra hàng loạt (VD: '400x200,600x400,800x600')")
     ap.add_argument("--motor-brand", default=None, help="Chỉ định hãng động cơ: BELIMO, KLB, HONEYWELL")
     ap.add_argument("--mfd-model", default=None, help="Chỉ định mã đốt van MFD: 1.01, 1.02, 1.03, 1.04, 1.05")
-    ap.add_argument("--formula-mode", default=None, help="Chế độ công thức ống gió: MPQ_STD hoặc OG_MB_M2")
+    ap.add_argument("--formula-mode", default=None, help="Chế độ công thức ống gió: MPQ_STD, BIENIA, CAND, OG_MB_M2")
+    ap.add_argument("--search", default=None, help="Tra cứu tức thì (0.03s) đơn giá vật tư, barem, mặt hàng chuẩn & từ khóa trong hệ thống")
+    ap.add_argument("--locate", default=None, help="Định vị tức thì bằng AST (0.02s) file code, hàm & tọa độ dòng để thêm yêu cầu mới")
+    ap.add_argument("--compare", default=None, help="Đối chiếu trực tiếp (0.2s) giá & công thức trong 1 file Excel với dữ liệu hệ thống Swind")
+    ap.add_argument("--sheet", default=None, help="Chỉ định tên sheet khi dùng --compare")
     ap.add_argument("--json", action="store_true", help="Xuất kết quả dạng JSON")
     ap.add_argument("--self-test", action="store_true", help="Chạy kiểm thử 100% công thức đối chiếu với baseline")
     ap.add_argument("--save-baseline", action="store_true", help="Cập nhật file baseline chuẩn")
     ap.add_argument("--audit-boq", default=None, help="Quét nhanh toàn bộ các mẫu mặt hàng & kích thước trong 1 file BOQ Excel (chỉ mất 0.2s)")
     args = ap.parse_args()
+
+    if args.search:
+        search_system_data(args.search)
+        sys.exit(0)
+
+    if args.locate:
+        locate_requirement_target(args.locate)
+        sys.exit(0)
+
+    if args.compare:
+        compare_excel_with_system(
+            args.compare, sheet_filter=args.sheet,
+            motor_brand=args.motor_brand, mfd_model=args.mfd_model, formula_mode=args.formula_mode
+        )
+        sys.exit(0)
 
     if args.audit_boq:
         with contextlib.redirect_stdout(io.StringIO()):
@@ -526,14 +889,29 @@ def main():
         ap.print_help()
         sys.exit(0)
 
-    all_out = []
-    for text in args.items:
-        res = inspect_single_item(
-            text, unit=args.unit, note=args.note,
-            motor_brand=args.motor_brand, mfd_model=args.mfd_model,
-            formula_mode=args.formula_mode
-        )
-        all_out.extend(res)
+    batch_cases = []
+    for raw_arg in args.items:
+        sub_items = [s.strip() for s in raw_arg.split(";") if s.strip()]
+        for text in sub_items:
+            if args.sizes:
+                for sz in [z.strip() for z in args.sizes.split(",") if z.strip()]:
+                    batch_cases.append({
+                        "name": f"{text} {sz}",
+                        "unit": args.unit,
+                        "note": args.note,
+                        "motor_brand": args.motor_brand,
+                        "mfd_model": args.mfd_model
+                    })
+            else:
+                batch_cases.append({
+                    "name": text,
+                    "unit": args.unit,
+                    "note": args.note,
+                    "motor_brand": args.motor_brand,
+                    "mfd_model": args.mfd_model
+                })
+
+    all_out = inspect_batch_items(batch_cases, formula_mode=args.formula_mode)
 
     if args.json:
         print(json.dumps(all_out, ensure_ascii=False, indent=2))

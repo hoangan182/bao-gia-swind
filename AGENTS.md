@@ -37,12 +37,24 @@
 
 Khi người dùng hỏi *"Sao mặt hàng X ra diện tích/giá như vậy?"* hoặc yêu cầu *"Điều chỉnh/thêm công thức tính cho phụ kiện/cửa/van Y"*:
 1. **KHÔNG ĐỌC TOÀN BỘ FILE LỚN:** Các công thức trong `src/agent_04_bom_duct.py`, `src/agent_05_bom_damper.py`, `src/agent_06_bom_diffuser.py` và `src/agent_01_boq_extractor.py` đã được chia nhỏ thành từng hàm độc lập (15–115 dòng/hàm). Hãy tra bảng tọa độ dòng trong [`.agents/rules/03_FORMULA_INDEX.md`](file:///Users/hoangan/work/PCCC/swind/.agents/rules/03_FORMULA_INDEX.md) và chỉ gọi `read_file(Path, StartLine, EndLine)` đúng hàm cần sửa.
-2. **DÙNG NGAY `src/swind_item_inspector.py` ĐỂ SOI VẾT CÔNG THỨC TRONG 0.1 GIÂY** (in ra cả tên file & số dòng code của hàm tính):
+2. **DÙNG NGAY `src/swind_item_inspector.py` ĐỂ SOI VẾT CÔNG THỨC, TRA CỨU GIÁ HỆ THỐNG & ĐỊNH VỊ CODE TRONG 0.03 GIÂY** (xử lý trực tiếp trong RAM, không ghi file tạm, không cần viết script phụ):
    ```bash
-   ./venv/bin/python src/swind_item_inspector.py "Cút 90 độ 800x400 tôn 0.75"
-   ./venv/bin/python src/swind_item_inspector.py "Van chặn lửa động cơ MFD 1200x800 EI90"
+   # Soi vết 1 hoặc nhiều mặt hàng / dải kích thước cùng lúc (0.04s):
+   ./venv/bin/python src/swind_item_inspector.py "Cút 90 độ 800x400 tôn 0.75 ; Van MFD 1200x800 EI90"
+   ./venv/bin/python src/swind_item_inspector.py "Van chặn lửa FD EI60" --sizes "400x200,600x400,800x600"
+
+   # Tra cứu tức thì đơn giá vật tư, barem định mức, 53 mặt hàng chuẩn & từ khóa đã có trong hệ thống (0.03s):
+   ./venv/bin/python src/swind_item_inspector.py --search "<từ_khóa_vật_tư_hoặc_sản_phẩm>"
+
+   # Đối chiếu trực tiếp giá & công thức trong 1 file Excel với dữ liệu chuẩn hệ thống Swind (0.2s):
+   ./venv/bin/python src/swind_item_inspector.py --compare "<đường_dẫn_file.xlsx>"
+
+   # Định vị tức thì bằng AST đúng File + Hàm + Số dòng (StartLine..EndLine sống) khi cần thêm yêu cầu mới (0.02s):
+   ./venv/bin/python src/swind_item_inspector.py --locate "<chủ_đề_yêu_cầu_mới>"
    ```
-3. **CHẠY KIỂM THỬ HỒI QUY 53 MẶT HÀNG CHUẨN TRƯỚC & SAU KHI SỬA CÔNG THỨC:**
+3. **TÁCH SUBAGENT SONG SONG (`invoke_subagent`) KHI VỪA SO SÁNH DỮ LIỆU LỚN VỪA THÊM YÊU CẦU MỚI:**
+   - Khi người dùng yêu cầu đồng thời kiểm tra/so sánh nhiều bảng giá hoặc nhiều mặt hàng với dữ liệu hệ thống VÀ bổ sung yêu cầu mới chưa có trong hệ thống, hãy tách Subagent (`research` cho luồng chạy `--search` / `--compare` đối chiếu dữ liệu; Agent chính dùng `--locate` nhảy thẳng tới đúng hàm code/JSON để thêm yêu cầu mới) nhằm tránh đọc dò tuần tự.
+4. **CHẠY KIỂM THỬ HỒI QUY 53 MẶT HÀNG CHUẨN TRƯỚC & SAU KHI SỬA CÔNG THỨC:**
    ```bash
    ./venv/bin/python src/swind_item_inspector.py --self-test
    ```

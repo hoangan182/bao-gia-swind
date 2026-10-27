@@ -30,12 +30,38 @@ Trước hoặc sau khi sửa bất kỳ công thức nào, chạy lệnh sau đ
 # Quét nhanh toàn bộ BOQ trong 0.2s để gom nhóm Model/Subtype & kiểm tra dòng thiếu kích thước (không cần viết script phụ):
 ./venv/bin/python src/swind_item_inspector.py --audit-boq "input/A4_BOQ_Van gió.xlsx"
 
+# 🔎 TRA CỨU TỨC THÌ (0.03s) ĐƠN GIÁ VẬT TƯ, BAREM, MẶT HÀNG CHUẨN & TỪ KHÓA ĐÃ CÓ TRONG HỆ THỐNG:
+./venv/bin/python src/swind_item_inspector.py --search "belimo"
+./venv/bin/python src/swind_item_inspector.py --search "tôn 1.15"
+./venv/bin/python src/swind_item_inspector.py --search "vcd"
+
+# 🧭 ĐỊNH VỊ TỨC THÌ BẰNG AST (0.02s) FILE CODE, HÀM & SỐ DÒNG SỐNG ĐỂ THÊM YÊU CẦU MỚI:
+./venv/bin/python src/swind_item_inspector.py --locate "header"
+./venv/bin/python src/swind_item_inspector.py --locate "từ khóa"
+./venv/bin/python src/swind_item_inspector.py --locate "van mfd"
+
+# 📊 ĐỐI CHIẾU TRỰC TIẾP (0.2s) FILE EXCEL BÁO GIÁ / BOQ VỚI GIÁ & CÔNG THỨC TRONG HỆ THỐNG:
+./venv/bin/python src/swind_item_inspector.py --compare "output/Ten_Du_An/Ten_File.xlsx"
+
+# 📐 KIỂM TRA MA TRẬN NHIỀU KÍCH THƯỚC HOẶC NHIỀU MẶT HÀNG TRONG 1 LỆNH DUY NHẤT (IN-MEMORY 0.04s):
+./venv/bin/python src/swind_item_inspector.py "Van chặn lửa FD EI60" --sizes "400x200,600x400,800x600,1000x500"
+./venv/bin/python src/swind_item_inspector.py "Van VCD 400x200 ; Van NRD 500x300 ; Cửa gió 600x600 kèm OBD"
+
 # Chạy kiểm thử tự động 53 mặt hàng chuẩn (so khớp với data/master_data/formula_regression_baseline.json):
 ./venv/bin/python src/swind_item_inspector.py --self-test
 
 # Cập nhật lại baseline sau khi chủ đích thay đổi công thức được duyệt:
 ./venv/bin/python src/swind_item_inspector.py --save-baseline
 ```
+
+### ⚡ QUY TẮC TÁCH SUBAGENT KHI XỬ LÝ YÊU CẦU MỚI & SO SÁNH DỮ LIỆU LỚN:
+1. **Khi thêm yêu cầu mà hệ thống chưa có:**
+   - Gọi ngay `./venv/bin/python src/swind_item_inspector.py --locate "<từ_khóa_yêu_cầu>"` để lấy chính xác đường dẫn file JSON và tọa độ dòng `StartLine..EndLine` sống của hàm Python cần sửa (tuyệt đối không đọc dò từ đầu file).
+2. **Khi kiểm tra công thức, giá trong hệ thống & so sánh với file dự án:**
+   - Gọi ngay `--search "<từ_khóa>"`, `--compare "<file.xlsx>"` hoặc `--sizes "..."` (xử lý trực tiếp trong RAM `< 0.2s`, không viết script Python tạm).
+   - Nếu người dùng yêu cầu **đồng thời** đối chiếu nhiều bảng dữ liệu/file dự án VÀ sửa/thêm yêu cầu mới vào hệ thống, hãy dùng `invoke_subagent` tách thành 2 luồng song song:
+     + **Subagent 1 (`research` / Role: `"System Price & Formula Comparator"`)**: Chạy `--search` và `--compare` để lập bảng đối chiếu giá/công thức.
+     + **Agent chính (hoặc Subagent 2 `self` / Role: `"Requirement Integrator"`)**: Dùng `--locate` sửa đúng hàm/JSON và chạy `--self-test`.
 
 ---
 
