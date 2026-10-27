@@ -90,8 +90,8 @@ def detect_boq_header(ws):
     col_map = {}
 
     aliases = get_subtype_rules().get("HEADER_ALIASES", {})
-    NAME_KEYWORDS = tuple(aliases.get("name_keywords", ("sản phẩm", "hạng mục", "quy cách", "công tác", "nội dung", "diễn giải", "mô tả", "tên vật tư", "danh mục", "tên hàng")))
-    NAME_CAND_KEYWORDS = tuple(aliases.get("name_cand_keywords", ("sản phẩm", "hạng mục", "danh mục", "công tác", "nội dung", "diễn giải", "mô tả", "tên vật tư", "tên hàng")))
+    NAME_KEYWORDS = tuple(aliases.get("name_keywords", ("sản phẩm", "hạng mục", "quy cách", "công tác", "công việc", "nội dung", "diễn giải", "mô tả", "tên vật tư", "danh mục", "tên hàng")))
+    NAME_CAND_KEYWORDS = tuple(aliases.get("name_cand_keywords", ("sản phẩm", "hạng mục", "danh mục", "công tác", "công việc", "nội dung", "diễn giải", "mô tả", "tên vật tư", "tên hàng")))
     QTY_KEYWORDS = tuple(aliases.get("qty_keywords", ("số lượng", "q'ty", "q.ty", "qty", "khối lượng", "sl", "kl")))
     STT_KEYWORDS = tuple(aliases.get("stt_keywords", ("stt", "tt", "no", "no.")))
     SPEC_KEYWORDS = tuple(aliases.get("spec_keywords", ("thông số", "quy cách", "chi tiết")))
@@ -292,10 +292,23 @@ def detect_boq_header(ws):
                 col_map["qty"] = forced_qty_col
             elif qty_cands:
                 def _count_pos_qty(col_c):
-                    return sum(
-                        1 for rr in range(header_row + 1, ws.max_row + 1)
-                        if rr not in hidden_rows and isinstance(ws.cell(rr, col_c).value, (int, float)) and ws.cell(rr, col_c).value > 0
-                    )
+                    cnt = 0
+                    empty_s = 0
+                    name_c = col_map.get("name", 2)
+                    for rr in range(header_row + 1, ws.max_row + 1):
+                        if rr in hidden_rows:
+                            continue
+                        v_q = ws.cell(rr, col_c).value
+                        if isinstance(v_q, (int, float)) and v_q > 0:
+                            cnt += 1
+                            empty_s = 0
+                        elif ws.cell(rr, name_c).value is None and v_q is None:
+                            empty_s += 1
+                            if empty_s >= 40:
+                                break
+                        else:
+                            empty_s = 0
+                    return cnt
 
                 valid_qty = [
                     c for c in qty_cands

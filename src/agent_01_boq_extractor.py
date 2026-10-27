@@ -19,10 +19,10 @@ class Agent01_BOQExtractor:
        - Ghi chú kỹ thuật 2 phương án báo giá (`note_fslf`, `note_bfn`) và hệ số quy đổi động cơ (`fslf_ratio`, `act_unit`).
     """
 
-    def __init__(self, boq_file=None, project_name="Du_An_HDL_A1"):
+    def __init__(self, boq_file=None, project_name="Du_An_HDL_A1", wb=None):
         self.boq_file = boq_file
         self.project_name = project_name
-        self.parser = SwindBOQParser(boq_file) if boq_file else None
+        self.parser = SwindBOQParser(boq_file, wb=wb) if boq_file else None
         self.extractor = SwindUniversalExtractor(project_name=project_name)
 
     def detect_and_parse(self, sheet_names=None):
@@ -38,9 +38,11 @@ class Agent01_BOQExtractor:
             target_sheets = self.parser.auto_detect_hvac_sheets()
 
         if not target_sheets:
-            target_sheets = [s for s in self.parser.wb.sheetnames if not any(k in s.lower() for k in ("summary", "cover", "bìa"))]
+            visible_sheets = [s for s in self.parser.wb.sheetnames if getattr(self.parser.wb[s], "sheet_state", "visible") == "visible"]
+            cand_sheets = visible_sheets if visible_sheets else list(self.parser.wb.sheetnames)
+            target_sheets = [s for s in cand_sheets if not any(k in s.lower() for k in ("summary", "cover", "bìa"))]
             if not target_sheets:
-                target_sheets = [self.parser.wb.sheetnames[0]]
+                target_sheets = [cand_sheets[0]]
 
         all_items = self.parser.parse_sheets(target_sheets)
         for it in all_items:

@@ -459,12 +459,22 @@ class SwindExcelBuilder:
                     break
 
             end_boq_row = ws_orig.max_row
+            empty_streak_chk = 0
             for r_chk in range(start_boq_row, ws_orig.max_row + 1):
+                if r_chk in hidden_rows:
+                    continue
                 b_chk = str(ws_orig.cell(r_chk, name_col).value or "").strip().lower()
                 a_chk = str(ws_orig.cell(r_chk, stt_col).value or "").strip().lower() if stt_col else ""
-                if any(k in b_chk or k in a_chk for k in ("tổng cộng", "tổng giá trị", "trước vat", "trước thuế vat", "total amount")):
+                if any(k in b_chk or k in a_chk for k in ("tổng cộng", "tổng giá trị", "trước vat", "trước thuế vat", "total amount", "đại diện ban", "đại diện chủ đầu tư", "đại diện nhà thầu")):
                     end_boq_row = r_chk - 1
                     break
+                if not b_chk and not a_chk and ws_orig.cell(r_chk, qty_col).value is None and ws_orig.cell(r_chk, unit_col).value is None:
+                    empty_streak_chk += 1
+                    if empty_streak_chk >= 40:
+                        end_boq_row = r_chk - empty_streak_chk
+                        break
+                else:
+                    empty_streak_chk = 0
             while end_boq_row >= start_boq_row:
                 if end_boq_row not in hidden_rows and any(get_column_letter(c) not in hidden_cols and ws_orig.cell(end_boq_row, c).value is not None and str(ws_orig.cell(end_boq_row, c).value).strip() != "" for c in range(1, max(7, name_col + 1, qty_col + 1))):
                     break

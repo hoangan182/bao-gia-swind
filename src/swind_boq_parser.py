@@ -12,9 +12,9 @@ class SwindBOQParser:
     - Phân biệt dòng phân nhóm (Category Header) và dòng sản phẩm thực tế.
     - Trích xuất thông số kích thước (W, H, L) và chủng loại sản phẩm.
     """
-    def __init__(self, boq_filepath):
+    def __init__(self, boq_filepath, wb=None):
         self.filepath = boq_filepath
-        self.wb = openpyxl.load_workbook(boq_filepath, data_only=True)
+        self.wb = wb if wb is not None else openpyxl.load_workbook(boq_filepath, data_only=True)
         self.commercial_catalog = []
         self.manufacturable_catalog = []
         self._load_catalogs()
@@ -115,13 +115,13 @@ class SwindBOQParser:
             if not name_val:
                 if qty_val is None and unit_val is None:
                     empty_streak += 1
-                    if empty_streak >= 100:
+                    if empty_streak >= 40:
                         break
                 continue
             empty_streak = 0
                 
             name_str = unicodedata.normalize('NFC', str(name_val).strip())
-            if name_str.lower() == "nội dung công việc" and len(items) > 0:
+            if (name_str.lower() == "nội dung công việc" or any(k in name_str.lower() for k in ("đại diện ban", "đại diện chủ đầu tư", "đại diện nhà thầu"))) and len(items) > 0:
                 break
             raw_name_str = name_str
             is_missing_qty = False
@@ -731,7 +731,9 @@ class SwindBOQParser:
         """
         Tự động nhận diện các Sheet liên quan đến Cơ Điện Lạnh (HVAC/MEP).
         """
-        zone_sheets = [s for s in self.wb.sheetnames if getattr(self.wb[s], "_forced_qty_col", None)]
+        visible_sheets = [s for s in self.wb.sheetnames if getattr(self.wb[s], "sheet_state", "visible") == "visible"]
+        cand_sheets = visible_sheets if visible_sheets else list(self.wb.sheetnames)
+        zone_sheets = [s for s in cand_sheets if getattr(self.wb[s], "_forced_qty_col", None)]
         if zone_sheets:
             return zone_sheets
 
@@ -742,7 +744,7 @@ class SwindBOQParser:
             "tang_ap", "duct", "lanh", "lạnh", "ventilation", "m.4 duct"
         ])
         detected = []
-        for s in self.wb.sheetnames:
+        for s in cand_sheets:
             s_lower = s.lower().strip()
             if any(kw in s_lower for kw in keywords):
                 detected.append(s)
@@ -755,19 +757,33 @@ class SwindBOQParser:
         if sheet_names is None:
             sheet_names = self.auto_detect_hvac_sheets()
             if not sheet_names:
+                visible_sheets = [s for s in self.wb.sheetnames if getattr(self.wb[s], "sheet_state", "visible") == "visible"]
+                cand_sheets = visible_sheets if visible_sheets else list(self.wb.sheetnames)
                 # Nếu không auto-detect được sheet nào, lấy sheet đầu tiên không phải summary
-                for s in self.wb.sheetnames:
+                for s in cand_sheets:
                     if not any(k in s.lower() for k in ("summary", "cover", "bìa")):
                         sheet_names = [s]
                         break
                 if not sheet_names:
-                    sheet_names = [self.wb.sheetnames[0]]
+                    sheet_names = [cand_sheets[0]]
 
         all_items = []
-        for s in sheet_names:
-            try:
-                sheet_items = self.parse_sheet(s, max_items=max_items_per_sheet)
-                all_items.extend(sheet_items)
-            except Exception as e:
-                print(f"[SwindBOQParser] Cảnh báo khi bóc tách sheet '{s}': {e}")
+        if len(sheet_names) > 1:
+            from concurrent.futures import ThreadPoolExecutor
+            def _parse_one(s):
+                try:
+                    return self.parse_sheet(s, max_items=max_items_per_sheet)
+                except Exception as e:
+                    print(f"[SwindBOQParser] Cảnh báo khi bóc tách sheet '{s}': {e}")
+                    return []
+            with ThreadPoolExecutor(max_workers=min(len(sheet_names), 3)) as ex:
+                for sheet_items in ex.map(_parse_one, sheet_names):
+                    all_items.extend(sheet_items)
+        else:
+            for s in sheet_names:
+                try:
+                    sheet_items = self.parse_sheet(s, max_items=max_items_per_sheet)
+                    all_items.extend(sheet_items)
+                except Exception as e:
+                    print(f"[SwindBOQParser] Cảnh báo khi bóc tách sheet '{s}': {e}")
         return all_items

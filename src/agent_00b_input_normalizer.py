@@ -49,7 +49,7 @@ class ConfidenceLevel(Enum):
     LOW = "LOW"         # <50% → DỪNG LẠI
 
 # Keywords nhận diện
-NAME_KEYWORDS = ("sản phẩm", "hạng mục", "quy cách", "công tác", "nội dung",
+NAME_KEYWORDS = ("sản phẩm", "hạng mục", "quy cách", "công tác", "công việc", "nội dung",
                  "mô tả", "tên vật tư", "tên vật liệu", "danh mục", "tên hàng",
                  "vật tư yêu cầu", "mục", "hàng hóa", "vật liệu",
                  "description", "item", "material", "particulars", "品名", "规格")
@@ -87,12 +87,24 @@ class FormatDetector:
         self.results = {}  # per-sheet analysis
 
     def analyze_all_sheets(self) -> Dict[str, Any]:
-        """Phân tích tất cả sheets trong workbook."""
-        for sheet_name in self.wb.sheetnames:
-            ws = self.wb[sheet_name]
-            if ws.max_row is None or ws.max_row < 3:
-                continue
-            self.results[sheet_name] = self._analyze_sheet(ws, sheet_name)
+        """Phân tích tất cả sheets hiển thị (visible) trong workbook (bỏ qua sheet ẩn & sheet bìa/thông tin)."""
+        from concurrent.futures import ThreadPoolExecutor
+        visible_sheets = [s for s in self.wb.sheetnames if getattr(self.wb[s], "sheet_state", "visible") == "visible"]
+        cand_sheets = visible_sheets if visible_sheets else list(self.wb.sheetnames)
+        info_kws = ("bìa", "bia", "cover", "mục lục", "muc luc", "index", "toc", "thuyết minh", "thuyet minh", "điều khoản", "dieu khoan", "clarification", "làm rõ", "vtdv", "summary", "recap")
+        if len(cand_sheets) > 1:
+            filtered = [s for s in cand_sheets if not any(k in s.lower().strip() for k in info_kws)]
+            if filtered:
+                cand_sheets = filtered
+        valid_sheets = [s for s in cand_sheets if self.wb[s].max_row is not None and self.wb[s].max_row >= 3]
+        if len(valid_sheets) > 1:
+            with ThreadPoolExecutor(max_workers=min(len(valid_sheets), 3)) as ex:
+                mapped = list(ex.map(lambda sn: (sn, self._analyze_sheet(self.wb[sn], sn)), valid_sheets))
+            for sn, res in mapped:
+                self.results[sn] = res
+        else:
+            for sheet_name in valid_sheets:
+                self.results[sheet_name] = self._analyze_sheet(self.wb[sheet_name], sheet_name)
         return self.results
 
     def _analyze_sheet(self, ws, sheet_name: str) -> Dict[str, Any]:
@@ -338,13 +350,18 @@ class FormatDetector:
         data_rows = 0
         duct_items = 0
         qty_nonzero = 0
+        empty_streak = 0
 
         for r in range(header_row + 1, min(header_row + 500, ws.max_row + 1)):
             if ws.row_dimensions[r].hidden:
                 continue
             name_v = ws.cell(r, name_col).value
             if not name_v:
+                empty_streak += 1
+                if empty_streak >= 40:
+                    break
                 continue
+            empty_streak = 0
             name_str = unicodedata.normalize('NFC', str(name_v)).strip()
             if len(name_str) < 3:
                 continue
@@ -407,9 +424,7 @@ class FormatDetector:
         try:
             from swind_utils import detect_boq_header
             from swind_boq_parser import SwindBOQParser as MPriceBOQParser
-            import openpyxl as _opx
-            _wb_check = _opx.load_workbook(self.filepath, data_only=True)
-            _ws_check = _wb_check[analysis["sheet_name"]]
+            _ws_check = self.wb[analysis["sheet_name"]]
             parser_result = detect_boq_header(_ws_check)
             parser_qty_col = parser_result[1].get("qty") if parser_result else None
             our_qty_col = analysis.get("col_map", {}).get("qty")
@@ -432,10 +447,9 @@ class FormatDetector:
                         f"Parser sẽ chọn cột SL={parser_qty_col} ({parser_qty_count} items>0) "
                         f"nhưng cột {our_qty_col} có {our_qty_count} items>0. Cần normalize."
                     )
-            _wb_check.close()
 
             # Dry-run SwindBOQParser trên sheet
-            _parser = MPriceBOQParser(self.filepath)
+            _parser = MPriceBOQParser(self.filepath, wb=self.wb)
             parsed_items = _parser.parse_sheet(analysis["sheet_name"])
             mfg_cats = ("CUA_GIO", "VAN_GIO", "ONG_GIO", "CANVAS", "TIEU_AM", "ONG_MEM")
             mfg_items = [it for it in parsed_items if it.get("category") in mfg_cats]
@@ -622,12 +636,17 @@ class StructureNormalizer:
         added_section = True
 
         stt = 0
+        empty_streak = 0
         for r in range(header_row + 1, ws_src.max_row + 1):
             if ws_src.row_dimensions[r].hidden:
                 continue
             name_v = ws_src.cell(r, name_col).value
             if not name_v:
+                empty_streak += 1
+                if empty_streak >= 40:
+                    break
                 continue
+            empty_streak = 0
             name_str = str(name_v).strip()
             if len(name_str) < 2:
                 continue
@@ -714,12 +733,17 @@ class StructureNormalizer:
 
         # ------ Thu thập tất cả data items trước ------
         items = []
+        empty_streak = 0
         for r in range(header_row + 1, ws_src.max_row + 1):
             if ws_src.row_dimensions[r].hidden:
                 continue
             name_v = ws_src.cell(r, name_col).value
             if not name_v:
+                empty_streak += 1
+                if empty_streak >= 40:
+                    break
                 continue
+            empty_streak = 0
             name_str = unicodedata.normalize('NFC', str(name_v).strip())
             if len(name_str) < 2:
                 continue
@@ -1108,6 +1132,7 @@ class Agent00B_InputNormalizer:
             print(f"  -> Đã nhận diện format từ kinh nghiệm: {known.get('format_type', 'unknown')}")
 
         detector = FormatDetector(self.filepath)
+        self.wb = detector.wb
         analyses = detector.analyze_all_sheets()
 
         for sheet_name, analysis in analyses.items():

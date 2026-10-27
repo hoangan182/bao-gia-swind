@@ -999,6 +999,16 @@ def export_customer_boq_quotation_files(
             wb_cust = openpyxl.load_workbook(src_boq)
             orig_first_sheet = wb_cust.sheetnames[0] if wb_cust.sheetnames else None
             orig_keep = sh_name if sh_name in wb_cust.sheetnames else wb_cust.sheetnames[0]
+            removed_sheets = [s for s in wb_cust.sheetnames if s != orig_keep]
+            if removed_sheets and template_wb is not None and orig_keep in template_wb.sheetnames:
+                ws_keep = wb_cust[orig_keep]
+                ws_val_keep = template_wb[orig_keep]
+                max_c_chk = min(ws_keep.max_column or 1, 60)
+                for rr in range(1, (ws_keep.max_row or 1) + 1):
+                    for cc in range(1, max_c_chk + 1):
+                        cv = ws_keep.cell(rr, cc).value
+                        if isinstance(cv, str) and cv.startswith("=") and any(rs in cv for rs in removed_sheets):
+                            ws_keep.cell(rr, cc).value = ws_val_keep.cell(rr, cc).value
             for s in list(wb_cust.sheetnames):
                 if s != orig_keep:
                     wb_cust.remove(wb_cust[s])
@@ -1156,10 +1166,12 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
         missing_qty_notes = []
         missing_dim_notes = []
         suspect_unparsed = []
+        empty_streak = 0
         for r in range((header_row or 1) + 1, ws.max_row + 1):
             if r in hidden_rows:
                 continue
             if r in quoted_map:
+                empty_streak = 0
                 if quoted_map[r].get("is_missing_qty"):
                     missing_qty_notes.append(f"Dòng {r}: '{quoted_map[r].get('raw_name')}' (Title: '{quoted_map[r].get('section')}') — đã áp đơn giá, cột KL gốc để trống")
                 if quoted_map[r].get("is_missing_dims") and float(quoted_map[r].get("qty") or 0) > 0:
@@ -1167,12 +1179,19 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
                     missing_dim_notes.append(f"Dòng {r}: Tên='{quoted_map[r].get('raw_name')}' | Spec='{sp_col_v}' | KL={quoted_map[r].get('qty')}")
                 continue
             if r in raw_map:
+                empty_streak = 0
                 continue
             nm_v = ws.cell(r, col_map.get("name", 2)).value
             sp_v = ws.cell(r, col_map["spec"]).value if "spec" in col_map else None
             qt_v = ws.cell(r, col_map["qty"]).value if "qty" in col_map else None
             un_v = ws.cell(r, col_map["unit"]).value if "unit" in col_map else None
             row_txt = f"{nm_v or ''} {sp_v or ''}".strip()
+            if not row_txt and qt_v is None and un_v is None:
+                empty_streak += 1
+                if empty_streak >= 40:
+                    break
+                continue
+            empty_streak = 0
             if not row_txt or "tổng cộng" in row_txt.lower():
                 continue
             has_pos_qty = isinstance(qt_v, (int, float)) and qt_v > 0
@@ -1223,6 +1242,7 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     # -------------------------------------------------------------
     # BƯỚC 0B: AGENT 00B - INPUT NORMALIZER (CHUẨN HÓA ĐẦU VÀO)
     # -------------------------------------------------------------
+    shared_wb = None
     try:
         agent_00b = Agent00B_InputNormalizer(boq_file, interactive=interactive)
         normalized_file, norm_report = agent_00b.normalize()
@@ -1238,6 +1258,8 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
             with open(norm_report_path, "w", encoding="utf-8") as f:
                 json.dump(norm_report, f, ensure_ascii=False, indent=2, default=str)
             boq_file = normalized_file
+        else:
+            shared_wb = getattr(agent_00b, "wb", None)
     except Exception as e:
         print(f"  [Agent 00B] Cảnh báo: Không thể normalize ({e}). Tiếp tục với file gốc.")
 
@@ -1247,7 +1269,7 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     print("\n" + "-" * 60)
     print("[Agent 01 - BOQ Extractor] Quét cấu trúc BOQ và nhận diện Sheet kỹ thuật...")
     print("-" * 60)
-    agent_01 = Agent01_BOQExtractor(boq_file=boq_file, project_name=project_name)
+    agent_01 = Agent01_BOQExtractor(boq_file=boq_file, project_name=project_name, wb=shared_wb)
     target_sheets, all_items = agent_01.detect_and_parse(sheet_names=sheet_names)
     for it in all_items:
         if motor_brand:
@@ -1331,22 +1353,25 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     generated_files = []
 
     if len(target_sheets) > 1 and not merge_sheets:
+        from concurrent.futures import ThreadPoolExecutor
         print("\n" + "=" * 75)
-        print(f"📋 PHÁT HIỆN {len(target_sheets)} SHEET KỸ THUẬT -> ÁP DỤNG RULE: TÁCH RIÊNG TỪNG FILE DỰ TOÁN")
+        print(f"📋 PHÁT HIỆN {len(target_sheets)} SHEET KỸ THUẬT -> KÍCH HOẠT {len(target_sheets)} SHEET WORKER AGENTS CHẠY SONG SONG")
         print("=" * 75)
-        for s_idx, sh_name in enumerate(target_sheets, 1):
+        internal_dir = os.path.join(project_dir, "internal_estimation")
+        os.makedirs(internal_dir, exist_ok=True)
+
+        def _run_sheet_worker(task_arg):
+            s_idx, sh_name = task_arg
             sh_items = [it for it in all_items if it.get("source_sheet") == sh_name]
             if not sh_items:
                 print(f"  -> [{s_idx}/{len(target_sheets)}] Sheet '{sh_name}': Không có dòng sản phẩm hợp lệ, bỏ qua.")
-                continue
+                return None
 
-            internal_dir = os.path.join(project_dir, "internal_estimation")
-            os.makedirs(internal_dir, exist_ok=True)
             sh_slug = vietnamese_slugify(sh_name, max_len=30, add_hash=False).replace('-', '_')
             sh_output = os.path.join(internal_dir, f"{project_name}_{sh_slug}_ESTIMATION.xlsx")
             sh_qa = os.path.join(internal_dir, f"QA_Audit_Report_{sh_slug}.json")
 
-            print(f"\n[{s_idx}/{len(target_sheets)}] 🚀 BẮT ĐẦU XỬ LÝ SHEET: '{sh_name}' ({len(sh_items)} dòng BOQ)")
+            print(f"\n[{s_idx}/{len(target_sheets)}] 🚀 [Worker Agent {s_idx}] BẮT ĐẦU XỬ LÝ SHEET: '{sh_name}' ({len(sh_items)} dòng BOQ)")
             print(f"       -> File xuất: {sh_output}")
 
             process_single_sheet_estimation(
@@ -1364,7 +1389,11 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
                 dual_options=dual_options,
                 template_wb=agent_01.parser.wb
             )
-            generated_files.append((sh_name, sh_output))
+            return (sh_name, sh_output)
+
+        with ThreadPoolExecutor(max_workers=min(len(target_sheets), 3)) as ex:
+            worker_results = list(ex.map(_run_sheet_worker, enumerate(target_sheets, 1)))
+        generated_files = [res for res in worker_results if res is not None]
     else:
         # Xử lý 1 sheet hoặc gộp tất cả sheet theo yêu cầu --merge-sheets
         primary_sheet = target_sheets[0] if target_sheets else None

@@ -358,5 +358,153 @@
     },
     "success": false,
     "timestamp": "2026-10-26T15:35:09.625001"
+  },
+  {
+    "file_hash": "52f8a457138d",
+    "filename": "Hỏi giá Van gió phát sinh H1.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 11,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "desc": 3,
+      "model": 4,
+      "brand": 5,
+      "w": 6,
+      "h": 7,
+      "l": 11,
+      "thickness": 12,
+      "unit": 13,
+      "qty": 14,
+      "price": 15,
+      "total": 16,
+      "remarks": 17
+    },
+    "success": false,
+    "timestamp": "2026-10-27T16:30:54.267785"
+  },
+  {
+    "file_hash": "52f8a457138d",
+    "filename": "Hỏi giá Van gió phát sinh H1.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 11,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "desc": 3,
+      "model": 4,
+      "brand": 5,
+      "w": 6,
+      "h": 7,
+      "l": 11,
+      "thickness": 12,
+      "unit": 13,
+      "qty": 4,
+      "price": 15,
+      "total": 16,
+      "remarks": 17
+    },
+    "success": false,
+    "timestamp": "2026-10-27T16:30:54.269289"
+  },
+  {
+    "file_hash": "52f8a457138d",
+    "filename": "Hỏi giá Van gió phát sinh H1.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 11,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "desc": 3,
+      "model": 4,
+      "brand": 5,
+      "w": 6,
+      "h": 7,
+      "l": 11,
+      "thickness": 12,
+      "unit": 13,
+      "qty": 8,
+      "price": 15,
+      "total": 16,
+      "remarks": 17
+    },
+    "success": false,
+    "timestamp": "2026-10-27T16:30:54.269808"
+  },
+  {
+    "file_hash": "52f8a457138d",
+    "filename": "Hỏi giá Van gió phát sinh H1.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 5,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 6,
+      "qty": 7,
+      "remarks": 13
+    },
+    "success": false,
+    "timestamp": "2026-10-27T16:30:54.270273"
+  },
+  {
+    "file_hash": "52f8a457138d",
+    "filename": "Hỏi giá Van gió phát sinh H1.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 5,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 6,
+      "qty": 7,
+      "remarks": 23
+    },
+    "success": false,
+    "timestamp": "2026-10-27T16:30:54.270711"
+  },
+  {
+    "file_hash": "52f8a457138d",
+    "filename": "Hỏi giá Van gió phát sinh H1.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 5,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 3,
+      "qty": 4,
+      "remarks": 20
+    },
+    "success": false,
+    "timestamp": "2026-10-27T16:30:54.271149"
+  },
+  {
+    "file_hash": "52f8a457138d",
+    "filename": "Hỏi giá Van gió phát sinh H1.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 11,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "desc": 3,
+      "model": 4,
+      "brand": 5,
+      "w": 6,
+      "h": 7,
+      "l": 11,
+      "thickness": 12,
+      "unit": 13,
+      "qty": 11,
+      "price": 15,
+      "total": 16,
+      "remarks": 17
+    },
+    "success": false,
+    "timestamp": "2026-10-27T16:30:54.271591"
   }
 ]
