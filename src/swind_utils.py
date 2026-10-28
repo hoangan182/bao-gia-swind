@@ -82,6 +82,12 @@ def detect_boq_header(ws):
     Trả về (header_row, col_map, hidden_rows, hidden_cols, max_scan_col).
     Dùng chung cho cả SwindBOQParser và SwindExcelBuilder.
     """
+    forced_q_key = getattr(ws, "_forced_qty_col", None)
+    cached_hdr = getattr(ws, "_cached_boq_header", None)
+    if cached_hdr is not None and cached_hdr[0] == forced_q_key:
+        _, h_r, c_m, h_rows, h_cols, m_sc = cached_hdr
+        return h_r, dict(c_m), set(h_rows), set(h_cols), m_sc
+
     hidden_cols = {col_let for col_let, dim in ws.column_dimensions.items() if dim.hidden}
     hidden_rows = {r_idx for r_idx, dim in ws.row_dimensions.items() if dim.hidden}
     max_scan_col = min(ws.max_column, 60)
@@ -167,7 +173,7 @@ def detect_boq_header(ws):
                     if get_column_letter(c) in hidden_cols and not is_total_qty_col:
                         continue
                     s_vals[c] = v_tmp
-                if scan_r > r and any(re.match(r'^\(\d+\)', v) for v in s_vals.values()):
+                if scan_r > r and any(re.match(r'^(?:\(\d+\)|cột\s*\d+|column\s*\d+)$', s_vals.get(cc, "")) for cc in name_cols):
                     last_hdr_r = max(last_hdr_r, scan_r)
                     continue
                 matched_sub = False
@@ -226,7 +232,7 @@ def detect_boq_header(ws):
                     v_sub = unicodedata.normalize('NFC', str(ws.cell(sub_r, c_sub).value or "")).strip().lower()
                     if not v_sub:
                         continue
-                    if re.match(r'^\(\d+\)', v_sub):
+                    if c_sub in name_cols and re.match(r'^(?:\(\d+\)|cột\s*\d+|column\s*\d+)$', v_sub):
                         row_has_col_idx = True
                         continue
                     v_clean = re.sub(r'\s*\([^)]*\)', '', v_sub).strip()
@@ -288,6 +294,12 @@ def detect_boq_header(ws):
             header_row = last_hdr_r
             if name_cands:
                 col_map["name"] = max(name_cands, key=lambda col_c: sum(1 for rr in range(header_row + 1, min(ws.max_row + 1, header_row + 25)) if ws.cell(rr, col_c).value not in (None, "")))
+                for c_other in name_cands:
+                    if c_other != col_map["name"]:
+                        if "spec" not in col_map:
+                            col_map["spec"] = c_other
+                        elif "model" not in col_map and any(k in row_vals.get(c_other, "") for k in MODEL_KEYWORDS):
+                            col_map["model"] = c_other
             if forced_qty_col:
                 col_map["qty"] = forced_qty_col
             elif qty_cands:
@@ -488,6 +500,7 @@ def detect_boq_header(ws):
                         "unit": 13, "qty": 14, "price": 15, "total": 16, "remarks": 17
                     }
 
+    ws._cached_boq_header = (forced_q_key, header_row, dict(col_map), set(hidden_rows), set(hidden_cols), max_scan_col)
     return header_row, col_map, hidden_rows, hidden_cols, max_scan_col
 
 
@@ -602,6 +615,7 @@ def extract_duct_fitting_geometry(text, default_w=0.0, default_h=0.0, default_d=
     # Chuẩn bị chuỗi bóc tách kích thước vuông (loại bỏ xL..., xD..., R..., E..., Z... để không bắt nhầm vào WxH)
     rect_s = re.sub(r'(?:[*xX×,/+-]\s*)?[lLrReEzZ]\s*[=:]?\s*\d{2,4}\b', ' ', s)
     rect_s = re.sub(r'(?:[*xX×,/+-]\s*)?[lL][lI]\d{2,3}\b', ' ', rect_s)
+    rect_s = re.sub(r'\b[vV]\s*\d{2,3}\s*[*xX×]\s*\d{2,3}(?:\s*[*xX×]\s*\d{1,2})?\b', ' ', rect_s)
     rect_s = re.sub(r'(?:[*xX×,/+-]\s*)?(?:[dD][nN]?|Ø|phi)\s*[=:]?\s*\d{2,4}(?:\s*[/\-]\s*(?:[dD][nN]?|Ø|phi)?\s*\d{2,4})?\b', ' ', rect_s, flags=re.IGNORECASE)
 
     # 6. Tìm kích thước 4 chiều (W1xH1 / W2xH2 hoặc w700xH300xW550xH300) hoặc 3 chiều (W1xH1xL) hoặc 2 chiều (W1xH1)

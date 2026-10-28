@@ -46,8 +46,11 @@ Khi người dùng hỏi *"Sao mặt hàng X ra diện tích/giá như vậy?"* 
    # Tra cứu tức thì đơn giá vật tư, barem định mức, 53 mặt hàng chuẩn & từ khóa đã có trong hệ thống (0.03s):
    ./venv/bin/python src/swind_item_inspector.py --search "<từ_khóa_vật_tư_hoặc_sản_phẩm>"
 
+   # Kiểm toán siêu tốc (0.5s, 1 lệnh duy nhất) toàn bộ file BOQ/Báo giá khi cần quét sai mã, xung đột Cột Tên vs Spec, hoặc kiểm tra bất thường giá (TUYỆT ĐỐI KHÔNG viết nhiều script Python nhỏ lẻ để đọc dò file Excel):
+   ./venv/bin/python src/swind_item_inspector.py --audit-boq "<đường_dẫn_file.xlsx>" --sheet "<Tên_Sheet>" [--filter "<từ_khóa_hoặc_KT_hoặc_R...>"]
+
    # Đối chiếu trực tiếp giá & công thức trong 1 file Excel với dữ liệu chuẩn hệ thống Swind (0.2s):
-   ./venv/bin/python src/swind_item_inspector.py --compare "<đường_dẫn_file.xlsx>"
+   ./venv/bin/python src/swind_item_inspector.py --compare "<đường_dẫn_file.xlsx>" --sheet "<Tên_Sheet>"
 
    # Định vị tức thì bằng AST đúng File + Hàm + Số dòng (StartLine..EndLine sống) khi cần thêm yêu cầu mới (0.02s):
    ./venv/bin/python src/swind_item_inspector.py --locate "<chủ_đề_yêu_cầu_mới>"

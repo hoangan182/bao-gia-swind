@@ -17,6 +17,8 @@ class SwindBOQParser:
         self.wb = wb if wb is not None else openpyxl.load_workbook(boq_filepath, data_only=True)
         self.commercial_catalog = []
         self.manufacturable_catalog = []
+        self.skipped_rows = {}
+        self.missing_dim_rows = {}
         self._load_catalogs()
         
         self.learned_keywords = {}
@@ -51,14 +53,26 @@ class SwindBOQParser:
         except Exception as e:
             print(f"[SwindBOQParser] Lỗi khi nạp catalogs: {e}")
 
-    def parse_sheet(self, sheet_name, max_items=None):
+    def parse_sheet(self, sheet_name, max_items=None, _override_col_map=None, _override_header_row=None, _initial_section=None, _is_side_table=False):
         if sheet_name not in self.wb.sheetnames:
             raise ValueError(f"Sheet {sheet_name} không tồn tại trong {self.filepath}")
+
+        if not _is_side_table and _override_col_map is None and _override_header_row is None and max_items is None:
+            cache_dict = getattr(self.wb, "_swind_parsed_cache", None)
+            if cache_dict and sheet_name in cache_dict:
+                c_items, c_skip, c_miss = cache_dict[sheet_name]
+                self.skipped_rows[sheet_name] = set(c_skip)
+                self.missing_dim_rows[sheet_name] = list(c_miss)
+                return [dict(it) for it in c_items]
             
         ws = self.wb[sheet_name]
         
         # 1. Nhận diện Header BOQ (dùng hàm chung từ swind_utils)
         header_row, col_map, hidden_rows, hidden_cols, max_scan_col = detect_boq_header(ws)
+        if _override_col_map is not None:
+            col_map = dict(_override_col_map)
+        if _override_header_row is not None:
+            header_row = _override_header_row
         combo_cfg = get_subtype_rules().get("COMBO_AND_DETECTION_RULES", {})
         cv_kws = tuple(combo_cfg.get("missing_qty_cv_keywords", ("louver", "luover", "louvre", "miệng gió", "cửa gió", "cửa nan", "van ", "vcd", "mfd", "mfsd", "nrd", "prd"))) + ("cửa chớp", "chớp nhôm")
         cv_rx = combo_cfg.get("missing_qty_cv_regex", r'\b(fd|md|sag|rag|eag|oag|pag|seg|eal|oal|fal)\b')
@@ -84,7 +98,10 @@ class SwindBOQParser:
             pass
             
         items = []
-        current_section = "SẢN PHẨM"
+        if not _is_side_table:
+            self.skipped_rows[sheet_name] = set()
+            self.missing_dim_rows[sheet_name] = []
+        current_section = _initial_section if _initial_section else "SẢN PHẨM"
         current_section_aux = ""
         empty_streak = 0
         sheet_default_flange = ""
@@ -265,7 +282,7 @@ class SwindBOQParser:
                 # 2a. Van nước / Cửa sổ / Thiết bị bắt đầu bằng Quạt, Máy lạnh, Dàn lạnh, Dàn nóng -> THUONG_MAI
                 if name_lower.startswith("cửa sổ") and ("cấp bù gió" in name_lower or "khi có cháy" in name_lower):
                     category = "VAN_GIO"
-                elif name_lower.startswith(("quạt ", "máy lạnh", "dàn lạnh", "dàn nóng", "hướng dòng dàn nóng", "thiết bị xử lý", "cửa sổ", "tủ điện", "tủ điều khiển")):
+                elif name_lower.startswith(("quạt ", "máy lạnh", "dàn lạnh", "dàn nóng", "hướng dòng", "thiết bị xử lý", "cửa sổ", "tủ điện", "tủ điều khiển", "đầu cảm biến", "đầu báo", "cảm biến", "dây tín hiệu", "cáp điều khiển", "dây điện", "khối lượng sắt thép", "giá đỡ ống", "quang treo", "hồ sơ kiểm định", "chi phí ", "chi phi ", "vật tư phụ", "lượng tác nhân lạnh", "phụ kiện ống nước ngưng", "lò xo giảm chấn", "cao su giảm chấn", "chụp hút bếp", "điều hòa cục bộ", "+ điều hòa cục bộ")):
                     category = "THUONG_MAI"
                 else:
                     for comm in self.commercial_catalog:
@@ -285,7 +302,9 @@ class SwindBOQParser:
                     if re.search(r'\b(?:[dD][nN]?|Ø|phi\s*)\d{2,4}\b|\b\d{2,4}\s*[xX*]\s*\d{2,4}\b', name_str, re.IGNORECASE):
                         category = "ONG_GIO"
 
-                if category == "KHAC" and any(k in name_lower or k in note_boq.lower() for k in ("access door", "cửa công tác", "cửa thăm", "cửa kiểm tra", "cửa chớp", "chớp nhôm")):
+                if category == "KHAC" and any(k in name_lower or k in note_boq.lower() for k in ("access door", "cửa công tác", "cửa thăm", "cửa kiểm tra", "cửa chớp", "chớp nhôm", "cửa bầu dục", "cửa nan z", "cửa sọt trứng", "cửa khuếch tán")):
+                    category = "CUA_GIO"
+                if category == "KHAC" and name_lower.startswith(("cửa gió", "miệng gió", "cửa cấp", "cửa hồi", "cửa hút", "cửa thải", "cửa lấy", "cửa xả", "cửa tươi", "cửa sọt", "cửa nan", "cửa khuếch tán", "cửa bầu dục", "cửa louver", "cửa chớp", "louver ")):
                     category = "CUA_GIO"
                 if category == "KHAC" and any(k in sec_lower for k in ("cửa gió", "miệng gió", "cửa chớp", "chớp nhôm", "lưới chắn chim", "louver", "luover", "louvre", "grille", "griller", "diffuser", "insect screen", "i.s", "lcct", "lưới chắn côn trùng", "fag", "sag", "rag", "eag", "seag", "kag", "mag", "fal", "eal", "oal")):
                     if not name_lower.startswith(("van ", "damper", "volume control", "fire damper", "motorized damper", "non-return", "ống ", "cút ", "côn ", "tê ", "chân rẽ", "hộp ")) and not any(k in name_lower for k in ("volume control damper", "fire damper", "motorized damper", "non-return damper")):
@@ -347,7 +366,7 @@ class SwindBOQParser:
             if category == "KHAC" and any(k in name_lower for k in ("kẹp bích", "kep bich", "ty treo", "bulong", "bu lông")):
                 category = "THUONG_MAI"
             elif category == "KHAC" and not is_plumbing_item:
-                has_duct = bool(re.search(r'\bống\s+gió\b|\btole\b|\btôn\b|(?:^|\s)z\s*\d{2,4}\s*[xX*]\s*\d{2,4}|(?:^|\s)z\s*chuyển|\b\d{2,4}\s*[xX*]\s*\d{2,4}\s*(?:[/\-xX*\s]+)?(?:[dD][nN]?|Ø|phi)\s*\d{2,4}\b', name_lower))
+                has_duct = bool(re.search(r'\bống\s+gió\b|^ống\s+(?:kt\b|kích\s*thước\b|\d{2,4}\s*[xX*]\s*\d{2,4})|\btole\b|\btôn\b|(?:^|\s)z\s*\d{2,4}\s*[xX*]\s*\d{2,4}|(?:^|\s)z\s*chuyển|\b\d{2,4}\s*[xX*]\s*\d{2,4}\s*(?:[/\-xX*\s]+)?(?:[dD][nN]?|Ø|phi)\s*\d{2,4}\b', name_lower))
                 if has_duct or any(k in sec_lower for k in ("ống gió", "phụ kiện ống gió", "côn, cút", "hút mùi bếp", "hút mùi wc", "thông gió")):
                     category = "ONG_GIO"
                 
@@ -399,9 +418,9 @@ class SwindBOQParser:
             # Bóc tách đường kính tròn D / DN / Ø / Phi (kể cả viết dạng D100x100: "cứ kích thước D là tròn")
             d_match = re.search(r'(?:^|[\s_(+:-])(?:[dD][nN]?|Ø|phi\s*)(\d{2,4})(?:\s*[xX*]\s*\1)?(?:\s*mm)?(?:\b|(?=[^\w]))', primary_clean_text, re.IGNORECASE) or re.search(r'(?:^|[\s_(+:-])(?:[dD][nN]?|Ø|phi\s*)(\d{2,4})(?:\s*[xX*]\s*\1)?(?:\s*mm)?(?:\b|(?=[^\w]))', dim_clean_text, re.IGNORECASE)
             rect_primary_text = re.sub(r'(?<![a-zA-Z])(?:[dD][nN]?|Ø|phi\s*)(\d{2,4})\s*[xX*]\s*\1\b', ' ', primary_clean_text, flags=re.IGNORECASE)
-            rect_primary_text = re.sub(r'\b(?:to|mắt\s*lưới|lưới)\s*\d{1,2}\s*[xX*]\s*\d{1,2}\b', ' ', rect_primary_text, flags=re.IGNORECASE)
+            rect_primary_text = re.sub(r'\b(?:to|mắt\s*lưới|lưới)\s*\d{1,2}\s*[xX*]\s*\d{1,2}\b|\b[vV]\s*\d{2,3}\s*[xX*]\s*\d{2,3}(?:\s*[xX*]\s*\d{1,2})?\b', ' ', rect_primary_text, flags=re.IGNORECASE)
             rect_search_text = re.sub(r'(?<![a-zA-Z])(?:[dD][nN]?|Ø|phi\s*)(\d{2,4})\s*[xX*]\s*\1\b', ' ', dim_clean_text, flags=re.IGNORECASE)
-            rect_search_text = re.sub(r'\b(?:to|mắt\s*lưới|lưới)\s*\d{1,2}\s*[xX*]\s*\d{1,2}\b', ' ', rect_search_text, flags=re.IGNORECASE)
+            rect_search_text = re.sub(r'\b(?:to|mắt\s*lưới|lưới)\s*\d{1,2}\s*[xX*]\s*\d{1,2}\b|\b[vV]\s*\d{2,3}\s*[xX*]\s*\d{2,3}(?:\s*[xX*]\s*\d{1,2})?\b', ' ', rect_search_text, flags=re.IGNORECASE)
 
             w_neck, h_neck = 0.0, 0.0
             has_explicit_kt_bi = False
@@ -507,9 +526,11 @@ class SwindBOQParser:
                 unit_val = "cái"
 
             # Trích xuất chỉ số chống cháy EI (EI30, EI60, EI90, EI120) — quét cả dòng con và tiêu đề cha
+            ei_primary_text = f"{full_name_str} {model_str} {note_boq_raw}"
+            ei_spec_text = "" if any(k in str(spec_str or "").lower() for k in ("smd", "không kiểm định")) else str(spec_str or "")
             full_dim_search_text = f"{full_name_str} {model_str} {note_boq}"
             ei_rating = 0
-            ei_match = re.search(r'(?<![a-zA-Z])EI\s*[-:]?\s*(\d{2,3})\b', dim_search_text, re.IGNORECASE) or re.search(r'(?<![a-zA-Z])EI\s*[-:]?\s*(\d{2,3})\b', full_dim_search_text, re.IGNORECASE)
+            ei_match = re.search(r'(?<![a-zA-Z])EI\s*[-:]?\s*(\d{2,3})\b', ei_primary_text, re.IGNORECASE) or re.search(r'(?<![a-zA-Z])EI\s*[-:]?\s*(\d{2,3})\b', ei_spec_text, re.IGNORECASE)
             if ei_match:
                 ei_rating = int(ei_match.group(1))
             elif "cấp bù gió khi có cháy" in full_name_lower:
@@ -676,9 +697,12 @@ class SwindBOQParser:
                     items.append(item_data)
 
             else:
-                if category in ("THUONG_MAI", "KHAC") and not is_missing_dims:
+                if category in ("THUONG_MAI", "KHAC") or (w == 0 and h == 0 and d_val == 0 and category in ("ONG_GIO", "TIEU_AM", "CANVAS")):
                     ref_p = ws.cell(r, col_map["price"]).value if "price" in col_map else None
-                    if (not isinstance(ref_p, (int, float)) or ref_p <= 0) and not any(k in name_lower for k in ("chống cháy ei", "lưới bảo vệ")):
+                    if (not isinstance(ref_p, (int, float)) or ref_p <= 0) and not (not name_lower.startswith("quạt ") and any(k in name_lower for k in ("chống cháy ei", "lưới bảo vệ"))):
+                        self.skipped_rows[sheet_name].add(r)
+                        if is_missing_dims and float(qty_val or 0) > 0:
+                            self.missing_dim_rows[sheet_name].append(f"Dòng {r}: Tên='{raw_name_str}' | Spec='{spec_str or None}' | KL={float(qty_val)}")
                         continue
 
                 # Không phải Combo: Xử lý KTC cho Cửa gió (độ dày & chiều dài Van gió lấy trực tiếp từ Agent05_DamperBOM)
@@ -724,7 +748,81 @@ class SwindBOQParser:
             
             if max_items and len(items) >= max_items:
                 break
+
+        # Quét bảng phụ song song bên phải (Side-by-Side Table, VD: VAN GIÓ TƯƠI bên trái + VAN HÚT KHÓI bên phải)
+        if not _is_side_table and not getattr(ws, "_forced_qty_col", None):
+            from openpyxl.utils import get_column_letter
+            max_main_col = max((v for k, v in col_map.items() if isinstance(v, int)), default=3)
+            used_side_cols = set()
+            for c_scan in range(max_main_col + 1, max_scan_col + 1):
+                if c_scan in used_side_cols or get_column_letter(c_scan) in hidden_cols:
+                    continue
+                matched_rows = []
+                for rr in range(1, min(60, ws.max_row + 1)):
+                    if rr in hidden_rows:
+                        continue
+                    v_nm = ws.cell(rr, c_scan).value
+                    if not isinstance(v_nm, str):
+                        continue
+                    v_s = unicodedata.normalize('NFC', v_nm).strip()
+                    if re.search(r'(\d{2,4}\s*[xX×*]\s*\d{2,4}|\b[dDØ]\d{2,4}\b)', v_s) and re.search(r'\b(van|mfd|mfsd|fd|vcd|md|nrd|prd|obd|cửa|miệng|louver|ống|cút|côn|tê)\b', v_s, re.IGNORECASE):
+                        for c_q in range(c_scan + 1, min(c_scan + 4, max_scan_col + 1)):
+                            vq = ws.cell(rr, c_q).value
+                            if isinstance(vq, (int, float)) and vq > 0:
+                                matched_rows.append((rr, c_q))
+                                break
+                if len(matched_rows) >= 2:
+                    first_side_r = matched_rows[0][0]
+                    c_qty_side = matched_rows[0][1]
+                    side_hdr_r = max(1, first_side_r - 1)
+                    c_stt_side = c_scan - 1 if (c_scan - 1 > max_main_col and ws.cell(first_side_r, c_scan - 1).value is not None) else 0
+                    side_col_map = {"name": c_scan, "qty": c_qty_side}
+                    if c_stt_side > 0:
+                        side_col_map["stt"] = c_stt_side
+                    if c_qty_side > c_scan + 1:
+                        side_col_map["unit"] = c_scan + 1
+
+                    def _find_table_title(c_from, c_to, max_r):
+                        for tr in range(1, max_r + 1):
+                            for tc in range(c_from, c_to + 1):
+                                tv = ws.cell(tr, tc).value
+                                if isinstance(tv, str):
+                                    ts = unicodedata.normalize('NFC', tv).strip()
+                                    tl = ts.lower()
+                                    if len(ts) > 2 and not re.match(r'^(?:\(\d+\)|cột\s*\d+|column\s*\d+|stt|khu\s*vực|vị\s*trí|sl|số\s*lượng|kích\s*thước.*|đvt|đơn\s*vị)$', tl):
+                                        return ts
+                        return None
+
+                    main_title = _find_table_title(1, max_main_col, max(1, header_row - 1))
+                    if main_title:
+                        for it_m in items:
+                            if not it_m.get("is_side_table") and it_m.get("section") in (None, "", "SẢN PHẨM"):
+                                it_m["section"] = main_title
+                                it_m["name"] = f"{main_title} {it_m['raw_name']}"
+                    side_title = _find_table_title(max(max_main_col + 1, c_stt_side or c_scan), c_qty_side, side_hdr_r) or "HẠNG MỤC BỔ SUNG"
+                    side_items = self.parse_sheet(
+                        sheet_name,
+                        max_items=max_items,
+                        _override_col_map=side_col_map,
+                        _override_header_row=side_hdr_r,
+                        _initial_section=side_title,
+                        _is_side_table=True
+                    )
+                    for s_it in side_items:
+                        s_it["is_side_table"] = True
+                        s_it["side_stt"] = ws.cell(s_it["source_row"], c_stt_side).value if c_stt_side > 0 else None
+                    items.extend(side_items)
+                    for cc in range(c_stt_side or c_scan, c_qty_side + 2):
+                        used_side_cols.add(cc)
                 
+        if not _is_side_table and _override_col_map is None and _override_header_row is None and max_items is None:
+            if not hasattr(self.wb, "_swind_parsed_cache"):
+                self.wb._swind_parsed_cache = {}
+            self.wb._swind_parsed_cache[sheet_name] = (
+                [dict(it) for it in items],
+                set(self.skipped_rows.get(sheet_name, set())),
+                list(self.missing_dim_rows.get(sheet_name, []))
+            )
         return items
 
     def auto_detect_hvac_sheets(self):

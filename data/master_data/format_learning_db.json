@@ -506,5 +506,21 @@
     },
     "success": false,
     "timestamp": "2026-10-27T16:30:54.271591"
+  },
+  {
+    "file_hash": "536d3fc3c079",
+    "filename": "MPQ ( BAT) OG-056T2810 28.10.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 3,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 3,
+      "qty": 7,
+      "remarks": 8
+    },
+    "success": true,
+    "timestamp": "2026-10-28T16:11:58.233693"
   }
 ]

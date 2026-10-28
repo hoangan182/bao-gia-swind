@@ -320,11 +320,12 @@ def process_single_sheet_estimation(
             if p_ref > 0:
                 if is_box_combo and cat == "CUA_GIO":
                     box_combo_add_price = int(math.ceil(p_ref / 100.0) * 100)
-                elif cat in ["THUONG_MAI", "ONG_MEM", "KHAC"]:
-                    override_price = int(math.ceil(p_ref / 100.0) * 100)
+                else:
+                    override_price = int(round(p_ref))
         except:
             override_price = 0
             box_combo_add_price = 0
+        item["override_price"] = override_price
 
         note_str = spec.get("note_std") or spec.get("note_fslf") or ""
         if not note_str:
@@ -916,6 +917,7 @@ def process_single_sheet_estimation(
     if new_commercial_items:
         print(f"  ⚠️ Phát hiện {len(new_commercial_items)} mặt hàng mới phát sinh có ĐƠN GIÁ = 0 trong Sheet 06.")
 
+    report["_wb"] = builder.wb
     return report
 
 
@@ -926,7 +928,8 @@ def export_customer_boq_quotation_files(
     target_sheets,
     all_items,
     template_wb=None,
-    orig_boq_file=None
+    orig_boq_file=None,
+    est_wbs=None
 ):
     """
     Xuất trực tiếp các file Báo giá gửi khách hàng:
@@ -964,11 +967,12 @@ def export_customer_boq_quotation_files(
         if not os.path.exists(est_file):
             continue
 
-        wb = openpyxl.load_workbook(est_file)
+        wb = (est_wbs or {}).get(sh_name) or openpyxl.load_workbook(est_file)
         keep_sheet = "BG" if "BG" in wb.sheetnames else ("BẢNG BÁO GIÁ TIÊU CHUẨN" if "BẢNG BÁO GIÁ TIÊU CHUẨN" in wb.sheetnames else wb.sheetnames[0])
-        for s in list(wb.sheetnames):
-            if s != keep_sheet:
-                wb.remove(wb[s])
+        if not (src_boq and os.path.exists(src_boq)):
+            for s in list(wb.sheetnames):
+                if s != keep_sheet:
+                    wb.remove(wb[s])
 
         ws = wb[keep_sheet]
         ws.title = "BG"
@@ -1003,12 +1007,10 @@ def export_customer_boq_quotation_files(
             if removed_sheets and template_wb is not None and orig_keep in template_wb.sheetnames:
                 ws_keep = wb_cust[orig_keep]
                 ws_val_keep = template_wb[orig_keep]
-                max_c_chk = min(ws_keep.max_column or 1, 60)
-                for rr in range(1, (ws_keep.max_row or 1) + 1):
-                    for cc in range(1, max_c_chk + 1):
-                        cv = ws_keep.cell(rr, cc).value
-                        if isinstance(cv, str) and cv.startswith("=") and any(rs in cv for rs in removed_sheets):
-                            ws_keep.cell(rr, cc).value = ws_val_keep.cell(rr, cc).value
+                for (rr, cc), cell_k in list(ws_keep._cells.items()):
+                    cv = cell_k.value
+                    if isinstance(cv, str) and cv.startswith("=") and any(rs in cv for rs in removed_sheets):
+                        cell_k.value = ws_val_keep.cell(rr, cc).value
             for s in list(wb_cust.sheetnames):
                 if s != orig_keep:
                     wb_cust.remove(wb_cust[s])
@@ -1041,17 +1043,24 @@ def export_customer_boq_quotation_files(
                 ws_swind.row_dimensions[r_idx].height = dim.height
             for m_range in ws.merged_cells.ranges:
                 ws_swind.merge_cells(str(m_range))
+            style_cache = {}
             for row in ws.iter_rows():
                 for cell in row:
                     new_c = ws_swind.cell(cell.row, cell.column)
                     if not isinstance(cell, MergedCell) and not isinstance(new_c, MergedCell):
                         new_c.value = cell.value
                     if cell.has_style:
-                        new_c.font = copy(cell.font)
-                        new_c.fill = copy(cell.fill)
-                        new_c.border = copy(cell.border)
-                        new_c.alignment = copy(cell.alignment)
-                        new_c.number_format = cell.number_format
+                        s_key = tuple(cell._style)
+                        cached_s = style_cache.get(s_key)
+                        if cached_s is not None:
+                            new_c._style = copy(cached_s)
+                        else:
+                            new_c.font = copy(cell.font)
+                            new_c.fill = copy(cell.fill)
+                            new_c.border = copy(cell.border)
+                            new_c.alignment = copy(cell.alignment)
+                            new_c.number_format = cell.number_format
+                            style_cache[s_key] = copy(new_c._style)
             wb_cust.active = 1 if len(wb_cust.worksheets) > 1 else 0
             if wb_cust.views:
                 wb_cust.views[0].firstSheet = 0
@@ -1104,7 +1113,11 @@ def export_customer_boq_quotation_files(
 
         # Nếu BOQ gốc là định dạng bảng so sánh nhà thầu (ví dụ Ecoba: có cột ECOBA LỰA CHỌN & PHƯƠNG ÁN 1),
         # đồng thời xuất thêm 1 bản điền trực tiếp trên form gốc của khách hàng
-        if boq_file and os.path.exists(boq_file):
+        is_ecoba_sheet = False
+        if template_wb is not None and sh_name in template_wb.sheetnames:
+            ws_chk_ec = template_wb[sh_name]
+            is_ecoba_sheet = ("LỰA CHỌN" in str(ws_chk_ec.cell(10, 16).value or "").upper() and "PHƯƠNG ÁN 1" in str(ws_chk_ec.cell(10, 29).value or "").upper())
+        if boq_file and os.path.exists(boq_file) and (is_ecoba_sheet or template_wb is None):
             try:
                 wb_cust = openpyxl.load_workbook(boq_file)
                 if wb_cust is not None and sh_name in wb_cust.sheetnames:
@@ -1171,7 +1184,7 @@ def export_customer_boq_quotation_files(
     return customer_files
 
 
-def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items, only_cua_van=False):
+def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items, only_cua_van=False, parser=None):
     """
     Quét toàn bộ 100% các dòng trên từng Sheet BOQ gốc để kiểm tra độ phủ,
     kế thừa ngữ cảnh Title cha và phát hiện sớm các dòng có khối lượng/kích thước bị bỏ sót.
@@ -1185,11 +1198,14 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
             continue
         ws = boq_wb[sh_name]
         header_row, col_map, hidden_rows, _, _ = detect_boq_header(ws)
-        raw_map = {it.get("source_row"): it for it in raw_all_items if it.get("source_sheet") == sh_name}
-        quoted_map = {it.get("source_row"): it for it in filtered_items if it.get("source_sheet") == sh_name}
+        raw_list = [it for it in raw_all_items if it.get("source_sheet") == sh_name]
+        quoted_list = [it for it in filtered_items if it.get("source_sheet") == sh_name]
+        raw_map = {it.get("source_row"): it for it in raw_list if not it.get("is_side_table")}
+        quoted_map = {it.get("source_row"): it for it in quoted_list if not it.get("is_side_table")}
+        skipped_set = getattr(parser, "skipped_rows", {}).get(sh_name, set()) if parser else set()
         titles_inherited = sorted({it.get("section", "") for it in filtered_items if it.get("source_sheet") == sh_name and it.get("section") and it.get("section") != "SẢN PHẨM"})
         missing_qty_notes = []
-        missing_dim_notes = []
+        missing_dim_notes = list(getattr(parser, "missing_dim_rows", {}).get(sh_name, [])) if parser else []
         suspect_unparsed = []
         empty_streak = 0
         for r in range((header_row or 1) + 1, ws.max_row + 1):
@@ -1203,7 +1219,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
                     sp_col_v = ws.cell(r, col_map["spec"]).value if "spec" in col_map else None
                     missing_dim_notes.append(f"Dòng {r}: Tên='{quoted_map[r].get('raw_name')}' | Spec='{sp_col_v}' | KL={quoted_map[r].get('qty')}")
                 continue
-            if r in raw_map:
+            if r in raw_map or r in skipped_set:
                 empty_streak = 0
                 continue
             nm_v = ws.cell(r, col_map.get("name", 2)).value
@@ -1225,7 +1241,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
                 if only_cua_van and any(k in row_txt.lower() for k in ("ống chờ", "ống lồng", "ống nối mềm", "mềm ei", "khớp nối mềm", "sleeve", "flexible")):
                     continue
                 suspect_unparsed.append(f"Dòng {r}: Tên='{nm_v}' | Spec='{sp_v}' | ĐVT='{un_v}' | KL={qt_v}")
-        print(f"  -> Sheet '{sh_name}': Đã báo giá={len(quoted_map)} dòng | Đã lọc ngoài phạm vi={len(raw_map) - len(quoted_map)} dòng | Title cha kế thừa={len(titles_inherited)}")
+        print(f"  -> Sheet '{sh_name}': Đã báo giá={len(quoted_list)} dòng | Đã lọc ngoài phạm vi={len(raw_list) - len(quoted_list) + len(skipped_set)} dòng | Title cha kế thừa={len(titles_inherited)}")
         if titles_inherited:
             print(f"     • Danh mục Title cha đã quét & kế thừa: {titles_inherited}")
         for mq in missing_qty_notes:
@@ -1269,7 +1285,7 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     # -------------------------------------------------------------
     shared_wb = None
     try:
-        agent_00b = Agent00B_InputNormalizer(boq_file, interactive=interactive)
+        agent_00b = Agent00B_InputNormalizer(boq_file, interactive=interactive, sheet_names=sheet_names)
         normalized_file, norm_report = agent_00b.normalize()
         if normalized_file != boq_file:
             internal_dir = os.path.join(project_dir, "internal_estimation")
@@ -1329,7 +1345,7 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
 
     target_sheets = [sh for sh in target_sheets if any(it.get("source_sheet") == sh for it in all_items)]
     try:
-        audit_full_boq_coverage(agent_01.parser.wb, target_sheets, raw_extracted_items, all_items, only_cua_van=only_cua_van)
+        audit_full_boq_coverage(agent_01.parser.wb, target_sheets, raw_extracted_items, all_items, only_cua_van=only_cua_van, parser=agent_01.parser)
     except Exception as e_cov:
         print(f"  [Cảnh báo Coverage Audit] {e_cov}")
 
@@ -1399,7 +1415,7 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
             print(f"\n[{s_idx}/{len(target_sheets)}] 🚀 [Worker Agent {s_idx}] BẮT ĐẦU XỬ LÝ SHEET: '{sh_name}' ({len(sh_items)} dòng BOQ)")
             print(f"       -> File xuất: {sh_output}")
 
-            process_single_sheet_estimation(
+            rep_sh = process_single_sheet_estimation(
                 boq_file=boq_file,
                 source_sheet=sh_name,
                 sheet_items=sh_items,
@@ -1414,20 +1430,27 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
                 dual_options=dual_options,
                 template_wb=agent_01.parser.wb
             )
-            return (sh_name, sh_output)
+            return (sh_name, sh_output, (rep_sh or {}).get("_wb"))
 
+        est_wbs = {}
         with ThreadPoolExecutor(max_workers=min(len(target_sheets), 3)) as ex:
             worker_results = list(ex.map(_run_sheet_worker, enumerate(target_sheets, 1)))
-        generated_files = [res for res in worker_results if res is not None]
+        generated_files = []
+        for res in worker_results:
+            if res is not None:
+                generated_files.append((res[0], res[1]))
+                if res[2] is not None:
+                    est_wbs[res[0]] = res[2]
     else:
         # Xử lý 1 sheet hoặc gộp tất cả sheet theo yêu cầu --merge-sheets
+        est_wbs = {}
         primary_sheet = target_sheets[0] if target_sheets else None
         internal_dir = os.path.join(project_dir, "internal_estimation")
         os.makedirs(internal_dir, exist_ok=True)
         output_workbook = os.path.join(internal_dir, f"{project_name}_ESTIMATION.xlsx")
         qa_report_path = os.path.join(internal_dir, f"QA_Audit_Report.json")
 
-        process_single_sheet_estimation(
+        rep_main = process_single_sheet_estimation(
             boq_file=boq_file,
             source_sheet=primary_sheet,
             sheet_items=all_items,
@@ -1442,6 +1465,8 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
             dual_options=dual_options,
             template_wb=agent_01.parser.wb
         )
+        if primary_sheet and (rep_main or {}).get("_wb") is not None:
+            est_wbs[primary_sheet] = rep_main["_wb"]
         generated_files.append((primary_sheet or "All", output_workbook))
 
     # -------------------------------------------------------------
@@ -1454,7 +1479,8 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
         target_sheets=target_sheets,
         all_items=all_items,
         template_wb=agent_01.parser.wb,
-        orig_boq_file=orig_boq_file
+        orig_boq_file=orig_boq_file,
+        est_wbs=est_wbs
     )
 
     final_customer_file = customer_files[-1][1] if customer_files else ""
@@ -1505,6 +1531,11 @@ def print_quotation_summary_table(target_sheets, all_items, customer_files=None)
 
         sub_total = 0
         active_count = 0
+        partner_cnt = 0
+        partner_sub = 0
+        swind_cnt = 0
+        swind_sub = 0
+        motor_alerts = []
         for it in sh_items:
             qty = float(it.get("qty") or 0)
             is_missing_qty = bool(it.get("is_missing_qty"))
@@ -1513,6 +1544,22 @@ def print_quotation_summary_table(target_sheets, all_items, customer_files=None)
             unit_price = int(it.get("calc_sell_unit", 0))
             line_total = 0 if is_missing_qty else int(round(qty * unit_price))
             sub_total += line_total
+            if int(it.get("override_price") or 0) > 0:
+                partner_cnt += 1
+                partner_sub += line_total
+            else:
+                swind_cnt += 1
+                swind_sub += line_total
+                sp = it.get("resolved_spec") or {}
+                if it.get("category") == "VAN_GIO" and sp.get("subtype") in ("MFD", "MD", "MFSD", "MSFD"):
+                    nb_l = f"{it.get('raw_name', '')} {it.get('note_boq', '')}".lower()
+                    for b_kw in ("kepler", "klb", "viweco", "honeywell", "siemens"):
+                        if b_kw in nb_l and (sp.get("motor_brand") or "BELIMO").upper() != b_kw.upper():
+                            motor_alerts.append(
+                                f"BOQ R{it.get('source_row')} ({sp.get('a1')}x{sp.get('a2')}, SL={qty:.0f}): "
+                                f"Spec ghi hãng '{b_kw.upper()}' nhưng đang áp {sp.get('motor_brand') or 'BELIMO'} ({sp.get('model_std')}, ĐG={unit_price:,.0f}đ)"
+                            )
+                            break
 
         vat_amt = int(round(sub_total * 0.08))
         grand_total = sub_total + vat_amt
@@ -1522,7 +1569,12 @@ def print_quotation_summary_table(target_sheets, all_items, customer_files=None)
             "count": active_count if active_count > 0 else len(sh_items),
             "sub_total": sub_total,
             "vat": vat_amt,
-            "grand_total": grand_total
+            "grand_total": grand_total,
+            "partner_cnt": partner_cnt,
+            "partner_sub": partner_sub,
+            "swind_cnt": swind_cnt,
+            "swind_sub": swind_sub,
+            "motor_alerts": motor_alerts,
         })
 
     if project_summary:
@@ -1544,6 +1596,19 @@ def print_quotation_summary_table(target_sheets, all_items, customer_files=None)
             tot_grand += ps["grand_total"]
             print(f"| {s_idx} | {ps['sheet']} | {ps['count']} | {ps['sub_total']:,} | {ps['vat']:,} | {ps['grand_total']:,} |")
         print(f"| | **TỔNG CỘNG TOÀN DỰ ÁN** | **{tot_items}** | **{tot_sub:,}** | **{tot_vat:,}** | **{tot_grand:,}** |")
+        for ps in project_summary:
+            if ps["partner_cnt"] > 0:
+                p_pct = (ps["partner_sub"] / ps["sub_total"] * 100) if ps["sub_total"] else 0.0
+                s_pct = (ps["swind_sub"] / ps["sub_total"] * 100) if ps["sub_total"] else 0.0
+                print(
+                    f"\n💡 [Phân tách Nguồn giá Sheet '{ps['sheet']}']: "
+                    f"Giữ nguyên giá đối tác {ps['partner_cnt']} dòng = {ps['partner_sub']:,}đ ({p_pct:.1f}%) | "
+                    f"Swind báo mới {ps['swind_cnt']} dòng = {ps['swind_sub']:,}đ ({s_pct:.1f}%)"
+                )
+            if ps["motor_alerts"]:
+                print(f"⚠️  [Lưu ý Hãng động cơ trong Spec Sheet '{ps['sheet']}'] ({len(ps['motor_alerts'])} dòng):")
+                for ma in ps["motor_alerts"][:6]:
+                    print(f"   - {ma}")
         print()
 
 

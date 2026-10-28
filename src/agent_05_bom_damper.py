@@ -286,7 +286,7 @@ class Agent05_DamperBOM:
         ]
 
         thickness_blade = 1.15 if (is_mfd or is_fd or is_md or ei_rating > 0) else 0.75
-        is_single_blade = (h_mod <= 250.0) or (model_code in ("1.01", "1.02", "1.03", "2.01")) or (is_mfd and (mfd_mode == "single_fslf24" or motor_brand.upper() == "KLB"))
+        is_single_blade = is_fd_ei or (h_mod <= 250.0) or (model_code in ("1.01", "1.02", "1.03", "2.01")) or (is_mfd and (mfd_mode == "single_fslf24" or motor_brand.upper() == "KLB"))
         blade_factor_per_mod = 1.0
         if is_fd_ei or is_mfd:
             if is_single_blade:

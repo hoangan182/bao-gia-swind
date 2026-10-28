@@ -32,6 +32,12 @@ class Agent01_BOQExtractor:
         if sheet_names:
             target_sheets = [s.strip() for s in sheet_names if s.strip() in self.parser.wb.sheetnames]
             if not target_sheets:
+                for req_s in sheet_names:
+                    req_low = req_s.strip().lower()
+                    for wb_s in self.parser.wb.sheetnames:
+                        if req_low and req_low in wb_s.lower() and wb_s not in target_sheets:
+                            target_sheets.append(wb_s)
+            if not target_sheets:
                 print(f"[Agent 01] Các sheet chỉ định {sheet_names} không tồn tại. Chuyển sang Auto-detect.")
                 target_sheets = self.parser.auto_detect_hvac_sheets()
         else:
@@ -78,8 +84,14 @@ class Agent01_BOQExtractor:
     def get_subtype(subtype_rules, category, search_text, default):
         rules = subtype_rules.get(category, [])
         for rule in rules:
-            if any(kw in search_text for kw in rule["keywords"]):
-                return rule["subtype"]
+            for kw in rule["keywords"]:
+                if kw not in search_text:
+                    continue
+                if kw.isalpha() and kw.isascii():
+                    if re.search(r'(?<![a-z])' + re.escape(kw) + r'(?![a-z])', search_text):
+                        return rule["subtype"]
+                else:
+                    return rule["subtype"]
         return default
 
     @classmethod
@@ -103,17 +115,21 @@ class Agent01_BOQExtractor:
             damper_type = "MFSD"
         elif model_item == "MFD" or any(k in model_item for k in ("1.02", "1.03", "1.04", "1.05")):
             damper_type = "MFD"
-        elif model_item in ("MPRD", "M-PRD") or any(k in raw_search.lower() for k in ("mprd", "m-prd")):
+        elif model_item in ("MPRD", "M-PRD", "MRD") or any(k in raw_search.lower() for k in ("mprd", "m-prd", "mrd", "xả áp điện", "xả áp điều khiển")):
             damper_type = "MPRD"
         elif model_item in ("OBD", "VCD", "MD", "NRD", "PRD"):
             damper_type = model_item
         else:
-            damper_type = cls.get_subtype(subtype_rules, "VAN_GIO", raw_search, cls.get_subtype(subtype_rules, "VAN_GIO", full_search, "VCD"))
+            name_model_search = (str(item.get("raw_name") or item.get("name", "")) + " " + str(item.get("model", ""))).lower()
+            damper_type = cls.get_subtype(
+                subtype_rules, "VAN_GIO", name_model_search,
+                cls.get_subtype(subtype_rules, "VAN_GIO", raw_search, cls.get_subtype(subtype_rules, "VAN_GIO", full_search, "VCD"))
+            )
             if damper_type in ("FD", "MD", "VCD"):
                 rs_low = raw_search.lower()
-                if any(fk in rs_low for fk in ("chặn lửa", "ngăn cháy", "dập lửa")) and any(mk in rs_low for mk in ("động cơ", "mô tơ", "môtơ", "mo tơ", "motor")):
+                if any(fk in rs_low for fk in ("chặn lửa", "ngăn cháy", "dập lửa")) and any(mk in rs_low for mk in ("động cơ", "mô tơ", "môtơ", "mo tơ", "motor", "mfd")):
                     damper_type = "MFD"
-        if damper_type == "PRD" and any(k in raw_search.lower() for k in ("mprd", "m-prd", "xả áp động cơ")):
+        if damper_type == "PRD" and any(k in raw_search.lower() for k in ("mprd", "m-prd", "mrd", "xả áp động cơ", "xả áp điện", "xả áp điều khiển")):
             damper_type = "MPRD"
         subtype = damper_type
         eff_type = "MFD" if damper_type == "MFD_LOUVER" else damper_type
@@ -121,7 +137,7 @@ class Agent01_BOQExtractor:
         h_use = h if h > 0 else (d if d > 0 else 300.0)
         req_motor = str(item.get("motor_brand_override") or "").strip().upper()
         req_mfd_model = str(item.get("mfd_model_override") or "").strip()
-        eff_req_code = model_code or req_mfd_model
+        eff_req_code = model_code or (req_mfd_model if eff_type in ("MFD", "MFSD") else "")
         is_klb_req = (req_motor == "KLB") or any(k in (raw_search + " " + full_search).lower() for k in ("klb", "viweco", "v6006")) or (eff_req_code == "1.03")
         is_honeywell_req = (req_motor == "HONEYWELL") or any(k in (raw_search + " " + full_search).lower() for k in ("honeywell", "honey well", "ms4609", "s6061")) or (eff_req_code == "1.04")
         motor_brand = "KLB" if is_klb_req else ("HONEYWELL" if is_honeywell_req else "BELIMO")
@@ -360,8 +376,14 @@ class Agent01_BOQExtractor:
             "obd" in combined_search
             or bool(re.search(r'\+\s*o\b|(?:c/w|\+|kèm|gắn|with)\s*obd\b|van\s+điều\s*ch[ỉi]nh\s*lưu\s*lượng|van\s+ch[ỉi]nh\s*lưu\s*lượng', combined_search))
         )
+        primary_diff_search = (raw_name + " " + name + " " + str(item.get("model", ""))).lower()
+        has_explicit_straight = any(k in primary_diff_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd"))
+        note_boq_low = str(item.get("note_boq") or "").lower()
+        note_blade_conflict = has_explicit_straight and any(k in note_boq_low for k in ("nan z", "louver", "sọt trứng", "sọt trưng", "eggcrate"))
+
         filter_search = re.sub(r'không\s+kèm\s+lọc[^\.,\n]*', '', combined_search)
-        mesh_search = re.sub(r'(?:dạng\s+lưới|lưới\s+(?:lọc|gió))', '', combined_search)
+        mesh_base = primary_diff_search if note_blade_conflict else combined_search
+        mesh_search = re.sub(r'(?:dạng\s+lưới|lưới\s+(?:lọc|gió))', '', mesh_base)
         has_mesh = (
             any(k in mesh_search for k in mesh_kws if k != "is")
             or bool(re.search(r'\b(?:i\.s\.?|l\.s\.?|lc+t)\b|(?:c/w|\+|kèm|with)\s*(?:is|ls)\b', mesh_search))
@@ -374,11 +396,13 @@ class Agent01_BOQExtractor:
 
         # Rule 2: Cửa tăng áp, cửa hút khói kèm OBD -> nan thẳng bầu dục kèm van OBD mã SDG+O
         is_press_or_smoke = any(k in combined_search for k in ("tăng áp", "tạo áp", "hút khói", "thải khói", "cấp bù", "pag", "seg", "spg", "seag", "smoke"))
-        is_eggcrate = any(k in combined_search for k in ("sọt trứng", "sọt trưng", "dạng lưới", "eggcrate", "egg crate", "ecg", "seeg"))
+        egg_search = primary_diff_search if has_explicit_straight else combined_search
+        is_eggcrate = any(k in egg_search for k in ("sọt trứng", "sọt trưng", "dạng lưới", "eggcrate", "egg crate", "ecg", "seeg"))
 
         # Rule 3: Cửa ghi nan Z, louver hoặc miệng cấp khí bù ngoài trời hoặc cửa nan 1 lớp khổ lớn >= 3000mm -> cửa nan Z mã WL / WL+N
+        louver_search = primary_diff_search if has_explicit_straight else combined_search
         is_louver_z = (
-            any(k in combined_search for k in louver_kws)
+            any(k in louver_search for k in louver_kws)
             or (any(k in raw_search for k in ("cấp khí bù", "bù khí", "cấp gió bù", "bù gió")) and not any(k in raw_search for k in ("fag", "sag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "sdg", "nan thẳng", "bầu dục", "nan bd")))
             or (max(w, h) >= 3000.0 and not has_obd and not is_double_layer and not is_eggcrate and not any(k in combined_search for k in ("nan thẳng", "bầu dục", "nan bd", "linear", "sọt trứng", "sọt trưng", "khuếch tán")))
             or (has_mesh and not has_obd and not has_filter and not is_double_layer and not is_eggcrate and not any(k in combined_search for k in ("cover", "nan thẳng", "bầu dục", "nan bd", "linear", "sọt trứng", "sọt trưng", "khuếch tán", "fag", "sag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "return", "supply", "insect screen", "i.s", "lcct")))

@@ -40,10 +40,10 @@
         {"keywords": ["ống gió", "ống bù", "ống vuông", "ống tôn", "tole", "tôn"], "subtype": "DUCT_RECT"}
     ],
     "HEADER_ALIASES": {
-        "name_keywords": ["sản phẩm", "hạng mục", "quy cách", "công tác", "công việc", "nội dung", "diễn giải", "mô tả", "tên vật tư", "tên vật liệu", "vật tư yêu cầu", "danh mục", "tên hàng"],
-        "name_cand_keywords": ["sản phẩm", "hạng mục", "danh mục", "công tác", "công việc", "nội dung", "diễn giải", "mô tả", "tên vật tư", "tên vật liệu", "vật tư yêu cầu", "tên hàng"],
+        "name_keywords": ["sản phẩm", "hạng mục", "quy cách", "công tác", "công việc", "nội dung", "diễn giải", "mô tả", "tên vật tư", "tên vật liệu", "vật tư yêu cầu", "danh mục", "tên hàng", "kích thước van", "tên van", "loại van", "kích thước cửa", "tên cửa", "kích thước ống"],
+        "name_cand_keywords": ["sản phẩm", "hạng mục", "danh mục", "công tác", "công việc", "nội dung", "diễn giải", "mô tả", "tên vật tư", "tên vật liệu", "vật tư yêu cầu", "tên hàng", "kích thước van", "tên van", "loại van", "kích thước cửa", "tên cửa", "kích thước ống"],
         "qty_keywords": ["số lượng", "q'ty", "q.ty", "qty", "khối lượng", "tổng kl", "lũy kế đến hết kỳ này", "sl", "kl", "quantity", "quanttiy"],
-        "stt_keywords": ["stt", "tt", "no", "no."],
+        "stt_keywords": ["stt", "tt", "no", "no.", "khu vực", "vị trí"],
         "spec_keywords": ["thông số", "quy cách", "chi tiết", "đặc tính", "kỹ thuật"],
         "model_keywords": ["model", "mã hiệu", "ký hiệu", "mã sp"],
         "brand_keywords": ["thương hiệu", "nhãn hiệu", "xuất xứ"],

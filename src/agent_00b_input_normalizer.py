@@ -52,6 +52,7 @@ class ConfidenceLevel(Enum):
 NAME_KEYWORDS = ("sản phẩm", "hạng mục", "quy cách", "công tác", "công việc", "nội dung",
                  "mô tả", "tên vật tư", "tên vật liệu", "danh mục", "tên hàng",
                  "vật tư yêu cầu", "mục", "hàng hóa", "vật liệu",
+                 "kích thước van", "tên van", "loại van", "kích thước cửa", "tên cửa", "kích thước ống",
                  "description", "item", "material", "particulars", "品名", "规格")
 QTY_KEYWORDS = ("số lượng", "q'ty", "qty", "khối lượng", "sl", "kl diễn giải",
                 "kl đặt", "kl tổng", "kl", "lũy kế", "cần về", "đặt hàng",
@@ -86,11 +87,26 @@ class FormatDetector:
         self.wb = openpyxl.load_workbook(filepath, data_only=True)
         self.results = {}  # per-sheet analysis
 
-    def analyze_all_sheets(self) -> Dict[str, Any]:
-        """Phân tích tất cả sheets hiển thị (visible) trong workbook (bỏ qua sheet ẩn & sheet bìa/thông tin)."""
+    def analyze_all_sheets(self, sheet_names: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Phân tích tất cả sheets hiển thị (hoặc sheets mục tiêu/HVAC) trong workbook."""
         from concurrent.futures import ThreadPoolExecutor
         visible_sheets = [s for s in self.wb.sheetnames if getattr(self.wb[s], "sheet_state", "visible") == "visible"]
         cand_sheets = visible_sheets if visible_sheets else list(self.wb.sheetnames)
+        if sheet_names:
+            matched = [s.strip() for s in sheet_names if s.strip() in cand_sheets]
+            if not matched:
+                for req_s in sheet_names:
+                    req_low = req_s.strip().lower()
+                    for wb_s in cand_sheets:
+                        if req_low and req_low in wb_s.lower() and wb_s not in matched:
+                            matched.append(wb_s)
+            if matched:
+                cand_sheets = matched
+        elif len(cand_sheets) > 1:
+            hvac_kws = ("dhkk", "hvac", "thong gio", "thông gió", "thong_gio", "hut khoi", "hút khói", "hut_khoi", "tang ap", "tăng áp", "tang áp", "tăng ap", "tang_ap", "duct", "lanh", "lạnh", "ventilation", "m.4 duct")
+            hvac_matched = [s for s in cand_sheets if any(kw in s.lower().strip() for kw in hvac_kws)]
+            if hvac_matched:
+                cand_sheets = hvac_matched
         info_kws = ("bìa", "bia", "cover", "mục lục", "muc luc", "index", "toc", "thuyết minh", "thuyet minh", "điều khoản", "dieu khoan", "clarification", "làm rõ", "vtdv", "summary", "recap")
         if len(cand_sheets) > 1:
             filtered = [s for s in cand_sheets if not any(k in s.lower().strip() for k in info_kws)]
@@ -1110,9 +1126,10 @@ class Agent00B_InputNormalizer:
     Chạy TRƯỚC Agent 01 trong pipeline.
     """
 
-    def __init__(self, boq_filepath: str, interactive: bool = True):
+    def __init__(self, boq_filepath: str, interactive: bool = True, sheet_names: Optional[List[str]] = None):
         self.filepath = boq_filepath
         self.interactive = interactive
+        self.sheet_names = sheet_names
         self.learning_db = FormatLearningDB()
         self.report = {}
 
@@ -1133,7 +1150,7 @@ class Agent00B_InputNormalizer:
 
         detector = FormatDetector(self.filepath)
         self.wb = detector.wb
-        analyses = detector.analyze_all_sheets()
+        analyses = detector.analyze_all_sheets(sheet_names=self.sheet_names)
 
         for sheet_name, analysis in analyses.items():
             fmt = analysis.get("format_type", FormatType.STANDARD_BOQ)

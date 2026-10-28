@@ -27,8 +27,10 @@ Trước hoặc sau khi sửa bất kỳ công thức nào, chạy lệnh sau đ
 ./venv/bin/python src/swind_item_inspector.py "Cửa gió khuếch tán 600x600 kèm OBD"
 ./venv/bin/python src/swind_item_inspector.py "Miệng gió cấp 1000mm D150"
 
-# Quét nhanh toàn bộ BOQ trong 0.2s để gom nhóm Model/Subtype & kiểm tra dòng thiếu kích thước (không cần viết script phụ):
-./venv/bin/python src/swind_item_inspector.py --audit-boq "input/A4_BOQ_Van gió.xlsx"
+# ⚡ KIỂM TOÁN SIÊU TỐC (0.5s, 1 LỆNH DUY NHẤT) KHI QUÉT SAI MÃ HIỆU, XUNG ĐỘT SPEC & BẤT THƯỜNG GIÁ TRONG BOQ/BÁO GIÁ:
+# (TUYỆT ĐỐI KHÔNG viết hàng loạt script Python/openpyxl nhỏ lẻ để đọc dò từng vùng của file Excel!)
+./venv/bin/python src/swind_item_inspector.py --audit-boq "input/MPQ ( BAT) OG-056T2810 28.10.xlsx" --sheet "4.HVAC"
+./venv/bin/python src/swind_item_inspector.py --audit-boq "input/MPQ ( BAT) OG-056T2810 28.10.xlsx" --sheet "4.HVAC" --filter "250x250"
 
 # 🔎 TRA CỨU TỨC THÌ (0.03s) ĐƠN GIÁ VẬT TƯ, BAREM, MẶT HÀNG CHUẨN & TỪ KHÓA ĐÃ CÓ TRONG HỆ THỐNG:
 ./venv/bin/python src/swind_item_inspector.py --search "belimo"

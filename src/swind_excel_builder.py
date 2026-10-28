@@ -410,35 +410,61 @@ class SwindExcelBuilder:
         if ws_orig is not None and self.source_sheet in zone_col_map and not getattr(ws_orig, "_forced_qty_col", None):
             ws_orig._forced_qty_col = zone_col_map[self.source_sheet]
 
+        from copy import copy as _copy_style
+        align_center = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        align_left = Alignment(horizontal="left", vertical="center", wrap_text=True)
+        align_right = Alignment(horizontal="right", vertical="center")
+        row_style_cache = {}
+
         def _write_row_cells(r_num, vals_std, vals_fslf=None, vals_bfn=None, is_section=False):
             for ws, mode in worksheets:
+                ws_id = id(ws)
                 if is_section:
                     if vals_std[0] is not None:
-                        ws.cell(r_num, 1, vals_std[0]).font = section_font
-                        ws.cell(r_num, 1).alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+                        c1 = ws.cell(r_num, 1, vals_std[0])
+                        c1.font = section_font
+                        c1.alignment = align_center
                     if vals_std[1] is not None:
-                        ws.cell(r_num, 2, vals_std[1]).font = section_font
-                        ws.cell(r_num, 2).alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+                        c2 = ws.cell(r_num, 2, vals_std[1])
+                        c2.font = section_font
+                        c2.alignment = align_left
+                    sec_s = row_style_cache.get((ws_id, "sec_fill"))
                     for c_i in range(1, 17):
-                        ws.cell(r_num, c_i).fill = section_fill
-                        ws.cell(r_num, c_i).border = thin_border
+                        cs = ws.cell(r_num, c_i)
+                        if c_i > 2 and sec_s is not None:
+                            cs._style = _copy_style(sec_s)
+                        else:
+                            cs.fill = section_fill
+                            cs.border = thin_border
+                            if c_i == 3 and sec_s is None:
+                                sec_s = _copy_style(cs._style)
+                                row_style_cache[(ws_id, "sec_fill")] = sec_s
                 else:
                     r_vals = vals_std if mode == "std" else ((vals_fslf or vals_std) if mode == "fslf" else (vals_bfn or vals_std))
-                    row_bdr = first_item_border if r_num == 14 else item_border
+                    is_r14 = (r_num == 14)
+                    row_bdr = first_item_border if is_r14 else item_border
                     for c_i, val in enumerate(r_vals, 1):
                         cell = ws.cell(r_num, c_i, value=val)
-                        cell.font = row_font
-                        cell.border = row_bdr
-                        if c_i in (1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12):
-                            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-                        elif c_i in (13, 14, 15):
-                            cell.alignment = Alignment(horizontal="right", vertical="center")
-                            if val is not None:
-                                cell.number_format = "#,##0"
+                        has_val = (val is not None) if c_i in (13, 14, 15) else False
+                        is_flt11 = (c_i == 11 and isinstance(val, float))
+                        s_key = (ws_id, is_r14, c_i, has_val, is_flt11)
+                        cached_s = row_style_cache.get(s_key)
+                        if cached_s is not None:
+                            cell._style = _copy_style(cached_s)
                         else:
-                            cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
-                        if c_i == 11 and isinstance(val, float):
-                            cell.number_format = "0.00"
+                            cell.font = row_font
+                            cell.border = row_bdr
+                            if c_i in (1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12):
+                                cell.alignment = align_center
+                            elif c_i in (13, 14, 15):
+                                cell.alignment = align_right
+                                if val is not None:
+                                    cell.number_format = "#,##0"
+                            else:
+                                cell.alignment = align_left
+                            if is_flt11:
+                                cell.number_format = "0.00"
+                            row_style_cache[s_key] = _copy_style(cell._style)
 
         if ws_orig is not None:
             # Nhận diện Header BOQ (dùng hàm chung từ swind_utils)
@@ -481,10 +507,14 @@ class SwindExcelBuilder:
                 end_boq_row -= 1
 
             row_to_items = {}
+            side_table_items = []
             for idx, item in enumerate(all_items, 1):
-                sr = item.get("source_row")
-                if sr:
-                    row_to_items.setdefault(sr, []).append((idx, item))
+                if item.get("is_side_table"):
+                    side_table_items.append((idx, item))
+                else:
+                    sr = item.get("source_row")
+                    if sr:
+                        row_to_items.setdefault(sr, []).append((idx, item))
 
             def _is_sec_hdr(c2_cell, orig_name_s, orig_c_v, orig_u_v, orig_q_v):
                 if orig_q_v is not None and (not isinstance(orig_q_v, str) or orig_q_v.strip() != ""):
@@ -505,6 +535,11 @@ class SwindExcelBuilder:
                 return True
 
             stt_hidden = (not stt_col) or (get_column_letter(stt_col) in hidden_cols)
+            if side_table_items:
+                first_main_sec = next((it.get("section", "").strip() for it in all_items if not it.get("is_side_table") and it.get("section") and it.get("section") != "SẢN PHẨM"), "")
+                if first_main_sec:
+                    _write_row_cells(curr_row, [None, first_main_sec] + [None] * 14, is_section=True)
+                    curr_row += 1
             for r in range(start_boq_row, end_boq_row + 1):
                 if r in hidden_rows:
                     continue
@@ -520,13 +555,17 @@ class SwindExcelBuilder:
                         disp_qty = None if item.get("is_missing_qty") else qty
                         spec = item.get("resolved_spec") or Agent01_BOQExtractor.resolve_item_spec(item, subtype_rules, price_map=price_map, idx=idx)
 
-                        f_price_base = f"=ROUNDUP(ROUND('00_TONG_HOP_BAO_GIA'!Q{sheet00_row}, 0), -2)"
-                        if spec.get("has_fslf_formula_diff"):
-                            act_unit = spec["act_unit"]
-                            ratio = spec["fslf_ratio"]
-                            f_price_fslf = f"=ROUNDUP(ROUND(('00_TONG_HOP_BAO_GIA'!Q{sheet00_row}-{act_unit:.0f})*{ratio:.6f}+{act_unit:.0f}, 0), -2)"
-                        else:
+                        if float(item.get("override_price") or 0) > 0:
+                            f_price_base = f"=ROUND('00_TONG_HOP_BAO_GIA'!Q{sheet00_row}, 0)"
                             f_price_fslf = f_price_base
+                        else:
+                            f_price_base = f"=ROUNDUP(ROUND('00_TONG_HOP_BAO_GIA'!Q{sheet00_row}, 0), -2)"
+                            if spec.get("has_fslf_formula_diff"):
+                                act_unit = spec["act_unit"]
+                                ratio = spec["fslf_ratio"]
+                                f_price_fslf = f"=ROUNDUP(ROUND(('00_TONG_HOP_BAO_GIA'!Q{sheet00_row}-{act_unit:.0f})*{ratio:.6f}+{act_unit:.0f}, 0), -2)"
+                            else:
+                                f_price_fslf = f_price_base
                         f_price_bfn = f_price_base
 
                         row_std = [
@@ -591,6 +630,53 @@ class SwindExcelBuilder:
                         ]
                         _write_row_cells(curr_row, row_unquoted, is_section=False)
                         curr_row += 1
+            if side_table_items:
+                side_sec_curr = None
+                for idx, item in side_table_items:
+                    sec = (item.get("section") or "").strip()
+                    if sec and sec != side_sec_curr:
+                        side_sec_curr = sec
+                        _write_row_cells(curr_row, [None, sec] + [None] * 14, is_section=True)
+                        curr_row += 1
+                    sheet00_row = idx + 1
+                    raw_name = item.get("raw_name") or item["name"]
+                    unit = item["unit"]
+                    qty = item["qty"]
+                    disp_qty = None if item.get("is_missing_qty") else qty
+                    spec = item.get("resolved_spec") or Agent01_BOQExtractor.resolve_item_spec(item, subtype_rules, price_map=price_map, idx=idx)
+                    side_stt = item.get("side_stt")
+                    if float(item.get("override_price") or 0) > 0:
+                        f_price_base = f"=ROUND('00_TONG_HOP_BAO_GIA'!Q{sheet00_row}, 0)"
+                        f_price_fslf = f_price_base
+                    else:
+                        f_price_base = f"=ROUNDUP(ROUND('00_TONG_HOP_BAO_GIA'!Q{sheet00_row}, 0), -2)"
+                        if spec.get("has_fslf_formula_diff"):
+                            act_unit = spec["act_unit"]
+                            ratio = spec["fslf_ratio"]
+                            f_price_fslf = f"=ROUNDUP(ROUND(('00_TONG_HOP_BAO_GIA'!Q{sheet00_row}-{act_unit:.0f})*{ratio:.6f}+{act_unit:.0f}, 0), -2)"
+                        else:
+                            f_price_fslf = f_price_base
+                    f_price_bfn = f_price_base
+                    row_std = [
+                        side_stt, raw_name, spec.get("model_std") or spec["model_fslf"], spec["brand"],
+                        spec["a1"], spec["a2"], spec["b1"], spec["b2"],
+                        spec["modul"], spec["l_col"], spec["thk_col"], unit, disp_qty,
+                        f_price_base, f"=N{curr_row}*M{curr_row}", spec.get("note_std") or spec["note_fslf"]
+                    ]
+                    row_fslf = [
+                        side_stt, raw_name, spec["model_fslf"], spec["brand"],
+                        spec["a1"], spec["a2"], spec["b1"], spec["b2"],
+                        spec["modul"], spec["l_col"], spec["thk_col"], unit, disp_qty,
+                        f_price_fslf, f"=N{curr_row}*M{curr_row}", spec["note_fslf"]
+                    ]
+                    row_bfn = [
+                        side_stt, raw_name, spec["model_bfn"], spec["brand"],
+                        spec["a1"], spec["a2"], spec["b1"], spec["b2"],
+                        spec["modul"], spec["l_col"], spec["thk_col"], unit, disp_qty,
+                        f_price_bfn, f"=N{curr_row}*M{curr_row}", spec["note_bfn"]
+                    ]
+                    _write_row_cells(curr_row, row_std, row_fslf, row_bfn, is_section=False)
+                    curr_row += 1
         else:
             for idx, item in enumerate(all_items, 1):
                 sheet00_row = idx + 1
