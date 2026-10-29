@@ -16,6 +16,7 @@ description: Fast-path execution protocol for running Swind BOQ quotations witho
      - Quan sát log `[Agent 01 - Full-BOQ Coverage Audit]` trên màn hình console:
        + Đảm bảo toàn bộ các dòng **Title / Hạng mục cha** trong BOQ đã được quét và truyền đầy đủ thông số kỹ thuật (`OBD`, `lưới chắn chim / côn trùng`, `lọc G4`, `EI`, `độ dày`...) xuống các dòng item con.
        + Nếu có bất kỳ cảnh báo `⚠️ [CẢNH BÁO SÓT DÒNG]` nào (dòng có khối lượng/kích thước thuộc phạm vi báo giá nhưng bị bỏ sót do từ khóa mới hoặc lệch cột trong BOQ của dự án mới), **bắt buộc phải kiểm tra dòng đó và bổ sung rule xử lý ngay** để đạt độ phủ 100% trước khi báo cáo.
+       + **QUY TẮC BẮT BUỘC KHI PHÁT HIỆN GHI CHÚ / SPEC KHÁC BIỆT CỘT TÊN (`⚠️ [PHÁT HIỆN GHI CHÚ / SPEC KHÁC BIỆT CỘT TÊN — BẮT BUỘC HỎI LẠI USER]`):** Đặc điểm mỗi dự án một khác — nếu trên console xuất hiện cảnh báo xung đột giữa `Cột Tên` và `Cột Ghi chú/Spec` (khác kiểu nan cửa gió, khác loại van, ghi chú bọc EI trên van cơ, hoặc ghi hãng động cơ khác như Kepler/KLB/Honeywell...), **AI bắt buộc phải liệt kê các dòng đó và hỏi lại User** xem dự án này lấy theo `Cột Tên` (`--spec-priority name`) hay theo `Cột Ghi chú/Spec` (`--spec-priority note`) / hãng động cơ nào.
   5. **QUY TẮC BÁO CÁO KẾT QUẢ CHO NGƯỜI DÙNG (BẮT BUỘC):**
      - **Chỉ liệt kê duy nhất File Báo Giá Cuối Cùng** (`output/<Project_Name>/<Original_File_Name>.xlsx` gồm Sheet BOQ gốc giữ nguyên + Sheet `BG` đóng khung chuẩn mẫu). Không liệt kê các file báo giá thành phần từng sheet/tháp hay file dự toán nội bộ trung gian.
      - **Chỉ in Bảng Tổng Hợp Giá Trị Báo Giá**, **BỎ Bảng kết quả báo giá chi tiết** từng mặt hàng.
@@ -43,6 +44,9 @@ description: Fast-path execution protocol for running Swind BOQ quotations witho
 - `--dual-options`: Xuất đồng thời 2 phương án so sánh van (`BG Đơn Cánh ĐC FSLF 24V` và `BG Đa Cánh BFN 24`). Mặc định: Chỉ xuất 1 bảng chuẩn theo BOQ (`BẢNG BÁO GIÁ TIÊU CHUẨN`).
 - `--merge-sheets`: Gộp tất cả các sheet vào 1 file dự toán duy nhất (Mặc định: Tách riêng từng sheet ra từng file độc lập).
 - `--allow-ei`: Cờ tương thích cho phép áp giá chống cháy EI (Mặc định Swind tự động nhận diện EI theo BOQ).
+- `--include-flex-duct`: Cho phép báo giá **Ống gió mềm (`ONG_MEM`)** (Mặc định: Hệ thống **KHÔNG** báo giá ống gió mềm, chỉ báo khi có yêu cầu).
+- `--include-box`: Cho phép tính và báo giá thêm **Hộp gió (`PLENUM_BOX` theo công thức sheet `BG PKV`)** cho các cửa gió kèm hộp (Mặc định: Chỉ báo giá cửa gió và ghi chú `. Không tính box do nhà thầu tự thi công`, chỉ cộng thêm hộp khi có yêu cầu).
+- `--spec-priority <name|note>`: Chọn cột ưu tiên khi `Cột Tên` và `Cột Ghi chú/Spec` mâu thuẫn (`name` [Mặc định]: khóa chủng loại theo Cột Tên; `note`: ưu tiên theo Cột Ghi chú/Spec).
 
 ## 3. Đường Dẫn File Xuất Chuẩn
 - **File báo giá gửi khách hàng (`_BAO_GIA.xlsx`):** `data/projects/<Project_Name>/<Project_Name>_BAO_GIA.xlsx` (hoặc `<Project_Name>_<Sheet_Slug>_BAO_GIA.xlsx` và `<Project_Name>_BAO_GIA_TONG_HOP.xlsx` nếu có nhiều sheet).

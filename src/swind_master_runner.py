@@ -191,7 +191,8 @@ def process_single_sheet_estimation(
     fin_policy,
     project_name,
     dual_options=False,
-    template_wb=None
+    template_wb=None,
+    include_box=False
 ):
     """
     Quy trình dự toán và xuất file độc lập cho 1 Sheet kỹ thuật (Agent 04 -> Agent 08).
@@ -319,7 +320,8 @@ def process_single_sheet_estimation(
             p_ref = float(item.get("ref_price") or 0)
             if p_ref > 0:
                 if is_box_combo and cat == "CUA_GIO":
-                    box_combo_add_price = int(math.ceil(p_ref / 100.0) * 100)
+                    if not include_box:
+                        box_combo_add_price = int(math.ceil(p_ref / 100.0) * 100)
                 else:
                     override_price = int(round(p_ref))
         except:
@@ -331,7 +333,7 @@ def process_single_sheet_estimation(
         if not note_str:
             note_str = "Hàng thương mại" if cat == "THUONG_MAI" else "Ống mềm" if cat == "ONG_MEM" else ""
 
-        if is_box_combo and cat == "CUA_GIO":
+        if is_box_combo and cat == "CUA_GIO" and not include_box:
             if box_combo_add_price > 0:
                 note_str = f"{note_str} (ĐG bao gồm Hộp gió đã báo {box_combo_add_price:,.0f}đ + Cửa gió Swind)" if note_str else f"ĐG bao gồm Hộp gió đã báo {box_combo_add_price:,.0f}đ + Cửa gió Swind"
             else:
@@ -632,6 +634,45 @@ def process_single_sheet_estimation(
                             calc_qty_per_item=comp["calc_qty"],
                             note=comp.get("note", "")
                         )
+            if include_box and spec.get("is_box_combo") and spec.get("box_spec"):
+                bx = spec["box_spec"]
+                box_synth = {
+                    "raw_name": f"Hộp gió {int(bx['w_box'])}x{int(bx['h_box'])}xL{int(bx['l_box'])}" + (f" ({bx['n_necks']} cổ D{int(bx['d_box'])})" if bx.get("n_necks", 0) > 0 else ""),
+                    "w": bx["w_box"],
+                    "h": bx["h_box"],
+                    "d": bx.get("d_box", 0.0),
+                    "l": bx["l_box"],
+                    "thickness": bx["thk_box"],
+                    "neck_count": bx.get("n_necks", 0),
+                    "is_insulated": bx.get("is_insulated", False),
+                    "unit": "cái"
+                }
+                box_bom = Agent04_DuctworkBOM.calculate_duct_bom(
+                    parent_id=f"{item_id}-BOX",
+                    w=bx["w_box"],
+                    h=bx["h_box"],
+                    l=bx["l_box"],
+                    brand="HOASEN",
+                    flange_type="TDC",
+                    is_fitting=True,
+                    unit="cái",
+                    specified_thickness=bx["thk_box"],
+                    d=bx.get("d_box", 0.0),
+                    subtype="PLENUM_BOX",
+                    item=box_synth
+                )
+                for comp in box_bom["components"]:
+                    builder.add_subsheet_component(
+                        sheet_type="ONG",
+                        sub_key=comp["sub_key"],
+                        parent_id=item_id,
+                        comp_name=f"Hộp cửa gió - {comp['name']}",
+                        category=comp["category"],
+                        mat_id=comp["mat_id"],
+                        unit=comp["unit"],
+                        calc_qty_per_item=comp["calc_qty"],
+                        note=comp.get("note", "")
+                    )
 
         # Phụ kiện đi kèm (Accessory Rules) - Chỉ xét trên tên gốc của Cửa gió / Van gió
         if cat in ["CUA_GIO", "VAN_GIO"]:
@@ -1256,7 +1297,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
             print("     ✅ Đạt 100% độ phủ BOQ: Không có dòng Cửa/Van/Vật tư mục tiêu nào bị bỏ sót!")
 
 
-def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None, neck_size=False, motor_price=None):
+def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None, neck_size=False, motor_price=None, include_flex_duct=False, spec_priority="name", include_box=False):
     """
     Hàm điều phối Quy trình B: Nhận file BOQ khách hàng -> Phân tích & Áp giá từ Master Data có sẵn (Agent 01 -> Agent 08).
     """
@@ -1310,9 +1351,13 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     print("\n" + "-" * 60)
     print("[Agent 01 - BOQ Extractor] Quét cấu trúc BOQ và nhận diện Sheet kỹ thuật...")
     print("-" * 60)
-    agent_01 = Agent01_BOQExtractor(boq_file=boq_file, project_name=project_name, wb=shared_wb)
+    Agent01_BOQExtractor.INCLUDE_BOX = bool(include_box)
+    agent_01 = Agent01_BOQExtractor(boq_file=boq_file, project_name=project_name, wb=shared_wb, include_flex_duct=include_flex_duct)
     target_sheets, all_items = agent_01.detect_and_parse(sheet_names=sheet_names)
     for it in all_items:
+        it["include_box"] = bool(include_box)
+        if spec_priority in ("name", "note"):
+            it["spec_priority"] = spec_priority
         if motor_brand:
             it["motor_brand_override"] = str(motor_brand).strip().upper()
         if mfd_model:
@@ -1428,7 +1473,8 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
                 fin_policy=fin_policy,
                 project_name=f"{project_name}_{sh_slug}",
                 dual_options=dual_options,
-                template_wb=agent_01.parser.wb
+                template_wb=agent_01.parser.wb,
+                include_box=include_box
             )
             return (sh_name, sh_output, (rep_sh or {}).get("_wb"))
 
@@ -1463,7 +1509,8 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
             fin_policy=fin_policy,
             project_name=project_name,
             dual_options=dual_options,
-            template_wb=agent_01.parser.wb
+            template_wb=agent_01.parser.wb,
+            include_box=include_box
         )
         if primary_sheet and (rep_main or {}).get("_wb") is not None:
             est_wbs[primary_sheet] = rep_main["_wb"]
@@ -1551,15 +1598,36 @@ def print_quotation_summary_table(target_sheets, all_items, customer_files=None)
                 swind_cnt += 1
                 swind_sub += line_total
                 sp = it.get("resolved_spec") or {}
-                if it.get("category") == "VAN_GIO" and sp.get("subtype") in ("MFD", "MD", "MFSD", "MSFD"):
-                    nb_l = f"{it.get('raw_name', '')} {it.get('note_boq', '')}".lower()
+                rn_l = str(it.get("raw_name") or "").lower()
+                nb_l = str(it.get("note_boq") or "").lower()
+                sub_s = str(sp.get("subtype") or "")
+                mod_s = str(sp.get("model_std") or "")
+                if it.get("category") == "VAN_GIO" and sub_s in ("MFD", "MD", "MFSD", "MSFD"):
+                    full_l = f"{rn_l} {nb_l}"
                     for b_kw in ("kepler", "klb", "viweco", "honeywell", "siemens"):
-                        if b_kw in nb_l and (sp.get("motor_brand") or "BELIMO").upper() != b_kw.upper():
+                        if b_kw in full_l and (sp.get("motor_brand") or "BELIMO").upper() != b_kw.upper():
                             motor_alerts.append(
-                                f"BOQ R{it.get('source_row')} ({sp.get('a1')}x{sp.get('a2')}, SL={qty:.0f}): "
-                                f"Spec ghi hãng '{b_kw.upper()}' nhưng đang áp {sp.get('motor_brand') or 'BELIMO'} ({sp.get('model_std')}, ĐG={unit_price:,.0f}đ)"
+                                f"[Hãng ĐC] BOQ R{it.get('source_row')} ({sp.get('a1')}x{sp.get('a2')}, SL={qty:.0f}): "
+                                f"Ghi chú/Spec ghi '{b_kw.upper()}' nhưng đang áp {sp.get('motor_brand') or 'BELIMO'} ({mod_s}, ĐG={unit_price:,.0f}đ)"
                             )
                             break
+                if it.get("category") == "CUA_GIO" and nb_l:
+                    if ("sọt trứng" in nb_l or "eggcrate" in nb_l) and not any(k in rn_l for k in ("sọt trứng", "eggcrate", "ecg")):
+                        motor_alerts.append(
+                            f"[Cửa gió - Tên vs Ghi chú] BOQ R{it.get('source_row')} ({sp.get('a1')}x{sp.get('a2')}, SL={qty:.0f}): "
+                            f"Tên='{it.get('raw_name')}' vs Ghi chú='{it.get('note_boq')}' -> Đang áp Model='{mod_s}' (ĐG={unit_price:,.0f}đ)"
+                        )
+                    elif ("nan z" in nb_l or "louver" in nb_l) and any(k in rn_l for k in ("nan thẳng", "bầu dục", "khuếch tán", "sọt trứng")):
+                        motor_alerts.append(
+                            f"[Cửa gió - Tên vs Ghi chú] BOQ R{it.get('source_row')} ({sp.get('a1')}x{sp.get('a2')}, SL={qty:.0f}): "
+                            f"Tên='{it.get('raw_name')}' vs Ghi chú='{it.get('note_boq')}' -> Đang áp Model='{mod_s}' (ĐG={unit_price:,.0f}đ)"
+                        )
+                if it.get("category") == "VAN_GIO" and nb_l and sub_s in ("NRD", "PRD", "VCD"):
+                    if any(k in nb_l for k in ("smd", "van ngăn cháy", "van chặn lửa", "bọc chống cháy", "ei 60", "ei60", "ei 90", "ei90", "ei 120", "ei120")):
+                        motor_alerts.append(
+                            f"[Van gió - Tên vs Ghi chú] BOQ R{it.get('source_row')} ({sp.get('a1')}x{sp.get('a2')}, SL={qty:.0f}): "
+                            f"Tên='{it.get('raw_name')}' vs Ghi chú='{it.get('note_boq')}' -> Đang áp Model='{mod_s}' (ĐG={unit_price:,.0f}đ)"
+                        )
 
         vat_amt = int(round(sub_total * 0.08))
         grand_total = sub_total + vat_amt
@@ -1606,9 +1674,11 @@ def print_quotation_summary_table(target_sheets, all_items, customer_files=None)
                     f"Swind báo mới {ps['swind_cnt']} dòng = {ps['swind_sub']:,}đ ({s_pct:.1f}%)"
                 )
             if ps["motor_alerts"]:
-                print(f"⚠️  [Lưu ý Hãng động cơ trong Spec Sheet '{ps['sheet']}'] ({len(ps['motor_alerts'])} dòng):")
-                for ma in ps["motor_alerts"][:6]:
+                print(f"⚠️  [PHÁT HIỆN GHI CHÚ / SPEC KHÁC BIỆT CỘT TÊN — BẮT BUỘC HỎI LẠI USER TRƯỚC KHI CHỐT] ({len(ps['motor_alerts'])} dòng trên Sheet '{ps['sheet']}'):")
+                for ma in ps["motor_alerts"][:15]:
                     print(f"   - {ma}")
+                if len(ps["motor_alerts"]) > 15:
+                    print(f"   ... và {len(ps['motor_alerts']) - 15} dòng tương tự khác.")
         print()
 
 
@@ -1628,6 +1698,9 @@ def main():
     parser.add_argument("--duct-formula", choices=["mpq", "og_mb", "both"], default="mpq", help="Công thức tính ống gió: 'mpq' (BG PKV chuẩn), 'og_mb' (Diện tích m2 theo ÔG MB Z3), hoặc 'both' (xuất cả 2)")
     parser.add_argument("--neck-size", action="store_true", help="Quy định kích thước cửa gió trong BOQ là kích thước cổ (Neck Size -> cộng thêm viền ra kích thước mặt)")
     parser.add_argument("--motor-price", type=float, default=None, help="Ghi đè đơn giá gốc động cơ van cho dự án (VD: 2300000)")
+    parser.add_argument("--include-flex-duct", action="store_true", help="Cho phép báo giá Ống gió mềm (Mặc định: Hệ thống KHÔNG báo giá ống mềm, chỉ báo khi có yêu cầu)")
+    parser.add_argument("--include-box", action="store_true", help="Tính và báo giá thêm Hộp gió (theo công thức sheet BG PKV) cho các Cửa gió có kèm hộp (Mặc định: Không tính hộp)")
+    parser.add_argument("--spec-priority", choices=["name", "note"], default="name", help="Thứ tự ưu tiên khi Cột Tên và Cột Ghi chú/Spec mâu thuẫn: 'name' (mặc định ưu tiên Cột Tên) hoặc 'note' (ưu tiên Cột Ghi chú/Spec)")
     parser.add_argument("--override", default=None, help="Ghi đè nhanh theo dòng BOQ (VD: '7:w=600,h=600;10:skip=1')")
 
     args = parser.parse_args()
@@ -1706,7 +1779,10 @@ def main():
                 mfd_model=args.mfd_model,
                 row_overrides=row_overrides,
                 neck_size=args.neck_size,
-                motor_price=args.motor_price
+                motor_price=args.motor_price,
+                include_flex_duct=args.include_flex_duct,
+                spec_priority=args.spec_priority,
+                include_box=args.include_box
             )
             proj_name_tmp = os.path.splitext(os.path.basename(bp))[0].strip()
             proj_dir_tmp = resolve_path(f"data/projects/{proj_name_tmp}")
@@ -1730,7 +1806,10 @@ def main():
             mfd_model=args.mfd_model,
             row_overrides=row_overrides,
             neck_size=args.neck_size,
-            motor_price=args.motor_price
+            motor_price=args.motor_price,
+            include_flex_duct=args.include_flex_duct,
+            spec_priority=args.spec_priority,
+            include_box=args.include_box
         )
 
 

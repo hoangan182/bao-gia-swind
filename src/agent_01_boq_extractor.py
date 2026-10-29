@@ -19,10 +19,12 @@ class Agent01_BOQExtractor:
        - Ghi chú kỹ thuật 2 phương án báo giá (`note_fslf`, `note_bfn`) và hệ số quy đổi động cơ (`fslf_ratio`, `act_unit`).
     """
 
-    def __init__(self, boq_file=None, project_name="Du_An_HDL_A1", wb=None):
+    INCLUDE_BOX = False
+
+    def __init__(self, boq_file=None, project_name="Du_An_HDL_A1", wb=None, include_flex_duct=False):
         self.boq_file = boq_file
         self.project_name = project_name
-        self.parser = SwindBOQParser(boq_file, wb=wb) if boq_file else None
+        self.parser = SwindBOQParser(boq_file, wb=wb, include_flex_duct=include_flex_duct) if boq_file else None
         self.extractor = SwindUniversalExtractor(project_name=project_name)
 
     def detect_and_parse(self, sheet_names=None):
@@ -121,12 +123,19 @@ class Agent01_BOQExtractor:
             damper_type = model_item
         else:
             name_model_search = (str(item.get("raw_name") or item.get("name", "")) + " " + str(item.get("model", ""))).lower()
-            damper_type = cls.get_subtype(
-                subtype_rules, "VAN_GIO", name_model_search,
-                cls.get_subtype(subtype_rules, "VAN_GIO", raw_search, cls.get_subtype(subtype_rules, "VAN_GIO", full_search, "VCD"))
-            )
+            note_only_search = str(item.get("note_boq") or "").lower()
+            if item.get("spec_priority") == "note" and note_only_search:
+                damper_type = cls.get_subtype(
+                    subtype_rules, "VAN_GIO", note_only_search,
+                    cls.get_subtype(subtype_rules, "VAN_GIO", name_model_search, cls.get_subtype(subtype_rules, "VAN_GIO", full_search, "VCD"))
+                )
+            else:
+                damper_type = cls.get_subtype(
+                    subtype_rules, "VAN_GIO", name_model_search,
+                    cls.get_subtype(subtype_rules, "VAN_GIO", raw_search, cls.get_subtype(subtype_rules, "VAN_GIO", full_search, "VCD"))
+                )
             if damper_type in ("FD", "MD", "VCD"):
-                rs_low = raw_search.lower()
+                rs_low = (note_only_search + " " + raw_search.lower()) if item.get("spec_priority") == "note" else raw_search.lower()
                 if any(fk in rs_low for fk in ("chặn lửa", "ngăn cháy", "dập lửa")) and any(mk in rs_low for mk in ("động cơ", "mô tơ", "môtơ", "mo tơ", "motor", "mfd")):
                     damper_type = "MFD"
         if damper_type == "PRD" and any(k in raw_search.lower() for k in ("mprd", "m-prd", "mrd", "xả áp động cơ", "xả áp điện", "xả áp điều khiển")):
@@ -377,9 +386,28 @@ class Agent01_BOQExtractor:
             or bool(re.search(r'\+\s*o\b|(?:c/w|\+|kèm|gắn|with)\s*obd\b|van\s+điều\s*ch[ỉi]nh\s*lưu\s*lượng|van\s+ch[ỉi]nh\s*lưu\s*lượng', combined_search))
         )
         primary_diff_search = (raw_name + " " + name + " " + str(item.get("model", ""))).lower()
-        has_explicit_straight = any(k in primary_diff_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd"))
         note_boq_low = str(item.get("note_boq") or "").lower()
-        note_blade_conflict = has_explicit_straight and any(k in note_boq_low for k in ("nan z", "louver", "sọt trứng", "sọt trưng", "eggcrate"))
+        spec_prio = item.get("spec_priority", "name")
+
+        has_explicit_straight = any(k in primary_diff_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd"))
+        has_explicit_egg = any(k in primary_diff_search for k in ("sọt trứng", "sọt trưng", "dạng lưới", "eggcrate", "egg crate", "ecg", "seeg"))
+        has_explicit_louver = any(k in primary_diff_search for k in ("nan z", "louver", "luover", "louvre", "cửa chớp", "chớp nhôm"))
+        has_explicit_slot = any(k in primary_diff_search for k in ("slot", "sld", "lsd", "dls", "khe hẹp", "kiểu khe"))
+        has_explicit_linear = any(k in primary_diff_search for k in ("linear", "slb", "nan t ", "nan t-", "khe dài", "tuyến tính"))
+        has_explicit_sq_diff = any(k in primary_diff_search for k in ("khuếch tán", "scd", "sad"))
+        has_any_explicit_blade = (
+            has_explicit_straight or has_explicit_egg or has_explicit_louver
+            or has_explicit_slot or has_explicit_linear or has_explicit_sq_diff
+        )
+
+        note_blade_conflict = (spec_prio != "note") and (
+            (has_explicit_straight and any(k in note_boq_low for k in ("nan z", "louver", "sọt trứng", "sọt trưng", "eggcrate", "khuếch tán", "slot", "linear")))
+            or (has_explicit_louver and any(k in note_boq_low for k in ("nan thẳng", "bầu dục", "nan bd", "sọt trứng", "sọt trưng", "eggcrate", "khuếch tán", "slot", "linear")))
+            or (has_explicit_egg and any(k in note_boq_low for k in ("nan thẳng", "bầu dục", "nan bd", "nan z", "louver", "khuếch tán", "slot", "linear")))
+            or (has_explicit_sq_diff and any(k in note_boq_low for k in ("nan thẳng", "bầu dục", "nan bd", "nan z", "louver", "sọt trứng", "sọt trưng", "eggcrate", "slot", "linear")))
+        )
+        note_has_any_blade = any(k in note_boq_low for k in ("nan thẳng", "bầu dục", "nan bd", "nan z", "louver", "sọt trứng", "sọt trưng", "eggcrate", "khuếch tán", "slot", "linear"))
+        blade_search = (note_boq_low if (spec_prio == "note" and note_has_any_blade) else (primary_diff_search if has_any_explicit_blade else combined_search))
 
         filter_search = re.sub(r'không\s+kèm\s+lọc[^\.,\n]*', '', combined_search)
         mesh_base = primary_diff_search if note_blade_conflict else combined_search
@@ -392,33 +420,51 @@ class Agent01_BOQExtractor:
         is_double_layer = ("2 lớp" in combined_search or "hai lớp" in combined_search)
         is_black_2nd_layer = ("2nd layer" in combined_search or "black paint" in combined_search or "sơn đen" in combined_search)
         is_removable = any(k in combined_search for k in ("tháo lắp", "thao lap"))
-        box_note = ". Không tính box do nhà thầu tự thi công" if any(k in combined_search for k in ("box", "hộp gió", "kèm hộp")) else ""
+        w_pre_ktc = float(item.get("w_pre_ktc") or w or 0.0)
+        h_pre_ktc = float(item.get("h_pre_ktc") or h or 0.0)
+        item["w_pre_ktc"] = w_pre_ktc
+        item["h_pre_ktc"] = h_pre_ktc
+        include_box = bool(item.get("include_box") if "include_box" in item else getattr(cls, "INCLUDE_BOX", False))
+        box_clean_search = re.sub(
+            r'không\s+(?:kèm|có|gồm|tính)\s*(?:hộp|box)[^\.,\n]*|\bthép\s+hộp\b|\bhộp\s+(?:kỹ\s*thuật|đấu\s*dây|điện|công\s*tắc|cứu\s*hỏa|chữa\s*cháy|quạt)\b',
+            '',
+            combined_search
+        )
+        has_box_kw = (
+            any(k in box_clean_search for k in (
+                "hộp gió", "hộp cửa gió", "hộp miệng gió", "kèm hộp", "kèm box",
+                "có hộp", "có box", "gắn hộp", "gắn box", "+ hộp", "+hộp", "+ box", "+box",
+                "và hộp", "hộp và cửa", "hộp kèm cửa", "hộp + cửa", "box gió",
+                "box miệng", "box cửa", "plenum box", "with box", "c/w box",
+                "including box", "including plenum"
+            ))
+            or bool(re.search(r'\bhộp\s*[hHlL=]?\s*\d{2,4}\b|\bbox\b', box_clean_search))
+        )
+        box_note = (". Không tính box do nhà thầu tự thi công" if (has_box_kw and not include_box) else "")
 
         # Rule 2: Cửa tăng áp, cửa hút khói kèm OBD -> nan thẳng bầu dục kèm van OBD mã SDG+O
         is_press_or_smoke = any(k in combined_search for k in ("tăng áp", "tạo áp", "hút khói", "thải khói", "cấp bù", "pag", "seg", "spg", "seag", "smoke"))
-        egg_search = primary_diff_search if has_explicit_straight else combined_search
-        is_eggcrate = any(k in egg_search for k in ("sọt trứng", "sọt trưng", "dạng lưới", "eggcrate", "egg crate", "ecg", "seeg"))
+        is_eggcrate = any(k in blade_search for k in ("sọt trứng", "sọt trưng", "dạng lưới", "eggcrate", "egg crate", "ecg", "seeg"))
 
         # Rule 3: Cửa ghi nan Z, louver hoặc miệng cấp khí bù ngoài trời hoặc cửa nan 1 lớp khổ lớn >= 3000mm -> cửa nan Z mã WL / WL+N
-        louver_search = primary_diff_search if has_explicit_straight else combined_search
         is_louver_z = (
-            any(k in louver_search for k in louver_kws)
+            any(k in blade_search for k in louver_kws)
             or (any(k in raw_search for k in ("cấp khí bù", "bù khí", "cấp gió bù", "bù gió")) and not any(k in raw_search for k in ("fag", "sag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "sdg", "nan thẳng", "bầu dục", "nan bd")))
-            or (max(w, h) >= 3000.0 and not has_obd and not is_double_layer and not is_eggcrate and not any(k in combined_search for k in ("nan thẳng", "bầu dục", "nan bd", "linear", "sọt trứng", "sọt trưng", "khuếch tán")))
-            or (has_mesh and not has_obd and not has_filter and not is_double_layer and not is_eggcrate and not any(k in combined_search for k in ("cover", "nan thẳng", "bầu dục", "nan bd", "linear", "sọt trứng", "sọt trưng", "khuếch tán", "fag", "sag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "return", "supply", "insect screen", "i.s", "lcct")))
+            or (max(w, h) >= 3000.0 and not has_obd and not is_double_layer and not is_eggcrate and not any(k in blade_search for k in ("nan thẳng", "bầu dục", "nan bd", "linear", "sọt trứng", "sọt trưng", "khuếch tán")))
+            or (has_mesh and not has_obd and not has_filter and not is_double_layer and not is_eggcrate and not any(k in blade_search for k in ("cover", "nan thẳng", "bầu dục", "nan bd", "linear", "sọt trứng", "sọt trưng", "khuếch tán", "fag", "sag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "return", "supply", "insect screen", "i.s", "lcct")))
         )
         is_standalone_lcct = has_mesh and not any(k in raw_search for k in louver_kws + ("cửa", "miệng", "mặt gió", "sag", "fag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "cover", "nan "))
         is_standalone_filter = has_filter and not has_mesh and not has_obd and not any(k in raw_search for k in louver_kws + ("cửa", "miệng", "mặt gió", "sag", "fag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "cover", "nan "))
 
         is_slot_sld = (
-            any(k in combined_search for k in ("slot", "sld", "lsd", "dls", "khe hẹp", "kiểu khe"))
-            or bool(re.search(r'\b(?:lb\s*\d{2,3}|sl\s*\d|ls\s*\d|\d{3,4}\s*mm\s*[,;-]?\s*[dD]\d{2,3})\b', combined_search))
+            any(k in blade_search for k in ("slot", "sld", "lsd", "dls", "khe hẹp", "kiểu khe"))
+            or bool(re.search(r'\b(?:lb\s*\d{2,3}|sl\s*\d|ls\s*\d|\d{3,4}\s*mm\s*[,;-]?\s*[dD]\d{2,3})\b', blade_search))
         )
         # Rule 4: Cửa hồi là cửa nan thẳng bầu dục kèm lưới lọc bụi thô mã SDG+F (nếu khách đã ghi kèm OBD thì không tự báo thêm lưới)
         is_return_grille = any(k in combined_search for k in ("cửa hồi", "miệng hồi", "hút hồi", "rag", "hồi gió", "gió hồi", "hồi lạnh", "cửa gió hồi", "cửa gió hôi", "return air", "return grille"))
         if is_return_grille and not has_mesh and not has_obd and not is_eggcrate and not is_slot_sld:
             has_filter = True
-        has_img_slb = not is_slot_sld and (bool(item.get("has_embedded_image")) or any(k in combined_search for k in ("linear", "slb", "nan t ", "nan t-", "khe dài", "tuyến tính")))
+        has_img_slb = not is_slot_sld and (bool(item.get("has_embedded_image")) or any(k in blade_search for k in ("linear", "slb", "nan t ", "nan t-", "khe dài", "tuyến tính")))
         n_slots = 0
         if is_slot_sld:
             m_slot_cnt = re.search(r'(?:\b(?:sl|ls|sld[-_]?a?)\s*(\d)\s*s?\b|(\d)\s*(?:slot|khe)\b)', combined_search)
@@ -440,9 +486,9 @@ class Agent01_BOQExtractor:
             and w > 0 and w == h and int(w) in (600, 450, 300)
             and not is_return_grille and not is_louver_z and not is_press_or_smoke and not is_eggcrate
             and (not has_obd or any(k in combined_search for k in ("cấp", "lạnh", "điều hòa", "sag", "sad", "scd", "khuếch tán", "450", "150")))
-            and not any(k in combined_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd", "sọt trứng", "sọt trưng", "eggcrate", "ecg", "linear", "nan t", "dạng nan", "格栅", "kiểm tra", "检查", "access door", "cửa công tác", "cửa thăm", "tháo lắp", "inspection", "oag", "eag", "mag", "fag", "ngoài trời", "gió thải"))
+            and not any(k in blade_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd", "sọt trứng", "sọt trưng", "eggcrate", "ecg", "linear", "nan t", "dạng nan", "格栅", "kiểm tra", "检查", "access door", "cửa công tác", "cửa thăm", "tháo lắp", "inspection", "oag", "eag", "mag", "fag", "ngoài trời", "gió thải"))
         )
-        is_diffuser_sq = (not is_thoi_kt and not is_standalone_lcct and not is_standalone_filter) and (any(k in combined_search for k in ("khuếch tán", "scd", "sad", "diffuser")) or is_sq_ac_diffuser or (w == 600 and h == 600 and "sag" in combined_search))
+        is_diffuser_sq = (not is_thoi_kt and not is_standalone_lcct and not is_standalone_filter) and (any(k in blade_search for k in ("khuếch tán", "scd", "sad", "diffuser")) or is_sq_ac_diffuser or (w == 600 and h == 600 and "sag" in blade_search))
 
         # Rule 1: KTC vs KTM check (nếu ghi KTC, --neck-size, hoặc cửa bù khí nan Z thì cộng thêm viền ra kích thước mặt)
         if not item.get("is_ktc_applied"):
@@ -476,7 +522,7 @@ class Agent01_BOQExtractor:
         is_inspection_door = any(k in combined_search for k in ("kiểm tra", "检查", "检查风门", "inspection", "access door", "cửa công tác", "cửa thăm", "sdgk"))
 
         # Rule 6: Nhận diện Cửa gió / Miệng gió kèm hộp gió
-        is_box_combo = any(k in combined_search for k in ("kèm hộp gió", "kèm hộp", "kèm box", "có hộp gió", "gắn hộp gió", "hộp và cửa", "hộp miệng gió", "hộp kèm cửa", "hộp + cửa")) and any(k in combined_search for k in ("cửa gió", "miệng gió", "cửa cấp", "cửa hồi", "miệng cấp", "miệng hồi", "cửa nan", "louver", "luover"))
+        is_box_combo = bool(has_box_kw and not is_standalone_lcct and not is_standalone_filter and not is_inspection_door)
 
         if is_inspection_door:
             profile_type = "BD"
@@ -709,6 +755,86 @@ class Agent01_BOQExtractor:
             eff_model_code = dmp_spec["model_code"]
             motor_brand = dmp_spec["motor_brand"]
 
+        box_spec = None
+        if is_box_combo:
+            w_box = w_pre_ktc if w_pre_ktc > 0 else (w if w > 0 else 300.0)
+            h_box = h_pre_ktc if h_pre_ktc > 0 else (h if h > 0 else 300.0)
+            name_txt_src = f"{raw_name} {name}"
+            note_txt_src = str(item.get("note_boq") or "")
+            box_3d_rx = r'(?:kèm|có|gắn|\+|và|with|including)?\s*(?:hộp(?:\s*(?:gió|cửa\s*gió|miệng\s*gió))?|box(?:\s*(?:gió|miệng\s*gió|cửa\s*gió))?|plenum\s*box)\s*(?:kt|kích\s*thước)?\s*[:=]?\s*(\d{2,4})\s*[xX*]\s*(\d{2,4})(?:\s*[xX*/,-]\s*[hHlLdD]?\s*[:=]?\s*(\d{2,4}))?'
+            matches_name_box = list(re.finditer(box_3d_rx, name_txt_src, flags=re.IGNORECASE))
+            if matches_name_box:
+                chosen_m = None
+                for mb in reversed(matches_name_box):
+                    if mb.group(3) or re.match(r'^(?:kèm|có|gắn|\+|và|with|including)', mb.group(0).strip(), flags=re.IGNORECASE) or len(matches_name_box) > 1:
+                        chosen_m = mb
+                        break
+                if chosen_m:
+                    w_box = float(chosen_m.group(1))
+                    h_box = float(chosen_m.group(2))
+
+            def _extract_box_l(txt_val):
+                if not txt_val:
+                    return 0.0
+                m3 = list(re.finditer(r'(?:hộp|box|plenum)[^0-9\n]*?\d{2,4}\s*[xX*]\s*\d{2,4}\s*[xX*/,-]\s*[hHlLdD]?\s*[:=]?\s*(\d{2,4})\b', txt_val, flags=re.IGNORECASE))
+                if m3:
+                    return float(m3[-1].group(1))
+                m1 = list(re.finditer(r'(?:hộp(?:\s*(?:gió|cửa\s*gió|miệng\s*gió))?|box(?:\s*(?:gió|miệng\s*gió|cửa\s*gió))?|plenum\s*box)[^0-9\n]*?[hHlL]\s*[:=]?\s*(\d{2,4})\b', txt_val, flags=re.IGNORECASE))
+                if m1:
+                    return float(m1[-1].group(1))
+                return 0.0
+
+            l_from_name = _extract_box_l(name_txt_src)
+            l_from_note = _extract_box_l(note_txt_src)
+            if spec_prio == "note":
+                l_box = l_from_note or l_from_name
+            else:
+                l_box = l_from_name or l_from_note
+            if l_box <= 0:
+                l_box = l if (l > 0 and l not in (1110.0, 1120.0)) else 300.0
+
+            d_box = 0.0
+            n_necks = 0
+            m_neck = re.search(r'(?:(?<![a-zA-Z0-9Øø])([1-8])\s*)?cổ\s*(?:tròn\s*)?[dDØø]\s*(\d{2,4})\b', combined_search, flags=re.IGNORECASE)
+            if m_neck:
+                n_necks = int(m_neck.group(1)) if m_neck.group(1) else 1
+                d_box = float(m_neck.group(2))
+            is_insul_box = any(k in combined_search for k in ("bảo ôn", "bao on", "cách nhiệt", "cach nhiet", "insul"))
+            thk_box = Agent04_DuctworkBOM.get_standard_thickness(max(w_box, h_box, d_box), is_round=False, explicit_thk=(thk if thk > 0 else 0.0))
+            _, _, box_l_out, box_s_area, box_unit_price, box_spec_label, box_trace = Agent04_DuctworkBOM._calc_plenum_box(
+                w_box, h_box, d_box, l_box, True, n_necks,
+                "cổ" if n_necks > 0 else "", thk_box, is_insul_box
+            )
+            box_spec = {
+                "w_box": w_box,
+                "h_box": h_box,
+                "l_box": float(box_l_out),
+                "d_box": d_box,
+                "n_necks": n_necks,
+                "thk_box": thk_box,
+                "is_insulated": is_insul_box,
+                "area_m2": round(box_s_area, 3),
+                "unit_price": box_unit_price,
+                "spec_label": box_spec_label,
+                "trace": box_trace
+            }
+            if include_box:
+                model_fslf = f"{model_fslf} + Hộp gió"
+                model_bfn = f"{model_bfn} + Hộp gió"
+                box_desc = f"{box_spec_label}, tôn Hoa Sen dày {thk_box:.2f}mm" + (", có bảo ôn" if is_insul_box else "")
+                if note_fslf.startswith("-"):
+                    note_fslf = f"{note_fslf}\n- {box_desc}"
+                else:
+                    note_fslf = f"{note_fslf} + {box_desc}"
+                if note_bfn.startswith("-"):
+                    note_bfn = f"{note_bfn}\n- {box_desc}"
+                else:
+                    note_bfn = f"{note_bfn} + {box_desc}"
+                if l_col is None:
+                    l_col = int(box_l_out)
+                if thk_col is None:
+                    thk_col = thk_box
+
         return {
             "subtype": profile_type,
             "model_fslf": model_fslf,
@@ -729,6 +855,7 @@ class Agent01_BOQExtractor:
             "is_black_2nd_layer": is_black_2nd_layer,
             "is_removable": is_removable,
             "is_box_combo": is_box_combo,
+            "box_spec": box_spec,
             "n_slots": n_slots,
             "eff_model_code": eff_model_code,
             "motor_brand": motor_brand
@@ -867,6 +994,7 @@ class Agent01_BOQExtractor:
         is_removable = False
         is_fire_canvas = False
         is_box_combo = False
+        box_spec = None
         n_slots = 0
         dia_val = None
         eff_model_code = None
@@ -896,6 +1024,7 @@ class Agent01_BOQExtractor:
             has_obd, has_mesh, has_filter = dif_res["has_obd"], dif_res["has_mesh"], dif_res["has_filter"]
             is_double_layer, is_black_2nd_layer, is_removable = dif_res["is_double_layer"], dif_res["is_black_2nd_layer"], dif_res["is_removable"]
             is_box_combo = dif_res["is_box_combo"]
+            box_spec = dif_res.get("box_spec")
             n_slots = int(dif_res.get("n_slots") or 0)
             eff_model_code, motor_brand = dif_res["eff_model_code"], dif_res["motor_brand"]
         elif cat in ("ONG_GIO", "CANVAS", "TIEU_AM", "ONG_MEM"):
@@ -945,6 +1074,7 @@ class Agent01_BOQExtractor:
             "model_code": eff_model_code,
             "motor_brand": motor_brand,
             "is_box_combo": is_box_combo,
+            "box_spec": box_spec,
             "n_slots": n_slots
         }
         item["resolved_spec"] = resolved_spec

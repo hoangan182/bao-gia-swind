@@ -12,9 +12,10 @@ class SwindBOQParser:
     - Phân biệt dòng phân nhóm (Category Header) và dòng sản phẩm thực tế.
     - Trích xuất thông số kích thước (W, H, L) và chủng loại sản phẩm.
     """
-    def __init__(self, boq_filepath, wb=None):
+    def __init__(self, boq_filepath, wb=None, include_flex_duct=False):
         self.filepath = boq_filepath
         self.wb = wb if wb is not None else openpyxl.load_workbook(boq_filepath, data_only=True)
+        self.include_flex_duct = bool(include_flex_duct)
         self.commercial_catalog = []
         self.manufacturable_catalog = []
         self.skipped_rows = {}
@@ -59,8 +60,9 @@ class SwindBOQParser:
 
         if not _is_side_table and _override_col_map is None and _override_header_row is None and max_items is None:
             cache_dict = getattr(self.wb, "_swind_parsed_cache", None)
-            if cache_dict and sheet_name in cache_dict:
-                c_items, c_skip, c_miss = cache_dict[sheet_name]
+            cache_key = (sheet_name, self.include_flex_duct)
+            if cache_dict and cache_key in cache_dict:
+                c_items, c_skip, c_miss = cache_dict[cache_key]
                 self.skipped_rows[sheet_name] = set(c_skip)
                 self.missing_dim_rows[sheet_name] = list(c_miss)
                 return [dict(it) for it in c_items]
@@ -444,13 +446,15 @@ class SwindBOQParser:
                     dim_2d = re.search(r'[wWaAbB]?\s*(\d+)\s*[xX*]\s*[hHbBwW]?\s*(\d+)', rect_search_text)
                 # Hỗ trợ bắt lỗi gõ nhầm chữ 'x' thành số '6' dạng 10006300 (4 chữ số + 6 + 3 chữ số tròn trăm)
                 dim_typo = re.search(r'\b(\d{3,4})6(\d00)\b', rect_search_text)
-                if dim_3d:
+                if dim_3d and not (category == "CUA_GIO" and dim_2d and dim_2d.start() < dim_3d.start()):
                     w = float(dim_3d.group(1))
                     h = float(dim_3d.group(2))
                     l = float(dim_3d.group(3))
                 elif dim_2d:
                     w = float(dim_2d.group(1))
                     h = float(dim_2d.group(2))
+                    if dim_3d and l == 0:
+                        l = float(dim_3d.group(3))
                     if category == "CUA_GIO" and w >= 100 and h == 0 and dim_2d.group(2) == "00":
                         h = w
                 elif dim_typo:
@@ -697,7 +701,8 @@ class SwindBOQParser:
                     items.append(item_data)
 
             else:
-                if category in ("THUONG_MAI", "KHAC") or (w == 0 and h == 0 and d_val == 0 and category in ("ONG_GIO", "TIEU_AM", "CANVAS")):
+                non_quotable_cats = ("THUONG_MAI", "KHAC") if self.include_flex_duct else ("THUONG_MAI", "ONG_MEM", "KHAC")
+                if category in non_quotable_cats or (w == 0 and h == 0 and d_val == 0 and category in ("ONG_GIO", "TIEU_AM", "CANVAS")):
                     ref_p = ws.cell(r, col_map["price"]).value if "price" in col_map else None
                     if (not isinstance(ref_p, (int, float)) or ref_p <= 0) and not (not name_lower.startswith("quạt ") and any(k in name_lower for k in ("chống cháy ei", "lưới bảo vệ"))):
                         self.skipped_rows[sheet_name].add(r)
@@ -818,7 +823,7 @@ class SwindBOQParser:
         if not _is_side_table and _override_col_map is None and _override_header_row is None and max_items is None:
             if not hasattr(self.wb, "_swind_parsed_cache"):
                 self.wb._swind_parsed_cache = {}
-            self.wb._swind_parsed_cache[sheet_name] = (
+            self.wb._swind_parsed_cache[(sheet_name, self.include_flex_duct)] = (
                 [dict(it) for it in items],
                 set(self.skipped_rows.get(sheet_name, set())),
                 list(self.missing_dim_rows.get(sheet_name, []))

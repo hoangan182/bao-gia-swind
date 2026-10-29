@@ -14,6 +14,8 @@
    - **QUY TẮC QUÉT TOÀN BỘ BOQ & CHỐNG SÓT DÒNG (ZERO-OMISSION & TITLE INHERITANCE):**
      1. Hệ thống và Agent bắt buộc quét toàn bộ các cột của BOQ (cột Tên tiếng Việt, cột `DESCRIPTION` tiếng Anh, cột `SPEC`/Quy cách, Ghi chú) và toàn bộ các dòng **Title / Hạng mục cha** để kế thừa 100% thông số kỹ thuật (`OBD`, `lưới chắn chim / LCCT`, `lọc G4`, `EI`, `độ dày`...) xuống các dòng item con bên dưới.
      2. Kiểm tra mục `[Agent 01 - Full-BOQ Coverage Audit]` trên console sau khi chạy: nếu phát hiện bất kỳ dòng nào có khối lượng/kích thước thuộc phạm vi báo giá bị cảnh báo `⚠️ [CẢNH BÁO SÓT DÒNG]` hoặc chưa kế thừa đúng Title cha (do cách trình bày mới của từng dự án), phải kiểm tra và cập nhật rule bóc tách ngay để không bỏ sót bất kỳ mặt hàng nào.
+     3. **QUY TẮC BẮT BUỘC HỎI LẠI USER KHI CÓ GHI CHÚ / SPEC XUNG ĐỘT (`⚠️ [PHÁT HIỆN GHI CHÚ / SPEC KHÁC BIỆT CỘT TÊN — BẮT BUỘC HỎI LẠI USER]`):** Đặc điểm mỗi dự án một khác — khi console xuất hiện cảnh báo có dòng Ghi chú/Spec khác biệt với Cột Tên (khác kiểu nan cửa gió, khác loại van, ghi chú bọc EI trên van cơ, hoặc ghi hãng động cơ khác như Kepler/KLB/Honeywell...), **AI bắt buộc phải liệt kê các dòng đó và hỏi lại User** để xác nhận áp theo `Cột Tên` (`--spec-priority name`) hay theo `Cột Ghi chú/Spec` (`--spec-priority note`) / hãng động cơ nào.
+     4. **QUY TẮC ỐNG GIÓ MỀM (`ONG_MEM`):** Hệ thống **mặc định KHÔNG báo giá Ống gió mềm** (bỏ qua không báo giá, trừ khi dòng đó đã có sẵn đơn giá của đối tác cần giữ nguyên hoặc khi User yêu cầu rõ bằng cờ `--include-flex-duct`).
    - **QUY TẮC XUẤT BÁO CÁO CHO NGƯỜI DÙNG:**
      1. **Chỉ liệt kê duy nhất File Báo Giá Cuối Cùng** (`output/<Project_Name>/<Original_File_Name>.xlsx` giữ nguyên tên file gốc, gồm Sheet BOQ gốc + Sheet `BG` đã đóng khung), tuyệt đối không liệt kê hàng loạt các file báo giá thành phần hay file dự toán nội bộ trung gian.
      2. **Về giá trị: Chỉ in Bảng Tổng Hợp** (theo các sheet/phân khu và Tổng cộng toàn dự án), **bỏ Bảng kết quả báo giá chi tiết** từng mặt hàng.
@@ -29,6 +31,9 @@
 - `--dual-options`: Tính đồng thời 2 phương án Đơn cánh và Đa cánh (Mặc định: Báo giá chuẩn theo BOQ).
 - `--merge-sheets`: Gộp tất cả các sheet vào 1 file duy nhất (Mặc định: Tách riêng từng sheet).
 - `--allow-ei`: Cờ tương thích cho phép áp giá chống cháy EI (Mặc định Swind tự động nhận diện EI theo BOQ).
+- `--include-flex-duct`: Cho phép báo giá **Ống gió mềm (`ONG_MEM`)** (Mặc định: Hệ thống **KHÔNG** báo giá ống mềm, chỉ báo khi có yêu cầu).
+- `--include-box`: Cho phép tính và báo giá thêm **Hộp gió (`PLENUM_BOX` theo công thức sheet `BG PKV`)** cho các cửa gió kèm hộp (Mặc định: Chỉ báo giá cửa gió và ghi chú `. Không tính box do nhà thầu tự thi công`, chỉ cộng thêm hộp khi User yêu cầu).
+- `--spec-priority <name|note>`: Chọn cột ưu tiên khi `Cột Tên` và `Cột Ghi chú/Spec` mâu thuẫn (`name` [Mặc định]: khóa chủng loại theo Cột Tên; `note`: ưu tiên theo Cột Ghi chú/Spec).
 - `--duct-formula <standard|bienia|cand>`: Chọn bộ công thức tính diện tích phụ kiện ống gió (`standard` mặc định Swind, `bienia`, hoặc `cand`).
 
 ---

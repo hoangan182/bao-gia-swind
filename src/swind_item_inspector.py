@@ -154,18 +154,19 @@ def _get_fin_rates(category, fin_policy):
     return cfg.get("labor_rate", 0.0), cfg.get("overhead_rate", 0.02), cfg.get("margin", 0.10)
 
 
-def inspect_single_item(raw_text, unit="cái", note="", motor_brand=None, mfd_model=None, formula_mode=None):
+def inspect_single_item(raw_text, unit="cái", note="", motor_brand=None, mfd_model=None, formula_mode=None, include_box=False):
     """
     Chạy chuẩn xác qua toàn bộ chuỗi xử lý của Swind cho 1 dòng mô tả vật tư:
     SwindBOQParser -> Agent01_BOQExtractor -> Agent04/05/06 -> Tính giá bán.
     """
     return inspect_batch_items(
         [{"name": raw_text, "unit": unit, "note": note, "motor_brand": motor_brand, "mfd_model": mfd_model}],
-        formula_mode=formula_mode
+        formula_mode=formula_mode,
+        include_box=include_box
     )
 
 
-def inspect_batch_items(cases, formula_mode=None):
+def inspect_batch_items(cases, formula_mode=None, include_box=False):
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "BOQ"
@@ -174,7 +175,7 @@ def inspect_batch_items(cases, formula_mode=None):
         ws.append([i, c["name"], c.get("unit", "cái"), 1, None, None, c.get("note", "")])
 
     with contextlib.redirect_stdout(io.StringIO()):
-        parser = SwindBOQParser(":memory:", wb=wb)
+        parser = SwindBOQParser(":memory:", wb=wb, include_flex_duct=True)
         items = parser.parse_sheet("BOQ")
     if not items:
         return []
@@ -194,12 +195,14 @@ def inspect_batch_items(cases, formula_mode=None):
             item["mfd_model_override"] = case_cfg["mfd_model"]
         if formula_mode:
             item["duct_formula_mode"] = formula_mode
+        if include_box or case_cfg.get("include_box"):
+            item["include_box"] = True
         for dim_k in ("w", "h", "l", "d", "thickness"):
             if case_cfg.get(dim_k) and not item.get(dim_k):
                 item[dim_k] = case_cfg[dim_k]
 
         results.append(
-            _evaluate_parsed_item_in_ram(item, idx, subtype_rules, price_map, fin_policy)
+            _evaluate_parsed_item_in_ram(item, idx, subtype_rules, price_map, fin_policy, include_box=include_box or bool(case_cfg.get("include_box")))
         )
 
     return results
@@ -211,7 +214,10 @@ def _evaluate_parsed_item_in_ram(
     subtype_rules,
     price_map,
     fin_policy,
+    include_box=False,
 ):
+    if include_box:
+        item["include_box"] = True
     spec = Agent01_BOQExtractor.resolve_item_spec(item, subtype_rules, price_map=price_map, idx=idx)
     cat = item["category"]
     w = item["w"]
@@ -374,6 +380,37 @@ def _evaluate_parsed_item_in_ram(
         formula_trace = f"Profile={spec['subtype']}, Phủ bì={int(w)}x{int(h)}, Cổ={spec.get('b1')}x{spec.get('b2')}, OBD={spec['has_obd']}, Mesh={spec['has_mesh']}, Filter={spec['has_filter']}"
         diff_fn = DIFFUSER_METHOD_MAP.get(spec["subtype"], "_calc_profile_oval_bd")
         code_location = f"src/agent_06_bom_diffuser.py :: Agent06_DiffuserBOM.{diff_fn}"
+        if include_box and spec.get("is_box_combo") and spec.get("box_spec"):
+            bs = spec["box_spec"]
+            box_synth = {
+                "raw_name": f"Hộp gió {int(bs['w_box'])}x{int(bs['h_box'])}xL{int(bs['l_box'])}" + (f" ({bs['n_necks']} cổ D{int(bs['d_box'])})" if bs.get("n_necks", 0) > 0 else ""),
+                "w": bs["w_box"],
+                "h": bs["h_box"],
+                "d": bs.get("d_box", 0.0),
+                "l": bs["l_box"],
+                "thickness": bs["thk_box"],
+                "neck_count": bs.get("n_necks", 0),
+                "is_insulated": bs.get("is_insulated", False),
+                "unit": "cái",
+            }
+            box_bom = Agent04_DuctworkBOM.calculate_duct_bom(
+                parent_id=f"{item_id}-BOX",
+                w=float(bs.get("w_box") or w or 300),
+                h=float(bs.get("h_box") or h or 300),
+                l=float(bs.get("l_box") or 300),
+                brand="HOASEN",
+                flange_type="TDC",
+                is_fitting=True,
+                unit="cái",
+                specified_thickness=float(bs.get("thk_box") or 0.58),
+                d=float(bs.get("d_box") or 0),
+                subtype="PLENUM_BOX",
+                item=box_synth,
+            )
+            components.extend(box_bom["components"])
+            area_m2 = float(bs.get("area_m2") or 0.0)
+            formula_trace += f" | +Hộp gió ({bs.get('spec_label')}): {bs.get('trace')}"
+            code_location += " + src/agent_04_bom_duct.py :: Agent04_DuctworkBOM._calc_plenum_box"
 
     elif cat in ("ONG_MEM", "THUONG_MAI", "KHAC"):
         l_rate, o_rate, mg_rate = _get_fin_rates(cat, fin_policy)
@@ -431,9 +468,13 @@ def _evaluate_parsed_item_in_ram(
     effective_sell_unit = int(sell_unit)
     if p_ref > 0:
         if is_box_combo and cat == "CUA_GIO":
-            box_add = int(math.ceil(p_ref / 100.0) * 100)
-            effective_sell_unit = int(sell_unit) + box_add
-            price_source = "BOX_PARTNER_PLUS_SWIND"
+            if include_box:
+                effective_sell_unit = int(sell_unit)
+                price_source = "SWIND_CALC_WITH_BOX"
+            else:
+                box_add = int(math.ceil(p_ref / 100.0) * 100)
+                effective_sell_unit = int(sell_unit) + box_add
+                price_source = "BOX_PARTNER_PLUS_SWIND"
         else:
             effective_sell_unit = int(round(p_ref))
             price_source = "PARTNER_KEPT"
@@ -759,7 +800,7 @@ def locate_requirement_target(topic):
         print("-" * 80)
 
 
-def compare_excel_with_system(excel_path, sheet_filter=None, motor_brand=None, mfd_model=None, formula_mode=None):
+def compare_excel_with_system(excel_path, sheet_filter=None, motor_brand=None, mfd_model=None, formula_mode=None, include_box=False):
     """
     Đối chiếu trực tiếp (0.2s) công thức & đơn giá trong 1 file Excel (BOQ hoặc Báo giá đã có giá)
     với kết quả tính toán chuẩn trong hệ thống Swind.
@@ -810,7 +851,7 @@ def compare_excel_with_system(excel_path, sheet_filter=None, motor_brand=None, m
                 it["mfd_model_override"] = mfd_model
             if formula_mode:
                 it["duct_formula_mode"] = formula_mode
-            sys_results.append(_evaluate_parsed_item_in_ram(it, idx_i, subtype_rules, price_map, fin_policy))
+            sys_results.append(_evaluate_parsed_item_in_ram(it, idx_i, subtype_rules, price_map, fin_policy, include_box=include_box))
 
         print(f"\n📊 BẢNG ĐỐI CHIẾU SHEET '{sh}' ({len(items)} dòng mặt hàng) | Cột Đơn giá File: {ref_price_col or 'Chưa có'}")
         print("=" * 105)
@@ -868,6 +909,7 @@ def audit_boq_fast(
     motor_brand=None,
     mfd_model=None,
     formula_mode=None,
+    include_box=False,
 ):
     """
     Quét & kiểm toán siêu tốc (0.25s, 1 lệnh duy nhất) toàn bộ file BOQ hoặc file Báo giá:
@@ -997,7 +1039,7 @@ def audit_boq_fast(
                 it["mfd_model_override"] = mfd_model
             if formula_mode:
                 it["duct_formula_mode"] = formula_mode
-            ev = _evaluate_parsed_item_in_ram(it, idx_i, subtype_rules, price_map, fin_policy)
+            ev = _evaluate_parsed_item_in_ram(it, idx_i, subtype_rules, price_map, fin_policy, include_box=include_box)
             ev["bg_row"] = item_idx_to_bg.get(idx_i - 1, 0)
             ev["line_total"] = int(round(ev["effective_sell_unit"] * ev["qty"]))
             eval_rows.append(ev)
@@ -1154,6 +1196,7 @@ def main():
     ap.add_argument("--self-test", action="store_true", help="Chạy kiểm thử 100% công thức đối chiếu với baseline")
     ap.add_argument("--save-baseline", action="store_true", help="Cập nhật file baseline chuẩn")
     ap.add_argument("--audit-boq", default=None, help="Kiểm toán siêu tốc (0.25s) sai mã hiệu, xung đột Spec & bất thường giá trong file BOQ/Báo giá")
+    ap.add_argument("--include-box", action="store_true", help="Tính thêm hộp gió (Plenum Box theo công thức sheet PKV) cho các cửa gió kèm hộp")
     args = ap.parse_args()
 
     if args.search:
@@ -1167,7 +1210,8 @@ def main():
     if args.compare:
         compare_excel_with_system(
             args.compare, sheet_filter=args.sheet,
-            motor_brand=args.motor_brand, mfd_model=args.mfd_model, formula_mode=args.formula_mode
+            motor_brand=args.motor_brand, mfd_model=args.mfd_model, formula_mode=args.formula_mode,
+            include_box=args.include_box,
         )
         sys.exit(0)
 
@@ -1179,6 +1223,7 @@ def main():
             motor_brand=args.motor_brand,
             mfd_model=args.mfd_model,
             formula_mode=args.formula_mode,
+            include_box=args.include_box,
         )
         sys.exit(0)
 
@@ -1201,7 +1246,8 @@ def main():
                         "unit": args.unit,
                         "note": args.note,
                         "motor_brand": args.motor_brand,
-                        "mfd_model": args.mfd_model
+                        "mfd_model": args.mfd_model,
+                        "include_box": args.include_box,
                     })
             else:
                 batch_cases.append({
@@ -1209,10 +1255,11 @@ def main():
                     "unit": args.unit,
                     "note": args.note,
                     "motor_brand": args.motor_brand,
-                    "mfd_model": args.mfd_model
+                    "mfd_model": args.mfd_model,
+                    "include_box": args.include_box,
                 })
 
-    all_out = inspect_batch_items(batch_cases, formula_mode=args.formula_mode)
+    all_out = inspect_batch_items(batch_cases, formula_mode=args.formula_mode, include_box=args.include_box)
 
     if args.json:
         print(json.dumps(all_out, ensure_ascii=False, indent=2))

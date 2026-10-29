@@ -25,6 +25,7 @@ Trước hoặc sau khi sửa bất kỳ công thức nào, chạy lệnh sau đ
 ./venv/bin/python src/swind_item_inspector.py "Van chặn lửa động cơ MFD 1200x800 EI90" --motor KLB
 ./venv/bin/python src/swind_item_inspector.py "Van chặn lửa cầu chì FD 800x600 EI120"
 ./venv/bin/python src/swind_item_inspector.py "Cửa gió khuếch tán 600x600 kèm OBD"
+./venv/bin/python src/swind_item_inspector.py "Cửa gió hồi 600x600 kèm hộp gió KT: 600x600xH250" --include-box
 ./venv/bin/python src/swind_item_inspector.py "Miệng gió cấp 1000mm D150"
 
 # ⚡ KIỂM TOÁN SIÊU TỐC (0.5s, 1 LỆNH DUY NHẤT) KHI QUÉT SAI MÃ HIỆU, XUNG ĐỘT SPEC & BẤT THƯỜNG GIÁ TRONG BOQ/BÁO GIÁ:

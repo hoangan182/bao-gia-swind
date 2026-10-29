@@ -22,6 +22,11 @@ Tài liệu quy tắc bắt buộc áp dụng cho toàn bộ các Agent (`Agent 
     + Van cơ VCD, NRD (1 chiều), PRD (xả áp): Áp dụng dải độ dày $\le$ 600x300 (0.75mm), từ 600x600 -> 600x900 (0.95mm), còn lại (1.15mm).
     + Van FD có tiêu chuẩn chống cháy EI ghi đường kính tròn (`D...`) thì mặc định quy về kích thước vuông tương ứng (`DxD`) và áp mã `SWIND-2.01- E-FD-EI120`.
     + **Lưới lọc G4 rời:** Không báo giá các hạng mục lưới lọc / bộ lọc bụi G4 đứng độc lập (bỏ qua không báo).
+    + **Ống gió mềm (`ONG_MEM`):** Mặc định **KHÔNG báo giá Ống gió mềm** (bỏ qua không báo giá, trừ khi dòng đó đã có sẵn đơn giá của đối tác cần giữ nguyên hoặc khi người dùng yêu cầu rõ ràng bằng cờ `--include-flex-duct`).
+    + **Cửa gió kèm hộp (`--include-box`):** Mặc định chỉ báo giá phần Cửa gió và ghi chú `. Không tính box do nhà thầu tự thi công`. Chỉ khi người dùng yêu cầu rõ ràng (truyền cờ `--include-box`), hệ thống mới tính thêm đơn giá Hộp gió đi kèm theo đúng công thức tại sheet `BG PKV` (`Agent04_DuctworkBOM._calc_plenum_box`) và cộng trực tiếp vào đơn giá dòng Cửa gió đó.
+    + **Xung đột Cột Tên vs Cột Ghi chú / Spec (`HITL Spec Conflict Policy`):**
+      * Mặc định (`--spec-priority name`): Khi Cột Tên đã ghi rõ chủng loại cửa gió/van gió thì khóa chủng loại theo Cột Tên, không để từ khóa trong Cột Ghi chú/Spec tự động ghi đè làm nhảy mã.
+      * **BẮT BUỘC HỎI LẠI USER:** Đặc điểm mỗi dự án một khác — bất cứ khi nào phát hiện dòng có Cột Ghi chú/Spec khác biệt với Cột Tên (khác kiểu nan cửa gió, khác loại van, ghi chú bọc EI trên van cơ, hoặc ghi hãng động cơ khác như Kepler/KLB/Honeywell...), hệ thống cảnh báo trên console và **AI bắt buộc phải hỏi lại User** để xác nhận áp theo Cột Tên hay Cột Ghi chú/Spec (`--spec-priority note`) hoặc hãng động cơ nào.
     + **Ghi chú Cửa gió kèm lọc bụi:** Khi cửa gió có kèm lưới lọc bụi thì phần Ghi chú bắt buộc ghi là **"Cửa ... kèm lưới lọc bụi thô"** (thay vì "phin lọc bụi" hay "lưới lọc bụi").
 
 - **Khi có yêu cầu rõ ràng (Explicit Dual-Option Request):**
