@@ -78,6 +78,107 @@ def copy_sheet_content(src_ws, dst_ws):
         dst_ws.merge_cells(str(merged_range))
 
 
+def restore_boq_drawings(src_boq, out_file, orig_sheet_count):
+    """
+    Khôi phục toàn bộ hình ảnh/logo (xl/drawings/* & xl/media/*) trên tất cả các sheet gốc (1..orig_sheet_count).
+    """
+    if not (src_boq and os.path.exists(src_boq) and out_file and os.path.exists(out_file) and orig_sheet_count > 0):
+        return
+    with zipfile.ZipFile(src_boq, 'r') as zorig:
+        orig_names = set(zorig.namelist())
+        draw_media = [n for n in zorig.namelist() if n.startswith(('xl/drawings/', 'xl/media/')) and not n.endswith('/')]
+        if not draw_media:
+            return
+        sheet_draw_targets = {}
+        for idx_s in range(1, orig_sheet_count + 1):
+            rel_p = f"xl/worksheets/_rels/sheet{idx_s}.xml.rels"
+            if rel_p in orig_names:
+                rel_txt = zorig.read(rel_p).decode('utf-8', errors='ignore')
+                for m_tag in re.finditer(r'<Relationship\b[^>]*>', rel_txt):
+                    tag_s = m_tag.group(0)
+                    if 'relationships/drawing"' in tag_s and 'vmlDrawing' not in tag_s:
+                        m_tgt = re.search(r'Target="([^"]+)"', tag_s)
+                        if m_tgt:
+                            sheet_draw_targets[idx_s] = m_tgt.group(1)
+                            break
+        if not sheet_draw_targets:
+            return
+
+        tmp_zip = out_file + ".tmp.zip"
+        with zipfile.ZipFile(out_file, 'r') as zin, zipfile.ZipFile(tmp_zip, 'w', compression=zipfile.ZIP_DEFLATED) as zout:
+            existing_out = set(zin.namelist())
+            sheet_new_rids = {}
+            new_rel_payloads = {}
+            for idx_s, tgt in sheet_draw_targets.items():
+                rel_p = f"xl/worksheets/_rels/sheet{idx_s}.xml.rels"
+                if rel_p in existing_out:
+                    cur_rel = zin.read(rel_p).decode('utf-8', errors='ignore')
+                    m_ex = re.search(r'<Relationship\b[^>]*relationships/drawing"[^>]*>', cur_rel)
+                    if m_ex:
+                        m_id = re.search(r'Id="([^"]+)"', m_ex.group(0))
+                        if m_id:
+                            sheet_new_rids[idx_s] = m_id.group(1)
+                    else:
+                        used_nums = [int(x) for x in re.findall(r'Id="rId(\d+)"', cur_rel)]
+                        nid = f"rId{(max(used_nums) + 1) if used_nums else 1}"
+                        sheet_new_rids[idx_s] = nid
+                        ins_rel = f'<Relationship Id="{nid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="{tgt}"/>'
+                        new_rel_payloads[rel_p] = cur_rel.replace('</Relationships>', ins_rel + '</Relationships>')
+                else:
+                    sheet_new_rids[idx_s] = "rId1"
+                    new_rel_payloads[rel_p] = (
+                        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+                        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                        f'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="{tgt}"/>'
+                        '</Relationships>'
+                    )
+
+            for item in zin.infolist():
+                fn = item.filename
+                data = zin.read(fn)
+                if fn in new_rel_payloads:
+                    data = new_rel_payloads.pop(fn).encode('utf-8')
+                else:
+                    m_sh = re.match(r'^xl/worksheets/sheet(\d+)\.xml$', fn)
+                    if m_sh:
+                        s_i = int(m_sh.group(1))
+                        if s_i in sheet_new_rids:
+                            s_txt = data.decode('utf-8')
+                            if '<drawing ' not in s_txt:
+                                draw_tag = f'<drawing xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="{sheet_new_rids[s_i]}"/>'
+                                s_txt = re.sub(
+                                    r'(<legacyDrawing|<legacyDrawingHF|<picture|<oleObjects|<controls|<webPublishItems|<tableParts|<extLst|</worksheet>)',
+                                    draw_tag + r'\1',
+                                    s_txt,
+                                    count=1
+                                )
+                                data = s_txt.encode('utf-8')
+                    elif fn == '[Content_Types].xml':
+                        ct_txt = data.decode('utf-8')
+                        for ext, mime in (('png', 'image/png'), ('jpeg', 'image/jpeg'), ('jpg', 'image/jpeg'), ('gif', 'image/gif'), ('emf', 'image/x-emf'), ('wmf', 'image/x-wmf')):
+                            if any(dm.lower().endswith(f'.{ext}') for dm in draw_media) and f'Extension="{ext}"' not in ct_txt:
+                                ct_txt = ct_txt.replace(
+                                    'xmlns="http://schemas.openxmlformats.org/package/2006/content-types">',
+                                    f'xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="{ext}" ContentType="{mime}"/>',
+                                    1
+                                )
+                        for dm in draw_media:
+                            if dm.startswith('xl/drawings/') and dm.endswith('.xml') and f'PartName="/{dm}"' not in ct_txt:
+                                ct_txt = ct_txt.replace(
+                                    '</Types>',
+                                    f'<Override PartName="/{dm}" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>'
+                                )
+                        data = ct_txt.encode('utf-8')
+                zout.writestr(item, data)
+
+            for rel_p, rel_xml in new_rel_payloads.items():
+                zout.writestr(rel_p, rel_xml.encode('utf-8'))
+            for dm in draw_media:
+                if dm not in existing_out:
+                    zout.writestr(dm, zorig.read(dm))
+        shutil.move(tmp_zip, out_file)
+
+
 def _patch_core_properties(filepath):
     now_str = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     core_xml = (
@@ -215,13 +316,17 @@ def merge_project_quotation_files(project_dir, project_name=None, sheet_files=No
     if not output_file:
         output_file = os.path.join(project_dir, f"{project_name}_BAO_GIA.xlsx")
 
-    merged_wb = openpyxl.Workbook()
-    if "Sheet" in merged_wb.sheetnames:
-        default_ws = merged_wb["Sheet"]
-    else:
+    has_orig_boq = bool(boq_file and os.path.exists(boq_file) and boq_file.lower().endswith(('.xlsx', '.xlsm')))
+    if has_orig_boq:
+        merged_wb = openpyxl.load_workbook(boq_file)
+        orig_sheet_count = len(merged_wb.worksheets)
         default_ws = None
-
-    existing_titles = set()
+        existing_titles = set(merged_wb.sheetnames)
+    else:
+        merged_wb = openpyxl.Workbook()
+        orig_sheet_count = 0
+        default_ws = merged_wb["Sheet"] if "Sheet" in merged_wb.sheetnames else None
+        existing_titles = set()
     copied_count = 0
 
     for sh_label, fp in sheet_files:
@@ -229,7 +334,15 @@ def merge_project_quotation_files(project_dir, project_name=None, sheet_files=No
             continue
         src_wb = openpyxl.load_workbook(fp, data_only=False)
         src_sheets = src_wb.sheetnames
-        if len(src_sheets) == 1:
+        if has_orig_boq:
+            bg_src_name = next((s for s in ("BG", "BG_SWIND", "BẢNG BÁO GIÁ TIÊU CHUẨN") if s in src_sheets), src_sheets[-1])
+            src_ws = src_wb[bg_src_name]
+            tab_title = sanitize_sheet_title(f"BG - {sh_label}", existing_titles)
+            existing_titles.add(tab_title)
+            dst_ws = merged_wb.create_sheet(title=tab_title)
+            copy_sheet_content(src_ws, dst_ws)
+            copied_count += 1
+        elif len(src_sheets) == 1:
             src_ws = src_wb[src_sheets[0]]
             tab_title = sanitize_sheet_title(sh_label, existing_titles)
             existing_titles.add(tab_title)
@@ -253,12 +366,22 @@ def merge_project_quotation_files(project_dir, project_name=None, sheet_files=No
     if copied_count == 0:
         return None
 
-    merged_wb.active = 0
+    active_idx = orig_sheet_count if (has_orig_boq and orig_sheet_count < len(merged_wb.worksheets)) else 0
+    merged_wb.active = active_idx
+    if merged_wb.views:
+        merged_wb.views[0].firstSheet = 0
+        merged_wb.views[0].activeTab = active_idx
+        merged_wb.views[0].showSheetTabs = True
     for idx, ws in enumerate(merged_wb.worksheets):
         if ws.views.sheetView:
-            ws.views.sheetView[0].tabSelected = (idx == 0)
+            ws.views.sheetView[0].tabSelected = (idx == active_idx)
 
     merged_wb.save(output_file)
+    if has_orig_boq:
+        try:
+            restore_boq_drawings(boq_file, output_file, orig_sheet_count)
+        except Exception:
+            pass
     _patch_core_properties(output_file)
     return output_file
 

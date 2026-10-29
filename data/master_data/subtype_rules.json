@@ -4,9 +4,9 @@
         {"keywords": ["mfsd", "motorized fire smoke"], "subtype": "MFSD"},
         {"keywords": ["mfd", "ngăn cháy có động cơ", "chặn lửa có động cơ", "chặn lửa bằng động cơ", "chặn lửa kèm động cơ", "chặn lửa đóng mở bằng mo tơ", "chặn lửa đóng mở bằng mô tơ", "chặn lửa đóng mở bằng motor", "chặn lửa đóng mở bằng động cơ"], "subtype": "MFD"},
         {"keywords": ["md", "động cơ", "điện", "mô tơ", "môtơ", "mo tơ", "motor", "van on/off", "van on-off"], "subtype": "MD"},
-        {"keywords": ["fd", "lửa", "chống cháy", "dập lửa", "ngăn cháy", "cầu chì"], "subtype": "FD"},
-        {"keywords": ["prd", "xả áp", "tràn áp", "cân bằng áp"], "subtype": "PRD"},
+        {"keywords": ["prd", "xả áp", "giảm áp", "tràn áp", "cân bằng áp"], "subtype": "PRD"},
         {"keywords": ["nrd", "1 chiều", "một chiều", "backdraft"], "subtype": "NRD"},
+        {"keywords": ["fd", "lửa", "chống cháy", "dập lửa", "ngăn cháy", "cầu chì"], "subtype": "FD"},
         {"keywords": ["obd", "sobd", "van điều chỉnh cửa gió"], "subtype": "OBD"},
         {"keywords": ["trục vít", "bánh vít", "tay vặn trục vít"], "subtype": "VCD_VIT"},
         {"keywords": ["vcd", "vd", "điều chỉnh", "lưu lượng", "tay gạt"], "subtype": "VCD"}
@@ -57,8 +57,8 @@
     "COMBO_AND_DETECTION_RULES": {
         "missing_qty_cv_keywords": ["louver", "luover", "louvre", "miệng gió", "miệng hút", "miệng lấy", "miệng cấp", "miệng thải", "miệng hồi", "cửa gió", "mặt gió", "cửa nan", "van ", "vcd", "mfd", "mfsd", "nrd", "prd", "ống gió", "cút", "côn", "chân rẽ", "tê", "hộp gió"],
         "missing_qty_cv_regex": "\\b(fd|md|sag|rag|eag|oag|pag|seg|eal|oal|fal)\\b",
-        "combo_diffuser_regex": "\\bmiệng\\s*gió\\b|\\bcửa\\s*gió\\b|\\bmặt\\s*gió\\b|\\bcửa\\s*nan\\b|\\blouver\\b|\\bluover\\b|\\blouvre\\b|\\bgrille\\b|\\bgriller\\b|\\bdiffuser\\b|\\b(?:sag|rag|fag|eag|seag|kag|mag|fal|eal|oal)\\b|cửa\\s*(?:nan|thẳng|gió|hút|cấp|hồi|thải|lấy|xả|tăng\\s*áp|tạo\\s*áp|\\+)",
-        "combo_damper_regex": "\\b(mfd|mfsd|md|fd|prd|nrd|vcd)\\b|van\\s+(?:on/off|on-off|chống\\s*cháy|chặn\\s*lửa|ngăn\\s*cháy|động\\s*cơ|một\\s*chiều|1\\s*chiều|xả\\s*áp)",
+        "combo_diffuser_regex": "\\bmiệng\\s*gió\\b|\\bcửa\\s*gió\\b|\\bmặt\\s*gió\\b|\\bcửa\\s*nan\\b|\\blouver\\b|\\bluover\\b|\\blouvre\\b|\\bgrille\\b|\\bgriller\\b|\\bdiffuser\\b|\\b(?:sag|rag|fag|eag|seag|kag|mag|fal|eal|oal)\\b|cửa\\s*(?:chớp|nan|thẳng|gió|hút|cấp|hồi|thải|lấy|xả|tăng\\s*áp|tạo\\s*áp|\\+)",
+        "combo_damper_regex": "\\b(mfd|mfsd|md|fd|prd|nrd|vcd)\\b|van\\s+(?:on/off|on-off|chống\\s*cháy|chặn\\s*lửa|ngăn\\s*cháy|động\\s*cơ|một\\s*chiều|1\\s*chiều|xả\\s*áp|giảm\\s*áp)",
         "inline_combo_dampers": ["MD", "FD", "VCD"],
         "combo_model_suffix": {
             "MD": "+MD",

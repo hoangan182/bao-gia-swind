@@ -43,7 +43,10 @@ description: Fast-path execution protocol for running Swind BOQ quotations witho
   - `1.05`: `SWIND-1.05-MFD-EI120` (Belimo BFN24, BCTN 2390)
 - `--dual-options`: Xuất đồng thời 2 phương án so sánh van (`BG Đơn Cánh ĐC FSLF 24V` và `BG Đa Cánh BFN 24`). Mặc định: Chỉ xuất 1 bảng chuẩn theo BOQ (`BẢNG BÁO GIÁ TIÊU CHUẨN`).
 - `--merge-sheets`: Gộp tất cả các sheet vào 1 file dự toán duy nhất (Mặc định: Tách riêng từng sheet ra từng file độc lập).
-- `--allow-ei`: Cờ tương thích cho phép áp giá chống cháy EI (Mặc định Swind tự động nhận diện EI theo BOQ).
+- `--strict`: Không xuất file báo giá nếu còn lỗi chặn (dòng có KL chưa có giá, sheet bóc tách lỗi, QA_REJECTED). Mặc định: vẫn xuất file nhưng in `⛔ BẢN NHÁP — CHƯA HOÀN CHỈNH` và trả mã thoát `2`.
+- `--override "<Dòng>:k=v,...;..."`: Ghi đè nhanh theo dòng BOQ (`w,h,d,l,thickness,qty,ref_price,skip`). BOQ nhiều sheet bắt buộc ghi tên sheet: `--override "Tên Sheet!7:w=600,h=600"`.
+- `--duct-formula <mpq|og_mb|both>`: Bộ công thức ống gió (`mpq` mặc định = BG PKV chuẩn; `og_mb` = diện tích m² theo ÔG MB; `both` = xuất cả 2, bản m² có hậu tố `_THEO_M2_OG_MB`).
+- `--include-duct`: Cho phép báo giá **Ống gió & phụ kiện ống (`ONG_GIO`)** (Mặc định: Hệ thống **KHÔNG** báo giá ống gió, chỉ báo khi User yêu cầu rõ). `--duct-formula og_mb|both` tự động bật cờ này.
 - `--include-flex-duct`: Cho phép báo giá **Ống gió mềm (`ONG_MEM`)** (Mặc định: Hệ thống **KHÔNG** báo giá ống gió mềm, chỉ báo khi có yêu cầu).
 - `--include-box`: Cho phép tính và báo giá thêm **Hộp gió (`PLENUM_BOX` theo công thức sheet `BG PKV`)** cho các cửa gió kèm hộp (Mặc định: Chỉ báo giá cửa gió và ghi chú `. Không tính box do nhà thầu tự thi công`, chỉ cộng thêm hộp khi có yêu cầu).
 - `--spec-priority <name|note>`: Chọn cột ưu tiên khi `Cột Tên` và `Cột Ghi chú/Spec` mâu thuẫn (`name` [Mặc định]: khóa chủng loại theo Cột Tên; `note`: ưu tiên theo Cột Ghi chú/Spec).

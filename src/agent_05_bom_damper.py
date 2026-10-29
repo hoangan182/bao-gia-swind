@@ -1,4 +1,17 @@
 import math
+from swind_utils import K
+
+
+# Giá trị chuẩn 2026 (fallback) — nguồn sống: data/master_data/pricing_constants.json -> "van"
+_DEFAULT_TON_M2 = {"bac_nho": 236628.0, "bac_vua": 271026.0, "bac_lon": 321300.0}
+_DEFAULT_SQUARE_ACC = {
+    "canh_tren_2000": {"prd": 622000.0, "nrd": 452000.0, "vcd_truc_vit": 676000.0, "md": 577000.0, "vcd": 545000.0},
+    "canh_tu_1000": {"prd": 422000.0, "nrd": 252000.0, "vcd_truc_vit": 476000.0, "vcd": 345000.0},
+    "h_tren_600": {"prd": 252000.0, "nrd": 152000.0, "vcd_truc_vit": 360000.0, "vcd": 261000.0},
+    "h_tren_400": {"prd": 232000.0, "nrd": 148000.0, "vcd_truc_vit": 352000.0, "vcd": 224000.0},
+    "h_tren_250": {"prd": 154000.0, "nrd": 97000.0, "vcd_truc_vit": 301000.0, "vcd_400x400": 156000.0, "vcd": 146000.0},
+    "h_den_250": {"prd": 95000.0, "nrd": 59000.0, "vcd_truc_vit": 213000.0, "vcd": 101000.0},
+}
 
 
 def _excel_round(value, ndigits=0):
@@ -520,7 +533,7 @@ class Agent05_DamperBOM:
             })
         elif ei_rating > 0 and not is_md and max(w_eff, h_eff) > 150.0:
             p_fb10 = mat_price_map.get("MAT-FIREBOARD-10MM-BODY", 518500.0)
-            area_fb10_ei = (z_total_m2 * 320000.0) / (p_fb10 * 1.593)
+            area_fb10_ei = (z_total_m2 * K("van.boc_ei.don_gia_m2", 320000.0)) / (p_fb10 * K("van.boc_ei.he_so_quy_doi_tam_10mm", 1.593))
             components.append({
                 "sub_key": f"{parent_id}-FB10-EI",
                 "name": f"Tấm chống cháy dày 10mm bọc thân van {damper_type} (EI{ei_rating})",
@@ -553,14 +566,17 @@ class Agent05_DamperBOM:
                 base_round_sell = float(row_t.get("vcd", 103000.0))
         else:
             if d_eff > 500.0:
-                pkv_r = 400200.0
-                c_acc_r = 136000.0 if is_nrd else (152000.0 if is_prd else (270000.0 if is_vcd_vit else (210000.0 if (is_fd or is_mfd) else (160000.0 if is_md else 156000.0))))
+                pkv_r = K("van.ton_m2.d_lon_hon_500", 400200.0)
+                c_acc_r = (K("van.tron_phu_kien.d_lon.nrd", 136000.0) if is_nrd else (K("van.tron_phu_kien.d_lon.prd", 152000.0) if is_prd else (
+                    K("van.tron_phu_kien.d_lon.vcd_truc_vit", 270000.0) if is_vcd_vit else (K("van.tron_phu_kien.d_lon.fd_mfd", 210000.0) if (is_fd or is_mfd) else (
+                        K("van.tron_phu_kien.d_lon.md", 160000.0) if is_md else K("van.tron_phu_kien.d_lon.vcd", 156000.0))))))
             else:
-                pkv_r = 236628.0 if d_eff <= 300.0 else (271026.0 if d_eff <= 400.0 else 321300.0)
-                c_acc_r = 55000.0 if (is_nrd or is_prd) else (220000.0 if is_vcd_vit else (156000.0 if (is_fd or is_mfd) else 86000.0))
-            base_round_sell = _excel_round((z_round_m2 * pkv_r + c_acc_r) * 1.15, -3)
+                pkv_r = K("van.ton_m2.bac_nho", 236628.0) if d_eff <= 300.0 else (K("van.ton_m2.bac_vua", 271026.0) if d_eff <= 400.0 else K("van.ton_m2.bac_lon", 321300.0))
+                c_acc_r = (K("van.tron_phu_kien.d_nho.nrd_prd", 55000.0) if (is_nrd or is_prd) else (K("van.tron_phu_kien.d_nho.vcd_truc_vit", 220000.0) if is_vcd_vit else (
+                    K("van.tron_phu_kien.d_nho.fd_mfd", 156000.0) if (is_fd or is_mfd) else K("van.tron_phu_kien.d_nho.vcd", 86000.0))))
+            base_round_sell = _excel_round((z_round_m2 * pkv_r + c_acc_r) * K("van.he_so_co_khi", 1.15), -3)
             if is_fd_vcd:
-                base_round_sell += 100000.0
+                base_round_sell += K("van.phu_thu_fd_vcd", 100000.0)
         ei_rate = float(damper_rules.get("vcd_nrd_ei_wrapping_rate_per_m2", 320000.0))
         ei_sell = (z_round_m2 * ei_rate) if (ei_rating > 0 and not (is_fd_ei or is_mfd)) else 0.0
         return base_round_sell + ei_sell
@@ -576,66 +592,79 @@ class Agent05_DamperBOM:
           - AY = 321,300 * S_m2 * 2 (tôn tấm bọc)
           - Tổng cơ khí = (O + AQ + AR + AS + AY + 100,000) * 1.25 * modules_count
         """
+        p_ton = K("van.ton_m2.bac_lon", 321300.0)
+        p_tam10 = K("van.ei_mfd.tam_chong_chay_10mm_m2", 700000.0)
+        p_tam20 = K("van.ei_mfd.tam_chong_chay_20mm_m2", 800000.0)
         z_mod_m2 = ((w_mod + h_mod) * 2.0 * 300.0 + w_mod * h_mod) / 1_000_000.0
-        o_mod = _excel_round((z_mod_m2 * 321300.0 + 153000.0) * 1.15, -3)
-        aq_mod = (w_mod + h_mod) * 4.0 * 300.0 / 1_000_000.0 * 700000.0
+        o_mod = _excel_round((z_mod_m2 * p_ton + K("van.ei_mfd.phu_kien_than", 153000.0)) * K("van.he_so_co_khi", 1.15), -3)
+        aq_mod = (w_mod + h_mod) * 4.0 * 300.0 / 1_000_000.0 * p_tam10
         if is_single_blade:
-            ar_mod = (w_mod / 1000.0) * (h_mod / 1000.0) * 800000.0
-            as_mod = (w_mod / 1000.0) * (h_mod / 1000.0) * 2.0 * 700000.0
+            ar_mod = (w_mod / 1000.0) * (h_mod / 1000.0) * p_tam20
+            as_mod = (w_mod / 1000.0) * (h_mod / 1000.0) * 2.0 * p_tam10
         else:
-            ar_mod = ((w_mod - 20.0) / 1000.0 * 0.21 * blade_factor_per_mod) * 1.1 * 800000.0
-            as_mod = ((w_mod / 1000.0) * 0.21 * blade_factor_per_mod * 2.0) * 1.1 * 700000.0
-        ay_mod = 321300.0 * (w_mod / 1000.0) * (h_mod / 1000.0) * 2.0
-        return (o_mod + aq_mod + ar_mod + as_mod + ay_mod + 100000.0) * 1.25 * modules_count
+            ar_mod = ((w_mod - 20.0) / 1000.0 * 0.21 * blade_factor_per_mod) * 1.1 * p_tam20
+            as_mod = ((w_mod / 1000.0) * 0.21 * blade_factor_per_mod * 2.0) * 1.1 * p_tam10
+        ay_mod = p_ton * (w_mod / 1000.0) * (h_mod / 1000.0) * 2.0
+        return (o_mod + aq_mod + ar_mod + as_mod + ay_mod + K("van.ei_mfd.phu_kien_lap_rap", 100000.0)) * K("van.ei_mfd.he_so_nhan_cong", 1.25) * modules_count
 
     @staticmethod
     def _price_normal_fd_damper(w_eff, h_eff, z_total_m2):
         """Tính giá cơ khí van chặn lửa cầu chì thường FD (không EI)."""
-        pkv = 321300.0
+        pkv = K("van.ton_m2.bac_lon", 321300.0)
         if w_eff > 2000.0 or h_eff > 2000.0:
-            c_acc, mult = 566000.0, 1.50
+            c_acc, mult = K("van.fd_thuong.phu_kien.canh_tren_2000", 566000.0), K("van.he_so_bac.canh_tren_2000", 1.50)
         elif w_eff >= 1000.0 or h_eff >= 1000.0:
-            c_acc, mult = 366000.0, 1.25
+            c_acc, mult = K("van.fd_thuong.phu_kien.canh_tu_1000", 366000.0), K("van.he_so_bac.canh_tu_1000", 1.25)
         elif h_eff > 600.0:
-            c_acc, mult = 250000.0, 1.0
+            c_acc, mult = K("van.fd_thuong.phu_kien.h_tren_600", 250000.0), 1.0
         elif h_eff > 400.0:
-            c_acc, mult = 242000.0, 1.0
+            c_acc, mult = K("van.fd_thuong.phu_kien.h_tren_400", 242000.0), 1.0
         elif h_eff > 250.0:
-            c_acc, mult = 191000.0, 1.0
+            c_acc, mult = K("van.fd_thuong.phu_kien.h_tren_250", 191000.0), 1.0
         else:
-            c_acc, mult = 153000.0, 1.0
-        return _excel_round((z_total_m2 * pkv + c_acc) * 1.15, -3) * mult
+            c_acc, mult = K("van.fd_thuong.phu_kien.h_den_250", 153000.0), 1.0
+        return _excel_round((z_total_m2 * pkv + c_acc) * K("van.he_so_co_khi", 1.15), -3) * mult
 
     @staticmethod
     def _price_square_standard_damper(w_eff, h_eff, z_total_m2, is_prd, is_nrd, is_vcd_vit, is_md, is_fd_vcd, ei_rating, damper_rules):
         """Tính giá cơ khí van vuông VCD, VCD trục vít, NRD, PRD, MD, FD+VCD theo bậc kích thước + bọc EI nếu có."""
         if w_eff > 2000.0 or h_eff > 2000.0:
-            pkv = 321300.0
-            c_acc = 622000.0 if is_prd else (452000.0 if is_nrd else (676000.0 if is_vcd_vit else (577000.0 if is_md else 545000.0)))
-            mult = 1.25 if is_md else 1.50
+            tier = "canh_tren_2000"
         elif w_eff >= 1000.0 or h_eff >= 1000.0:
-            pkv = 321300.0
-            c_acc = 422000.0 if is_prd else (252000.0 if is_nrd else (476000.0 if is_vcd_vit else 345000.0))
-            mult = 1.15 if is_prd else (1.25 if (is_nrd or is_vcd_vit or ei_rating > 0 or h_eff > 300.0) else 1.10)
+            tier = "canh_tu_1000"
         elif h_eff > 600.0:
-            pkv = 321300.0
-            c_acc = 252000.0 if is_prd else (152000.0 if is_nrd else (360000.0 if is_vcd_vit else 261000.0))
-            mult = 1.0
+            tier = "h_tren_600"
         elif h_eff > 400.0:
-            pkv = 271026.0
-            c_acc = 232000.0 if is_prd else (148000.0 if is_nrd else (352000.0 if is_vcd_vit else 224000.0))
-            mult = 1.0
+            tier = "h_tren_400"
         elif h_eff > 250.0:
-            pkv = 236628.0
-            c_acc = 154000.0 if is_prd else (97000.0 if is_nrd else (301000.0 if is_vcd_vit else (156000.0 if (h_eff >= 400.0 and w_eff >= 400.0) else 146000.0)))
-            mult = 1.0
+            tier = "h_tren_250"
         else:
-            pkv = 236628.0
-            c_acc = 95000.0 if is_prd else (59000.0 if is_nrd else (213000.0 if is_vcd_vit else 101000.0))
+            tier = "h_den_250"
+        pkv_key = {"h_tren_400": "bac_vua", "h_tren_250": "bac_nho", "h_den_250": "bac_nho"}.get(tier, "bac_lon")
+        pkv = K(f"van.ton_m2.{pkv_key}", _DEFAULT_TON_M2[pkv_key])
+        if is_prd:
+            kind = "prd"
+        elif is_nrd:
+            kind = "nrd"
+        elif is_vcd_vit:
+            kind = "vcd_truc_vit"
+        elif is_md and tier == "canh_tren_2000":
+            kind = "md"
+        elif tier == "h_tren_250" and h_eff >= 400.0 and w_eff >= 400.0:
+            kind = "vcd_400x400"
+        else:
+            kind = "vcd"
+        c_acc = K(f"van.vuong_phu_kien.{tier}.{kind}", _DEFAULT_SQUARE_ACC[tier][kind])
+        if tier == "canh_tren_2000":
+            mult = K("van.he_so_bac.md_canh_tren_2000", 1.25) if is_md else K("van.he_so_bac.canh_tren_2000", 1.50)
+        elif tier == "canh_tu_1000":
+            mult = K("van.he_so_bac.prd_canh_tu_1000", 1.15) if is_prd else (
+                K("van.he_so_bac.canh_tu_1000", 1.25) if (is_nrd or is_vcd_vit or ei_rating > 0 or h_eff > 300.0) else K("van.he_so_bac.vcd_canh_tu_1000_h_den_300", 1.10))
+        else:
             mult = 1.0
-        base_mech_sell = _excel_round((z_total_m2 * pkv + c_acc) * 1.15, -3) * mult
+        base_mech_sell = _excel_round((z_total_m2 * pkv + c_acc) * K("van.he_so_co_khi", 1.15), -3) * mult
         if is_fd_vcd:
-            base_mech_sell += 100000.0
+            base_mech_sell += K("van.phu_thu_fd_vcd", 100000.0)
         ei_rate = float(damper_rules.get("vcd_nrd_ei_wrapping_rate_per_m2", 320000.0))
         ei_sell = (z_total_m2 * ei_rate) if (ei_rating > 0 and max(w_eff, h_eff) > 150.0) else 0.0
         return base_mech_sell + ei_sell

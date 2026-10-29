@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -17,16 +18,14 @@ class Agent03_InputAuditor:
     - Xuất biên bản kiểm toán INPUT_AUDIT_REPORT.json.
     """
 
-    def __init__(self, selected_model="Gemini 2.5 Pro", project_name="Du_An_HDL_A1"):
-        self.selected_model = selected_model
+    def __init__(self, project_name="Du_An_HDL_A1"):
         self.project_name = project_name
 
     def run_audit(self, extracted_items):
-        print(f"[*] [Agent 03 - Input Auditor] Kích hoạt kiểm toán đầu vào với Model: {self.selected_model}...")
+        print("[*] [Agent 03 - Input Auditor] Kích hoạt kiểm toán đầu vào 4 trục (rule-based)...")
 
         audit_report = {
             "project_name": self.project_name,
-            "model_used": self.selected_model,
             "total_items": len(extracted_items),
             "pass_items": 0,
             "requires_mapping_items": 0,
@@ -72,7 +71,6 @@ class Agent03_InputAuditor:
             else:
                 w = dims.get("w", 0)
                 h = dims.get("h", 0)
-                d = dims.get("d", 0)
 
                 # Cảnh báo tỷ lệ bất thường
                 if w > 0 and h > 0 and h > w * 3:
@@ -82,8 +80,11 @@ class Agent03_InputAuditor:
                         "issue": f"Tỷ lệ chiều cao vượt trội ({w}x{h}). Thường W > H trong hệ thống gió."
                     })
 
-                # Cảnh báo nghi ngờ gõ thiếu số 0 ở kích thước lẻ (ví dụ 110x350 thay vì 1100x350)
-                if w > 0 and h > 0 and ((w % 50 != 0 and w < 200) or (h % 50 != 0 and h < 200)):
+                # Cảnh báo nghi ngờ gõ thiếu số 0 ở kích thước lẻ (ví dụ 110x350 thay vì 1100x350).
+                # Chỉ xét cạnh 100..199mm không chia hết cho 50 (cạnh < 100mm như khe cửa gió 60/80mm là bình thường).
+                def _odd(v):
+                    return 100 <= v < 200 and v % 50 != 0
+                if w > 0 and h > 0 and (_odd(w) or _odd(h)):
                     audit_report["warnings"].append({
                         "row": row_idx,
                         "item": name,
@@ -112,7 +113,9 @@ class Agent03_InputAuditor:
                         item["suggested_area_m2"] = round(area_each, 3)
 
             # 4. Trục 4: Thẩm tra Phụ kiện & PCCC (Spec Check)
-            if std_id and "FD" in std_id:
+            name_low = str(name).lower()
+            is_fd = std_id == "VAN_GIO" and (re.search(r'\b(fd|mfd|sfd|mfsd)\b', name_low) or "chặn lửa" in name_low or "ngăn cháy" in name_low)
+            if is_fd:
                 if not spec.get("fire_rating"):
                     audit_report["warnings"].append({
                         "row": row_idx,
@@ -137,6 +140,15 @@ class Agent03_InputAuditor:
         print(f"[OK] [Agent 03 - Input Auditor] Đã hoàn thành kiểm toán! Báo cáo lưu tại: {report_path}")
         print(f"     ➔ Tổng: {audit_report['total_items']} dòng | Đạt chuẩn: {audit_report['pass_items']} | Cần ánh xạ: {audit_report['requires_mapping_items']}")
         print(f"     ➔ Cảnh báo: {len(audit_report['warnings'])} | Lỗi nghiêm trọng: {len(audit_report['critical_errors'])}")
+        for ce in audit_report["critical_errors"][:10]:
+            print(f"     ⛔ [Lỗi nghiêm trọng] Dòng {ce['row']}: '{ce['item']}' — {ce['issue']}")
+        warn_groups = {}
+        for wn in audit_report["warnings"]:
+            key = re.sub(r'\(.*?\)', '(...)', wn["issue"])
+            warn_groups.setdefault(key, []).append(wn["row"])
+        for key, rows in sorted(warn_groups.items(), key=lambda kv: -len(kv[1]))[:6]:
+            rows_s = ", ".join(str(x) for x in rows[:8]) + (" ..." if len(rows) > 8 else "")
+            print(f"     ⚠️ [{len(rows)} dòng] {key} — Dòng: {rows_s}")
 
         return audit_report
 

@@ -48,7 +48,7 @@ class Agent01_BOQExtractor:
         if not target_sheets:
             visible_sheets = [s for s in self.parser.wb.sheetnames if getattr(self.parser.wb[s], "sheet_state", "visible") == "visible"]
             cand_sheets = visible_sheets if visible_sheets else list(self.parser.wb.sheetnames)
-            target_sheets = [s for s in cand_sheets if not any(k in s.lower() for k in ("summary", "cover", "bìa"))]
+            target_sheets = [s for s in cand_sheets if not any(k in s.lower() for k in ("summary", "cover", "bìa", "phạm vi", "pham vi", "scope"))]
             if not target_sheets:
                 target_sheets = [cand_sheets[0]]
 
@@ -122,11 +122,14 @@ class Agent01_BOQExtractor:
         elif model_item in ("OBD", "VCD", "MD", "NRD", "PRD"):
             damper_type = model_item
         else:
-            name_model_search = (str(item.get("raw_name") or item.get("name", "")) + " " + str(item.get("model", ""))).lower()
+            raw_nm_s = str(item.get("raw_name") or "")
+            eff_nm_s = raw_nm_s if re.search(r'[a-zA-ZÀ-ỹ]{2,}', re.sub(r'\b(?:mm|kt|w|h|l|d|dn|phi)\b', '', raw_nm_s, flags=re.IGNORECASE)) else str(item.get("name", ""))
+            name_model_search = (eff_nm_s + " " + str(item.get("model", ""))).lower()
             note_only_search = str(item.get("note_boq") or "").lower()
             if item.get("spec_priority") == "note" and note_only_search:
+                note_sub_search = re.sub(r'(?:tấm|bọc|vật\s*liệu|sơn|keo)\s+chống\s*cháy', ' ', note_only_search)
                 damper_type = cls.get_subtype(
-                    subtype_rules, "VAN_GIO", note_only_search,
+                    subtype_rules, "VAN_GIO", note_sub_search,
                     cls.get_subtype(subtype_rules, "VAN_GIO", name_model_search, cls.get_subtype(subtype_rules, "VAN_GIO", full_search, "VCD"))
                 )
             else:
@@ -134,10 +137,14 @@ class Agent01_BOQExtractor:
                     subtype_rules, "VAN_GIO", name_model_search,
                     cls.get_subtype(subtype_rules, "VAN_GIO", raw_search, cls.get_subtype(subtype_rules, "VAN_GIO", full_search, "VCD"))
                 )
+            chk_mprd_src = (note_only_search + " " + raw_search.lower() + " " + full_search.lower()) if item.get("spec_priority") == "note" else name_model_search
+            if damper_type in ("PRD", "MD") and any(k in chk_mprd_src for k in ("xả áp", "giảm áp")) and any(k in chk_mprd_src for k in ("mprd", "m-prd", "mrd", "động cơ", "on/off", "on-off", "điện", "điều khiển")):
+                damper_type = "MPRD"
             if damper_type in ("FD", "MD", "VCD"):
-                rs_low = (note_only_search + " " + raw_search.lower()) if item.get("spec_priority") == "note" else raw_search.lower()
-                if any(fk in rs_low for fk in ("chặn lửa", "ngăn cháy", "dập lửa")) and any(mk in rs_low for mk in ("động cơ", "mô tơ", "môtơ", "mo tơ", "motor", "mfd")):
-                    damper_type = "MFD"
+                rs_low = (note_only_search + " " + raw_search.lower()) if item.get("spec_priority") == "note" else (name_model_search + " " + raw_search.lower())
+                if not (item.get("spec_priority") == "note" and damper_type == "FD" and not any(mk in note_only_search for mk in ("động cơ", "mô tơ", "môtơ", "mo tơ", "motor", "mfd"))):
+                    if any(fk in rs_low for fk in ("chặn lửa", "ngăn cháy", "dập lửa", "chống cháy", "chịu lửa")) and any(mk in rs_low for mk in ("động cơ", "mô tơ", "môtơ", "mo tơ", "motor", "mfd")):
+                        damper_type = "MFD"
         if damper_type == "PRD" and any(k in raw_search.lower() for k in ("mprd", "m-prd", "mrd", "xả áp động cơ", "xả áp điện", "xả áp điều khiển")):
             damper_type = "MPRD"
         subtype = damper_type
@@ -147,8 +154,18 @@ class Agent01_BOQExtractor:
         req_motor = str(item.get("motor_brand_override") or "").strip().upper()
         req_mfd_model = str(item.get("mfd_model_override") or "").strip()
         eff_req_code = model_code or (req_mfd_model if eff_type in ("MFD", "MFSD") else "")
-        is_klb_req = (req_motor == "KLB") or any(k in (raw_search + " " + full_search).lower() for k in ("klb", "viweco", "v6006")) or (eff_req_code == "1.03")
-        is_honeywell_req = (req_motor == "HONEYWELL") or any(k in (raw_search + " " + full_search).lower() for k in ("honeywell", "honey well", "ms4609", "s6061")) or (eff_req_code == "1.04")
+        note_prio_low = str(item.get("note_boq") or "").lower() if item.get("spec_priority") == "note" else ""
+        if note_prio_low:
+            m_ei_np = re.search(r'(?<![a-z])ei\s*[-:]?\s*(\d{2,3})\b', note_prio_low)
+            if m_ei_np:
+                ei_rating = int(m_ei_np.group(1))
+                item["ei_rating"] = ei_rating
+            elif eff_type in ("NRD", "PRD", "MPRD", "VCD") and ei_rating == 0 and any(k in note_prio_low for k in ("bọc tấm mgo", "tấm chống cháy mgo", "bọc chống cháy")):
+                ei_rating = 60
+                item["ei_rating"] = 60
+        motor_src_low = note_prio_low if (note_prio_low and any(k in note_prio_low for k in ("belimo", "klb", "viweco", "v6006", "honeywell", "honey well", "ms4609", "s6061"))) else (raw_search + " " + full_search).lower()
+        is_klb_req = (req_motor == "KLB") or (not req_motor and any(k in motor_src_low for k in ("klb", "viweco", "v6006"))) or (eff_req_code == "1.03")
+        is_honeywell_req = (req_motor == "HONEYWELL") or (not req_motor and any(k in motor_src_low for k in ("honeywell", "honey well", "ms4609", "s6061"))) or (eff_req_code == "1.04")
         motor_brand = "KLB" if is_klb_req else ("HONEYWELL" if is_honeywell_req else "BELIMO")
         if eff_type == "MD":
             ei_rating = 0
@@ -169,7 +186,13 @@ class Agent01_BOQExtractor:
             item["d"] = 0.0
             a1 = int(w)
             a2 = int(h)
-        eff_model_code = eff_req_code or (("2.01" if is_fd_ei else "FD") if eff_type == "FD" else ("1.03" if is_klb_req else ("1.04" if is_honeywell_req else "1.02")))
+        belimo_mfd_def = "1.02"
+        if note_prio_low and eff_type in ("MFD", "MFSD") and motor_brand == "BELIMO":
+            if any(k in note_prio_low for k in ("1.05", "2390", "đa cánh")):
+                belimo_mfd_def = "1.05"
+            elif ei_rating >= 120 or any(k in note_prio_low for k in ("1.01", "4751", "bfn", "60s")):
+                belimo_mfd_def = "1.01"
+        eff_model_code = eff_req_code or (("2.01" if is_fd_ei else "FD") if eff_type == "FD" else ("1.03" if is_klb_req else ("1.04" if is_honeywell_req else belimo_mfd_def)))
         bom_multi = Agent05_DamperBOM.calculate_damper_bom(
             parent_id=f"Q-{idx}",
             damper_type=eff_type,
@@ -389,7 +412,7 @@ class Agent01_BOQExtractor:
         note_boq_low = str(item.get("note_boq") or "").lower()
         spec_prio = item.get("spec_priority", "name")
 
-        has_explicit_straight = any(k in primary_diff_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd"))
+        has_explicit_straight = any(k in primary_diff_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd", "lớp nan", "nan đơn", "nan đôi", "air grille"))
         has_explicit_egg = any(k in primary_diff_search for k in ("sọt trứng", "sọt trưng", "dạng lưới", "eggcrate", "egg crate", "ecg", "seeg"))
         has_explicit_louver = any(k in primary_diff_search for k in ("nan z", "louver", "luover", "louvre", "cửa chớp", "chớp nhôm"))
         has_explicit_slot = any(k in primary_diff_search for k in ("slot", "sld", "lsd", "dls", "khe hẹp", "kiểu khe"))
@@ -414,7 +437,7 @@ class Agent01_BOQExtractor:
         mesh_search = re.sub(r'(?:dạng\s+lưới|lưới\s+(?:lọc|gió))', '', mesh_base)
         has_mesh = (
             any(k in mesh_search for k in mesh_kws if k != "is")
-            or bool(re.search(r'\b(?:i\.s\.?|l\.s\.?|lc+t)\b|(?:c/w|\+|kèm|with)\s*(?:is|ls)\b', mesh_search))
+            or bool(re.search(r'\b(?:i\.s\.?|l\.s\.?|lc+[tc])\b|(?:c/w|\+|kèm|with)\s*(?:is|ls)\b', mesh_search))
         )
         has_filter = any(k in filter_search for k in filter_kws)
         is_double_layer = ("2 lớp" in combined_search or "hai lớp" in combined_search)
@@ -453,8 +476,9 @@ class Agent01_BOQExtractor:
             or (max(w, h) >= 3000.0 and not has_obd and not is_double_layer and not is_eggcrate and not any(k in blade_search for k in ("nan thẳng", "bầu dục", "nan bd", "linear", "sọt trứng", "sọt trưng", "khuếch tán")))
             or (has_mesh and not has_obd and not has_filter and not is_double_layer and not is_eggcrate and not any(k in blade_search for k in ("cover", "nan thẳng", "bầu dục", "nan bd", "linear", "sọt trứng", "sọt trưng", "khuếch tán", "fag", "sag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "return", "supply", "insect screen", "i.s", "lcct")))
         )
-        is_standalone_lcct = has_mesh and not any(k in raw_search for k in louver_kws + ("cửa", "miệng", "mặt gió", "sag", "fag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "cover", "nan "))
-        is_standalone_filter = has_filter and not has_mesh and not has_obd and not any(k in raw_search for k in louver_kws + ("cửa", "miệng", "mặt gió", "sag", "fag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "cover", "nan "))
+        standalone_chk_text = raw_search if re.search(r'[a-zA-ZÀ-ỹ]{2,}', re.sub(r'\b(?:mm|kt|w|h|l|d|dn|phi)\b', '', raw_name, flags=re.IGNORECASE)) else combined_search
+        is_standalone_lcct = has_mesh and not any(k in standalone_chk_text for k in louver_kws + ("cửa", "miệng", "mặt gió", "sag", "fag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "cover", "nan "))
+        is_standalone_filter = has_filter and not has_mesh and not has_obd and not any(k in standalone_chk_text for k in louver_kws + ("cửa", "miệng", "mặt gió", "sag", "fag", "rag", "oag", "mag", "pag", "seg", "spg", "eag", "kag", "seag", "sdg", "grille", "grilles", "diffuser", "cover", "nan "))
 
         is_slot_sld = (
             any(k in blade_search for k in ("slot", "sld", "lsd", "dls", "khe hẹp", "kiểu khe"))
@@ -486,7 +510,7 @@ class Agent01_BOQExtractor:
             and w > 0 and w == h and int(w) in (600, 450, 300)
             and not is_return_grille and not is_louver_z and not is_press_or_smoke and not is_eggcrate
             and (not has_obd or any(k in combined_search for k in ("cấp", "lạnh", "điều hòa", "sag", "sad", "scd", "khuếch tán", "450", "150")))
-            and not any(k in blade_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd", "sọt trứng", "sọt trưng", "eggcrate", "ecg", "linear", "nan t", "dạng nan", "格栅", "kiểm tra", "检查", "access door", "cửa công tác", "cửa thăm", "tháo lắp", "inspection", "oag", "eag", "mag", "fag", "ngoài trời", "gió thải"))
+            and not any(k in blade_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd", "lớp nan", "nan đơn", "nan đôi", "air grille", "sọt trứng", "sọt trưng", "eggcrate", "ecg", "linear", "nan t", "dạng nan", "格栅", "kiểm tra", "检查", "access door", "cửa công tác", "cửa thăm", "tháo lắp", "inspection", "oag", "eag", "mag", "fag", "ngoài trời", "gió thải"))
         )
         is_diffuser_sq = (not is_thoi_kt and not is_standalone_lcct and not is_standalone_filter) and (any(k in blade_search for k in ("khuếch tán", "scd", "sad", "diffuser")) or is_sq_ac_diffuser or (w == 600 and h == 600 and "sag" in blade_search))
 
@@ -545,7 +569,7 @@ class Agent01_BOQExtractor:
             profile_type = "FILTER_G4"
             model_fslf = model_bfn = "G4"
             b1, b2 = None, None
-            note_fslf = note_bfn = "Lưới lọc bụi thô G4 kèm khung nhôm"
+            note_fslf = note_bfn = "Lọc thô G4 kèm khung nhôm"
 
         elif is_eggcrate:
             profile_type = "ECG"
@@ -573,13 +597,13 @@ class Agent01_BOQExtractor:
             profile_type = "Z"
             has_mesh = bool(has_mesh or any(k in mesh_search for k in ("lưới", "côn trùng", "chắn chim", "against bird", "bird screen", "lcct", "i.s", "insect screen")))
             if has_obd and has_mesh:
-                model_fslf = model_bfn = "WL+O+N"
+                model_fslf = model_bfn = "WL+O+N+F" if has_filter else "WL+O+N"
             elif has_obd:
-                model_fslf = model_bfn = "WL+O"
+                model_fslf = model_bfn = "WL+O+F" if has_filter else "WL+O"
             elif has_mesh:
-                model_fslf = model_bfn = "WL+N"
+                model_fslf = model_bfn = "WL+N+F" if has_filter else "WL+N"
             else:
-                model_fslf = model_bfn = "WL"
+                model_fslf = model_bfn = "WL+F" if has_filter else "WL"
             if w > 0 and h > 0:
                 b1, b2 = int(max(50, w - 50)), int(max(50, h - 50))
             note_fslf = note_bfn = ("Louver nan Z ngoài trời kèm lưới chắn côn trùng Inox 304" if has_mesh else "Louver nan Z ngoài trời") + (" kèm van OBD" if has_obd else "") + (" kèm lưới lọc bụi thô" if has_filter else "") + box_note

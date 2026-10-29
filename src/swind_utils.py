@@ -436,6 +436,15 @@ def detect_boq_header(ws):
             rem_col = max(u_col, qty_col) + 1
             if rem_col <= max_scan_col:
                 col_map["remarks"] = rem_col
+            # Cột nằm giữa Tên và ĐVT có tiêu đề "Thông số kỹ thuật"/"Quy cách"/"Model" -> map đúng vai trò
+            for c_mid in range(name_col + 1, u_col):
+                hv = re.sub(r'\s+', ' ', unicodedata.normalize('NFC', str(ws.cell(header_row, c_mid).value or "")).lower()).strip()
+                if not hv or get_column_letter(c_mid) in hidden_cols:
+                    continue
+                if "spec" not in col_map and any(k in hv for k in SPEC_KEYWORDS):
+                    col_map["spec"] = c_mid
+                elif "model" not in col_map and any(k in hv for k in MODEL_KEYWORDS):
+                    col_map["model"] = c_mid
         else:
             for r in range(1, min(15, ws.max_row + 1)):
                 if r in hidden_rows:
@@ -765,6 +774,118 @@ def get_master_bom_rules(force_reload=False):
     else:
         _CACHED_BOM_RULES = {}
     return _CACHED_BOM_RULES
+
+_CACHED_PRICING_CONSTANTS = None
+
+def get_pricing_constants(force_reload=False):
+    """
+    Bảng hằng số đơn giá / định mức tiền của các công thức xưởng (van, cửa, ống) lấy từ Bảng tính giá chuẩn Swind,
+    lưu tại data/master_data/pricing_constants.json để cập nhật giá KHÔNG cần sửa code.
+    """
+    global _CACHED_PRICING_CONSTANTS
+    if _CACHED_PRICING_CONSTANTS is not None and not force_reload:
+        return _CACHED_PRICING_CONSTANTS
+    import os
+    import json
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    path = os.path.join(base_dir, "data", "master_data", "pricing_constants.json")
+    data = {}
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    _CACHED_PRICING_CONSTANTS = data
+    return data
+
+
+def K(key, default):
+    """Tra 1 hằng số giá theo khóa dạng 'van.fd_thuong.phu_kien.xl' (fallback = giá trị chuẩn 2026 trong code)."""
+    node = get_pricing_constants()
+    for part in key.split("."):
+        if not isinstance(node, dict) or part not in node:
+            return default
+        node = node[part]
+    return float(node) if isinstance(node, (int, float)) else default
+
+
+_CACHED_QUOTATION_PROFILE = None
+
+def get_quotation_profile(force_reload=False):
+    """
+    Đọc cấu hình in báo giá (VAT, tiêu đề công ty, điều khoản, thụ hưởng) từ financial_policy.json -> mục QUOTATION.
+    """
+    global _CACHED_QUOTATION_PROFILE
+    if _CACHED_QUOTATION_PROFILE is not None and not force_reload:
+        return _CACHED_QUOTATION_PROFILE
+    import os
+    import json
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    path = os.path.join(base_dir, "data", "master_data", "financial_policy.json")
+    prof = {}
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            prof = json.load(f).get("QUOTATION", {})
+    prof.setdefault("vat_rate", 0.08)
+    _CACHED_QUOTATION_PROFILE = prof
+    return prof
+
+
+def vat_label(rate=None):
+    r = get_quotation_profile()["vat_rate"] if rate is None else rate
+    return f"{r * 100:g}%"
+
+
+def prune_named_styles_in_file(src_path, dst_path, threshold=200):
+    """
+    Loại Named Style rác bằng cách chỉnh trực tiếp xl/styles.xml (giữ nguyên byte-for-byte mọi
+    phần khác: giá trị cache của công thức, hình ảnh, VBA...). Loại các <cellStyle>/<cellStyleXfs> không được
+    cellXfs nào tham chiếu. Trả về số style đã loại (0 nếu không cần -> không tạo dst_path).
+    """
+    import re
+    import zipfile
+    with zipfile.ZipFile(src_path) as zin:
+        xml = zin.read("xl/styles.xml").decode("utf-8")
+        m_csx = re.search(r'<cellStyleXfs\b[^>]*>(.*?)</cellStyleXfs>', xml, re.S)
+        m_cx = re.search(r'<cellXfs\b[^>]*>(.*?)</cellXfs>', xml, re.S)
+        m_cs = re.search(r'<cellStyles\b[^>]*>(.*?)</cellStyles>', xml, re.S)
+        if not (m_csx and m_cx and m_cs):
+            return 0
+        xf_rx = re.compile(r'<xf\b[^>]*?(?:/>|>.*?</xf>)', re.S)
+        style_xfs = xf_rx.findall(m_csx.group(1))
+        if len(style_xfs) <= threshold:
+            return 0
+        cell_xfs = xf_rx.findall(m_cx.group(1))
+        used = {0} | {int(v) for v in re.findall(r'<xf\b[^>]*?\bxfId="(\d+)"', m_cx.group(1))}
+        cell_styles = re.findall(r'<cellStyle\b[^>]*?(?:/>|>.*?</cellStyle>)', m_cs.group(1), re.S)
+        for cs in cell_styles:
+            if re.search(r'\bbuiltinId="0"', cs):
+                m_id = re.search(r'\bxfId="(\d+)"', cs)
+                if m_id:
+                    used.add(int(m_id.group(1)))
+        keep = [i for i in range(len(style_xfs)) if i in used]
+        remap = {old: new for new, old in enumerate(keep)}
+
+        def _remap_xfid(txt):
+            return re.sub(r'(<(?:xf|cellStyle)\b[^>]*?\bxfId=")(\d+)(")', lambda mm: f"{mm.group(1)}{remap.get(int(mm.group(2)), 0)}{mm.group(3)}", txt, count=1)
+
+        new_csx = "".join(style_xfs[i] for i in keep)
+        new_cx = "".join(_remap_xfid(x) for x in cell_xfs)
+        kept_cs = []
+        for cs in cell_styles:
+            m_id = re.search(r'\bxfId="(\d+)"', cs)
+            if m_id and int(m_id.group(1)) in remap:
+                kept_cs.append(_remap_xfid(cs))
+        new_xml = (
+            xml[:m_csx.start()] + f'<cellStyleXfs count="{len(keep)}">{new_csx}</cellStyleXfs>'
+            + xml[m_csx.end():m_cx.start()] + f'<cellXfs count="{len(cell_xfs)}">{new_cx}</cellXfs>'
+            + xml[m_cx.end():m_cs.start()] + f'<cellStyles count="{len(kept_cs)}">{"".join(kept_cs)}</cellStyles>'
+            + xml[m_cs.end():]
+        )
+        with zipfile.ZipFile(dst_path, "w", zipfile.ZIP_DEFLATED) as zout:
+            for info in zin.infolist():
+                data = new_xml.encode("utf-8") if info.filename == "xl/styles.xml" else zin.read(info.filename)
+                zout.writestr(info, data)
+    return len(style_xfs) - len(keep)
+
 
 if __name__ == "__main__":
     test_cases = [

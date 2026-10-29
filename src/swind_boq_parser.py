@@ -5,6 +5,24 @@ import os
 import unicodedata
 from swind_utils import detect_boq_header, get_subtype_rules, extract_duct_fitting_geometry
 
+FILTER_PREFIXES = ("lọc bụi", "lọc thô", "lọc sơ cấp", "lọc g4", "phin lọc", "lưới lọc", "tấm lọc", "bộ lọc", "khung lọc", "filter g4", "g4 filter", "pre filter", "pre-filter")
+FINE_FILTER_RX = re.compile(r'\b(?:f[5-9]|m[5-6]|e1[0-2]|h1[0-4]|hepa|ulpa)\b|than hoạt tính|tĩnh điện|túi|carbon|bag')
+
+
+def is_standalone_coarse_filter(name_lower):
+    """Dòng BOQ là lọc bụi thô / G4 đứng riêng (không phải lọc tinh F5-F9/HEPA, than hoạt tính, lọc tĩnh điện, lọc túi)."""
+    n = re.sub(r'^\s*[-•*+]+\s*', '', name_lower)
+    n = re.sub(r'^(?:cung cấp|gia công|sản xuất|lắp đặt)(?:\s*(?:,|và|&)\s*(?:cung cấp|gia công|sản xuất|lắp đặt))*\s*:?\s*', '', n)
+    return n.startswith(FILTER_PREFIXES) and not FINE_FILTER_RX.search(n)
+
+
+def _safe_qty(v):
+    try:
+        return float(str(v).replace(",", ".")) if v not in (None, "") else 0.0
+    except (TypeError, ValueError):
+        return 0.0
+
+
 class SwindBOQParser:
     """
     Trình phân tích BOQ tự động, nhận diện cấu trúc động:
@@ -20,6 +38,9 @@ class SwindBOQParser:
         self.manufacturable_catalog = []
         self.skipped_rows = {}
         self.missing_dim_rows = {}
+        self.skip_reasons = {}
+        self.parse_errors = {}
+        self.row_overrides = {}
         self._load_catalogs()
         
         self.learned_keywords = {}
@@ -58,13 +79,14 @@ class SwindBOQParser:
         if sheet_name not in self.wb.sheetnames:
             raise ValueError(f"Sheet {sheet_name} không tồn tại trong {self.filepath}")
 
-        if not _is_side_table and _override_col_map is None and _override_header_row is None and max_items is None:
+        if not _is_side_table and _override_col_map is None and _override_header_row is None and max_items is None and not self.row_overrides:
             cache_dict = getattr(self.wb, "_swind_parsed_cache", None)
             cache_key = (sheet_name, self.include_flex_duct)
             if cache_dict and cache_key in cache_dict:
-                c_items, c_skip, c_miss = cache_dict[cache_key]
+                c_items, c_skip, c_miss, c_reasons = cache_dict[cache_key]
                 self.skipped_rows[sheet_name] = set(c_skip)
                 self.missing_dim_rows[sheet_name] = list(c_miss)
+                self.skip_reasons[sheet_name] = dict(c_reasons)
                 return [dict(it) for it in c_items]
             
         ws = self.wb[sheet_name]
@@ -103,6 +125,7 @@ class SwindBOQParser:
         if not _is_side_table:
             self.skipped_rows[sheet_name] = set()
             self.missing_dim_rows[sheet_name] = []
+            self.skip_reasons[sheet_name] = {}
         current_section = _initial_section if _initial_section else "SẢN PHẨM"
         current_section_aux = ""
         empty_streak = 0
@@ -263,7 +286,11 @@ class SwindBOQParser:
                 "đầu phun", "sprinkler", "bình chữa cháy", "cuộn vòi", "tủ chữa cháy", "trụ cứu hỏa",
                 "họng tiếp nước", "khớp nối mềm cao su", "khớp nối mềm inox", "rọ bơm", "y lọc"
             )
-            is_plumbing_item = any(pk in name_lower or pk in full_name_lower for pk in plumbing_kws)
+            is_hvac_prd = ("van giảm áp" in full_name_lower or "van xả áp" in full_name_lower) and (
+                bool(re.search(r'\b\d{2,4}\s*[xX*]\s*\d{2,4}\b', f"{full_name_str} {note_boq}"))
+                or any(k in f"{full_name_lower} {note_boq.lower()}" for k in ("tôn", "tole", "ei", "chịu lửa", "chống cháy", "mfd", "động cơ", "on/off", "on-off"))
+            )
+            is_plumbing_item = (not is_hvac_prd) and any(pk in name_lower or pk in full_name_lower for pk in plumbing_kws)
             if not is_plumbing_item and any(sk in sec_lower for sk in ("chữa cháy", "cấp nước", "thoát nước", "ống đồng", "bảo ôn ống")):
                 if not any(dk in name_lower for dk in ("ống gió", "tôn", "tole", "cửa gió", "miệng gió", "van gió", "vcd", "mfd", "fd", "nrd", "prd", "obd", "louver")):
                     is_plumbing_item = True
@@ -284,12 +311,15 @@ class SwindBOQParser:
                 # 2a. Van nước / Cửa sổ / Thiết bị bắt đầu bằng Quạt, Máy lạnh, Dàn lạnh, Dàn nóng -> THUONG_MAI
                 if name_lower.startswith("cửa sổ") and ("cấp bù gió" in name_lower or "khi có cháy" in name_lower):
                     category = "VAN_GIO"
+                elif is_standalone_coarse_filter(name_lower):
+                    # Lọc thô G4 đứng riêng (có kích thước) -> Swind sản xuất: báo giá theo công thức FILTER_G4 (Agent 06)
+                    category = "CUA_GIO"
                 elif name_lower.startswith(("quạt ", "máy lạnh", "dàn lạnh", "dàn nóng", "hướng dòng", "thiết bị xử lý", "cửa sổ", "tủ điện", "tủ điều khiển", "đầu cảm biến", "đầu báo", "cảm biến", "dây tín hiệu", "cáp điều khiển", "dây điện", "khối lượng sắt thép", "giá đỡ ống", "quang treo", "hồ sơ kiểm định", "chi phí ", "chi phi ", "vật tư phụ", "lượng tác nhân lạnh", "phụ kiện ống nước ngưng", "lò xo giảm chấn", "cao su giảm chấn", "chụp hút bếp", "điều hòa cục bộ", "+ điều hòa cục bộ")):
                     category = "THUONG_MAI"
                 else:
                     for comm in self.commercial_catalog:
                         if comm.get("product_code") in ("VALVE_WATER", "PIPE_COPPER"):
-                            if comm.get("product_code") == "VALVE_WATER" and any(k in name_lower for k in ("lửa", "khói", "cháy", "mfd", "mfsd", "fd", "vcd", "nrd", "md")):
+                            if comm.get("product_code") == "VALVE_WATER" and (is_hvac_prd or any(k in name_lower for k in ("lửa", "khói", "cháy", "mfd", "mfsd", "fd", "vcd", "nrd", "prd", "md", "xả áp"))):
                                 continue
                             if comm.get("product_code") == "PIPE_COPPER" and any(k in name_lower for k in ("louver", "louvre", "cửa gió", "miệng gió")):
                                 continue
@@ -309,7 +339,7 @@ class SwindBOQParser:
                 if category == "KHAC" and name_lower.startswith(("cửa gió", "miệng gió", "cửa cấp", "cửa hồi", "cửa hút", "cửa thải", "cửa lấy", "cửa xả", "cửa tươi", "cửa sọt", "cửa nan", "cửa khuếch tán", "cửa bầu dục", "cửa louver", "cửa chớp", "louver ")):
                     category = "CUA_GIO"
                 if category == "KHAC" and any(k in sec_lower for k in ("cửa gió", "miệng gió", "cửa chớp", "chớp nhôm", "lưới chắn chim", "louver", "luover", "louvre", "grille", "griller", "diffuser", "insect screen", "i.s", "lcct", "lưới chắn côn trùng", "fag", "sag", "rag", "eag", "seag", "kag", "mag", "fal", "eal", "oal")):
-                    if not name_lower.startswith(("van ", "damper", "volume control", "fire damper", "motorized damper", "non-return", "ống ", "cút ", "côn ", "tê ", "chân rẽ", "hộp ")) and not any(k in name_lower for k in ("volume control damper", "fire damper", "motorized damper", "non-return damper")):
+                    if not name_lower.startswith(("van ", "damper", "volume control", "fire damper", "motorized damper", "non-return", "ống ", "cút ", "côn ", "tê ", "chân rẽ", "hộp ", "chụp hút", "chụp thông")) and not any(k in sec_lower for k in ("chụp hút", "chụp thông")) and not any(k in name_lower for k in ("volume control damper", "fire damper", "motorized damper", "non-return damper")):
                         category = "CUA_GIO"
 
                 # 2c. Kiểm tra Hàng Sản Xuất có độ đặc thù cao (Canvas, Chụp thông hơi, Tiêu âm, Cửa, Van, Ống mềm)
@@ -517,6 +547,21 @@ class SwindBOQParser:
                             w = d_val
                             h = d_val
 
+            # Ghi đè kích thước theo yêu cầu User (--override "Sheet!Dòng:w=..,h=..") trước khi xét thiếu kích thước
+            row_ov = self.row_overrides.get((sheet_name, r)) if self.row_overrides else None
+            if row_ov:
+                for k_ov in ("w", "h", "d"):
+                    if k_ov in row_ov:
+                        try:
+                            v_ov = float(row_ov[k_ov])
+                        except (TypeError, ValueError):
+                            continue
+                        if k_ov == "w":
+                            w = v_ov
+                        elif k_ov == "h":
+                            h = v_ov
+                        else:
+                            d_val = v_ov
             is_missing_dims = False
             orig_category = category
             if category in ("VAN_GIO", "CUA_GIO", "CANVAS") and w == 0 and h == 0 and d_val == 0:
@@ -567,7 +612,7 @@ class SwindBOQParser:
 
             # Rule 6 & 7: Kiểm tra dòng sản phẩm kết hợp Van + Cửa (Combo)
             search_combo_txt = re.sub(r'\(\s*(?:for|cho)\s+[^)]*\)', '', f"{raw_name_str} {name_str} {model_str}".lower().replace("\n", " "))
-            diff_rx = combo_cfg.get("combo_diffuser_regex", r'\bmiệng\s*gió\b|\bcửa\s*gió\b|\bcửa\s*nan\b|\blouver\s*|\bluover\b|\blouvre\b|\bgrille\b|\bgriller\b|\bdiffuser\b|cửa\s*(?:nan|thẳng|gió|hút|cấp|hồi|thải|lấy|xả|tăng\s*áp|tạo\s*áp|\+)')
+            diff_rx = combo_cfg.get("combo_diffuser_regex", r'\bmiệng\s*gió\b|\bcửa\s*gió\b|\bcửa\s*nan\b|\blouver\s*|\bluover\b|\blouvre\b|\bgrille\b|\bgriller\b|\bdiffuser\b|cửa\s*(?:chớp|nan|thẳng|gió|hút|cấp|hồi|thải|lấy|xả|tăng\s*áp|tạo\s*áp|\+)')
             damp_rx = combo_cfg.get("combo_damper_regex", r'\b(mfd|mfsd|md|fd|prd|nrd|vcd)\b|van\s+(?:on/off|on-off|chống\s*cháy|chặn\s*lửa|ngăn\s*cháy|động\s*cơ|một\s*chiều|1\s*chiều|xả\s*áp)')
             is_access_door_item = any(k in search_combo_txt for k in ("access door", "cửa công tác", "cửa thăm", "cửa kiểm tra"))
             has_diffuser = bool(re.search(diff_rx, search_combo_txt)) and not is_access_door_item
@@ -586,12 +631,13 @@ class SwindBOQParser:
                 if re.search(r'\bmfd\b|ngăn\s*cháy.*động\s*cơ|chống\s*cháy.*động\s*cơ|chặn\s*lửa.*động\s*cơ', t): return "MFD"
                 if re.search(r'\bvcd\b|\bvd\b|điều\s*chỉnh.*lưu\s*lượng', t): return "VCD"
                 if re.search(r'\bnrd\b|1\s*chiều|một\s*chiều', t): return "NRD"
-                if re.search(r'\bprd\b|xả\s*áp', t): return "PRD"
+                if re.search(r'\bprd\b|xả\s*áp|giảm\s*áp', t): return "PRD"
                 if re.search(r'\bmd\b|động\s*cơ|on/off|on-off', t): return "MD"
                 if re.search(r'\bfd\b|chặn\s*lửa|chống\s*cháy|dập\s*lửa|cầu\s*chì', t): return "FD"
                 return None
 
-            scan_source = f"{raw_name_str} + {model_str}" if model_str else raw_name_str
+            scan_base = raw_name_str if re.search(r'[a-zA-ZÀ-ỹ]{2,}', re.sub(r'\b(?:mm|kt|w|h|l|d|dn|phi)\b', '', raw_name_str, flags=re.IGNORECASE)) else name_str
+            scan_source = f"{scan_base} + {model_str}" if model_str else scan_base
             tokens = [tk.strip() for tk in re.split(r'\s*(?:\+|(?:\bkèm\b|\bgắn\b|\btích\s*hợp\b|\bkết\s*hợp\b|\bc/w\.?\b|\bwith\b)(?!\s*(?:động\s*cơ|mô\s*tơ|môtơ|mo\s*tơ|motor|cầu\s*chì)))\s*', scan_source, flags=re.IGNORECASE) if tk.strip()]
             detected_dampers = []
             for tk in tokens:
@@ -706,8 +752,19 @@ class SwindBOQParser:
                     ref_p = ws.cell(r, col_map["price"]).value if "price" in col_map else None
                     if (not isinstance(ref_p, (int, float)) or ref_p <= 0) and not (not name_lower.startswith("quạt ") and any(k in name_lower for k in ("chống cháy ei", "lưới bảo vệ"))):
                         self.skipped_rows[sheet_name].add(r)
+                        raw_spec_cell = ws.cell(r, col_map["spec"]).value if "spec" in col_map else None
+                        raw_spec_disp = raw_spec_cell if raw_spec_cell not in (None, "") else (spec_str or None)
+                        self.skip_reasons.setdefault(sheet_name, {})[r] = {
+                            "reason": "MISSING_DIMS" if is_missing_dims else (f"NO_DIMS_{category}" if category in ("ONG_GIO", "TIEU_AM", "CANVAS") else f"OUT_OF_SCOPE_{category}"),
+                            "category": category,
+                            "orig_category": orig_category,
+                            "name": raw_name_str,
+                            "spec": raw_spec_disp,
+                            "qty": _safe_qty(qty_val),
+                            "unit": unit_val,
+                        }
                         if is_missing_dims and float(qty_val or 0) > 0:
-                            self.missing_dim_rows[sheet_name].append(f"Dòng {r}: Tên='{raw_name_str}' | Spec='{spec_str or None}' | KL={float(qty_val)}")
+                            self.missing_dim_rows[sheet_name].append(f"Dòng {r}: Tên='{raw_name_str}' | Spec='{raw_spec_disp}' | KL={float(qty_val)}")
                         continue
 
                 # Không phải Combo: Xử lý KTC cho Cửa gió (độ dày & chiều dài Van gió lấy trực tiếp từ Agent05_DamperBOM)
@@ -820,13 +877,14 @@ class SwindBOQParser:
                     for cc in range(c_stt_side or c_scan, c_qty_side + 2):
                         used_side_cols.add(cc)
                 
-        if not _is_side_table and _override_col_map is None and _override_header_row is None and max_items is None:
+        if not _is_side_table and _override_col_map is None and _override_header_row is None and max_items is None and not self.row_overrides:
             if not hasattr(self.wb, "_swind_parsed_cache"):
                 self.wb._swind_parsed_cache = {}
             self.wb._swind_parsed_cache[(sheet_name, self.include_flex_duct)] = (
                 [dict(it) for it in items],
                 set(self.skipped_rows.get(sheet_name, set())),
-                list(self.missing_dim_rows.get(sheet_name, []))
+                list(self.missing_dim_rows.get(sheet_name, [])),
+                dict(self.skip_reasons.get(sheet_name, {}))
             )
         return items
 
@@ -864,29 +922,20 @@ class SwindBOQParser:
                 cand_sheets = visible_sheets if visible_sheets else list(self.wb.sheetnames)
                 # Nếu không auto-detect được sheet nào, lấy sheet đầu tiên không phải summary
                 for s in cand_sheets:
-                    if not any(k in s.lower() for k in ("summary", "cover", "bìa")):
+                    if not any(k in s.lower() for k in ("summary", "cover", "bìa", "phạm vi", "pham vi", "scope")):
                         sheet_names = [s]
                         break
                 if not sheet_names:
                     sheet_names = [cand_sheets[0]]
 
         all_items = []
-        if len(sheet_names) > 1:
-            from concurrent.futures import ThreadPoolExecutor
-            def _parse_one(s):
-                try:
-                    return self.parse_sheet(s, max_items=max_items_per_sheet)
-                except Exception as e:
-                    print(f"[SwindBOQParser] Cảnh báo khi bóc tách sheet '{s}': {e}")
-                    return []
-            with ThreadPoolExecutor(max_workers=min(len(sheet_names), 3)) as ex:
-                for sheet_items in ex.map(_parse_one, sheet_names):
-                    all_items.extend(sheet_items)
-        else:
-            for s in sheet_names:
-                try:
-                    sheet_items = self.parse_sheet(s, max_items=max_items_per_sheet)
-                    all_items.extend(sheet_items)
-                except Exception as e:
-                    print(f"[SwindBOQParser] Cảnh báo khi bóc tách sheet '{s}': {e}")
+        # Parse tuần tự: các sheet dùng chung 1 workbook openpyxl (ws.cell() có thể tạo ô mới -> race
+        # "dictionary changed size during iteration" làm mất trắng cả sheet khi chạy đa luồng).
+        for s in sheet_names:
+            try:
+                sheet_items = self.parse_sheet(s, max_items=max_items_per_sheet)
+                all_items.extend(sheet_items)
+            except Exception as e:
+                self.parse_errors[s] = f"{type(e).__name__}: {e}"
+                print(f"[SwindBOQParser] ⛔ LỖI bóc tách sheet '{s}' (sheet bị bỏ qua — báo giá CHƯA HOÀN CHỈNH): {e}")
         return all_items

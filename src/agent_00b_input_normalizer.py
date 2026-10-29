@@ -89,7 +89,6 @@ class FormatDetector:
 
     def analyze_all_sheets(self, sheet_names: Optional[List[str]] = None) -> Dict[str, Any]:
         """Phân tích tất cả sheets hiển thị (hoặc sheets mục tiêu/HVAC) trong workbook."""
-        from concurrent.futures import ThreadPoolExecutor
         visible_sheets = [s for s in self.wb.sheetnames if getattr(self.wb[s], "sheet_state", "visible") == "visible"]
         cand_sheets = visible_sheets if visible_sheets else list(self.wb.sheetnames)
         if sheet_names:
@@ -107,20 +106,15 @@ class FormatDetector:
             hvac_matched = [s for s in cand_sheets if any(kw in s.lower().strip() for kw in hvac_kws)]
             if hvac_matched:
                 cand_sheets = hvac_matched
-        info_kws = ("bìa", "bia", "cover", "mục lục", "muc luc", "index", "toc", "thuyết minh", "thuyet minh", "điều khoản", "dieu khoan", "clarification", "làm rõ", "vtdv", "summary", "recap")
+        info_kws = ("bìa", "bia", "cover", "mục lục", "muc luc", "index", "toc", "thuyết minh", "thuyet minh", "điều khoản", "dieu khoan", "clarification", "làm rõ", "vtdv", "summary", "recap", "phạm vi", "pham vi", "scope")
         if len(cand_sheets) > 1:
             filtered = [s for s in cand_sheets if not any(k in s.lower().strip() for k in info_kws)]
             if filtered:
                 cand_sheets = filtered
         valid_sheets = [s for s in cand_sheets if self.wb[s].max_row is not None and self.wb[s].max_row >= 3]
-        if len(valid_sheets) > 1:
-            with ThreadPoolExecutor(max_workers=min(len(valid_sheets), 3)) as ex:
-                mapped = list(ex.map(lambda sn: (sn, self._analyze_sheet(self.wb[sn], sn)), valid_sheets))
-            for sn, res in mapped:
-                self.results[sn] = res
-        else:
-            for sheet_name in valid_sheets:
-                self.results[sheet_name] = self._analyze_sheet(self.wb[sheet_name], sheet_name)
+        # Phân tích tuần tự (workbook openpyxl dùng chung không an toàn đa luồng)
+        for sheet_name in valid_sheets:
+            self.results[sheet_name] = self._analyze_sheet(self.wb[sheet_name], sheet_name)
         return self.results
 
     def _analyze_sheet(self, ws, sheet_name: str) -> Dict[str, Any]:
@@ -312,11 +306,11 @@ class FormatDetector:
     def _check_order_sheet(self, ws) -> bool:
         """Kiểm tra xem có phải phiếu đặt hàng nhiều đợt (có cột Lần N)."""
         for r in range(1, min(20, ws.max_row + 1)):
-            for c in range(1, min(25, ws.max_column + 1)):
+            for c in range(3, min(25, ws.max_column + 1)):
                 v = ws.cell(r, c).value
                 if v and isinstance(v, str):
                     txt = v.lower().strip()
-                    if re.search(r'lần\s*\d+', txt):
+                    if not any(qk in txt for qk in ("báo giá", "chào giá", "dự toán")) and re.search(r'\blần\s*\d+\b', txt):
                         return True
         # Check sheet name
         sheet_name = ws.title.lower() if ws.title else ""
@@ -910,10 +904,20 @@ class StructureNormalizer:
         }
 
     def _copy_sheet(self, ws_src, ws_new) -> Dict:
-        """Copy nguyên sheet."""
+        """Copy nguyên sheet (bảo toàn cột/dòng ẩn và merged cells)."""
+        max_c = min(ws_src.max_column + 1, 60)
+        for col_l, dim in ws_src.column_dimensions.items():
+            if dim.hidden:
+                ws_new.column_dimensions[col_l].hidden = True
+        for r_idx, dim in ws_src.row_dimensions.items():
+            if dim.hidden:
+                ws_new.row_dimensions[r_idx].hidden = True
         for r in range(1, ws_src.max_row + 1):
-            for c in range(1, min(ws_src.max_column + 1, 25)):
+            for c in range(1, max_c):
                 ws_new.cell(r, c, value=ws_src.cell(r, c).value)
+        for m_range in ws_src.merged_cells.ranges:
+            if m_range.max_col < max_c:
+                ws_new.merge_cells(str(m_range))
         return {"action": "copy"}
 
     def _find_header_row_heuristic(self, ws) -> int:

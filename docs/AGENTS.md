@@ -1,7 +1,7 @@
 # HỆ THỐNG MULTI-AGENT DỰ TOÁN BÓC TÁCH SWIND (HVAC ESTIMATION MAS - AGENT 00..09)
 
 > Tài liệu này đóng vai trò là bản đồ chỉ dẫn và quy chế kích hoạt cho Hệ thống Multi-Agent của Swind đã được chuẩn hóa đánh số tuần tự từ **`Agent 00` đến `Agent 09`**, và **tách biệt rõ ràng thành 2 quy trình độc lập**:
-> 1. **Quy trình A — Quản trị Master Data (Offline / One-Time & On-Demand):** Giải mã file `BẢNG TÍNH GIÁ SWIND chuẩn 2026.xls` **chỉ làm 1 lần duy nhất** để tạo bộ file `Master Data` tĩnh (`Agent 00`), và chỉ cập nhật khi có yêu cầu đổi/thêm giá mặt hàng (`Agent 09` / `tool_price_updater.py`).
+> 1. **Quy trình A — Quản trị Master Data (Offline / One-Time & On-Demand):** Giải mã file `BẢNG TÍNH GIÁ SWIND chuẩn 2026.xls` **chỉ làm 1 lần duy nhất** để tạo bộ file `Master Data` tĩnh (`Agent 00`), và chỉ cập nhật khi có yêu cầu đổi/thêm giá mặt hàng (`Agent 09` / `tool_semantic_price_updater.py`).
 > 2. **Quy trình B — Lập Báo Giá Dự Án từ BOQ Khách Hàng (`Agent 01` $\to$ `Agent 08`):** Dưới sự điều phối của **Master Orchestrator** ([`src/swind_master_runner.py`](file:///Users/hoangan/work/PCCC/swind/src/swind_master_runner.py)), hệ thống **chỉ nhận file BOQ của khách hàng**, phân tích kỹ thuật, bóc tách BOM và **áp giá trực tiếp dựa theo bộ file `Master Data` đã có sẵn**.
 
 ---
@@ -13,7 +13,7 @@
 | Agent ID | Tên gọi chuẩn | Module Thực thi | Chế độ Kích hoạt | Vai trò & Nhiệm vụ Đơn lẻ (Single Responsibility) | File Đặc tả Vai trò |
 | :---: | :--- | :--- | :---: | :--- | :--- |
 | **Agent 00** | **Data Miner (One-Time)** | [`src/agent_00_data_miner.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_00_data_miner.py) | **Chạy 1 lần duy nhất** | Giải mã 17 sheets của file `BẢNG TÍNH GIÁ SWIND chuẩn 2026.xls` (phá merge 5 lớp) $\to$ Kết xuất bộ file `Master Data` tĩnh (`master_database_tech.json`, `master_database_price.json`, `master_bom_rules.json`, `subtype_rules.json`, `accessory_rules.json`, `financial_policy.json`). | [agent_00_data_miner_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/agent_00_data_miner_role.md) |
-| **Agent 09** | **Price Learner (On-Demand)** | [`src/agent_09_price_learner.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_09_price_learner.py) / [`src/tool_price_updater.py`](file:///Users/hoangan/work/PCCC/swind/src/tool_price_updater.py) | **Chỉ chạy khi có yêu cầu update giá** | Cập nhật đơn giá mặt hàng mới hoặc điều chỉnh giá vật tư theo yêu cầu khách hàng/người dùng vào kho `data/master_data/prices/` theo cơ chế Append-only Audit. | [agent_09_price_learner_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/agent_09_price_learner_role.md) |
+| **Agent 09** | **Price Learner (On-Demand)** | [`src/agent_09_price_learner.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_09_price_learner.py) / [`src/tool_semantic_price_updater.py`](file:///Users/hoangan/work/PCCC/swind/src/tool_semantic_price_updater.py) | **Chỉ chạy khi có yêu cầu update giá** | Cập nhật đơn giá mặt hàng mới hoặc điều chỉnh giá vật tư theo yêu cầu khách hàng/người dùng vào kho `data/master_data/prices/` theo cơ chế Append-only Audit. | [agent_09_price_learner_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/agent_09_price_learner_role.md) |
 
 ---
 
@@ -40,7 +40,7 @@
 1. **Tách Biệt Tuyệt Đối Quy trình Tạo Master Data và Quy trình Báo Giá BOQ:**
    - Giải mã file `BẢNG TÍNH GIÁ SWIND chuẩn 2026.xls` (`Agent 00`) **chỉ thực hiện 1 lần duy nhất** để tạo bộ `Master Data` chuẩn trong `data/master_data/`.
    - Khi lập báo giá dự án mới (`Agent 01` $\to$ `Agent 08`), hệ thống **chỉ nhận file BOQ của khách hàng**, phân tích và tra cứu định mức/đơn giá trực tiếp từ bộ file `Master Data` đã có sẵn (không bao giờ đọc lại file `.xls` chuẩn, không hardcode giá vật tư trong code).
-   - Khi khách hàng/người dùng có yêu cầu cập nhật giá một mặt hàng nào đó, chỉ cần kích hoạt `Agent 09` (`agent_09_price_learner.py`) hoặc `tool_price_updater.py` để tạo bản ghi giá mới trong `data/master_data/prices/`.
+   - Khi khách hàng/người dùng có yêu cầu cập nhật giá một mặt hàng nào đó, chỉ cần kích hoạt `Agent 09` (`agent_09_price_learner.py`) hoặc `tool_semantic_price_updater.py` để tạo bản ghi giá mới trong `data/master_data/prices/`.
 2. **Giải mã Kỹ thuật Tập trung 1 Lần (Single Source of Truth tại Agent 01):**
    - `Agent 01` giải mã tập trung toàn bộ hồ sơ kỹ thuật (`resolved_spec`) cho mỗi dòng BOQ của khách hàng.
    - Các `Agent 04, 05, 06` (Xưởng BOM) và `Agent 07` (Excel Publisher) sử dụng trực tiếp `resolved_spec`, tuyệt đối không giải mã lặp lại.

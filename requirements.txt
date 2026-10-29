@@ -1,0 +1,16 @@
+# Swind HVAC Estimation — Python 3.12
+# Cài đặt: /opt/homebrew/bin/python3.12 -m venv venv && ./venv/bin/pip install -r requirements.txt
+
+# Lõi pipeline báo giá
+openpyxl==3.1.5
+# Agent 00 — giải mã Bảng tính giá chuẩn .xls
+xlrd==2.0.2
+# Đọc BOQ dạng PDF (src/swind_pdf_reader.py)
+pypdfium2==5.14.0
+
+# Kiểm thử & kiểm tra code
+pytest==9.2.0
+pyflakes==4.1.0
+# tests/test_ui_automation.py (giao diện frontend)
+playwright==1.64.1
+pytest-playwright==0.10.0

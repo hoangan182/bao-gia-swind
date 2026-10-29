@@ -150,12 +150,86 @@ def update_price(keyword, new_price, auto_confirm=False):
     print(f"  -> Sinh file Audit mới tại: {new_price_file}")
     return True
 
+PRICING_CONSTANTS_DB = resolve_path("data/master_data/pricing_constants.json")
+
+
+def _flatten(node, prefix=""):
+    for k, v in node.items():
+        if k.startswith("_"):
+            continue
+        key = f"{prefix}.{k}" if prefix else k
+        if isinstance(v, dict):
+            yield from _flatten(v, key)
+        else:
+            yield key, v
+
+
+def list_pricing_constants(prefix=""):
+    with open(PRICING_CONSTANTS_DB, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    for key, val in _flatten(data):
+        if key.startswith(prefix):
+            print(f"  {key:<60} {val:>14,.4g}" if isinstance(val, float) and val < 100 else f"  {key:<60} {val:>14,.0f}")
+
+
+def update_pricing_constant(key, new_value, auto_confirm=False):
+    """
+    Cập nhật 1 hằng số công thức xưởng trong pricing_constants.json (VD: 'van.ton_m2.bac_lon').
+    Lưu bản sao file cũ vào data/master_data/prices/pricing_constants_<timestamp>.json (Audit trail).
+    """
+    new_value = float(new_value)
+    with open(PRICING_CONSTANTS_DB, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    node = data
+    parts = key.split(".")
+    for part in parts[:-1]:
+        if not isinstance(node, dict) or part not in node:
+            node = None
+            break
+        node = node[part]
+    if not isinstance(node, dict) or parts[-1] not in node or isinstance(node[parts[-1]], dict):
+        print(f"[TỪ CHỐI] Không tìm thấy hằng số '{key}'. Dùng --list-constants <tiền_tố> để tra cứu khóa đúng.")
+        return False
+    old_value = node[parts[-1]]
+    print(f"  • Hằng số : {key}\n  • Hiện tại: {old_value:,.4g}\n  • Mới     : {new_value:,.4g}")
+    if not auto_confirm:
+        try:
+            choice = input(">> Xác nhận cập nhật? [Y/N]: ").strip().upper()
+        except (EOFError, KeyboardInterrupt):
+            choice = "N"
+        if choice != "Y":
+            print("[HỦY BỎ]")
+            return False
+    os.makedirs(PRICES_DIR, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup = os.path.join(PRICES_DIR, f"pricing_constants_{timestamp}.json")
+    with open(backup, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    node[parts[-1]] = new_value
+    data["_cap_nhat"] = datetime.now().strftime("%Y-%m-%d")
+    with open(PRICING_CONSTANTS_DB, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    print(f"[THÀNH CÔNG] {key}: {old_value:,.4g} -> {new_value:,.4g} | Bản cũ lưu tại {backup}")
+    print("  -> Chạy lại: ./venv/bin/python src/swind_item_inspector.py --self-test  (cập nhật baseline nếu thay đổi đã được duyệt)")
+    return True
+
+
 if __name__ == "__main__":
+    auto_yes = "--yes" in sys.argv or "-y" in sys.argv
+    if "--list-constants" in sys.argv:
+        idx = sys.argv.index("--list-constants")
+        list_pricing_constants(sys.argv[idx + 1] if len(sys.argv) > idx + 1 and not sys.argv[idx + 1].startswith("-") else "")
+        sys.exit(0)
+    if "--constant" in sys.argv:
+        idx = sys.argv.index("--constant")
+        ok = update_pricing_constant(sys.argv[idx + 1], sys.argv[idx + 2], auto_confirm=auto_yes)
+        sys.exit(0 if ok else 1)
     if len(sys.argv) < 3:
         print("Usage: python tool_semantic_price_updater.py <keyword> <new_price> [--yes]")
+        print("       python tool_semantic_price_updater.py --constant <khóa> <giá_trị> [--yes]   (hằng số công thức xưởng)")
+        print("       python tool_semantic_price_updater.py --list-constants [tiền_tố]          (VD: van.ton_m2)")
         sys.exit(1)
         
     keyword = sys.argv[1]
     new_price = sys.argv[2]
-    auto_yes = "--yes" in sys.argv or "-y" in sys.argv
     update_price(keyword, new_price, auto_confirm=auto_yes)

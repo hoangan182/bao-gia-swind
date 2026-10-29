@@ -2,7 +2,7 @@ import math
 import os
 import re
 import unicodedata
-from swind_utils import get_master_bom_rules, get_master_price_map, extract_duct_fitting_geometry
+from swind_utils import get_master_bom_rules, get_master_price_map, extract_duct_fitting_geometry, K, get_pricing_constants
 
 
 def excel_round(val, digits=0):
@@ -296,17 +296,17 @@ class Agent04_DuctworkBOM:
             "nối quạt", "noi quat", "cổ quạt", "co quat", "quạt", "fan", "hút khói", "tăng áp"
         )) and not ("loại thường" in t_low or ("fcu" in t_low and "chống cháy" not in t_low))
         if is_fire:
-            mat_rate = 134400.0 if "150" in t_low else 124800.0
+            mat_rate = K("ong.canvas.vai_chong_chay_150_md", 134400.0) if "150" in t_low else K("ong.canvas.vai_chong_chay_md", 124800.0)
         else:
-            mat_rate = 67200.0 if "150" in t_low else 57600.0
-        labor_pc = 30000.0
+            mat_rate = K("ong.canvas.vai_thuong_150_md", 67200.0) if "150" in t_low else K("ong.canvas.vai_thuong_md", 57600.0)
+        labor_pc = K("ong.canvas.nhan_cong_cai", 30000.0)
         if subtype == "CANVAS_RT" or (d1 > 0 and (w1 == 0 or w1 == d1)):
             d_val = d1 if d1 > 0 else w1
             perim_m = (d_val * 3.14) / 1000.0
-            flange_rate = 50000.0
+            flange_rate = K("ong.canvas.bich_tron_md", 50000.0)
         else:
             perim_m = (w1 + h1) * 2.0 / 1000.0
-            flange_rate = 30000.0
+            flange_rate = K("ong.canvas.bich_vuong_md", 30000.0)
 
         if any(k in t_low for k in ("không bích", "ko bích", "2 đầu thẳng", "hai đầu thẳng")):
             flange_ends = 0
@@ -370,11 +370,11 @@ class Agent04_DuctworkBOM:
             s_outer = (D_outer * 3.14 * L_val) / 1e6
             s_inner = (D_inner * 3.14 * L_val) / 1e6
             cost_shell = s_outer * pk_rate
-            cost_core = s_inner * (55000.0 + 65000.0 + 15000.0)
+            cost_core = s_inner * K("ong.tieu_am_tron.loi_m2", 55000.0 + 65000.0 + 15000.0)
             cost_labor = (cost_shell + cost_core) * 0.45
             unit_price = excel_round(cost_shell + cost_core + cost_labor, -3)
             if ei_rating > 0:
-                ei_surcharge = {30: 345000.0, 45: 420000.0, 60: 520000.0, 90: 680000.0, 120: 850000.0}.get(ei_rating, 345000.0)
+                ei_surcharge = _ei_surcharge_table().get(ei_rating, 345000.0)
                 unit_price = excel_round(unit_price + s_outer * ei_surcharge, -2)
             if unit in ("m2", "m²") and s_outer > 0:
                 unit_price = excel_round(unit_price / s_outer, -2)
@@ -436,9 +436,9 @@ class Agent04_DuctworkBOM:
                 s_outer = ((W_outer + H_outer) * 2.0 * L_s) / 1e6
                 l_out_s = int(L_s)
 
-            silencer_rate = 950000.0 * 1.3 if is_silencer_fitting else 950000.0
+            silencer_rate = K("ong.tieu_am.don_gia_m2", 950000.0) * (K("ong.tieu_am.he_so_phu_kien", 1.3) if is_silencer_fitting else 1.0)
             if ei_rating > 0:
-                ei_surcharge = {30: 345000.0, 45: 420000.0, 60: 520000.0, 90: 680000.0, 120: 850000.0}.get(ei_rating, 345000.0)
+                ei_surcharge = _ei_surcharge_table().get(ei_rating, 345000.0)
                 silencer_rate += ei_surcharge
             if unit in ("m2", "m²"):
                 unit_price = excel_round(silencer_rate, -2)
@@ -466,7 +466,7 @@ class Agent04_DuctworkBOM:
         else:
             base_rate = cls.THS_RATES.get(thk, 193294.0) if is_round_m2 else cls.VHS_RATES.get(thk, 157500.0)
         if ei_rating > 0:
-            ei_surcharge = {30: 345000.0, 45: 420000.0, 60: 520000.0, 90: 680000.0, 120: 850000.0}.get(ei_rating, 345000.0)
+            ei_surcharge = _ei_surcharge_table().get(ei_rating, 345000.0)
             base_rate += ei_surcharge
         return {
             "subtype": subtype,
@@ -600,7 +600,7 @@ class Agent04_DuctworkBOM:
         }
         model_out = rt_model_map.get(subtype, subtype)
         if any(k in full_text.lower() for k in ("côn trùng", "lcct", "lưới chắn", "insect screen", "i.s")) or bool(re.search(r'\b(?:i\.s\.?|c/w\s*is)\b', full_text.lower())):
-            mesh_surcharge = excel_round((D_main / 1000.0) * (D_main / 1000.0) * 150000.0, 0)
+            mesh_surcharge = excel_round((D_main / 1000.0) * (D_main / 1000.0) * K("cua.luoi_m2", 150000.0), 0)
             unit_price += mesh_surcharge
             model_out = f"{model_out} + LCCT"
             spec_label = f"{spec_label} kèm lưới chắn côn trùng"
@@ -632,10 +632,10 @@ class Agent04_DuctworkBOM:
             s_area = 1.0
         else:
             price_nep_c = excel_round((vhs * short_factor) * s_area, -2)
-            price_tdc = price_nep_c + 16000.0
+            price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_md", 16000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
         if ei_rating > 0:
-            ei_surcharge = {30: 345000.0, 45: 420000.0, 60: 520000.0, 90: 680000.0, 120: 850000.0}.get(ei_rating, 345000.0)
+            ei_surcharge = _ei_surcharge_table().get(ei_rating, 345000.0)
             unit_price = excel_round(s_area * ei_surcharge + unit_price, -2)
         spec_label = f"Ống gió vuông {int(w1)}x{int(h1)}xL{int(L_val)}"
         s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if (s_raw < 0.3 and unit not in ("m", "md", "mét", "m2", "m²")) else f"{s_area:.3f}m2"
@@ -660,10 +660,10 @@ class Agent04_DuctworkBOM:
             trace_prefix = "BG PKV"
         s_area = 0.3 if s_raw < 0.3 else s_raw
         price_nep_c = excel_round(s_area * pkvhs, -2)
-        price_tdc = price_nep_c + 16000.0
+        price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_md", 16000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
         if ei_rating > 0:
-            ei_surcharge = {30: 345000.0, 45: 420000.0, 60: 520000.0, 90: 680000.0, 120: 850000.0}.get(ei_rating, 345000.0)
+            ei_surcharge = _ei_surcharge_table().get(ei_rating, 345000.0)
             unit_price = excel_round(s_area * ei_surcharge + unit_price, -2)
         spec_label = f"Côn vuông {int(w1)}x{int(h1)}/{int(W2_val)}x{int(H2_val)} L={int(L_val)}"
         s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
@@ -689,10 +689,10 @@ class Agent04_DuctworkBOM:
             trace_prefix = "BG PKV"
         s_area = 0.3 if s_raw < 0.3 else s_raw
         price_nep_c = excel_round(s_area * pkvhs, -2)
-        price_tdc = price_nep_c + 16000.0
+        price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_md", 16000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
         if ei_rating > 0:
-            ei_surcharge = {30: 345000.0, 45: 420000.0, 60: 520000.0, 90: 680000.0, 120: 850000.0}.get(ei_rating, 345000.0)
+            ei_surcharge = _ei_surcharge_table().get(ei_rating, 345000.0)
             unit_price = excel_round(s_area * ei_surcharge + unit_price, -2)
         spec_label = f"Chân rẽ vuông (SU) {int(w1)}x{int(h1)}/{int(W2_val)}x{int(H2_val)} L={int(L_val)}"
         s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
@@ -758,10 +758,10 @@ class Agent04_DuctworkBOM:
             trace_prefix = "BG PKV"
         s_area = 0.3 if s_raw < 0.3 else s_raw
         price_nep_c = excel_round(s_area * pkvhs, -2)
-        price_tdc = price_nep_c + 16000.0
+        price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_md", 16000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
         if ei_rating > 0:
-            ei_surcharge = {30: 345000.0, 45: 420000.0, 60: 520000.0, 90: 680000.0, 120: 850000.0}.get(ei_rating, 345000.0)
+            ei_surcharge = _ei_surcharge_table().get(ei_rating, 345000.0)
             unit_price = excel_round(s_area * ei_surcharge + unit_price, -2)
         spec_label = f"Cút vuông {angle}° {int(w1)}x{int(h1)} (R={int(R_val)})"
         s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
@@ -788,7 +788,7 @@ class Agent04_DuctworkBOM:
             trace_prefix = "BG PKV"
         s_area = 0.3 if s_raw < 0.3 else s_raw
         price_nep_c = excel_round(s_area * pkvhs, -2)
-        price_tdc = price_nep_c + 16000.0
+        price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_md", 16000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
         spec_label = f"Zét lượn {int(w1)}x{int(h1)} L={int(L_val)} E={int(H_off)}"
         s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
@@ -806,7 +806,7 @@ class Agent04_DuctworkBOM:
         s_raw = s_1 + s_2 + s_3
         s_area = 0.3 if s_raw < 0.3 else s_raw
         price_nep_c = excel_round(s_area * pkvhs, -2)
-        price_tdc = price_nep_c + 24000.0
+        price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_lon_md", 24000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
         spec_label = f"Chạc 3 (Y vuông) {int(w1)}x{int(h1)}/{int(W2_val)}x{int(h1)}"
         s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
@@ -825,7 +825,7 @@ class Agent04_DuctworkBOM:
         s_raw = s_1 + s_2
         s_area = 0.3 if s_raw < 0.3 else s_raw
         price_nep_c = excel_round(s_area * pkvhs, -2)
-        price_tdc = price_nep_c + 24000.0
+        price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_lon_md", 24000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
         spec_label = f"Tê vuông {int(w1)}x{int(h1)}/{int(W2_val)}x{int(H2_val)}"
         s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
@@ -870,7 +870,7 @@ class Agent04_DuctworkBOM:
         box_rate = cls.PKVHS_RATES.get(thk, 189000.0)
         unit_price = excel_round(box_rate * s_area, -2)
         if is_insulated:
-            unit_price = excel_round(unit_price + s_area * 130000.0, -2)
+            unit_price = excel_round(unit_price + s_area * K("ong.hop_gio.bao_on_m2", 130000.0), -2)
         spec_label = f"Hộp gió {int(w1)}x{int(h1)}xL{int(L_val)}" + (f" ({n_necks} cổ D{int(D_neck)})" if n_necks > 0 else "")
         s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
         trace_str = f"BG PKV (Hộp gió, tôn {thk}mm): S={s_note}, pkvhs={box_rate:,.0f}"
@@ -944,7 +944,7 @@ class Agent04_DuctworkBOM:
         }
         model_out = sq_model_map.get(subtype, subtype)
         if any(k in full_text.lower() for k in ("côn trùng", "lcct", "lưới chắn", "insect screen", "i.s")) or bool(re.search(r'\b(?:i\.s\.?|c/w\s*is)\b', full_text.lower())):
-            mesh_surcharge = excel_round((w1 / 1000.0) * (h1 / 1000.0) * 150000.0, 0)
+            mesh_surcharge = excel_round((w1 / 1000.0) * (h1 / 1000.0) * K("cua.luoi_m2", 150000.0), 0)
             unit_price += mesh_surcharge
             model_out = f"{model_out} + LCCT"
             spec_label = f"{spec_label} kèm lưới chắn côn trùng"
@@ -1156,5 +1156,27 @@ class Agent04_DuctworkBOM:
             }
         ]
 
+
+
+def _ei_surcharge_table():
+    """Phụ thu bọc chống cháy EI theo phút (đ/m2) — nguồn sống: pricing_constants.json -> ong.phu_thu_ei."""
+    base = {30: 345000.0, 45: 420000.0, 60: 520000.0, 90: 680000.0, 120: 850000.0}
+    return {k: K(f"ong.phu_thu_ei.{k}", v) for k, v in base.items()}
+
+
+def _apply_rate_table_overrides():
+    """Ghi đè các bảng đơn giá (theo độ dày tôn / đường kính) bằng giá trị trong pricing_constants.json -> ong.bang_gia."""
+    tables = (get_pricing_constants().get("ong") or {}).get("bang_gia") or {}
+    for attr, tbl in tables.items():
+        target = getattr(Agent04_DuctworkBOM, attr, None)
+        if not isinstance(target, dict) or not isinstance(tbl, dict):
+            continue
+        key_type = type(next(iter(target))) if target else float
+        for k, v in tbl.items():
+            if isinstance(v, (int, float)):
+                target[key_type(float(k)) if key_type is int else key_type(k)] = float(v)
+
+
+_apply_rate_table_overrides()
 
 Agent04_DuctBOM = Agent04_DuctworkBOM

@@ -10,7 +10,7 @@
 - **Nguyên tắc cốt lõi — Tách biệt 2 Quy trình Độc lập:**
   1. **Quy trình A — Quản trị Master Data (Offline / One-Time & On-Demand):**
      - **Giải mã Bảng tính chuẩn 1 lần duy nhất (`Agent 00` - [`src/agent_00_data_miner.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_00_data_miner.py)):** Chỉ chạy **1 lần duy nhất** để giải mã file `BẢNG TÍNH GIÁ SWIND chuẩn 2026.xls` ra bộ file `Master Data` tĩnh (`data/master_data/master_database_tech.json`, `master_database_price.json`, `master_bom_rules.json`, `subtype_rules.json`, `accessory_rules.json`, `financial_policy.json`).
-     - **Cập nhật giá theo yêu cầu (`Agent 09` - [`src/agent_09_price_learner.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_09_price_learner.py) & [`src/tool_price_updater.py`](file:///Users/hoangan/work/PCCC/swind/src/tool_price_updater.py)):** Chỉ kích hoạt khi người dùng/khách hàng có yêu cầu cập nhật đơn giá một mặt hàng cụ thể vào kho `data/master_data/prices/`.
+     - **Cập nhật giá theo yêu cầu (`Agent 09` - [`src/agent_09_price_learner.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_09_price_learner.py) & [`src/tool_semantic_price_updater.py`](file:///Users/hoangan/work/PCCC/swind/src/tool_semantic_price_updater.py)):** Chỉ kích hoạt khi người dùng/khách hàng có yêu cầu cập nhật đơn giá một mặt hàng cụ thể vào kho `data/master_data/prices/`.
   2. **Quy trình B — Lập Báo Giá Dự Án từ BOQ Khách Hàng (`Agent 01` $\to$ `Agent 08` - [`src/swind_master_runner.py`](file:///Users/hoangan/work/PCCC/swind/src/swind_master_runner.py)):**
      - **Chỉ nhận file BOQ của khách hàng**, phân tích thông số kỹ thuật, tính định mức cơ khí và **áp giá trực tiếp dựa theo bộ file `Master Data` đã có sẵn** (tuyệt đối không giải mã lại file Bảng tính chuẩn `.xls`).
 

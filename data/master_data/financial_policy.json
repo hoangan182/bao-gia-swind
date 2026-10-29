@@ -1,16 +1,48 @@
 {
-    "MANUFACTURING": {
-        "labor_rate": 0.25,
-        "overhead_rate": 0.10,
-        "margin": 0.18,
-        "categories": ["ONG_GIO", "CUA_GIO", "VAN_GIO", "CANVAS", "TIEU_AM"],
-        "description": "Hàng sản xuất cơ khí tại xưởng: 25% nhân công, 10% xưởng, 18% margin"
-    },
-    "COMMERCIAL": {
-        "labor_rate": 0.0,
-        "overhead_rate": 0.02,
-        "margin": 0.10,
-        "categories": ["THUONG_MAI", "ONG_MEM", "KHAC"],
-        "description": "Hàng thương mại mua đi bán lại: 0% nhân công sản xuất, 2% lưu kho bốc xếp, 10% margin"
-    }
+  "MANUFACTURING": {
+    "labor_rate": 0.25,
+    "overhead_rate": 0.1,
+    "margin": 0.18,
+    "categories": [
+      "ONG_GIO",
+      "CUA_GIO",
+      "VAN_GIO",
+      "CANVAS",
+      "TIEU_AM"
+    ],
+    "description": "Hàng sản xuất cơ khí tại xưởng: 25% nhân công, 10% xưởng, 18% margin"
+  },
+  "COMMERCIAL": {
+    "labor_rate": 0.0,
+    "overhead_rate": 0.02,
+    "margin": 0.1,
+    "categories": [
+      "THUONG_MAI",
+      "ONG_MEM",
+      "KHAC"
+    ],
+    "description": "Hàng thương mại mua đi bán lại: 0% nhân công sản xuất, 2% lưu kho bốc xếp, 10% margin"
+  },
+  "QUOTATION": {
+    "description": "Thông tin in trên Sheet BG gửi khách: thuế VAT, tiêu đề công ty, ghi chú & điều khoản, thông tin thụ hưởng",
+    "vat_rate": 0.08,
+    "company_name": "CÔNG TY CỔ PHẦN TẬP ĐOÀN QUỐC TẾ SLAND",
+    "company_office": "VPGD: SỐ 49, Ngõ 1295 Giải Phóng, Phường Hoàng Mai, TP Hà Nội",
+    "company_factory": "Nhà máy: Thôn Nhân Hiền - xã Thường Tín - TP Hà Nội",
+    "company_hotline": "Hotline: 082 5577 999",
+    "validity_note": "* Thời hạn báo giá: Báo giá có giá trị trong vòng 30 ngày kể từ ngày báo.",
+    "delivery_note": "* Thời gian giao hàng: theo thực tế từng đơn hàng",
+    "material_notes": [
+      " - Van gió & Phụ kiện : Tôn Hoa Sen Z08/Z18",
+      " - Cửa gió và Phụ kiện : Nhôm A6063 T5 - Sơn Tĩnh điện mầu trắng ."
+    ],
+    "payment_terms": "* Điều kiện thanh toán: Tạm ứng 30%, Thanh toán bằng bảo lãnh thanh toán thời hạn 35 ngày ",
+    "contact_note": "Xin vui lòng liên hệ với chúng tôi nếu quý khách có cần thêm các yêu cầu nào khác.",
+    "beneficiary_lines": [
+      "Công ty Cổ phần tập đoàn quốc tế Sland",
+      "Trụ sở: Thôn 1B, xã Nam Phù, TP Hà Nội",
+      "- Số tài khoản : 1359 666 888 ",
+      "- Mở tại :  Ngân hàng TMCP Á Châu ( ACB ) chi nhánh Hà Nội"
+    ]
+  }
 }

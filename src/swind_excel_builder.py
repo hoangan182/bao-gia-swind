@@ -1,7 +1,7 @@
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
-from swind_utils import detect_boq_header
+from swind_utils import detect_boq_header, get_quotation_profile, vat_label
 
 class SwindExcelBuilder:
     """
@@ -249,10 +249,11 @@ class SwindExcelBuilder:
         )
         bottom_line_border = Border(bottom=thin_side)
 
-        ws.cell(2, 3, "CÔNG TY CỔ PHẦN TẬP ĐOÀN QUỐC TẾ SLAND").font = navy_font
-        ws.cell(3, 3, "VPGD: SỐ 49, Ngõ 1295 Giải Phóng, Phường Hoàng Mai, TP Hà Nội").font = normal_font
-        ws.cell(4, 3, "Nhà máy: Thôn Nhân Hiền - xã Thường Tín - TP Hà Nội").font = normal_font
-        ws.cell(5, 3, "Hotline: 082 5577 999").font = bold_font
+        qp = get_quotation_profile()
+        ws.cell(2, 3, qp.get("company_name", "")).font = navy_font
+        ws.cell(3, 3, qp.get("company_office", "")).font = normal_font
+        ws.cell(4, 3, qp.get("company_factory", "")).font = normal_font
+        ws.cell(5, 3, qp.get("company_hotline", "")).font = bold_font
         ws.merge_cells("B3:B4")
         for r_idx in range(2, 6):
             ws.merge_cells(start_row=r_idx, start_column=3, end_row=r_idx, end_column=16)
@@ -341,7 +342,7 @@ class SwindExcelBuilder:
         for col_l, width in col_widths.items():
             ws.column_dimensions[col_l].width = width
 
-    def build_quotation_sheets(self, all_items, subtype_rules=None, price_records=None, dual_options=False):
+    def build_quotation_sheets(self, all_items, subtype_rules=None, price_records=None, dual_options=False, flag_rows=None):
         """
         Agent 07: Xuất bản Sheet Báo Giá chuẩn định dạng gửi Khách hàng của Swind (16 cột A..P):
         - dual_options=False (Mặc định): Xuất 1 sheet báo giá chuẩn duy nhất 'BẢNG BÁO GIÁ TIÊU CHUẨN' theo đúng quy cách BOQ.
@@ -366,6 +367,8 @@ class SwindExcelBuilder:
         subtype_rules = subtype_rules or {}
 
         section_fill = PatternFill("solid", fgColor="D9E1F2")
+        flag_fill = PatternFill("solid", fgColor="FFFF00")
+        self.flagged_bg_rows = []
         section_font = Font(name="Times New Roman", size=10, bold=True, color="002060")
         row_font = Font(name="Times New Roman", size=10, bold=False)
         thin_side = Side(style='thin', color='000000')
@@ -622,13 +625,20 @@ class SwindExcelBuilder:
                         _write_row_cells(curr_row, [orig_stt, orig_name_str] + [None] * 14, is_section=True)
                         curr_row += 1
                     else:
+                        flag_msg = (flag_rows or {}).get(r)
                         row_unquoted = [
                             orig_stt, orig_name_str, None, None,
                             None, None, None, None,
                             None, None, None, orig_u_val, orig_q_val,
-                            None, None, None
+                            None, None, flag_msg
                         ]
                         _write_row_cells(curr_row, row_unquoted, is_section=False)
+                        if flag_msg:
+                            # Đánh dấu dòng thuộc phạm vi Swind nhưng CHƯA có giá để người duyệt không bỏ sót
+                            for ws_f, _m in worksheets:
+                                for c_i in range(1, 17):
+                                    ws_f.cell(curr_row, c_i).fill = flag_fill
+                            self.flagged_bg_rows.append((curr_row, r, orig_name_str, orig_q_val, flag_msg))
                         curr_row += 1
             if side_table_items:
                 side_sec_curr = None
@@ -744,11 +754,11 @@ class SwindExcelBuilder:
             ws.cell(r_sub, 15, f"=SUBTOTAL(9,O14:O{last_item_row})").font = total_font
             ws.cell(r_sub, 15).number_format = "#,##0"
 
-            ws.cell(r_vat, 1, "VAT 8%").font = total_font
-            ws.cell(r_vat, 15, f"=ROUND(O{r_sub}*0.08, 0)").font = total_font
+            ws.cell(r_vat, 1, f"VAT {vat_label()}").font = total_font
+            ws.cell(r_vat, 15, f"=ROUND(O{r_sub}*{get_quotation_profile()['vat_rate']:g}, 0)").font = total_font
             ws.cell(r_vat, 15).number_format = "#,##0"
 
-            ws.cell(r_tot, 1, "Total Amount (including VAT 8%)/ Tổng sau thuế").font = total_font
+            ws.cell(r_tot, 1, f"Total Amount (including VAT {vat_label()})/ Tổng sau thuế").font = total_font
             ws.cell(r_tot, 15, f"=O{r_sub}+O{r_vat}").font = total_font
             ws.cell(r_tot, 15).number_format = "#,##0"
 
@@ -764,22 +774,23 @@ class SwindExcelBuilder:
 
             # Khối điều khoản & thông tin thụ hưởng bên dưới bảng tổng
             r_f = r_tot + 2
+            qp = get_quotation_profile()
+            mat_notes = (list(qp.get("material_notes", [])) + ["", ""])[:2]
+            benef = (list(qp.get("beneficiary_lines", [])) + ["", "", "", ""])[:4]
             ws.cell(r_f, 2, "- Ghi chú : ").font = note_hdr_font
-            ws.cell(r_f + 1, 2, "* Thời hạn báo giá: Báo giá có giá trị trong vòng 30 ngày kể từ ngày báo.").font = note_txt_font
+            ws.cell(r_f + 1, 2, qp.get("validity_note", "")).font = note_txt_font
             ws.cell(r_f + 1, 14, "XÁC NHẬN ĐẶT HÀNG").font = confirm_font
             ws.merge_cells(f"N{r_f+1}:O{r_f+1}")
             ws.cell(r_f + 1, 14).alignment = Alignment(horizontal="center", vertical="center")
-            ws.cell(r_f + 2, 2, "* Thời gian giao hàng: theo thực tế từng đơn hàng").font = note_txt_font
-            ws.cell(r_f + 3, 2, " - Van gió & Phụ kiện : Tôn Hoa Sen Z08/Z18").font = note_txt_font
-            ws.cell(r_f + 4, 2, " - Cửa gió và Phụ kiện : Nhôm A6063 T5 - Sơn Tĩnh điện mầu trắng .").font = note_txt_font
+            ws.cell(r_f + 2, 2, qp.get("delivery_note", "")).font = note_txt_font
+            ws.cell(r_f + 3, 2, mat_notes[0]).font = note_txt_font
+            ws.cell(r_f + 4, 2, mat_notes[1]).font = note_txt_font
             ws.cell(r_f + 5, 2, "ĐIỀU KHOẢN THANH TOÁN VÀ GIAO HÀNG").font = note_ul_font
-            ws.cell(r_f + 6, 2, "* Điều kiện thanh toán: Tạm ứng 30%, Thanh toán bằng bảo lãnh thanh toán thời hạn 35 ngày ").font = note_txt_font
-            ws.cell(r_f + 7, 2, "Xin vui lòng liên hệ với chúng tôi nếu quý khách có cần thêm các yêu cầu nào khác.").font = note_it_font
+            ws.cell(r_f + 6, 2, qp.get("payment_terms", "")).font = note_txt_font
+            ws.cell(r_f + 7, 2, qp.get("contact_note", "")).font = note_it_font
             ws.cell(r_f + 8, 2, " Đơn vị thụ hưởng : ").font = note_hdr_font
-            ws.cell(r_f + 9, 2, "Công ty Cổ phần tập đoàn quốc tế Sland").font = note_txt_font
-            ws.cell(r_f + 10, 2, "Trụ sở: Thôn 1B, xã Nam Phù, TP Hà Nội").font = note_txt_font
-            ws.cell(r_f + 11, 2, "- Số tài khoản : 1359 666 888 ").font = note_txt_font
-            ws.cell(r_f + 12, 2, "- Mở tại :  Ngân hàng TMCP Á Châu ( ACB ) chi nhánh Hà Nội").font = note_txt_font
+            for b_i, b_line in enumerate(benef):
+                ws.cell(r_f + 9 + b_i, 2, b_line).font = note_txt_font
 
     def save(self):
         from openpyxl.worksheet.datavalidation import DataValidation

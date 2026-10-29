@@ -15,7 +15,13 @@
      1. Hệ thống và Agent bắt buộc quét toàn bộ các cột của BOQ (cột Tên tiếng Việt, cột `DESCRIPTION` tiếng Anh, cột `SPEC`/Quy cách, Ghi chú) và toàn bộ các dòng **Title / Hạng mục cha** để kế thừa 100% thông số kỹ thuật (`OBD`, `lưới chắn chim / LCCT`, `lọc G4`, `EI`, `độ dày`...) xuống các dòng item con bên dưới.
      2. Kiểm tra mục `[Agent 01 - Full-BOQ Coverage Audit]` trên console sau khi chạy: nếu phát hiện bất kỳ dòng nào có khối lượng/kích thước thuộc phạm vi báo giá bị cảnh báo `⚠️ [CẢNH BÁO SÓT DÒNG]` hoặc chưa kế thừa đúng Title cha (do cách trình bày mới của từng dự án), phải kiểm tra và cập nhật rule bóc tách ngay để không bỏ sót bất kỳ mặt hàng nào.
      3. **QUY TẮC BẮT BUỘC HỎI LẠI USER KHI CÓ GHI CHÚ / SPEC XUNG ĐỘT (`⚠️ [PHÁT HIỆN GHI CHÚ / SPEC KHÁC BIỆT CỘT TÊN — BẮT BUỘC HỎI LẠI USER]`):** Đặc điểm mỗi dự án một khác — khi console xuất hiện cảnh báo có dòng Ghi chú/Spec khác biệt với Cột Tên (khác kiểu nan cửa gió, khác loại van, ghi chú bọc EI trên van cơ, hoặc ghi hãng động cơ khác như Kepler/KLB/Honeywell...), **AI bắt buộc phải liệt kê các dòng đó và hỏi lại User** để xác nhận áp theo `Cột Tên` (`--spec-priority name`) hay theo `Cột Ghi chú/Spec` (`--spec-priority note`) / hãng động cơ nào.
-     4. **QUY TẮC ỐNG GIÓ MỀM (`ONG_MEM`):** Hệ thống **mặc định KHÔNG báo giá Ống gió mềm** (bỏ qua không báo giá, trừ khi dòng đó đã có sẵn đơn giá của đối tác cần giữ nguyên hoặc khi User yêu cầu rõ bằng cờ `--include-flex-duct`).
+     4. **QUY TẮC ỐNG GIÓ (`ONG_GIO`):** Hệ thống **mặc định KHÔNG báo giá Ống gió & phụ kiện ống** (cút, côn, chân rẽ, tê, hộp...). Console in `ℹ️ Đã bỏ N dòng Ống gió...`; BOQ chỉ có ống gió sẽ dừng với `⛔` — chỉ báo khi User yêu cầu rõ bằng cờ `--include-duct`.
+     5. **QUY TẮC LỌC G4 ĐỨNG RIÊNG:** Dòng `Lọc bụi G4 / Lọc thô / Phin lọc ... <W>x<H>` (không phải lọc tinh F5–F9, HEPA, than hoạt tính, tĩnh điện, lọc túi) được báo giá như hàng Swind sản xuất (`FILTER_G4`, ghi chú `Lọc thô G4 kèm khung nhôm`, đơn giá theo `pricing_constants.json -> cua.loc_g4_m2`).
+     6. **QUY TẮC ỐNG GIÓ MỀM (`ONG_MEM`):** Hệ thống **mặc định KHÔNG báo giá Ống gió mềm** (bỏ qua không báo giá, trừ khi dòng đó đã có sẵn đơn giá của đối tác cần giữ nguyên hoặc khi User yêu cầu rõ bằng cờ `--include-flex-duct`).
+   - **QUY TẮC CỔNG KIỂM SOÁT CUỐI (`[KIỂM SOÁT CUỐI]` — in sau Bảng Tổng Hợp):**
+     1. `⛔ BÁO GIÁ CHƯA HOÀN CHỈNH` (mã thoát `2`): có dòng Cửa/Van có KL nhưng **CHƯA CÓ ĐƠN GIÁ** (thiếu kích thước / mã ký hiệu kiểu `S2`, `R3` cần bảng tra — các dòng này được **tô vàng** trên Sheet `BG`), sheet bóc tách lỗi, hoặc QA_REJECTED. **AI bắt buộc liệt kê và hỏi lại User** (xin kích thước / bảng tra mã) rồi chạy lại với `--override`; tuyệt đối không báo tổng tiền như bản hoàn chỉnh.
+     2. `⚠️` (cần xác nhận): dòng thuộc phạm vi Swind bị lọc (lọc G4 rời, ống gió m², tiêu âm...), kích thước giả định, giá không tăng theo kích thước, mặt hàng chưa phân loại, cấu kiện giá 0 → nêu rõ cho User khi trả kết quả.
+     3. Chi tiết dòng bị lọc & lý do: `data/projects/<Project>/internal_estimation/INPUT_COVERAGE_REPORT.json`.
    - **QUY TẮC XUẤT BÁO CÁO CHO NGƯỜI DÙNG:**
      1. **Chỉ liệt kê duy nhất File Báo Giá Cuối Cùng** (`output/<Project_Name>/<Original_File_Name>.xlsx` giữ nguyên tên file gốc, gồm Sheet BOQ gốc + Sheet `BG` đã đóng khung), tuyệt đối không liệt kê hàng loạt các file báo giá thành phần hay file dự toán nội bộ trung gian.
      2. **Về giá trị: Chỉ in Bảng Tổng Hợp** (theo các sheet/phân khu và Tổng cộng toàn dự án), **bỏ Bảng kết quả báo giá chi tiết** từng mặt hàng.
@@ -30,11 +36,25 @@
 - `--mfd-model <1.01|1.02|1.03|1.04|1.05>`: Chỉ định mã đốt van MFD theo yêu cầu (`1.01`: Belimo BFN24 EI120, `1.02`: Belimo FSLF24V EI90 [Mặc định], `1.03`: KLB 5Nm EI90, `1.04`: Honeywell MS4609 EI60, `1.05`: Belimo BFN24 EI120).
 - `--dual-options`: Tính đồng thời 2 phương án Đơn cánh và Đa cánh (Mặc định: Báo giá chuẩn theo BOQ).
 - `--merge-sheets`: Gộp tất cả các sheet vào 1 file duy nhất (Mặc định: Tách riêng từng sheet).
-- `--allow-ei`: Cờ tương thích cho phép áp giá chống cháy EI (Mặc định Swind tự động nhận diện EI theo BOQ).
+- `--strict`: Không xuất file báo giá nếu còn lỗi chặn (dòng có KL chưa có giá, sheet bóc tách lỗi, QA_REJECTED). Mặc định: vẫn xuất file nhưng in `⛔ BẢN NHÁP — CHƯA HOÀN CHỈNH` và trả mã thoát `2`.
+- `--override "<Dòng>:k=v,...;..."`: Ghi đè nhanh theo dòng BOQ (`w,h,d,l,thickness,qty,ref_price,skip`). BOQ nhiều sheet bắt buộc ghi tên sheet: `--override "Tên Sheet!7:w=600,h=600"`.
+- `--duct-formula <mpq|og_mb|both>`: Bộ công thức ống gió (`mpq` mặc định = BG PKV chuẩn; `og_mb` = diện tích m² theo ÔG MB; `both` = xuất cả 2, bản m² có hậu tố `_THEO_M2_OG_MB`).
+- `--include-duct`: Cho phép báo giá **Ống gió & phụ kiện ống (`ONG_GIO`)** (Mặc định: Hệ thống **KHÔNG** báo giá ống gió, chỉ báo khi User yêu cầu rõ). `--duct-formula og_mb|both` tự động bật cờ này.
 - `--include-flex-duct`: Cho phép báo giá **Ống gió mềm (`ONG_MEM`)** (Mặc định: Hệ thống **KHÔNG** báo giá ống mềm, chỉ báo khi có yêu cầu).
 - `--include-box`: Cho phép tính và báo giá thêm **Hộp gió (`PLENUM_BOX` theo công thức sheet `BG PKV`)** cho các cửa gió kèm hộp (Mặc định: Chỉ báo giá cửa gió và ghi chú `. Không tính box do nhà thầu tự thi công`, chỉ cộng thêm hộp khi User yêu cầu).
 - `--spec-priority <name|note>`: Chọn cột ưu tiên khi `Cột Tên` và `Cột Ghi chú/Spec` mâu thuẫn (`name` [Mặc định]: khóa chủng loại theo Cột Tên; `note`: ưu tiên theo Cột Ghi chú/Spec).
-- `--duct-formula <standard|bienia|cand>`: Chọn bộ công thức tính diện tích phụ kiện ống gió (`standard` mặc định Swind, `bienia`, hoặc `cand`).
+
+---
+
+## 🔒 QUY TẮC GIT (CHỈ ĐƯA LÊN FILE HỆ THỐNG)
+
+- **Được commit/push:** code (`src/`, `tests/`, `scripts/`), Master Data (`data/master_data/*.json`, `MASTER_DATA_*.xlsx`, `prices/`), Bảng tính giá chuẩn `.xls`, tài liệu & rule (`AGENTS.md`, `.agents/`, `docs/`, `plan/`).
+- **KHÔNG commit/push:** file đầu vào khách gửi (`input/`, `input picture/`, `Phan hoi cua khach/`, file BOQ để ở thư mục gốc) và file đầu ra gửi khách / dữ liệu dự án (`output/`, `data/projects/`, `data/master_data/Copy of *.xlsx`, `*_ESTIMATION.xlsx`). Các đường dẫn này đã nằm trong `.gitignore`.
+- **Kiểm tra trước khi push** (phải không in ra dòng nào):
+  ```bash
+  git -c core.quotePath=false diff --cached --name-only --diff-filter=ACMR | grep -E '^(input|output|data/projects|input picture|Phan hoi cua khach)/|^[^/]+\.(xlsx|xlsm|numbers|pdf)$|\.(xlsx|xlsm)$' | grep -vE '^data/master_data/MASTER_DATA_[A-Z]+\.xlsx$'
+  ```
+- AI **không tự commit/push** — User tự đẩy git.
 
 ---
 
@@ -62,11 +82,24 @@ Khi người dùng hỏi *"Sao mặt hàng X ra diện tích/giá như vậy?"* 
    ```
 3. **TÁCH SUBAGENT SONG SONG (`invoke_subagent`) KHI VỪA SO SÁNH DỮ LIỆU LỚN VỪA THÊM YÊU CẦU MỚI:**
    - Khi người dùng yêu cầu đồng thời kiểm tra/so sánh nhiều bảng giá hoặc nhiều mặt hàng với dữ liệu hệ thống VÀ bổ sung yêu cầu mới chưa có trong hệ thống, hãy tách Subagent (`research` cho luồng chạy `--search` / `--compare` đối chiếu dữ liệu; Agent chính dùng `--locate` nhảy thẳng tới đúng hàm code/JSON để thêm yêu cầu mới) nhằm tránh đọc dò tuần tự.
-4. **CHẠY KIỂM THỬ HỒI QUY 53 MẶT HÀNG CHUẨN TRƯỚC & SAU KHI SỬA CÔNG THỨC:**
+4. **CHẠY KIỂM THỬ HỒI QUY TRƯỚC & SAU KHI SỬA CÔNG THỨC / BÓC TÁCH:**
    ```bash
+   # 53 mặt hàng chuẩn (0.2s)
    ./venv/bin/python src/swind_item_inspector.py --self-test
+   # End-to-End toàn bộ BOQ trong input/ (tổng tiền & số dòng từng sheet so với baseline, ~2-3 phút)
+   ./venv/bin/python src/swind_e2e_regression.py [--filter "<tên_file>"]
+   # Unit test các cơ chế kiểm soát (cổng chặn, QA giá trị, học từ khóa, hằng số giá)
+   ./venv/bin/python -m unittest discover -s tests -p "test_swind_*.py"
+   # Cập nhật tọa độ dòng trong .agents/rules/03_FORMULA_INDEX.md sau khi sửa code
+   ./venv/bin/python src/swind_item_inspector.py --refresh-index
    ```
-   *(Nếu chủ đích thay đổi công thức đã được duyệt, cập nhật lại baseline bằng `./venv/bin/python src/swind_item_inspector.py --save-baseline`).*
+   *(Nếu chủ đích thay đổi đã được duyệt, cập nhật baseline: `swind_item_inspector.py --save-baseline` và `swind_e2e_regression.py --save-baseline`).*
+5. **HẰNG SỐ GIÁ CÔNG THỨC XƯỞNG (tôn/m², phụ kiện theo bậc kích thước van, tấm chống cháy, sơn, lưới, lọc G4, bảng giá ống theo độ dày...)** nằm tại `data/master_data/pricing_constants.json` (KHÔNG sửa số trong code):
+   ```bash
+   ./venv/bin/python src/tool_semantic_price_updater.py --list-constants van.vuong_phu_kien
+   ./venv/bin/python src/tool_semantic_price_updater.py --constant van.ton_m2.bac_lon 330000   # lưu bản cũ vào data/master_data/prices/
+   ```
+6. **TỪ KHÓA TỰ HỌC (Agent 02):** Gợi ý tự động (`--auto-accept`, độ tin cậy ≥ 60%) chỉ áp cho lần chạy hiện tại và vào hàng chờ; duyệt vào từ điển sống bằng `./venv/bin/python src/agent_02_boq_reviewer.py --approve-pending [--list | --all]`.
 
 ---
 
@@ -77,7 +110,7 @@ Khi người dùng hỏi *"Sao mặt hàng X ra diện tích/giá như vậy?"* 
 | Agent ID | Tên gọi chuẩn | Module Thực thi | Chế độ Kích hoạt | Vai trò & Nhiệm vụ Đơn lẻ (Single Responsibility) | File Đặc tả Vai trò |
 | :---: | :--- | :--- | :---: | :--- | :--- |
 | **Agent 00** | **Data Miner (One-Time)** | [`src/agent_00_data_miner.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_00_data_miner.py) | **Chạy 1 lần duy nhất** | Giải mã 17 sheets của file `BẢNG TÍNH GIÁ SWIND chuẩn 2026.xls` (phá merge 5 lớp) $\to$ Kết xuất bộ file `Master Data` tĩnh (`master_database_tech.json`, `master_database_price.json`, `master_bom_rules.json`, `subtype_rules.json`, `accessory_rules.json`, `financial_policy.json`). | [agent_00_data_miner_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/agent_00_data_miner_role.md) |
-| **Agent 09** | **Price Learner (On-Demand)** | [`src/agent_09_price_learner.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_09_price_learner.py) / [`src/tool_price_updater.py`](file:///Users/hoangan/work/PCCC/swind/src/tool_price_updater.py) | **Chỉ chạy khi có yêu cầu update giá** | Cập nhật đơn giá mặt hàng mới hoặc điều chỉnh giá vật tư theo yêu cầu khách hàng/người dùng vào kho `data/master_data/prices/` theo cơ chế Append-only Audit. | [agent_09_price_learner_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/agent_09_price_learner_role.md) |
+| **Agent 09** | **Price Learner (On-Demand)** | [`src/agent_09_price_learner.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_09_price_learner.py) / [`src/tool_semantic_price_updater.py`](file:///Users/hoangan/work/PCCC/swind/src/tool_semantic_price_updater.py) | **Chỉ chạy khi có yêu cầu update giá** | Cập nhật đơn giá mặt hàng mới hoặc điều chỉnh giá vật tư theo yêu cầu khách hàng/người dùng vào kho `data/master_data/prices/` theo cơ chế Append-only Audit. | [agent_09_price_learner_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/agent_09_price_learner_role.md) |
 
 ---
 
@@ -90,9 +123,9 @@ Khi người dùng hỏi *"Sao mặt hàng X ra diện tích/giá như vậy?"* 
 | **Orchestrator** | **Master Orchestrator** | [`src/swind_master_runner.py`](file:///Users/hoangan/work/PCCC/swind/src/swind_master_runner.py) | Điều phối tuần tự luồng báo giá dự án từ `Agent 01` đến `Agent 08` dựa trên bộ `Master Data` có sẵn, xuất file `_BAO_GIA.xlsx` và in trực tiếp bảng kết quả báo giá ra màn hình console. | [orchestrator_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/orchestrator_role.md) |
 | **Agent 01** | **BOQ Extractor & Spec Resolver** | [`src/agent_01_boq_extractor.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_01_boq_extractor.py) | Nhận file BOQ khách hàng, tự động dò Sheet HVAC, phá merge BOQ, ghép ngữ cảnh cha-con và **giải mã tập trung 1 lần duy nhất (`resolved_spec`)** toàn bộ thông số kỹ thuật (`Model`, `A1, A2, B1, B2`, `Modul`, `L`, `Độ dày`, `OBD/LCCT/Filter`). | [agent_01_boq_extractor_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/agent_01_boq_extractor_role.md) |
 | **Agent 02** | **BOQ Reviewer (HITL)** | [`src/agent_02_boq_reviewer.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_02_boq_reviewer.py) | Rà soát mặt hàng lạ (`KHAC`), gợi ý phân nhóm ngữ nghĩa và lưu từ khóa theo cơ chế **Two-Tier Learning** (`boq_keyword_learning.json` & `pending_approval_queue.json`). | [agent_02_boq_reviewer_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/agent_02_boq_reviewer_role.md) |
-| **Agent 03** | **Input Auditor (4-Axis)** | [`src/agent_03_input_auditor.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_03_input_auditor.py) | Kiểm toán BOQ đầu vào 4 trục: Số lượng, Hình học + **cảnh báo gõ nhầm kích thước lẻ** (như `110x350`), Bẫy ĐVT (`m2` vs `Cái`), PCCC (`EI`) $\to$ Xuất `INPUT_AUDIT_REPORT.json`. | [agent_03_input_auditor_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/agent_03_input_auditor_role.md) |
+| **Agent 03** | **Input Auditor (4-Axis)** | [`src/agent_03_input_auditor.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_03_input_auditor.py) | Kiểm toán BOQ đầu vào 4 trục (rule-based): Số lượng, Hình học + **cảnh báo gõ nhầm kích thước lẻ** (cạnh 100–199mm lẻ như `110x350`), Bẫy ĐVT (`m2` vs `Cái` — lỗi chặn), PCCC (`EI`/cầu chì) $\to$ Xuất `INPUT_AUDIT_REPORT.json`. | [agent_03_input_auditor_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/agent_03_input_auditor_role.md) |
 | **Agent 04** | **Ductwork BOM Maker** | [`src/agent_04_bom_duct.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_04_bom_duct.py) | Bóc tách định mức **Xưởng Ống gió, Phụ kiện ống, Khớp nối mềm Canvas & Hộp/Vách tiêu âm** (`01_BOC_TACH_ONG`) dựa theo định mức trong `master_bom_rules.json`. | [agent_04_bom_duct_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/agent_04_bom_duct_role.md) |
 | **Agent 05** | **Damper & PCCC BOM Maker** | [`src/agent_05_bom_damper.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_05_bom_damper.py) | Bóc tách định mức **Xưởng Van gió & Van PCCC EI** (`VCD`, `NRD`, `MD`, `FD`, `MFD` đơn cánh `FSLF24V` & đa cánh `BFN 24`) (`03_BOC_TACH_VAN`) dựa theo định mức & đơn giá trong `Master Data` có sẵn. | [agent_05_bom_damper_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/agent_05_bom_damper_role.md) |
 | **Agent 06** | **Diffuser & Grille BOM Maker** | [`src/agent_06_bom_diffuser.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_06_bom_diffuser.py) | Bóc tách định mức **Xưởng Cửa gió & Miệng gió nhôm định hình** (`SWL`, `SEEG`, `SLB`, `SCD`, `SAG/DAG`, `SOBD`, `LCCT`, `Filter G4`) (`02_BOC_TACH_CUA`) dựa theo định mức & đơn giá trong `Master Data` có sẵn. | [agent_06_bom_diffuser_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/agent_06_bom_diffuser_role.md) |
 | **Agent 07** | **Excel Publisher (9 Sheets)** | [`src/agent_07_excel_builder.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_07_excel_builder.py) | Áp giá từ `Master Data` có sẵn và xuất bản Workbook Dự toán **9 Sheets** (liên kết công thức sống 100%). | [agent_07_excel_builder_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/agent_07_excel_builder_role.md) |
-| **Agent 08** | **Independent QA Checker** | [`src/agent_08_qa_checker.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_08_qa_checker.py) | Kiểm toán độc lập 3 tầng trên Workbook Excel (Mã vật tư, Thứ nguyên định mức, Công thức sống) $\to$ Cấp chứng chỉ `QA_PASSED`. | [agent_08_qa_checker_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/agent_08_qa_checker_role.md) |
+| **Agent 08** | **Independent QA Checker** | [`src/agent_08_qa_checker.py`](file:///Users/hoangan/work/PCCC/swind/src/agent_08_qa_checker.py) | Kiểm toán độc lập 4 tầng: Mã vật tư, Thứ nguyên định mức, Công thức sống + **Giá trị** (hàng sản xuất KL>0 mà giá = 0 → chặn; giá không tăng theo kích thước → cảnh báo) $\to$ `QA_PASSED` / `QA_REJECTED` (chặn ở Cổng kiểm soát cuối). | [agent_08_qa_checker_role.md](file:///Users/hoangan/work/PCCC/swind/.agents/roles/agent_08_qa_checker_role.md) |

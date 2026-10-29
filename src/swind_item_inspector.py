@@ -464,6 +464,7 @@ def _evaluate_parsed_item_in_ram(
         and any(k in raw_name_s.lower() for k in ("cửa gió", "miệng gió", "cửa cấp", "miệng cấp", "cửa hồi", "miệng hồi"))
     )
     p_ref = float(item.get("ref_price") or 0)
+    has_standalone_cv_ref = bool(item.get("_has_standalone_cv_ref"))
     price_source = "SWIND_CALC"
     effective_sell_unit = int(sell_unit)
     if p_ref > 0:
@@ -471,16 +472,17 @@ def _evaluate_parsed_item_in_ram(
             if include_box:
                 effective_sell_unit = int(sell_unit)
                 price_source = "SWIND_CALC_WITH_BOX"
-            else:
+            elif not has_standalone_cv_ref:
                 box_add = int(math.ceil(p_ref / 100.0) * 100)
                 effective_sell_unit = int(sell_unit) + box_add
                 price_source = "BOX_PARTNER_PLUS_SWIND"
-        else:
+        elif cat not in ("CUA_GIO", "VAN_GIO") and (not has_standalone_cv_ref or cat in ("THUONG_MAI", "KHAC")):
             effective_sell_unit = int(round(p_ref))
             price_source = "PARTNER_KEPT"
 
     return {
         "input_text": raw_name_s,
+        "section": item.get("section", ""),
         "note_boq": item.get("note_boq", ""),
         "source_row": item.get("source_row", 0),
         "qty": float(item.get("qty") or 0),
@@ -672,6 +674,7 @@ def locate_requirement_target(topic):
     File + Hàm + Tọa độ dòng `StartLine..EndLine` sống khi cần thêm yêu cầu mới hoặc sửa công thức.
     """
     import ast
+    import re
     t_norm = _strip_accents(topic)
     tokens = [t for t in t_norm.split() if t]
 
@@ -1031,8 +1034,15 @@ def audit_boq_fast(
             else:
                 bg_curr += 1  # Dòng section header / dòng trống / dòng chưa báo giá — đều chiếm 1 BG row
 
+        has_standalone_cv_ref = any(
+            float(it.get("ref_price") or 0) > 0
+            and it.get("category") in ("CUA_GIO", "VAN_GIO")
+            and not any(k in f"{it.get('raw_name', '')} {it.get('name', '')}".lower() for k in ("kèm hộp", "kèm box", "có hộp", "gắn hộp"))
+            for it in items
+        )
         eval_rows = []
         for idx_i, it in enumerate(items, 1):
+            it["_has_standalone_cv_ref"] = has_standalone_cv_ref
             if motor_brand:
                 it["motor_brand_override"] = motor_brand
             if mfd_model:
@@ -1119,15 +1129,20 @@ def audit_boq_fast(
             # 2c. Khác biệt từ khóa Loại Van / Bọc EI giữa Cột Tên và Cột Spec
             if r["category"] == "VAN_GIO" and nb_low:
                 dmp_notes = []
-                if any(k in nb_low for k in ("smd", "van ngăn cháy", "van chặn lửa")) and sub_s in ("NRD", "PRD", "VCD"):
-                    dmp_notes.append("Spec có từ 'van ngăn cháy/SMD'")
-                if any(k in nb_low for k in ("ei 60", "ei60", "ei 90", "ei90", "ei 120", "ei120", "bọc chống cháy")) and sub_s in ("NRD", "PRD", "VCD"):
+                if any(k in nb_low for k in ("mfd", "smd", "van ngăn cháy", "van chặn lửa")) and sub_s in ("NRD", "PRD", "MPRD", "VCD"):
+                    dmp_notes.append("Spec có từ 'van ngăn cháy/MFD/SMD'")
+                if any(k in nb_low for k in ("ei 60", "ei60", "ei 90", "ei90", "ei 120", "ei120", "bọc chống cháy")) and sub_s in ("NRD", "PRD", "MPRD", "VCD"):
                     dmp_notes.append("Spec ghi 'bọc chống cháy EI'")
+                if sub_s in ("MFD", "MFSD") and "van fd" in nb_low and not any(k in nb_low for k in ("mfd", "động cơ", "on/off", "on-off")):
+                    dmp_notes.append("Spec ghi 'Van FD'")
                 if dmp_notes:
+                    sec_s = str(r.get("section") or "").strip()
+                    raw_s = str(r.get("input_text") or "").strip()
+                    nm_disp = f"{sec_s} -> {raw_s}" if (sec_s and sec_s != "SẢN PHẨM" and sec_s.lower() not in raw_s.lower()) else raw_s
                     conflicts.append((
                         "ℹ️  KHÁC BIỆT CỘT TÊN vs SPEC (VAN GIÓ)",
                         r,
-                        f"{', '.join(dmp_notes)} vs Tên '{r['input_text']}' -> Đã chốt Model='{mod_s}' (ĐG={r['effective_sell_unit']:,.0f}đ)"
+                        f"{', '.join(dmp_notes)} vs Tên '{nm_disp}' -> Đã chốt Model='{mod_s}' (ĐG={r['effective_sell_unit']:,.0f}đ)"
                     ))
 
         print(f"\n2️⃣  KIỂM TOÁN XUNG ĐỘT MÃ HIỆU & QUY CÁCH (CỘT TÊN vs CỘT SPEC/MÔ TẢ): {len(conflicts)} điểm lưu ý")
@@ -1172,10 +1187,71 @@ def audit_boq_fast(
                     f"A=({r['a1']},{r['a2']}) B=({r['b1']},{r['b2']}) | SL={r['qty']:.0f} | "
                     f"ĐG={r['effective_sell_unit']:,.0f}đ (Swind={r['sell_unit_price']:,.0f}đ, Ref={r['ref_price']:,.0f}đ, Nguồn={r['price_source']})"
                 )
+                if r.get("section") and r.get("section") != "SẢN PHẨM":
+                    print(f"     - Title cha BOQ: {r['section']!r}")
                 if r["note_boq"]:
                     print(f"     - Cột Spec BOQ : {r['note_boq']!r}")
                 print(f"     - Diễn giải BG : {r['note_std']!r} | Code: {r['code_location']}")
         print("=" * 115)
+
+
+def refresh_formula_index(index_path=None):
+    """
+    Cập nhật lại cột 'Dòng (StartLine..EndLine)' trong .agents/rules/03_FORMULA_INDEX.md theo vị trí hàm thực tế (AST),
+    để bảng chỉ mục không bị lệch sau mỗi lần sửa code. Bỏ qua dòng tham chiếu vùng con (VD: 'parse_sheet (Phân loại...)').
+    """
+    import ast
+    import re
+    index_path = index_path or os.path.join(PROJECT_ROOT, ".agents", "rules", "03_FORMULA_INDEX.md")
+    with open(index_path, "r", encoding="utf-8") as f:
+        lines = f.read().split("\n")
+    ast_cache = {}
+
+    def _func_ranges(rel_file):
+        if rel_file not in ast_cache:
+            full = os.path.join(PROJECT_ROOT, rel_file)
+            ranges = {}
+            if os.path.exists(full):
+                with open(full, "r", encoding="utf-8") as f:
+                    tree = ast.parse(f.read())
+                for node in ast.walk(tree):
+                    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                        start = node.lineno
+                        ranges.setdefault(node.name, (start, node.end_lineno))
+            ast_cache[rel_file] = ranges
+        return ast_cache[rel_file]
+
+    section_file = None
+    n_upd = 0
+    for i, line in enumerate(lines):
+        m_sec = re.match(r'^##\s.*\(`(src/[\w./]+\.py)`\)', line)
+        if m_sec:
+            section_file = m_sec.group(1)
+            continue
+        if line.startswith("## "):
+            section_file = None
+        if not line.startswith("|") or ":---" in line:
+            continue
+        cols = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cols) < 4:
+            continue
+        m_file = re.fullmatch(r'`(src/[\w./]+\.py)`', cols[0])
+        rel_file, func_col, line_col_idx = (m_file.group(1), cols[1], 2) if m_file else (section_file, cols[1], 2)
+        if not rel_file or not re.search(r'`\d+\.\.\d+`', cols[line_col_idx]) or re.search(r'`\s*\(', func_col) or "(" in func_col.replace("`", "").split("`")[0]:
+            continue
+        names = re.findall(r'`([A-Za-z_]\w*)`', func_col)
+        rng = [r for r in (_func_ranges(rel_file).get(n) for n in names) if r]
+        if not rng or len(rng) != len(names):
+            continue
+        new_rng = f"`{min(r[0] for r in rng)}..{max(r[1] for r in rng)}`"
+        if cols[line_col_idx] != new_rng:
+            cols[line_col_idx] = new_rng
+            lines[i] = "| " + " | ".join(cols) + " |"
+            n_upd += 1
+    with open(index_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
+    print(f"[Formula Index] Đã cập nhật {n_upd} dòng tọa độ trong {os.path.relpath(index_path, PROJECT_ROOT)}")
+    return n_upd
 
 
 def main():
@@ -1197,7 +1273,12 @@ def main():
     ap.add_argument("--save-baseline", action="store_true", help="Cập nhật file baseline chuẩn")
     ap.add_argument("--audit-boq", default=None, help="Kiểm toán siêu tốc (0.25s) sai mã hiệu, xung đột Spec & bất thường giá trong file BOQ/Báo giá")
     ap.add_argument("--include-box", action="store_true", help="Tính thêm hộp gió (Plenum Box theo công thức sheet PKV) cho các cửa gió kèm hộp")
+    ap.add_argument("--refresh-index", action="store_true", help="Cập nhật lại tọa độ dòng trong .agents/rules/03_FORMULA_INDEX.md theo AST sống")
     args = ap.parse_args()
+
+    if args.refresh_index:
+        refresh_formula_index()
+        sys.exit(0)
 
     if args.search:
         search_system_data(args.search)
