@@ -14,19 +14,25 @@ Tài liệu quy tắc bắt buộc áp dụng cho toàn bộ các Agent (`Agent 
 
 - **Mặc định (Default Behavior):**
   - Hệ thống tính giá **chuẩn mực theo đúng BOQ khách hàng** (sử dụng vật liệu, mã hiệu, độ dày, động cơ và tiêu chuẩn PCCC theo đúng chỉ định của hồ sơ dự thầu).
-  - Xuất bảng chào giá chuẩn **`00_BANG_CHAO_GIA`** (hoặc `BẢNG CHÀO GIÁ`).
+  - Xuất file báo giá gửi khách giữ nguyên tên file gốc: **toàn bộ Sheet BOQ gốc + Sheet `BG`** (Bảng chào giá chuẩn Swind) ở cuối.
   - **TUYỆT ĐỐI KHÔNG** tự động xuất 2 sheet so sánh phương án (`BG Đơn Cánh ĐC FSLF 24V` và `BG Đa Cánh BFN 24`) khi người dùng không yêu cầu.
   - Quy tắc kỹ thuật vật liệu:
     + BOQ ghi loại van nào, model nào thì áp dụng định mức cơ khí và động cơ chính xác cho loại đó.
     + Van động cơ MD, MFD, FD và van chống cháy: Mặc định độ dày tôn 1.15mm (trừ khi BOQ ghi rõ độ dày khác).
     + Van cơ VCD, NRD (1 chiều), PRD (xả áp): Áp dụng dải độ dày $\le$ 600x300 (0.75mm), từ 600x600 -> 600x900 (0.95mm), còn lại (1.15mm).
     + Van FD có tiêu chuẩn chống cháy EI ghi đường kính tròn (`D...`) thì mặc định quy về kích thước vuông tương ứng (`DxD`) và áp mã `SWIND-2.01- E-FD-EI120`.
-    + **Lưới lọc G4 rời:** Không báo giá các hạng mục lưới lọc / bộ lọc bụi G4 đứng độc lập (bỏ qua không báo).
+    + **Ống gió & phụ kiện ống (`ONG_GIO`):** Mặc định **KHÔNG báo giá** (cút, côn, chân rẽ, tê, hộp, ống thẳng...). Chỉ báo khi User yêu cầu rõ bằng cờ `--include-duct`.
+    + **Canvas / bạt / khớp nối mềm (`CANVAS`):** Swind KHÔNG báo giá (bỏ qua). Ống tiêu âm không phải ống gió → vẫn báo giá.
+    + **QUY TẮC VAN CHẶN LỬA FD:** Van FD (ghi hay không ghi EI) → **mặc định báo giá EI120 có bọc** (`SWIND-2.01- E-FD-EI120`). Chỉ trường hợp BOQ quy định rõ `FD thường` / `loại thường` / `không EI` / `không chống cháy` / `không bọc` mới báo FD thường — các dòng này luôn hiện `⚠️ [HỎI LẠI USER]` ở Kiểm soát cuối, **AI bắt buộc hỏi lại User** trước khi chốt. Trường hợp không khớp quy tắc trên cũng phải hỏi lại User.
+    + **Động cơ van:** cố định mã `1.02` - Belimo, không tự đổi theo chữ KLB/Viweco/Honeywell/Kepler trong BOQ; chỉ đổi khi User chỉ định (`--motor-brand`, `--mfd-model`, `--motor-price`).
+    + **Lọc G4 / lọc thô đứng riêng:** CÓ báo giá (`FILTER_G4`, ghi chú `Lọc thô G4 kèm khung nhôm`) khi dòng có kích thước. Lọc tinh F5–F9, HEPA, than hoạt tính, tĩnh điện, lọc túi: không báo.
+    + **Dòng kèm LCCT / lưới chắn côn trùng thiếu kích thước:** bỏ qua, không chặn báo giá, không hỏi lại.
     + **Ống gió mềm (`ONG_MEM`):** Mặc định **KHÔNG báo giá Ống gió mềm** (bỏ qua không báo giá, trừ khi dòng đó đã có sẵn đơn giá của đối tác cần giữ nguyên hoặc khi người dùng yêu cầu rõ ràng bằng cờ `--include-flex-duct`).
     + **Cửa gió kèm hộp (`--include-box`):** Mặc định chỉ báo giá phần Cửa gió và ghi chú `. Không tính box do nhà thầu tự thi công`. Chỉ khi người dùng yêu cầu rõ ràng (truyền cờ `--include-box`), hệ thống mới tính thêm đơn giá Hộp gió đi kèm theo đúng công thức tại sheet `BG PKV` (`Agent04_DuctworkBOM._calc_plenum_box`) và cộng trực tiếp vào đơn giá dòng Cửa gió đó.
     + **Xung đột Cột Tên vs Cột Ghi chú / Spec (`HITL Spec Conflict Policy`):**
       * Mặc định (`--spec-priority name`): Khi Cột Tên đã ghi rõ chủng loại cửa gió/van gió thì khóa chủng loại theo Cột Tên, không để từ khóa trong Cột Ghi chú/Spec tự động ghi đè làm nhảy mã.
-      * **BẮT BUỘC HỎI LẠI USER:** Đặc điểm mỗi dự án một khác — bất cứ khi nào phát hiện dòng có Cột Ghi chú/Spec khác biệt với Cột Tên (khác kiểu nan cửa gió, khác loại van, ghi chú bọc EI trên van cơ, hoặc ghi hãng động cơ khác như Kepler/KLB/Honeywell...), hệ thống cảnh báo trên console và **AI bắt buộc phải hỏi lại User** để xác nhận áp theo Cột Tên hay Cột Ghi chú/Spec (`--spec-priority note`) hoặc hãng động cơ nào.
+      * **BẮT BUỘC HỎI LẠI USER:** Đặc điểm mỗi dự án một khác — bất cứ khi nào phát hiện dòng có Cột Ghi chú/Spec khác biệt với Cột Tên (khác kiểu nan cửa gió, khác loại van, ghi chú bọc EI trên van cơ...), hệ thống cảnh báo trên console và **AI bắt buộc phải hỏi lại User** để xác nhận áp theo Cột Tên hay Cột Ghi chú/Spec (`--spec-priority note`).
+      * **Ngoại lệ — Hãng động cơ:** KHÔNG hỏi lại. Mặc định cố định mã `1.02` - động cơ Belimo; User sẽ thông báo khi cần hãng khác (`--motor-brand`, `--mfd-model`, `--motor-price`).
     + **Ghi chú Cửa gió kèm lọc bụi:** Khi cửa gió có kèm lưới lọc bụi thì phần Ghi chú bắt buộc ghi là **"Cửa ... kèm lưới lọc bụi thô"** (thay vì "phin lọc bụi" hay "lưới lọc bụi").
 
 - **Khi có yêu cầu rõ ràng (Explicit Dual-Option Request):**

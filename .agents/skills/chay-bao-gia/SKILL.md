@@ -32,6 +32,7 @@ Hệ thống báo giá tự động Swind (`src/swind_master_runner.py` và chu�
 - `--mfd-model <1.01|1.02|1.03|1.04|1.05>`: Ép mã đốt van MFD theo yêu cầu (mặc định `1.02`).
 - `--dual-options`: Xuất đồng thời 2 phương án Đơn cánh và Đa cánh.
 - `--merge-sheets`: Gộp tất cả các sheet vào 1 file dự toán duy nhất.
+- `--include-canvas`: Báo giá cả Khớp nối mềm / Canvas (Mặc định: Swind **KHÔNG** báo giá canvas).
 - `--include-duct`: Cho phép báo giá **Ống gió & phụ kiện ống (`ONG_GIO`)** (Mặc định: Hệ thống **KHÔNG** báo giá ống gió, chỉ báo khi User yêu cầu rõ). `--duct-formula og_mb|both` tự động bật cờ này.
 - `--strict`: Không xuất file báo giá nếu còn lỗi chặn (dòng có KL chưa có giá, sheet bóc tách lỗi, QA_REJECTED). Mặc định: vẫn xuất file nhưng in `⛔ BẢN NHÁP — CHƯA HOÀN CHỈNH` và trả mã thoát `2`.
 - `--override "<Dòng>:k=v,...;..."`: Ghi đè nhanh theo dòng BOQ (`w,h,d,l,thickness,qty,ref_price,skip`). BOQ nhiều sheet bắt buộc ghi tên sheet: `--override "Tên Sheet!7:w=600,h=600"`.

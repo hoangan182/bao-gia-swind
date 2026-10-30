@@ -15,6 +15,7 @@ import json
 import glob
 import time
 import argparse
+import unicodedata
 import subprocess
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,10 +31,14 @@ ROW_RX = re.compile(r"^\|\s*(\d+)\s*\|\s*(.+?)\s*\|\s*(\d+)\s*\|\s*([\d,]+)\s*\|
 
 def run_one(boq_path, timeout=300, extra_args=()):
     t0 = time.time()
-    proc = subprocess.run(
-        [PY if os.path.exists(PY) else sys.executable, RUNNER, boq_path, "--non-interactive", "--auto-accept", *extra_args],
-        cwd=BASE_DIR, capture_output=True, text=True, timeout=timeout
-    )
+    # Chạy trong thư mục tạm: KHÔNG ghi vào data/projects/ & output/ thật (tránh đè file báo giá gửi khách)
+    import tempfile
+    with tempfile.TemporaryDirectory(prefix="swind_e2e_") as tmp:
+        env = dict(os.environ, SWIND_PROJECTS_DIR=os.path.join(tmp, "projects"), SWIND_OUTPUT_DIR=os.path.join(tmp, "output"))
+        proc = subprocess.run(
+            [PY if os.path.exists(PY) else sys.executable, RUNNER, boq_path, "--non-interactive", "--auto-accept", *extra_args],
+            cwd=BASE_DIR, capture_output=True, text=True, timeout=timeout, env=env
+        )
     out = proc.stdout + proc.stderr
     sheets = {}
     for line in out.splitlines():
@@ -65,7 +70,8 @@ def main():
     files = sorted(glob.glob(os.path.join(BASE_DIR, "input", "*.xls*")))
     files = [f for f in files if not os.path.basename(f).startswith("~$")]
     if args.filter:
-        files = [f for f in files if args.filter.lower() in os.path.basename(f).lower()]
+        flt = unicodedata.normalize("NFC", args.filter).lower()
+        files = [f for f in files if flt in unicodedata.normalize("NFC", os.path.basename(f)).lower()]
 
     baseline = {}
     if os.path.exists(baseline_path):

@@ -1,5 +1,7 @@
 # HỆ THỐNG MULTI-AGENT DỰ TOÁN BÓC TÁCH SWIND (HVAC ESTIMATION MAS - AGENT 00..09)
 
+> ⚠️ Bản tóm tắt kiến trúc. **Quy tắc vận hành & tham số CLI chuẩn nằm tại [`/AGENTS.md`](../AGENTS.md)** — khi có khác biệt, ưu tiên `/AGENTS.md`.
+
 > Tài liệu này đóng vai trò là bản đồ chỉ dẫn và quy chế kích hoạt cho Hệ thống Multi-Agent của Swind đã được chuẩn hóa đánh số tuần tự từ **`Agent 00` đến `Agent 09`**, và **tách biệt rõ ràng thành 2 quy trình độc lập**:
 > 1. **Quy trình A — Quản trị Master Data (Offline / One-Time & On-Demand):** Giải mã file `BẢNG TÍNH GIÁ SWIND chuẩn 2026.xls` **chỉ làm 1 lần duy nhất** để tạo bộ file `Master Data` tĩnh (`Agent 00`), và chỉ cập nhật khi có yêu cầu đổi/thêm giá mặt hàng (`Agent 09` / `tool_semantic_price_updater.py`).
 > 2. **Quy trình B — Lập Báo Giá Dự Án từ BOQ Khách Hàng (`Agent 01` $\to$ `Agent 08`):** Dưới sự điều phối của **Master Orchestrator** ([`src/swind_master_runner.py`](file:///Users/hoangan/work/PCCC/swind/src/swind_master_runner.py)), hệ thống **chỉ nhận file BOQ của khách hàng**, phân tích kỹ thuật, bóc tách BOM và **áp giá trực tiếp dựa theo bộ file `Master Data` đã có sẵn**.
@@ -46,8 +48,8 @@
    - Các `Agent 04, 05, 06` (Xưởng BOM) và `Agent 07` (Excel Publisher) sử dụng trực tiếp `resolved_spec`, tuyệt đối không giải mã lặp lại.
 3. **Chuyên môn hóa 3 Xưởng Sản xuất (`Agent 04`, `Agent 05`, `Agent 06`):**
    - Tách biệt hoàn toàn định mức cơ khí của 3 xưởng: Ống gió (`Agent 04`), Van gió & PCCC (`Agent 05`), và Cửa gió nhôm (`Agent 06`).
-4. **Nguyên tắc Excel-First 9 Sheets với Công thức Sống 100% (`Agent 07` & `Agent 08`):**
-   - Xuất đồng thời 2 phương án Báo giá gửi khách hàng (`BG Đơn Cánh ĐC FSLF 24V` và `BG Đa Cánh BFN 24`) liên kết trực tiếp bằng công thức sống và được `Agent 08` kiểm toán độc lập 3 tầng.
+4. **Nguyên tắc Excel-First với Công thức Sống (`Agent 07` & `Agent 08`):**
+   - Mặc định xuất 1 Sheet báo giá chuẩn `BG` theo đúng BOQ; chỉ xuất 2 phương án `BG Đơn Cánh ĐC FSLF 24V` & `BG Đa Cánh BFN 24` khi có cờ `--dual-options`. `Agent 08` kiểm toán độc lập (mã vật tư, định mức, công thức, giá trị).
 
 ---
 

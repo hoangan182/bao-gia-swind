@@ -548,7 +548,7 @@
     "unit": "cái",
     "category": "VAN_GIO",
     "subtype": "FD",
-    "model_std": "FD",
+    "model_std": "SWIND-2.01- E-FD-EI120",
     "a1": 400,
     "a2": 200,
     "b1": null,
@@ -557,7 +557,7 @@
     "l_col": 200,
     "thk_col": 1.15,
     "area_m2": 0.0,
-    "sell_unit_price": 339000
+    "sell_unit_price": 1463100
   },
   {
     "input_text": "Van chặn lửa cầu chì FD EI120 600x400",

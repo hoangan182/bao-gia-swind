@@ -1,6 +1,6 @@
 # GHI CHÚ CÁC GIẢ ĐỊNH KỸ THUẬT (SYSTEM ASSUMPTIONS - AGENT 00..09)
 
-Tài liệu này lưu trữ toàn bộ các quy tắc kỹ thuật mà Hệ thống Multi-Agent Swind (`Agent 00` $\to$ `Agent 09`) sử dụng để tự động bóc tách thành phần vật tư và lập 2 phương án chào giá.
+Tài liệu này lưu trữ toàn bộ các quy tắc kỹ thuật mà Hệ thống Multi-Agent Swind (`Agent 00` $\to$ `Agent 09`) sử dụng để tự động bóc tách thành phần vật tư và lập báo giá (mặc định 1 phương án theo BOQ; 2 phương án đơn/đa cánh khi có `--dual-options`).
 
 ## 1. Hệ Thống Van Chặn Lửa & Van Động Cơ (`Agent 05` - `src/agent_05_bom_damper.py`)
 - **Chuẩn hóa theo Sheet `BG van EI` & `BG VAN CU` (Bảng tính giá chuẩn 2026):**
@@ -88,7 +88,7 @@ Tài liệu này lưu trữ toàn bộ các quy tắc kỹ thuật mà Hệ th�
   - `CAND_DHKK_A3_BAO_GIA.xlsx` (Sheet: `DHKK A3`)
   - `CAND_DHKK_TGIO_A3_BAO_GIA.xlsx` (Sheet: ` DHKK tgio A3`)
 - **Nguyên tắc cấu trúc file gửi khách:**
-  - **Chỉ chứa DUY NHẤT 1 Sheet:** Giữ nguyên vẹn 100% biểu mẫu, font chữ, độ rộng cột, hàng tiêu đề và tên sheet của khách hàng. Không chèn thêm các Sheet tính toán nội bộ (`BẢNG BÁO GIÁ TIÊU CHUẨN`, `01_BOC_TACH_...`, `Sheet bìa`).
+  - **Giữ nguyên tên file gốc, gồm Sheet BOQ gốc của khách + Sheet `BG` (Bảng chào giá Swind) ở cuối:** Giữ nguyên vẹn 100% biểu mẫu, font chữ, độ rộng cột, hàng tiêu đề và tên sheet của khách hàng. Không chèn thêm các Sheet tính toán nội bộ (`01_BOC_TACH_...`, `Sheet bìa`).
   - **Bảo toàn 100% dữ liệu ngoài phạm vi:** Tất cả các hạng mục Quạt thông gió, Máy lạnh VRV/Multi, Ống gió tôn, Ống nước ngưng, Ống đồng, Chi phí khác... được giữ nguyên vẹn 100% (công thức, số lượng, nhãn hiệu). Các công thức tham chiếu chéo giữa các sheet (như `'DHKK A3'!K8`) được tự động nội suy giá trị để tránh phát sinh lỗi `#REF!` khi mở file độc lập.
   - **Áp giá Cửa gió & Van gió:**
     - Cột 4 (Nhãn hiệu): `SWIND / VIWECO (KLB)` cho Van MFD, `SWIND` cho các Cửa/Van khác.

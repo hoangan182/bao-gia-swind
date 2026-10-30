@@ -120,7 +120,7 @@ class Agent03_InputAuditor:
                     audit_report["warnings"].append({
                         "row": row_idx,
                         "item": name,
-                        "issue": "Van dập lửa chưa rõ tiêu chuẩn PCCC (Cầu chì 72°C hay EI bao nhiêu phút). Mặc định tính loại cầu chì 72°C."
+                        "issue": "Van chặn lửa chưa ghi tiêu chuẩn PCCC (EI bao nhiêu phút). Mặc định báo giá EI120 (SWIND-2.01- E-FD-EI120)."
                     })
 
             if not std_id:
@@ -130,7 +130,7 @@ class Agent03_InputAuditor:
 
             audit_report["items_detail"].append(item)
 
-        out_dir = BASE_DIR / "data" / "projects" / self.project_name
+        out_dir = (Path(os.environ["SWIND_PROJECTS_DIR"]) if os.environ.get("SWIND_PROJECTS_DIR") else BASE_DIR / "data" / "projects") / self.project_name
         os.makedirs(out_dir, exist_ok=True)
         report_path = out_dir / "INPUT_AUDIT_REPORT.json"
 
@@ -164,8 +164,10 @@ class Agent03_InputAuditor:
             elif w > 0 or h > 0:
                 dims = {"w": w, "h": h}
             cat = item.get("category", "KHAC")
-            raw_low = (item.get("raw_name", "") + " " + str(item.get("model", ""))).lower()
-            fire_rating = "EI60" if "ei60" in raw_low else "EI90" if "ei90" in raw_low else "EI120" if "ei120" in raw_low else "72C" if ("72" in raw_low or "cầu chì" in raw_low) else None
+            raw_low = " ".join(str(item.get(k) or "") for k in ("raw_name", "model", "note_boq", "section")).lower()
+            m_ei = re.search(r'(?<![a-z])ei\s*[-:]?\s*(\d{2,3})\b', raw_low)
+            fire_rating = (f"EI{m_ei.group(1)}" if m_ei else None) or (f"EI{item.get('ei_rating')}" if item.get("ei_rating") else None) \
+                or ("72C" if re.search(r'\b7[0-4]\s*(?:°|độ|do)?\s*c\b', raw_low) or "cầu chì" in raw_low else None)
             extracted_items.append({
                 "row_index": item.get("source_row", 0),
                 "raw_name": item.get("raw_name", item.get("name", "")),

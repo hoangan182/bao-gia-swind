@@ -7,6 +7,11 @@ from agent_06_bom_diffuser import Agent06_DiffuserBOM
 from swind_utils import get_subtype_rules
 
 
+# Từ khóa BOQ quy định rõ van chặn lửa FD thường (không EI). Ngoài các trường hợp này, mọi van FD tính EI120 có bọc.
+FD_NON_EI_KEYWORDS = ("fd thường", "van chặn lửa thường", "loại thường", "không ei", "không có ei", "không chống cháy",
+                      "không bọc", "non-ei", "non ei")
+
+
 class Agent01_BOQExtractor:
     """
     Agent 01 - BOQ Extractor & Technical Spec Resolver
@@ -163,18 +168,22 @@ class Agent01_BOQExtractor:
             elif eff_type in ("NRD", "PRD", "MPRD", "VCD") and ei_rating == 0 and any(k in note_prio_low for k in ("bọc tấm mgo", "tấm chống cháy mgo", "bọc chống cháy")):
                 ei_rating = 60
                 item["ei_rating"] = 60
-        motor_src_low = note_prio_low if (note_prio_low and any(k in note_prio_low for k in ("belimo", "klb", "viweco", "v6006", "honeywell", "honey well", "ms4609", "s6061"))) else (raw_search + " " + full_search).lower()
-        is_klb_req = (req_motor == "KLB") or (not req_motor and any(k in motor_src_low for k in ("klb", "viweco", "v6006"))) or (eff_req_code == "1.03")
-        is_honeywell_req = (req_motor == "HONEYWELL") or (not req_motor and any(k in motor_src_low for k in ("honeywell", "honey well", "ms4609", "s6061"))) or (eff_req_code == "1.04")
+        # Rule cố định: mặc định mã 1.02 - Belimo. Hãng động cơ CHỈ đổi theo chỉ định của User (--motor-brand / --mfd-model)
+        # hoặc mã Swind ghi rõ ở cột Model; KHÔNG tự đổi theo chữ KLB/Viweco/Honeywell trong BOQ.
+        is_klb_req = (req_motor == "KLB") or (eff_req_code == "1.03")
+        is_honeywell_req = (req_motor == "HONEYWELL") or (eff_req_code == "1.04")
         motor_brand = "KLB" if is_klb_req else ("HONEYWELL" if is_honeywell_req else "BELIMO")
         if eff_type == "MD":
             ei_rating = 0
             item["ei_rating"] = 0
-        is_fd_ei = (eff_type == "FD") and (
-            (ei_rating > 0)
-            or (eff_req_code == "2.01")
-            or any(k in (raw_search + " " + full_search + " " + str(item.get("source_sheet", ""))).lower() for k in ("ei", "vgei", "pccc", "hút khói", "tăng áp", "bctn", "chống cháy"))
-        )
+        # Rule van FD: ghi hay không ghi EI -> mặc định EI120 có bọc (SWIND-2.01- E-FD-EI120).
+        # Chỉ trường hợp BOQ quy định rõ "FD thường / không EI" mới báo FD thường -> luôn đưa vào danh sách HỎI LẠI USER.
+        fd_txt_low = (raw_search + " " + full_search + " " + str(item.get("note_boq") or "")).lower()
+        fd_non_ei_kw = next((k for k in FD_NON_EI_KEYWORDS if k in fd_txt_low), None) if eff_type == "FD" else None
+        is_fd_explicit_non_ei = bool(fd_non_ei_kw) and ei_rating == 0 and eff_req_code != "2.01"
+        if eff_type == "FD":
+            item["fd_non_ei_keyword"] = fd_non_ei_kw if is_fd_explicit_non_ei else None
+        is_fd_ei = (eff_type == "FD") and not is_fd_explicit_non_ei
         if is_fd_ei and d > 0:
             w = d
             h = d
@@ -1024,8 +1033,8 @@ class Agent01_BOQExtractor:
         eff_model_code = None
         req_motor = str(item.get("motor_brand_override") or "").strip().upper()
         req_mfd_model = str(item.get("mfd_model_override") or "").strip()
-        is_klb_req = (req_motor == "KLB") or any(k in (raw_search + " " + full_search).lower() for k in ("klb", "viweco", "v6006")) or (req_mfd_model == "1.03")
-        is_honeywell_req = (req_motor == "HONEYWELL") or any(k in (raw_search + " " + full_search).lower() for k in ("honeywell", "honey well", "ms4609", "s6061")) or (req_mfd_model == "1.04")
+        is_klb_req = (req_motor == "KLB") or (req_mfd_model == "1.03")
+        is_honeywell_req = (req_motor == "HONEYWELL") or (req_mfd_model == "1.04")
         motor_brand = "KLB" if is_klb_req else ("HONEYWELL" if is_honeywell_req else "BELIMO")
 
         if cat == "VAN_GIO":

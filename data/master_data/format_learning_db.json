@@ -1383,5 +1383,126 @@
     },
     "success": true,
     "timestamp": "2026-10-29T19:08:03.104968"
+  },
+  {
+    "file_hash": "f48329ff42f7",
+    "filename": "14. Ống thông gió và pk - Minh Triết.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 11,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "desc": 3,
+      "model": 4,
+      "brand": 5,
+      "w": 6,
+      "h": 7,
+      "l": 11,
+      "thickness": 12,
+      "unit": 13,
+      "qty": 14,
+      "price": 15,
+      "total": 16,
+      "remarks": 17
+    },
+    "success": false,
+    "timestamp": "2026-10-30T08:10:06.081314"
+  },
+  {
+    "file_hash": "764629ca3b93",
+    "filename": "2 KL ĐH TG.xlsx",
+    "company": null,
+    "format_type": "SEMI_STANDARD",
+    "header_row": 3,
+    "col_map": {
+      "name": 2,
+      "stt": 1,
+      "unit": 4,
+      "qty": 5,
+      "remarks": 6
+    },
+    "success": true,
+    "timestamp": "2026-10-30T08:10:06.657580"
+  },
+  {
+    "file_hash": "764629ca3b93",
+    "filename": "2 KL ĐH TG.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 3,
+    "col_map": {
+      "name": 2,
+      "stt": 1,
+      "unit": 4,
+      "qty": 5,
+      "remarks": 6
+    },
+    "success": true,
+    "timestamp": "2026-10-30T08:10:06.658481"
+  },
+  {
+    "file_hash": "764629ca3b93",
+    "filename": "2 KL ĐH TG.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 3,
+    "col_map": {
+      "name": 2,
+      "stt": 1,
+      "unit": 4,
+      "qty": 5,
+      "remarks": 6
+    },
+    "success": true,
+    "timestamp": "2026-10-30T08:10:06.659315"
+  },
+  {
+    "file_hash": "993b5431f7e3",
+    "filename": "NV- DỰ ÁN NHIÊN LIỆU- VAN, ỐNG GIÓ.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 18,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 3,
+      "qty": 4,
+      "remarks": 11
+    },
+    "success": true,
+    "timestamp": "2026-10-30T08:11:06.449995"
+  },
+  {
+    "file_hash": "1e1bfd682589",
+    "filename": "Xin giá cửa dự án CAND.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 2,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 5,
+      "qty": 6,
+      "remarks": 17
+    },
+    "success": true,
+    "timestamp": "2026-10-30T08:11:09.536664"
+  },
+  {
+    "file_hash": "1e1bfd682589",
+    "filename": "Xin giá cửa dự án CAND.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 2,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 5,
+      "qty": 6,
+      "remarks": 17
+    },
+    "success": true,
+    "timestamp": "2026-10-30T08:11:09.537779"
   }
 ]

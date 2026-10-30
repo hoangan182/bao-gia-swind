@@ -63,9 +63,8 @@ description: Rules for KLB / Viweco Actuators (MFD 1.03 5Nm and MD 10Nm Module S
 
 ## 3. NGUYÊN TẮC ÁP DỤNG TRONG PIPELINE DỰ TOÁN
 
-1. **Nhận diện tự động từ BOQ**:
-   - Khi dòng mô tả trong BOQ có chứa các từ khóa: `KLB`, `VIWECO`, `V6006`, hoặc khi tên dự án/file chỉ định nhà máy `FOXCOM`.
-   - Hệ thống tự động thiết lập cờ `motor_brand = "KLB"`.
+1. **Chỉ áp dụng khi User chỉ định** (`--motor-brand KLB` hoặc `--mfd-model 1.03`):
+   - Hệ thống KHÔNG tự nhận diện KLB/Viweco từ chữ trong BOQ hay tên dự án nữa — mặc định cố định mã `1.02` - Belimo (quyết định 2026-10-29, không xét lại dự án cũ).
 2. **Khi `motor_brand == "KLB"`**:
    - Đối với van **MFD**: Gán model `SWIND-1.03- MFD-EI90`, chọn mã động cơ `MAT-ACTUATOR-KLB-V6006FS500S` (5Nm), ghi chú theo BCTN 4651/VLXD-TBMT.
    - Đối với van **MD**: Gán mã động cơ `MAT-ACTUATOR-SWIND-VIWECO` (10Nm), áp dụng công thức chia modul 1, 2, 4, 8 modul theo bảng trên.
