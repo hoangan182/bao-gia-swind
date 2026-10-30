@@ -1289,13 +1289,20 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     base_name = os.path.basename(boq_file)
     project_name = base_name.replace("_BOQ_MEP (NCC).xlsx", "").replace(".xlsm", "").replace(".xlsx", "").replace(".xls", "").strip()
 
-    # SWIND_PROJECTS_DIR / SWIND_OUTPUT_DIR: cho phép chạy kiểm thử trong thư mục tạm, không ghi đè báo giá thật
-    project_dir = os.path.join(os.environ["SWIND_PROJECTS_DIR"], project_name) if os.environ.get("SWIND_PROJECTS_DIR") else resolve_path(f"data/projects/{project_name}")
+    # Toàn bộ kết quả ghi thẳng vào output/<Project>/ (file báo giá gửi khách + internal_estimation/).
+    # SWIND_OUTPUT_DIR: cho phép chạy kiểm thử trong thư mục tạm, không ghi đè báo giá thật.
+    output_root = os.environ.get("SWIND_OUTPUT_DIR") or resolve_path("output")
+    project_dir = os.path.join(output_root, project_name)
+    if os.path.exists(project_dir):
+        archive_previous_output(project_dir, project_name)
     os.makedirs(project_dir, exist_ok=True)
 
     # Tối ưu tốc độ: BOQ copy-paste qua nhiều file thường tích tụ hàng chục nghìn Named Style rác (mỗi lần
-    # openpyxl mở file chậm 5-9s). Tạo 1 bản gọn (giữ nguyên tên file, giá trị, hình ảnh, VBA) để toàn bộ pipeline dùng.
-    fast_dir = os.path.join(project_dir, "internal_estimation", "_fast_boq")
+    # openpyxl mở file chậm 5-9s). Tạo 1 bản gọn (giữ nguyên tên file, giá trị, hình ảnh, VBA) trong thư mục tạm.
+    import tempfile
+    import atexit
+    fast_dir = tempfile.mkdtemp(prefix="swind_fast_boq_")
+    atexit.register(shutil.rmtree, fast_dir, True)
     if boq_file.lower().endswith((".xlsx", ".xlsm")):
         try:
             os.makedirs(fast_dir, exist_ok=True)
@@ -1463,12 +1470,7 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
             unresolved_items = apply_suggestions_non_interactive(ambiguous_items, auto_accept=auto_accept, project_name=project_name)
     else:
         print("  -> Tuyệt vời! 100% mặt hàng đã được nhận diện và phân nhóm chuẩn xác.")
-    input_audit = Agent03_InputAuditor(project_name=project_name).audit_parsed_boq_items(all_items)
-    rep_src = os.path.join(project_dir, "INPUT_AUDIT_REPORT.json")
-    rep_dst = os.path.join(project_dir, "internal_estimation", "INPUT_AUDIT_REPORT.json")
-    if os.path.exists(rep_src):
-        os.makedirs(os.path.join(project_dir, "internal_estimation"), exist_ok=True)
-        shutil.move(rep_src, rep_dst)
+    input_audit = Agent03_InputAuditor(project_name=project_name, out_dir=os.path.join(project_dir, "internal_estimation")).audit_parsed_boq_items(all_items)
 
     # -------------------------------------------------------------
     # BƯỚC 3: NẠP MASTER DATA & THỰC HIỆN DỰ TOÁN THEO RULE
@@ -1597,30 +1599,14 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
 
     final_customer_file = customer_files[-1][1] if customer_files else ""
     if final_customer_file and os.path.exists(final_customer_file):
-        output_dir = os.environ.get("SWIND_OUTPUT_DIR") or resolve_path("output")
-        os.makedirs(output_dir, exist_ok=True)
-        # Copy toàn bộ thư mục dự án (bao gồm internal_estimation/) sang output/
-        out_project_dir = os.path.join(output_dir, project_name)
-        if os.path.exists(out_project_dir):
-            archive_previous_output(out_project_dir, project_name)
-        shutil.copytree(project_dir, out_project_dir, ignore=shutil.ignore_patterns("_fast_boq"))
-
-        # Dọn output: chỉ giữ file BAO_GIA tổng hợp ở gốc, các file thành phần
-        # từng sheet đưa vào thư mục con thanh_phan/
+        # Dọn output: chỉ giữ file báo giá tổng hợp ở gốc, các file thành phần từng sheet đưa vào thanh_phan/
         final_basename = os.path.basename(final_customer_file)
-        thanh_phan_dir = os.path.join(out_project_dir, "thanh_phan")
-        os.makedirs(thanh_phan_dir, exist_ok=True)
-        for f in os.listdir(out_project_dir):
-            if f.endswith("_BAO_GIA.xlsx") and f != final_basename:
-                shutil.move(
-                    os.path.join(out_project_dir, f),
-                    os.path.join(thanh_phan_dir, f),
-                )
-
-        # Cập nhật đường dẫn file báo giá cuối cùng trỏ sang output/
-        out_dest = os.path.join(out_project_dir, final_basename)
-        final_customer_file = out_dest
-        customer_files[-1] = (customer_files[-1][0], out_dest)
+        part_files = [f for f in os.listdir(project_dir) if f.endswith("_BAO_GIA.xlsx") and f != final_basename]
+        if part_files:
+            thanh_phan_dir = os.path.join(project_dir, "thanh_phan")
+            os.makedirs(thanh_phan_dir, exist_ok=True)
+            for f in part_files:
+                shutil.move(os.path.join(project_dir, f), os.path.join(thanh_phan_dir, f))
     gate = evaluate_quotation_gate(coverage, qa_reports, input_audit, unresolved_items, parse_errors=getattr(agent_01.parser, "parse_errors", {}), all_items=all_items)
     if not (final_customer_file and os.path.exists(final_customer_file)) and not strict:
         gate["blocking"].append("Không xuất được file báo giá gửi khách (xem log phía trên)")
@@ -1646,17 +1632,26 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     return {"project_name": project_name, "project_dir": project_dir, "final_file": final_customer_file, "gate": gate}
 
 
-def archive_previous_output(out_project_dir, project_name, keep=5):
-    """Chuyển bản output cũ vào output/_history/<project>/<timestamp>/ (giữ tối đa `keep` bản gần nhất)."""
+def archive_previous_output(out_project_dir, project_name, keep=3):
+    """
+    Lưu bản báo giá gửi khách của lần chạy trước vào output/_history/<project>/<timestamp>/ (chỉ file .xlsx ở gốc
+    và thanh_phan/, KHÔNG lưu internal_estimation/ để nhẹ hệ thống), giữ tối đa `keep` bản gần nhất, rồi xóa thư mục cũ.
+    """
     hist_root = os.path.join(os.path.dirname(out_project_dir), "_history", project_name)
-    os.makedirs(hist_root, exist_ok=True)
     ts = datetime.fromtimestamp(os.path.getmtime(out_project_dir)).strftime("%Y%m%d_%H%M%S")
     dest = os.path.join(hist_root, ts)
-    if os.path.exists(dest):
-        shutil.rmtree(dest)
-    shutil.move(out_project_dir, dest)
-    for old in sorted(os.listdir(hist_root))[:-keep]:
-        shutil.rmtree(os.path.join(hist_root, old), ignore_errors=True)
+    keep_items = [f for f in os.listdir(out_project_dir) if f.lower().endswith((".xlsx", ".xlsm")) or f == "thanh_phan"]
+    if keep_items:
+        os.makedirs(dest, exist_ok=True)
+        for f in keep_items:
+            tgt = os.path.join(dest, f)
+            if os.path.exists(tgt):
+                shutil.rmtree(tgt) if os.path.isdir(tgt) else os.remove(tgt)
+            shutil.move(os.path.join(out_project_dir, f), tgt)
+    shutil.rmtree(out_project_dir, ignore_errors=True)
+    if os.path.isdir(hist_root):
+        for old in sorted(os.listdir(hist_root))[:-keep]:
+            shutil.rmtree(os.path.join(hist_root, old), ignore_errors=True)
 
 
 def evaluate_quotation_gate(coverage, qa_reports, input_audit, unresolved_items, parse_errors=None, all_items=None):
@@ -1994,7 +1989,8 @@ def main():
             res_m2 = run_master_pipeline(boq_file=bp, **run_kwargs) or {}
             m2_copy = None
             if res_m2.get("final_file") and os.path.exists(res_m2["final_file"]):
-                m2_copy = res_m2["final_file"][:-5] + "_THEO_M2_OG_MB.xlsx"
+                import tempfile
+                m2_copy = os.path.join(tempfile.mkdtemp(prefix="swind_m2_"), os.path.basename(res_m2["final_file"])[:-5] + "_THEO_M2_OG_MB.xlsx")
                 shutil.copy2(res_m2["final_file"], m2_copy)
             any_blocking = any_blocking or bool((res_m2.get("gate") or {}).get("blocking"))
             Agent04_DuctworkBOM.DUCT_FORMULA_MODE = "MPQ_STD"

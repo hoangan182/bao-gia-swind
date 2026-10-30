@@ -25,7 +25,8 @@
    - **QUY TẮC CỔNG KIỂM SOÁT CUỐI (`[KIỂM SOÁT CUỐI]` — in sau Bảng Tổng Hợp):**
      1. `⛔ BÁO GIÁ CHƯA HOÀN CHỈNH` (mã thoát `2`): có dòng Cửa/Van có KL nhưng **CHƯA CÓ ĐƠN GIÁ** (thiếu kích thước / mã ký hiệu kiểu `S2`, `R3` cần bảng tra — các dòng này được **tô vàng** trên Sheet `BG`), sheet bóc tách lỗi, hoặc QA_REJECTED. **AI bắt buộc liệt kê và hỏi lại User** (xin kích thước / bảng tra mã) rồi chạy lại với `--override`; tuyệt đối không báo tổng tiền như bản hoàn chỉnh.
      2. `⚠️` (cần xác nhận): dòng thuộc phạm vi Swind bị lọc (lọc G4 rời, ống gió m², tiêu âm...), kích thước giả định, giá không tăng theo kích thước, mặt hàng chưa phân loại, cấu kiện giá 0 → nêu rõ cho User khi trả kết quả.
-     3. Chi tiết dòng bị lọc & lý do: `data/projects/<Project>/internal_estimation/INPUT_COVERAGE_REPORT.json`.
+     3. Chi tiết dòng bị lọc & lý do: `output/<Project>/internal_estimation/INPUT_COVERAGE_REPORT.json`.
+   - **THƯ MỤC ĐẦU RA DUY NHẤT `output/<Project>/`:** file báo giá gửi khách (giữ tên file gốc) + `thanh_phan/` (file từng sheet nếu BOQ nhiều sheet) + `internal_estimation/` (dự toán nội bộ & báo cáo kiểm tra). Không còn ghi vào `data/projects/`. Lần chạy trước được lưu gọn (chỉ file báo giá) tại `output/_history/<Project>/<thời_điểm>/`, giữ 3 bản gần nhất.
    - **QUY TẮC XUẤT BÁO CÁO CHO NGƯỜI DÙNG:**
      1. **Chỉ liệt kê duy nhất File Báo Giá Cuối Cùng** (`output/<Project_Name>/<Original_File_Name>.xlsx` giữ nguyên tên file gốc, gồm Sheet BOQ gốc + Sheet `BG` đã đóng khung), tuyệt đối không liệt kê hàng loạt các file báo giá thành phần hay file dự toán nội bộ trung gian.
      2. **Về giá trị: Chỉ in Bảng Tổng Hợp** (theo các sheet/phân khu và Tổng cộng toàn dự án), **bỏ Bảng kết quả báo giá chi tiết** từng mặt hàng.

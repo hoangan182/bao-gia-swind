@@ -53,5 +53,5 @@ description: Fast-path execution protocol for running Swind BOQ quotations witho
 - `--spec-priority <name|note>`: Chọn cột ưu tiên khi `Cột Tên` và `Cột Ghi chú/Spec` mâu thuẫn (`name` [Mặc định]: khóa chủng loại theo Cột Tên; `note`: ưu tiên theo Cột Ghi chú/Spec).
 
 ## 3. Đường Dẫn File Xuất Chuẩn
-- **File báo giá gửi khách hàng (`_BAO_GIA.xlsx`):** `data/projects/<Project_Name>/<Project_Name>_BAO_GIA.xlsx` (hoặc `<Project_Name>_<Sheet_Slug>_BAO_GIA.xlsx` và `<Project_Name>_BAO_GIA_TONG_HOP.xlsx` nếu có nhiều sheet).
-- **File dự toán nội bộ 9 sheets (`_ESTIMATION.xlsx`):** `data/projects/<Project_Name>/internal_estimation/`.
+- **File báo giá gửi khách hàng (`_BAO_GIA.xlsx`):** `output/<Project_Name>/<Tên_file_BOQ_gốc>.xlsx` (hoặc `<Project_Name>_<Sheet_Slug>_BAO_GIA.xlsx` và `<Project_Name>_BAO_GIA_TONG_HOP.xlsx` nếu có nhiều sheet).
+- **File dự toán nội bộ 9 sheets (`_ESTIMATION.xlsx`):** `output/<Project_Name>/internal_estimation/`.

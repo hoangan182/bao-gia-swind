@@ -50,9 +50,9 @@ Tài liệu quy tắc bắt buộc áp dụng cho toàn bộ các Agent (`Agent 
   - **BẮT BUỘC TÁCH THÀNH TỪNG FILE BÁO GIÁ ĐỘC LẬP TƯƠNG ỨNG VỚI TỪNG SHEET**:
     + Mỗi sheet tạo ra một file báo giá hoàn chỉnh riêng biệt.
     + Quy ước đặt tên file chuẩn:
-      `data/projects/<Project_Name>/<Project_Name>_<Clean_Sheet_Name>_ESTIMATION.xlsx`
+      `output/<Project_Name>/internal_estimation/<Project_Name>_<Clean_Sheet_Name>_ESTIMATION.xlsx`
       hoặc:
-      `data/projects/<Project_Name>/<Clean_Sheet_Name>_ESTIMATION.xlsx`
+      `output/<Project_Name>/thanh_phan/<Project_Name>_<Clean_Sheet_Name>_BAO_GIA.xlsx` (file báo giá thành phần từng sheet)
 
 - **Cấu trúc hoàn chỉnh của mỗi file báo giá riêng từng sheet:**
   Mỗi file Excel độc lập cho 1 sheet phải chứa đầy đủ toàn bộ hệ sinh thái dự toán Swind cho các hạng mục của riêng sheet đó:

@@ -34,7 +34,7 @@ def run_one(boq_path, timeout=300, extra_args=()):
     # Chạy trong thư mục tạm: KHÔNG ghi vào data/projects/ & output/ thật (tránh đè file báo giá gửi khách)
     import tempfile
     with tempfile.TemporaryDirectory(prefix="swind_e2e_") as tmp:
-        env = dict(os.environ, SWIND_PROJECTS_DIR=os.path.join(tmp, "projects"), SWIND_OUTPUT_DIR=os.path.join(tmp, "output"))
+        env = dict(os.environ, SWIND_OUTPUT_DIR=os.path.join(tmp, "output"))
         proc = subprocess.run(
             [PY if os.path.exists(PY) else sys.executable, RUNNER, boq_path, "--non-interactive", "--auto-accept", *extra_args],
             cwd=BASE_DIR, capture_output=True, text=True, timeout=timeout, env=env

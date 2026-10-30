@@ -388,7 +388,7 @@ def merge_project_quotation_files(project_dir, project_name=None, sheet_files=No
 
 def resolve_project_dir(target):
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    projects_root = os.path.join(base_dir, "data", "projects")
+    projects_root = os.path.join(base_dir, "output")
 
     if os.path.isdir(target):
         return os.path.abspath(target)
@@ -423,22 +423,22 @@ def main():
         "project",
         nargs="?",
         default=None,
-        help="Tên dự án, đường dẫn thư mục dự án (data/projects/<Tên dự án>) hoặc file BOQ đầu vào"
+        help="Tên dự án, đường dẫn thư mục dự án (output/<Tên dự án>) hoặc file BOQ đầu vào"
     )
     parser.add_argument(
         "-o", "--output",
         default=None,
-        help="Đường dẫn file Excel gộp đầu ra (mặc định: data/projects/<Tên dự án>/<Tên dự án>_BAO_GIA.xlsx)"
+        help="Đường dẫn file Excel gộp đầu ra (mặc định: output/<Tên dự án>/<Tên dự án>_BAO_GIA.xlsx)"
     )
     parser.add_argument(
         "--all",
         action="store_true",
-        help="Quét và gộp tự động toàn bộ các dự án có nhiều file báo giá trong data/projects/"
+        help="Quét và gộp tự động toàn bộ các dự án có nhiều file báo giá trong output/"
     )
 
     args = parser.parse_args()
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    projects_root = os.path.join(base_dir, "data", "projects")
+    projects_root = os.path.join(base_dir, "output")
 
     if args.all:
         if not os.path.isdir(projects_root):
@@ -496,7 +496,7 @@ def main():
                 candidates.append((mtime, entry, p_dir, sheet_files))
 
     if not candidates:
-        print("[THÔNG BÁO] Không tìm thấy dự án nào có nhiều file báo giá cần gộp trong data/projects/.")
+        print("[THÔNG BÁO] Không tìm thấy dự án nào có nhiều file báo giá cần gộp trong output/.")
         return
 
     candidates.sort(key=lambda x: x[0], reverse=True)

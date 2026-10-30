@@ -18,8 +18,9 @@ class Agent03_InputAuditor:
     - Xuất biên bản kiểm toán INPUT_AUDIT_REPORT.json.
     """
 
-    def __init__(self, project_name="Du_An_HDL_A1"):
+    def __init__(self, project_name="Du_An_HDL_A1", out_dir=None):
         self.project_name = project_name
+        self.out_dir = out_dir
 
     def run_audit(self, extracted_items):
         print("[*] [Agent 03 - Input Auditor] Kích hoạt kiểm toán đầu vào 4 trục (rule-based)...")
@@ -130,7 +131,7 @@ class Agent03_InputAuditor:
 
             audit_report["items_detail"].append(item)
 
-        out_dir = (Path(os.environ["SWIND_PROJECTS_DIR"]) if os.environ.get("SWIND_PROJECTS_DIR") else BASE_DIR / "data" / "projects") / self.project_name
+        out_dir = Path(self.out_dir) if self.out_dir else BASE_DIR / "output" / self.project_name / "internal_estimation"
         os.makedirs(out_dir, exist_ok=True)
         report_path = out_dir / "INPUT_AUDIT_REPORT.json"
 
