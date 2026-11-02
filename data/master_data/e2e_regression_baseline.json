@@ -11,11 +11,11 @@
   "14. Ống thông gió và pk - Minh Triết.xlsx": {
     "sheets": {
       "Sheet1": {
-        "count": 67,
-        "sub_total": 1260953600
+        "count": 68,
+        "sub_total": 1261061600
       }
     },
-    "total": 1260953600
+    "total": 1261061600
   },
   "2 KL ĐH TG.xlsx": {
     "sheets": {
@@ -45,11 +45,11 @@
   "260910_MKS_BoQ goi thau (BP05a)_Tach cac thap-ham-canh quan (1).xlsx": {
     "sheets": {
       "Biểu 5. BoQ-DHTG": {
-        "count": 106,
-        "sub_total": 5828755900
+        "count": 110,
+        "sub_total": 8044955700
       }
     },
-    "total": 5828755900
+    "total": 8044955700
   },
   "26BDCC09-3.VGCG-Lan 1.xlsx": {
     "sheets": {
@@ -85,11 +85,11 @@
   "BG DT C08-  Ago.xlsx": {
     "sheets": {
       "Minh Triết BG": {
-        "count": 84,
-        "sub_total": 2110434200
+        "count": 96,
+        "sub_total": 2215961200
       }
     },
-    "total": 2110434200
+    "total": 2215961200
   },
   "BG ĐHKK-TAHK 12.10 (DT).xlsx": {
     "sheets": {
@@ -253,11 +253,11 @@
   "MPQ ( BAT) OG-056T2810 28.10.xlsx": {
     "sheets": {
       "4.HVAC": {
-        "count": 82,
-        "sub_total": 1591489800
+        "count": 93,
+        "sub_total": 1620160800
       }
     },
-    "total": 1591489800
+    "total": 1620160800
   },
   "NOVH_CT0102.HA_DHTG.xlsx": {
     "sheets": {
@@ -347,11 +347,11 @@
   "NOXH Dãn dân phố cổ HN.xlsx": {
     "sheets": {
       "Sheet1": {
-        "count": 34,
-        "sub_total": 477043400
+        "count": 38,
+        "sub_total": 477313400
       }
     },
-    "total": 477043400
+    "total": 477313400
   },
   "NV- DỰ ÁN NHIÊN LIỆU- VAN, ỐNG GIÓ.xlsx": {
     "sheets": {
@@ -374,11 +374,11 @@
   "TONG_HOP_KHOI_LUONG_DHKK.xlsx": {
     "sheets": {
       "Tổng hợp": {
-        "count": 251,
-        "sub_total": 3628153200
+        "count": 252,
+        "sub_total": 3628217200
       }
     },
-    "total": 3628153200
+    "total": 3628217200
   },
   "VAN AS 20.10.2026.xlsx": {
     "sheets": {
@@ -440,20 +440,20 @@
   "Báo giá Thanh Liệt gửi NCC.xlsx": {
     "sheets": {
       "BÁO GIÁ": {
-        "count": 78,
-        "sub_total": 1490180500
+        "count": 84,
+        "sub_total": 1491767500
       }
     },
-    "total": 1490180500
+    "total": 1491767500
   },
   "Báo giá Cổ bi.xlsx": {
     "sheets": {
       "Eusteel BG": {
-        "count": 42,
-        "sub_total": 1019642300
+        "count": 44,
+        "sub_total": 1020921800
       }
     },
-    "total": 1019642300
+    "total": 1020921800
   },
   "DNBG VGCG.xlsx": {
     "sheets": {
@@ -467,11 +467,11 @@
   "Tong_hop_PLH_MEP_Goi1.xlsx": {
     "sheets": {
       "Tổng hợp": {
-        "count": 61,
-        "sub_total": 380839200
+        "count": 64,
+        "sub_total": 380947200
       }
     },
-    "total": 380839200
+    "total": 380947200
   },
   "Khối lượng VGCG tòa CC17 (dự tính theo BTVTK 20260922) (1).xlsm": {
     "sheets": {
@@ -485,20 +485,20 @@
   "TONG HOP HVAC.xlsx": {
     "sheets": {
       "Tổng hợp": {
-        "count": 116,
-        "sub_total": 3551997400
+        "count": 147,
+        "sub_total": 3562891900
       }
     },
-    "total": 3551997400
+    "total": 3562891900
   },
   "BDKSCT-1.OGIO-26-09-11-Lan 1 - Copy.xlsx": {
     "sheets": {
       "Sheet1": {
-        "count": 17,
-        "sub_total": 2319144400
+        "count": 32,
+        "sub_total": 2346988400
       }
     },
-    "total": 2319144400
+    "total": 2346988400
   },
   "BOQ_ANH_KHACH_01.xlsx": {
     "sheets": {
@@ -517,5 +517,32 @@
       }
     },
     "total": 147469200
+  },
+  "BDKSCT-3.VGCG-26-09-11-Lan 1 - Copy.xlsx": {
+    "sheets": {
+      "Sheet1": {
+        "count": 104,
+        "sub_total": 8989088700
+      }
+    },
+    "total": 8989088700
+  },
+  "BDKSCT-3.VGEI-26-09-11-Lan 1.xlsx": {
+    "sheets": {
+      "Sheet1": {
+        "count": 76,
+        "sub_total": 12735629800
+      }
+    },
+    "total": 12735629800
+  },
+  "Q.26.0035.Penta- SWIND Báo giá Thanh Liệt gửi NCC.xlsx": {
+    "sheets": {
+      "PA tấm MPQ": {
+        "count": 85,
+        "sub_total": 1425879800
+      }
+    },
+    "total": 1425879800
   }
 }
