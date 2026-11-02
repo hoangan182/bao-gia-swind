@@ -284,13 +284,18 @@ class SwindBOQParser:
                 "van cổng", "van bướm", "van bi", "van giảm áp", "van y lọc", "van an toàn", "van xả khí",
                 "van một chiều lá lật", "van một chiều lò xo", "van báo động", "van tràn ngập",
                 "đầu phun", "sprinkler", "bình chữa cháy", "cuộn vòi", "tủ chữa cháy", "trụ cứu hỏa",
-                "họng tiếp nước", "khớp nối mềm cao su", "khớp nối mềm inox", "rọ bơm", "y lọc"
+                "họng tiếp nước", "khớp nối mềm cao su", "khớp nối mềm inox", "rọ bơm", "y lọc",
+                "van búa nước", "chống va", "van góc", "van tiểu", "van phao", "van điện từ", "van cửa thân gang"
             )
+            hvac_damper_kws = ("vcd", "mfd", "mfsd", "fd", "nrd", "prd", "obd", "gió", "tôn", "tole", "lửa", "khói", "cháy", "ei")
+            # Cáp điện (Cu/..., XLPE, ...mm2) & Van nước ghi DN: không thuộc phạm vi Swind, kể cả khi Title cha nhắc 'van MFD'
+            is_electrical_cable = bool(re.search(r'\bcu\s*/|\d\s*(?:mm2|mm²)|\bxlpe\b|\bcxv\b|\bcvv\b|^(?:dây|cáp)\s', name_lower))
+            is_dn_water_valve = name_lower.startswith(("van ", "bộ van")) and bool(re.search(r'\bdn\s*\d{2,3}\b', name_lower)) and not any(match_keyword(k, name_lower) for k in hvac_damper_kws)
             is_hvac_prd = ("van giảm áp" in full_name_lower or "van xả áp" in full_name_lower) and (
                 bool(re.search(r'\b\d{2,4}\s*[xX*]\s*\d{2,4}\b', f"{full_name_str} {note_boq}"))
                 or any(k in f"{full_name_lower} {note_boq.lower()}" for k in ("tôn", "tole", "ei", "chịu lửa", "chống cháy", "mfd", "động cơ", "on/off", "on-off"))
             )
-            is_plumbing_item = (not is_hvac_prd) and any(pk in name_lower or pk in full_name_lower for pk in plumbing_kws)
+            is_plumbing_item = is_electrical_cable or is_dn_water_valve or ((not is_hvac_prd) and any(pk in name_lower or pk in full_name_lower for pk in plumbing_kws))
             if not is_plumbing_item and any(sk in sec_lower for sk in ("chữa cháy", "cấp nước", "thoát nước", "ống đồng", "bảo ôn ống")):
                 if not any(dk in name_lower for dk in ("ống gió", "tôn", "tole", "cửa gió", "miệng gió", "van gió", "vcd", "mfd", "fd", "nrd", "prd", "obd", "louver")):
                     is_plumbing_item = True
@@ -564,7 +569,11 @@ class SwindBOQParser:
                             d_val = v_ov
             is_missing_dims = False
             orig_category = category
-            if category in ("VAN_GIO", "CUA_GIO", "CANVAS") and w == 0 and h == 0 and d_val == 0:
+            # --override "Sheet!Dòng:skip=1": User chủ động bỏ dòng (kể cả dòng thiếu kích thước) -> không báo giá, không chặn
+            is_user_skip = bool(row_ov) and str(row_ov.get("skip", "0")).strip() not in ("", "0", "false", "False")
+            if is_user_skip:
+                category = "THUONG_MAI"
+            elif category in ("VAN_GIO", "CUA_GIO", "CANVAS") and w == 0 and h == 0 and d_val == 0:
                 is_missing_dims = True
                 category = "THUONG_MAI"
             elif category == "CUA_GIO" and d_val > 0 and any(k in full_name_lower for k in ("ead",)):
@@ -755,7 +764,7 @@ class SwindBOQParser:
                         raw_spec_cell = ws.cell(r, col_map["spec"]).value if "spec" in col_map else None
                         raw_spec_disp = raw_spec_cell if raw_spec_cell not in (None, "") else (spec_str or None)
                         self.skip_reasons.setdefault(sheet_name, {})[r] = {
-                            "reason": "MISSING_DIMS" if is_missing_dims else (f"NO_DIMS_{category}" if category in ("ONG_GIO", "TIEU_AM", "CANVAS") else f"OUT_OF_SCOPE_{category}"),
+                            "reason": "USER_SKIP" if is_user_skip else "MISSING_DIMS" if is_missing_dims else (f"NO_DIMS_{category}" if category in ("ONG_GIO", "TIEU_AM", "CANVAS") else f"OUT_OF_SCOPE_{category}"),
                             "category": category,
                             "orig_category": orig_category,
                             "name": raw_name_str,

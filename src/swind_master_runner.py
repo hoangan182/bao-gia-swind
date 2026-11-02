@@ -1206,7 +1206,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
             is_lump_sum = str(info.get("unit") or "").strip().lower() in LUMP_SUM_UNITS
             # Rule User: LCCT thiếu kích thước -> bỏ qua; phụ kiện ống gió thiếu kích thước khi không báo ống gió -> bỏ qua
             is_skip_rule = ("lcct" in nm_l or "lưới chắn côn trùng" in nm_l) or (not include_duct and is_duct_like_name(nm_l)) or (not include_canvas and is_canvas_like_name(nm_l))
-            if info.get("reason") == "MISSING_DIMS" and is_skip_rule:
+            if info.get("reason") == "USER_SKIP" or (info.get("reason") == "MISSING_DIMS" and is_skip_rule):
                 skipped_other_cnt += 1
                 continue
             if info.get("reason") == "MISSING_DIMS" and not is_non_product and not is_lump_sum:
@@ -1367,13 +1367,13 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
             elif len(target_sheets) == 1:
                 ov_by_sheet[(target_sheets[0], k_ov)] = v_ov
         need_reparse = any(
-            any(k in v for k in ("w", "h", "d")) and r in agent_01.parser.skipped_rows.get(sh, set())
+            any(k in v for k in ("w", "h", "d", "skip")) and r in agent_01.parser.skipped_rows.get(sh, set())
             for (sh, r), v in ov_by_sheet.items()
         )
         if need_reparse:
             agent_01.parser.row_overrides = ov_by_sheet
             target_sheets, all_items = agent_01.detect_and_parse(sheet_names=sheet_names)
-            print(f"  -> [--override] Đã parse lại với kích thước do User cung cấp cho {len(ov_by_sheet)} dòng.")
+            print(f"  -> [--override] Đã parse lại với kích thước / bỏ dòng do User chỉ định cho {len(ov_by_sheet)} dòng.")
     n_src_sheets = len({it.get("source_sheet") for it in all_items})
     plain_ov_rows = [k for k in (row_overrides or {}) if not isinstance(k, tuple)]
     if plain_ov_rows and n_src_sheets > 1:

@@ -374,11 +374,11 @@
   "TONG_HOP_KHOI_LUONG_DHKK.xlsx": {
     "sheets": {
       "Tổng hợp": {
-        "count": 253,
-        "sub_total": 151979884600
+        "count": 251,
+        "sub_total": 3628153200
       }
     },
-    "total": 151979884600
+    "total": 3628153200
   },
   "VAN AS 20.10.2026.xlsx": {
     "sheets": {
@@ -454,5 +454,23 @@
       }
     },
     "total": 1014242300
+  },
+  "DNBG VGCG.xlsx": {
+    "sheets": {
+      "OG CG": {
+        "count": 43,
+        "sub_total": 928781900
+      }
+    },
+    "total": 928781900
+  },
+  "Tong_hop_PLH_MEP_Goi1.xlsx": {
+    "sheets": {
+      "Tổng hợp": {
+        "count": 61,
+        "sub_total": 380839200
+      }
+    },
+    "total": 380839200
   }
 }

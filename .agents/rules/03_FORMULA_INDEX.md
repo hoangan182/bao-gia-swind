@@ -142,10 +142,10 @@ File `src/agent_06_bom_diffuser.py` đã được chia nhỏ thành **8 hàm ri�
 
 | File | Hàm / Khu vực | Dòng (`StartLine..EndLine`) | Chức năng cần tra cứu |
 | :--- | :--- | :---: | :--- |
-| `src/agent_01_boq_extractor.py` | `_resolve_damper_spec` | `100..393` | Giải mã Model & Ghi chú kỹ thuật nhóm `VAN_GIO` (`SWIND-1.01..1.05`, `SWIND-2.01`, `MD`, `VCD`, `NRD`, `PRD`, `OBD`, Combo Van+Van) |
-| `src/agent_01_boq_extractor.py` | `_resolve_diffuser_spec` | `396..886` | Giải mã Model & Ghi chú kỹ thuật nhóm `CUA_GIO` (Rule 1 KTC->KTM `+50mm`, Rule 2..6 `SD`, `SDG`, `SDGK`, `WL`, `SLB`, `ECG`, Combo Cửa+Van) |
-| `src/agent_01_boq_extractor.py` | `_resolve_duct_spec` | `889..974` | Giải mã Model & Ghi chú kỹ thuật nhóm `ONG_GIO`, `CANVAS`, `TIEU_AM`, `ONG_MEM` |
-| `src/agent_01_boq_extractor.py` | `resolve_item_spec` | `977..1106` | Hàm điều phối tổng giải mã `resolved_spec` cho từng dòng BOQ |
+| `src/agent_01_boq_extractor.py` | `_resolve_damper_spec` | `105..402` | Giải mã Model & Ghi chú kỹ thuật nhóm `VAN_GIO` (`SWIND-1.01..1.05`, `SWIND-2.01`, `MD`, `VCD`, `NRD`, `PRD`, `OBD`, Combo Van+Van) |
+| `src/agent_01_boq_extractor.py` | `_resolve_diffuser_spec` | `405..895` | Giải mã Model & Ghi chú kỹ thuật nhóm `CUA_GIO` (Rule 1 KTC->KTM `+50mm`, Rule 2..6 `SD`, `SDG`, `SDGK`, `WL`, `SLB`, `ECG`, Combo Cửa+Van) |
+| `src/agent_01_boq_extractor.py` | `_resolve_duct_spec` | `898..983` | Giải mã Model & Ghi chú kỹ thuật nhóm `ONG_GIO`, `CANVAS`, `TIEU_AM`, `ONG_MEM` |
+| `src/agent_01_boq_extractor.py` | `resolve_item_spec` | `986..1115` | Hàm điều phối tổng giải mã `resolved_spec` cho từng dòng BOQ |
 | `src/swind_utils.py` | `detect_boq_header` | `79..513` | Tự động tìm dòng Header BOQ và ánh xạ cột (`name`, `w`, `h`, `l`, `unit`, `qty`, `remarks`, phiếu đặt hàng `Lần N`) |
 | `src/swind_utils.py` | `extract_duct_fitting_geometry` | `516..700` | Bóc tách hình học phụ kiện ống gió phức tạp từ chuỗi văn bản (`W1xH1`, `W2xH2`, `D`, `L`, `R`, `offset`, góc độ, kiểu bích) |
 | `src/swind_boq_parser.py` | `parse_sheet` (Phân loại Category) | `213..344` | Phân loại dòng BOQ vào `ONG_GIO`, `VAN_GIO`, `CUA_GIO`, `TIEU_AM`, `CANVAS`, `ONG_MEM`, `THUONG_MAI` |
