@@ -223,6 +223,18 @@
     "AIR_CONDITIONING_SQUARE_DIFFUSER_SD_RULE": {
       "rule": "Đối với hạng mục cửa dành cho hệ điều hòa, cửa vuông các kích thước 600x600 (cổ 450x450), 450x450 (cổ 300x300), 300x300 (cổ 150x150) mặc định áp dụng mã cửa khuếch tán vuông SD (profile type 'T', B1=W-150, B2=H-150), trừ trường hợp là cửa tăng áp/hút khói kèm OBD hoặc ghi rõ nan thẳng/bầu dục/sọt trứng (dạng lưới)/linear. Cửa dạng lưới mặc định là cửa nan sọt trứng (ECG). Cửa hồi / miệng hồi (bao gồm cả từ khóa 'hồi lạnh') mặc định là cửa nan thẳng bầu dục kèm lưới lọc bụi (mã SDG+F, profile type 'BD', has_filter=True), nhưng nếu khách đã ghi kèm van OBD thì chỉ báo kèm OBD (SDG+O) chứ không tự báo thêm lưới lọc."
     },
+    "DIFFUSER_LONG_SLOT_AND_GRID_EGGCRATE_RULE": {
+      "rule": "(Kỹ thuật chốt 2026-11-02) 'Cửa thổi khuếch tán' theo đúng rule cửa khuếch tán: cửa vuông -> khuếch tán vuông SD, cổ = mặt - 150 (VD 450x450 cổ 300x300); cửa khuếch tán dạng dài (cạnh dài >= 4 lần cạnh ngắn, VD 1000x150, 1200x200) -> cửa slot khe hẹp SLD, số khe theo cạnh ngắn (<150: 1 khe, 150-199: 2 khe, >=200: 3 khe) => 1000x150 = slot 2 khe, 1200x200 = slot 3 khe. Ngoại lệ cũ (thêm 26/10, đợt MKS BP05a) ép mọi 'cửa thổi khuếch tán' sang nan bầu dục SDG đã thay bằng nhánh rõ ràng: BOQ mẫu ECB ghi 'nan bầu dục 1 lớp lõi' ở cột Ghi chú -> khi User chốt báo theo Ghi chú thì chạy --spec-priority note (VD BDKSCT-3.VGCG), không khóa theo cụm từ trong Tên. 'Kiểu lưới' cũng hiểu như 'dạng lưới' = cửa nan sọt trứng (ECG), không phải lưới chắn côn trùng."
+    },
+    "PRESSURE_SMOKE_MAKEUP_OBD_EXPLICIT_BLADE_RULE": {
+      "rule": "(User chốt 2026-11-02) Rule 'cửa tăng áp / hút khói / cấp bù kèm OBD -> nan thẳng bầu dục SDG+O' (thêm 26/10) CHỈ áp khi Cột Tên không ghi rõ kiểu nan khác. Tên ghi rõ Louver / nan Z (VD 'Louver cấp bù kèm van MFD ... kèm OBD', 'Cửa gió kiểu nan Z ... (CỬA GIÓ CẤP BÙ)') -> báo Louver nan Z kèm OBD (WL+O) + van MFD nếu có. Dòng ghi chung 'Cửa gió cấp bù kèm van OBD' vẫn là SDG+O."
+    },
+    "REMOVABLE_TWO_FRAME_FACTOR_RULE": {
+      "rule": "(Kỹ thuật chốt 2026-11-02) BOQ có chữ tháo lắp hoặc 2 khung / hai khung -> báo cửa tháo lắp, giá phần cửa = công thức thường của loại cửa x 1.15 (pricing_constants cua.he_so_thao_lap); OBD / LCCT / lọc không nhân. Nhận diện trên chuỗi không dấu (bắt sai dấu 'thoá lăp', đảo chữ 'lắp tháo')."
+    },
+    "DUCT_ROW_WITH_SWIND_PRODUCT_RULE": {
+      "rule": "(User chốt 2026-11-02) Không báo ống gió KHÔNG có nghĩa bỏ cả dòng: dòng ống/cút kèm LCCT / lọc G4 vẫn báo phần LCCT / lọc theo kích thước dòng; dòng ống ghi kèm van / OBD / cửa / louver hoặc Ghi chú phủ định phần Swind -> hỏi lại User."
+    },
     "COMBO_DIFFUSER_WITH_PLENUM_BOX_RULE": {
       "rule": "Khi BOQ có 'Cửa gió kèm hộp gió' hoặc 'Miệng gió kèm hộp gió': Swind chỉ báo giá phần Cửa gió trên sheet báo giá của Swind (hoặc cộng giá hộp gió đã báo khi ref_price > 0), ghi chú rõ quy cách."
     },

@@ -26,7 +26,7 @@ class Agent06_DiffuserBOM:
     """
 
     @staticmethod
-    def calculate_diffuser_bom(parent_id, diffuser_type, w, h, profile_type="BD", has_obd=False, has_mesh=False, has_filter=False, is_double_layer=False, is_black_2nd_layer=False, is_removable=False, n_slots=0):
+    def calculate_diffuser_bom(parent_id, diffuser_type, w, h, profile_type="BD", has_obd=False, has_mesh=False, has_filter=False, is_double_layer=False, is_black_2nd_layer=False, is_removable=False, n_slots=0, removable_factor=1.0):
         from swind_utils import get_master_price_map, get_master_bom_rules
         mat_price_map = get_master_price_map()
         diffuser_rules = get_master_bom_rules().get("diffuser_rules", {})
@@ -82,6 +82,13 @@ class Agent06_DiffuserBOM:
                 parent_id, w_val, h_val, is_double_layer, is_removable,
                 diffuser_rules, mfg_markup, p_alu_bd_master, p_paint_master, p_acc_master, components
             )
+
+        # Cửa tháo lắp / 2 khung: nhân hệ số cho phần cửa (các linh kiện đã có tới đây), không nhân OBD / LCCT / lọc gắn sau
+        if removable_factor and float(removable_factor) != 1.0:
+            for comp in components:
+                comp["calc_qty"] = comp["calc_qty"] * float(removable_factor)
+                comp["note"] = f"{comp.get('note', '')} (tháo lắp x{float(removable_factor):g})".strip()
+            total_alu_kg *= float(removable_factor)
 
         total_alu_kg = Agent06_DiffuserBOM._append_diffuser_accessories(
             parent_id, profile_type, w_val, D, E, has_mesh, has_filter, has_obd, is_black_2nd_layer,

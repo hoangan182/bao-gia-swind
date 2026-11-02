@@ -75,6 +75,20 @@ DUCT_ITEM_PATTERN = re.compile(
 )
 DIM_PATTERN = re.compile(r'([wWaAbB]?\s*\d{2,4}\s*[xX×*]\s*[hHbBwW]?\s*\d{2,4}|[dDØø][nN]?\s*\d{2,4})')
 
+
+def _hidden_col_indices(ws) -> set:
+    """Tập chỉ số cột bị ẩn (tính cả dải nhóm min..max của column_dimensions)."""
+    hidden = set()
+    for dim in ws.column_dimensions.values():
+        if dim.hidden and dim.min and dim.max:
+            hidden.update(range(dim.min, dim.max + 1))
+    return hidden
+
+
+def _is_total_qty_header(txt: str) -> bool:
+    """Cột 'Tổng KL' vẫn được đọc dù bị ẩn (cùng ngoại lệ với swind_utils.detect_boq_header)."""
+    return any(pk in txt for pk in ("tổng kl", "tổng khối lượng", "lũy kế đến hết kỳ này")) and "kỳ trước" not in txt
+
 # ---------------------------------------------------------------------------
 # Module 1: Format Detector & Classifier
 # ---------------------------------------------------------------------------
@@ -178,6 +192,7 @@ class FormatDetector:
                             for mc in range(m_range.min_col, min(35, m_range.max_col + 1)):
                                 merged_lookup[(mr, mc)] = top_val
 
+        hidden_cols = _hidden_col_indices(ws)
         for r in range(1, min(41, ws.max_row + 1)):
             row_texts = {}
             for c in range(1, min(30, ws.max_column + 1)):
@@ -187,6 +202,9 @@ class FormatDetector:
                 if v is not None:
                     txt = unicodedata.normalize('NFC', str(v)).lower().strip()
                     txt = re.sub(r'\s+', ' ', txt)
+                    # Cột ẩn (VD 'KL CĐT' ẩn cạnh 'KL ECB') bị bỏ qua như detect_boq_header, trừ cột Tổng KL
+                    if c in hidden_cols and not _is_total_qty_header(txt):
+                        continue
                     row_texts[c] = txt
 
             if len(row_texts) < 2:
@@ -387,7 +405,8 @@ class FormatDetector:
                                             "ống đồng", "ống nước", "ống nhựa", "upvc", "ppr", "van nước", "van bướm", "y lọc",
                                             "ống pvc", "pvc", "emt", "ống g.i", "ống gi", "ống luồn", "ống thép")
             )
-            is_grille_or_damper = any(
+            # 'Cửa thổi/hồi/hút ... kèm hộp gió' là cửa gió, không phải ống/hộp gió
+            is_grille_or_damper = name_lower.startswith("cửa ") or any(
                 gk in name_lower for gk in ("cửa gió", "miệng gió", "louver", "côn trùng", "van ", "damper", "grille", "diffuser")
             )
             is_sec_hdr = ("cung cấp" in name_lower and "lắp đặt" in name_lower) or any(sk in name_lower for sk in SECTION_KEYWORDS)
@@ -934,8 +953,9 @@ class StructureNormalizer:
         Tìm cột chứa SL thực tế bằng cách đếm cột nào có nhiều số dương nhất.
         """
         candidates = {}
+        hidden_cols = _hidden_col_indices(ws)
         for c in range(1, min(ws.max_column + 1, 25)):
-            if c == name_col:
+            if c == name_col or c in hidden_cols:
                 continue
             count_positive = 0
             count_total = 0

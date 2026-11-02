@@ -90,7 +90,7 @@ class Agent05_DamperBOM:
         Agent05_DamperBOM._append_actuator_or_mechanism(
             parent_id, w_mod, h_mod, modules_count, mod_note,
             is_md, is_fd, is_mfd, is_nrd, is_prd, is_single_blade,
-            mfd_mode, model_code, motor_brand, components
+            mfd_mode, model_code, motor_brand, components, is_mprd=is_mprd
         )
 
         z_total_m2 = ((w_eff + h_eff) * 2.0 * 300.0 + w_eff * h_eff) / 1_000_000.0
@@ -367,7 +367,7 @@ class Agent05_DamperBOM:
         return l_body, thickness_body, is_single_blade, blade_factor_per_mod, mod_note, components
 
     @staticmethod
-    def _append_actuator_or_mechanism(parent_id, w_mod, h_mod, modules_count, mod_note, is_md, is_fd, is_mfd, is_nrd, is_prd, is_single_blade, mfd_mode, model_code, motor_brand, components):
+    def _append_actuator_or_mechanism(parent_id, w_mod, h_mod, modules_count, mod_note, is_md, is_fd, is_mfd, is_nrd, is_prd, is_single_blade, mfd_mode, model_code, motor_brand, components, is_mprd=False):
         """Chọn động cơ van (Belimo / KLB / Honeywell), cầu chì FD, đối trọng PRD/NRD hoặc tay gạt VCD."""
         cross_section_mod_m2 = (w_mod * h_mod) / 1_000_000.0
         if is_md:
@@ -384,7 +384,15 @@ class Agent05_DamperBOM:
                 else:
                     act_id = "MAT-ACTUATOR-HONEYWELL-20NM"
                     act_name = "Động cơ van gió HoneyWell ON/OFF 20Nm (Model: CN4620A)"
-            elif cross_section_mod_m2 <= 0.8:
+            elif is_mprd:
+                # Rule MPRD (User chốt 2026-11-02): van xả áp động cơ -> "động cơ tuyến tính 230V Belimo On/Off", mô-men theo
+                # rule Belimo MD (1 cạnh modul >= 1000mm -> 10Nm, dưới -> 5Nm, > 1.8 m2/modul -> 20Nm). Mã riêng MPRD, giá
+                # mặc định = Belimo cùng mô-men; chỉ đổi giá qua cờ --mprd-motor-price / --motor-price
+                act_nm = "5" if max(w_mod, h_mod) < 1000 else ("10" if cross_section_mod_m2 <= 1.8 else "20")
+                act_id = {"5": "MAT-ACTUATOR-BELIMO-MPRD-5NM", "10": "MAT-ACTUATOR-BELIMO-MPRD", "20": "MAT-ACTUATOR-BELIMO-MPRD-20NM"}[act_nm]
+                act_name = f"Động cơ tuyến tính 230V Belimo On/Off {act_nm}Nm"
+            elif max(w_mod, h_mod) < 1000:
+                # Rule Kỹ thuật (2026-11-02): Van MD động cơ thường Belimo có 1 cạnh (modul) >= 1000mm -> 10Nm, dưới -> 5Nm
                 act_id = "MAT-ACTUATOR-BELIMO-5NM"
                 act_name = "Động cơ van gió Belimo ON/OFF 5Nm"
             elif cross_section_mod_m2 <= 1.8:

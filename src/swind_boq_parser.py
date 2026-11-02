@@ -252,7 +252,12 @@ class SwindBOQParser:
                 thickness = float(m_thk_col.group(1).replace(',', '.')) if m_thk_col else 0.0
             else:
                 thickness = 0.0
-            
+            if thickness == 0 and "material" in col_map:
+                mat_val = ws.cell(r, col_map["material"]).value
+                m_mat_thk = re.search(r'^\s*(?:z\s*\d{2,3}|zam|g\s*\d{2,3}|tôn|tole|thép|inox|sus)[^\d]*?(?:\d{2,3}\s*[-–/ ]\s*)?(\d[.,]\d{1,2})\b', str(mat_val or ""), re.IGNORECASE)
+                if m_mat_thk and 0.3 <= float(m_mat_thk.group(1).replace(',', '.')) <= 5.0:
+                    thickness = float(m_mat_thk.group(1).replace(',', '.'))
+
             # Chuẩn bị tên đầy đủ kèm tiền tố danh mục cha (section)
             clean_section = current_section.strip()
             full_name_str = name_str
@@ -290,6 +295,8 @@ class SwindBOQParser:
             hvac_damper_kws = ("vcd", "mfd", "mfsd", "fd", "nrd", "prd", "obd", "gió", "tôn", "tole", "lửa", "khói", "cháy", "ei")
             # Cáp điện (Cu/..., XLPE, ...mm2) & Van nước ghi DN: không thuộc phạm vi Swind, kể cả khi Title cha nhắc 'van MFD'
             is_electrical_cable = bool(re.search(r'\bcu\s*/|\d\s*(?:mm2|mm²)|\bxlpe\b|\bcxv\b|\bcvv\b|^(?:dây|cáp)\s', name_lower))
+            # Rule User (2026-11-02): Bộ chuyển đổi nguồn / bộ nguồn cho van -> hàng thương mại, chưa báo giá (đến khi User thông báo đổi)
+            is_electrical_cable = is_electrical_cable or bool(re.search(r'chuyển\s+đổi\s+ngu[ồố]n|^bộ\s+ngu[ồố]n\b', name_lower))
             is_dn_water_valve = name_lower.startswith(("van ", "bộ van")) and bool(re.search(r'\bdn\s*\d{2,3}\b', name_lower)) and not any(match_keyword(k, name_lower) for k in hvac_damper_kws)
             is_hvac_prd = ("van giảm áp" in full_name_lower or "van xả áp" in full_name_lower) and (
                 bool(re.search(r'\b\d{2,4}\s*[xX*]\s*\d{2,4}\b', f"{full_name_str} {note_boq}"))
@@ -338,6 +345,13 @@ class SwindBOQParser:
                 if category == "KHAC" and not is_plumbing_item and "tiêu âm" not in name_lower and name_lower.startswith(("cút ", "co ", "chếch ", "côn ", "tê ", "chạc ", "chân rẽ", "gót giày", "cổ trích", "bịt đầu", "bịt ống", "nắp bịt", "măng xông", "măng sông", "nối ống", "zét ", "ống lượn")):
                     if re.search(r'\b(?:[dD][nN]?|Ø|phi\s*)\d{2,4}\b|\b\d{2,4}\s*[xX*]\s*\d{2,4}\b', name_str, re.IGNORECASE):
                         category = "ONG_GIO"
+                # Ống thẳng / Ống bịt / Z đứng-ngang có ký hiệu xen giữa (VD: 'Ống EI60 KT 500x400', 'Ống EAD KT 250x100', 'Ống bịt: 550x300, L100', 'Z đứng EI60 KT 500x1200')
+                # -> ONG_GIO trước khi Title cha (VD: 'Quạt tăng áp ...') kéo sang THUONG_MAI
+                if category == "KHAC" and not is_plumbing_item and "tiêu âm" not in name_lower and (
+                    re.search(r'^ống\s+(?:(?:ei\s*\d{2,3}|[a-z]{2,3}d|bịt|gió|chữ\s+nhật|vuông)\s*[:;,]?\s+)*(?:(?:kt|kích\s*thước)\s*[:;]?\s*)?\d{2,4}\s*[xX*]\s*\d{2,4}\b', name_lower)
+                    or re.search(r'^z\s+(?:đứng|ngang)\b.*?\b\d{2,4}\s*[xX*]\s*\d{2,4}\b', name_lower)
+                ):
+                    category = "ONG_GIO"
 
                 if category == "KHAC" and any(k in name_lower or k in note_boq.lower() for k in ("access door", "cửa công tác", "cửa thăm", "cửa kiểm tra", "cửa chớp", "chớp nhôm", "cửa bầu dục", "cửa nan z", "cửa sọt trứng", "cửa khuếch tán")):
                     category = "CUA_GIO"
@@ -618,6 +632,13 @@ class SwindBOQParser:
                 and not any(k in raw_makeup_chk for k in ("fag", "sag", "rag", "oag", "pag", "seg", "eag", "sdg", "obd", "nan thẳng", "bầu dục"))
             )
             is_ktc = (bool(re.search(ktc_rx, dim_search_text, re.IGNORECASE)) or is_makeup_air_z) and not has_explicit_kt_bi
+            # Cửa khuếch tán vuông: cổ -> mặt +150mm/cạnh (cùng quy tắc Agent01 Rule 1); cửa khác +50mm
+            ktc_diff_txt = f"{raw_name_str} {name_str} {model_str} {note_boq}".lower()
+            is_ktc_diffuser = (
+                any(k in ktc_diff_txt for k in ("khuếch tán", "scd", "sad", "diffuser"))
+                and "cửa thổi khuếch tán" not in ktc_diff_txt
+            )
+            ktc_offset = 150.0 if (is_ktc_diffuser and ((w >= 150.0 and h >= 150.0) or d_val >= 150.0)) else 50.0
 
             # Rule 6 & 7: Kiểm tra dòng sản phẩm kết hợp Van + Cửa (Combo)
             search_combo_txt = re.sub(r'\(\s*(?:for|cho)\s+[^)]*\)', '', f"{raw_name_str} {name_str} {model_str}".lower().replace("\n", " "))
@@ -660,9 +681,9 @@ class SwindBOQParser:
 
             if category in ("CUA_GIO", "VAN_GIO") and has_diffuser and m_damper and detected_dampers:
                 sorted_dampers = sorted(detected_dampers, key=lambda x: damper_priority.get(x, 99))
-                w_diff = (w + 50.0) if (is_ktc and w > 0) else w
-                h_diff = (h + 50.0) if (is_ktc and h > 0) else h
-                d_diff = (d_val + 50.0) if (is_ktc and d_val > 0) else d_val
+                w_diff = (w + ktc_offset) if (is_ktc and w > 0) else w
+                h_diff = (h + ktc_offset) if (is_ktc and h > 0) else h
+                d_diff = (d_val + ktc_offset) if (is_ktc and d_val > 0) else d_val
                 items.append({
                     "source_row": r,
                     "source_sheet": sheet_name,
@@ -780,9 +801,9 @@ class SwindBOQParser:
                 if category == "CUA_GIO" and is_ktc:
                     if w_neck == 0 and w > 0: w_neck = w
                     if h_neck == 0 and h > 0: h_neck = h
-                    if w > 0: w += 50.0
-                    if h > 0: h += 50.0
-                    if d_val > 0: d_val += 50.0
+                    if w > 0: w += ktc_offset
+                    if h > 0: h += ktc_offset
+                    if d_val > 0: d_val += ktc_offset
 
                 item_data = {
                     "source_row": r,

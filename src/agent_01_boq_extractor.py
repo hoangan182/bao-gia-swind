@@ -4,7 +4,7 @@ from swind_universal_extractor import SwindUniversalExtractor
 from agent_04_bom_duct import Agent04_DuctworkBOM
 from agent_05_bom_damper import Agent05_DamperBOM
 from agent_06_bom_diffuser import Agent06_DiffuserBOM
-from swind_utils import get_subtype_rules
+from swind_utils import get_subtype_rules, remove_vietnamese_accents, K
 
 
 # Từ khóa BOQ quy định rõ van chặn lửa FD thường (không EI). Ngoài các trường hợp này, mọi van FD tính EI120 có bọc.
@@ -337,17 +337,23 @@ class Agent01_BOQExtractor:
                 mod_dmp_txt = f", chia {mod_cnt} modul ({mod_cnt} động cơ)" if mod_cnt > 1 else ""
                 note_fslf = note_bfn = f"Van động cơ ON-OFF HoneyWell {act_nm}, 230V, đóng mở 90s-150s (Model: {act_md}/tđ){mod_dmp_txt}"
             else:
-                act_nm = "5Nm" if s_mod <= 0.8 else ("10Nm" if s_mod <= 1.8 else "20Nm")
+                act_nm = "5Nm" if max(w_mod, h_mod) < 1000 else ("10Nm" if s_mod <= 1.8 else "20Nm")  # Belimo MD có 1 cạnh >= 1000mm -> 10Nm
                 mod_dmp_txt = f", chia {mod_cnt} modul ({mod_cnt} động cơ)" if mod_cnt > 1 else ""
                 note_fslf = note_bfn = f"Van động cơ ON-OFF BELIMO {act_nm} (đóng mở 150s), điện áp 230V, xuất xứ Thụy Sỹ{mod_dmp_txt}"
         elif eff_type == "MPRD":
             model_fslf = model_bfn = "M-PRD"
             s_mod = (w_mod * h_mod) / 1_000_000.0
-            act_nm = "5Nm" if s_mod <= 0.8 else ("10Nm" if s_mod <= 1.8 else "20Nm")
-            if ei_rating > 0:
-                note_fslf = note_bfn = f"Van xả áp động cơ, thân van bọc tấm KSH 10mm, không có kiểm định. Động cơ Belimo On/Off {act_nm}"
+            if motor_brand == "BELIMO":
+                # Rule MPRD (User chốt 2026-11-02): động cơ tuyến tính 230V Belimo On/Off, mô-men theo rule Belimo MD (Agent05)
+                act_nm = "5Nm" if max(w_mod, h_mod) < 1000 else ("10Nm" if s_mod <= 1.8 else "20Nm")
+                act_txt = f"Động cơ tuyến tính 230V Belimo On/Off {act_nm}"
             else:
-                note_fslf = note_bfn = f"Van xả áp động cơ tôn mạ kẽm. Động cơ Belimo On/Off {act_nm}"
+                act_nm = "5Nm" if s_mod <= 0.8 else ("10Nm" if s_mod <= 1.8 else "20Nm")
+                act_txt = f"Động cơ {'HoneyWell' if motor_brand == 'HONEYWELL' else motor_brand} On/Off {act_nm}"
+            if ei_rating > 0:
+                note_fslf = note_bfn = f"Van xả áp động cơ, thân van bọc tấm KSH 10mm, không có kiểm định. {act_txt}"
+            else:
+                note_fslf = note_bfn = f"Van xả áp động cơ tôn mạ kẽm. {act_txt}"
         elif eff_type == "NRD":
             model_fslf = model_bfn = "NRD"
             note_fslf = note_bfn = "Van 1 chiều tôn mạ kẽm. ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm" if ei_rating > 0 else "Van 1 chiều tôn mạ kẽm"
@@ -422,7 +428,7 @@ class Agent01_BOQExtractor:
         spec_prio = item.get("spec_priority", "name")
 
         has_explicit_straight = any(k in primary_diff_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd", "lớp nan", "nan đơn", "nan đôi", "air grille"))
-        has_explicit_egg = any(k in primary_diff_search for k in ("sọt trứng", "sọt trưng", "dạng lưới", "eggcrate", "egg crate", "ecg", "seeg"))
+        has_explicit_egg = any(k in primary_diff_search for k in ("sọt trứng", "sọt trưng", "dạng lưới", "kiểu lưới", "eggcrate", "egg crate", "ecg", "seeg"))
         has_explicit_louver = any(k in primary_diff_search for k in ("nan z", "louver", "luover", "louvre", "cửa chớp", "chớp nhôm"))
         has_explicit_slot = any(k in primary_diff_search for k in ("slot", "sld", "lsd", "dls", "khe hẹp", "kiểu khe"))
         has_explicit_linear = any(k in primary_diff_search for k in ("linear", "slb", "nan t ", "nan t-", "khe dài", "tuyến tính"))
@@ -443,7 +449,7 @@ class Agent01_BOQExtractor:
 
         filter_search = re.sub(r'không\s+kèm\s+lọc[^\.,\n]*', '', combined_search)
         mesh_base = primary_diff_search if note_blade_conflict else combined_search
-        mesh_search = re.sub(r'(?:dạng\s+lưới|lưới\s+(?:lọc|gió))', '', mesh_base)
+        mesh_search = re.sub(r'(?:(?:dạng|kiểu)\s+lưới|lưới\s+(?:lọc|gió))', '', mesh_base)
         has_mesh = (
             any(k in mesh_search for k in mesh_kws if k != "is")
             or bool(re.search(r'\b(?:i\.s\.?|l\.s\.?|lc+[tc])\b|(?:c/w|\+|kèm|with)\s*(?:is|ls)\b', mesh_search))
@@ -451,7 +457,14 @@ class Agent01_BOQExtractor:
         has_filter = any(k in filter_search for k in filter_kws)
         is_double_layer = ("2 lớp" in combined_search or "hai lớp" in combined_search)
         is_black_2nd_layer = ("2nd layer" in combined_search or "black paint" in combined_search or "sơn đen" in combined_search)
-        is_removable = any(k in combined_search for k in ("tháo lắp", "thao lap"))
+        # Cửa tháo lắp / 2 khung (Kỹ thuật chốt 2026-11-02): phần cửa = giá cửa thường x hệ số cua.he_so_thao_lap (1.15).
+        # So khớp trên chuỗi KHÔNG DẤU để bắt lỗi chính tả dấu (thoá lắp, tháo lăp...) và đảo chữ (lắp tháo).
+        unaccent_search = re.sub(r'\s+', ' ', remove_vietnamese_accents(combined_search).lower())
+        is_removable_by_text = bool(re.search(
+            r'\bth(?:ao|oa)\s*[-/]?\s*lap\b|\blap\s*[-/]?\s*th(?:ao|oa)\b|\b(?:2|hai)\s*khung\b|\bremovable\b',
+            unaccent_search
+        ))
+        is_removable = is_removable_by_text
         w_pre_ktc = float(item.get("w_pre_ktc") or w or 0.0)
         h_pre_ktc = float(item.get("h_pre_ktc") or h or 0.0)
         item["w_pre_ktc"] = w_pre_ktc
@@ -476,7 +489,8 @@ class Agent01_BOQExtractor:
 
         # Rule 2: Cửa tăng áp, cửa hút khói kèm OBD -> nan thẳng bầu dục kèm van OBD mã SDG+O
         is_press_or_smoke = any(k in combined_search for k in ("tăng áp", "tạo áp", "hút khói", "thải khói", "cấp bù", "pag", "seg", "spg", "seag", "smoke"))
-        is_eggcrate = any(k in blade_search for k in ("sọt trứng", "sọt trưng", "dạng lưới", "eggcrate", "egg crate", "ecg", "seeg"))
+        # Cửa dạng lưới / kiểu lưới mặc định là cửa nan sọt trứng (ECG) — rule AIR_CONDITIONING_SQUARE_DIFFUSER_SD_RULE
+        is_eggcrate = any(k in blade_search for k in ("sọt trứng", "sọt trưng", "dạng lưới", "kiểu lưới", "eggcrate", "egg crate", "ecg", "seeg"))
 
         # Rule 3: Cửa ghi nan Z, louver hoặc miệng cấp khí bù ngoài trời hoặc cửa nan 1 lớp khổ lớn >= 3000mm -> cửa nan Z mã WL / WL+N
         is_louver_z = (
@@ -493,6 +507,14 @@ class Agent01_BOQExtractor:
             any(k in blade_search for k in ("slot", "sld", "lsd", "dls", "khe hẹp", "kiểu khe"))
             or bool(re.search(r'\b(?:lb\s*\d{2,3}|sl\s*\d|ls\s*\d|\d{3,4}\s*mm\s*[,;-]?\s*[dD]\d{2,3})\b', blade_search))
         )
+        # Cửa khuếch tán dạng dài (cạnh dài >= 4 lần cạnh ngắn, VD 1000x150, 1200x200) -> cửa slot khe hẹp SLD,
+        # số khe theo cạnh ngắn (<150: 1 khe, <200: 2 khe, còn lại 3 khe) — Kỹ thuật chốt 2026-11-02
+        if (
+            not is_slot_sld and w > 0 and h > 0 and max(w, h) >= 4.0 * min(w, h)
+            and any(k in blade_search for k in ("khuếch tán", "diffuser"))
+            and not any(k in blade_search for k in ("tròn", "round", "linear", "slb", "nan t ", "nan t-", "khe dài", "tuyến tính"))
+        ):
+            is_slot_sld = True
         # Rule 4: Cửa hồi là cửa nan thẳng bầu dục kèm lưới lọc bụi thô mã SDG+F (nếu khách đã ghi kèm OBD thì không tự báo thêm lưới)
         is_return_grille = any(k in combined_search for k in ("cửa hồi", "miệng hồi", "hút hồi", "rag", "hồi gió", "gió hồi", "hồi lạnh", "cửa gió hồi", "cửa gió hôi", "return air", "return grille"))
         if is_return_grille and not has_mesh and not has_obd and not is_eggcrate and not is_slot_sld:
@@ -512,16 +534,16 @@ class Agent01_BOQExtractor:
                 else:
                     n_slots = 3
 
-        # Rule 5: Cửa khuếch tán mã SD (vuông 600x600, 450x450, 300x300 hoặc khuếch tán)
-        is_thoi_kt = ("cửa thổi khuếch tán" in combined_search)
+        # Rule 5: Cửa khuếch tán mã SD (vuông 600x600, 450x450, 300x300 hoặc khuếch tán; cổ = mặt - 150).
+        # 'Cửa thổi khuếch tán' cũng theo rule này (bỏ ngoại lệ cũ ép sang nan bầu dục SDG — Kỹ thuật phản hồi 2026-11-02)
         is_sq_ac_diffuser = (
-            not is_thoi_kt and not is_standalone_lcct and not is_standalone_filter
+            not is_slot_sld and not is_standalone_lcct and not is_standalone_filter
             and w > 0 and w == h and int(w) in (600, 450, 300)
             and not is_return_grille and not is_louver_z and not is_press_or_smoke and not is_eggcrate
             and (not has_obd or any(k in combined_search for k in ("cấp", "lạnh", "điều hòa", "sag", "sad", "scd", "khuếch tán", "450", "150")))
             and not any(k in blade_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd", "lớp nan", "nan đơn", "nan đôi", "air grille", "sọt trứng", "sọt trưng", "eggcrate", "ecg", "linear", "nan t", "dạng nan", "格栅", "kiểm tra", "检查", "access door", "cửa công tác", "cửa thăm", "tháo lắp", "inspection", "oag", "eag", "mag", "fag", "ngoài trời", "gió thải"))
         )
-        is_diffuser_sq = (not is_thoi_kt and not is_standalone_lcct and not is_standalone_filter) and (any(k in blade_search for k in ("khuếch tán", "scd", "sad", "diffuser")) or is_sq_ac_diffuser or (w == 600 and h == 600 and "sag" in blade_search))
+        is_diffuser_sq = (not is_slot_sld and not is_standalone_lcct and not is_standalone_filter) and (any(k in blade_search for k in ("khuếch tán", "scd", "sad", "diffuser")) or is_sq_ac_diffuser or (w == 600 and h == 600 and "sag" in blade_search))
 
         # Rule 1: KTC vs KTM check (nếu ghi KTC, --neck-size, hoặc cửa bù khí nan Z thì cộng thêm viền ra kích thước mặt)
         if not item.get("is_ktc_applied"):
@@ -594,7 +616,9 @@ class Agent01_BOQExtractor:
                 b1, b2 = int(max(50, w - 50)), int(max(50, h - 50))
             note_fslf = note_bfn = "Cửa nan sọt trứng" + (" lõi tháo lắp" if is_removable else "") + (" kèm van OBD" if has_obd else "") + (" kèm LCCT" if has_mesh else "") + (" kèm lưới lọc bụi thô" if has_filter else "") + box_note
 
-        elif is_press_or_smoke and has_obd and not has_img_slb and not is_slot_sld:
+        # Rule 2 chỉ áp khi Tên KHÔNG ghi rõ kiểu nan khác (VD 'Cửa gió cấp bù kèm OBD' -> SDG+O);
+        # Tên ghi rõ louver / nan Z ('Louver cấp bù kèm OBD + MFD', 'Cửa gió kiểu nan Z ... (CẤP BÙ)') -> theo kiểu nan đó (User chốt 2026-11-02)
+        elif is_press_or_smoke and has_obd and not has_img_slb and not is_slot_sld and not has_explicit_louver:
             profile_type = "BD"
             has_obd = True
             model_fslf = model_bfn = "SDG+O+N" if has_mesh else "SDG+O"
@@ -668,11 +692,12 @@ class Agent01_BOQExtractor:
                 note_fslf = note_bfn = f"Cửa khuếch tán vuông 4 hướng{' kèm van OBD' if has_obd else ''}{' kèm LCCT' if has_mesh else ''}" + box_note
 
         else:
-            if is_slot_sld and not any(k in combined_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd", "sọt trứng", "sọt trưng")):
+            # Kiểu nan xét theo blade_search (Cột Tên khi Tên & Ghi chú mâu thuẫn, --spec-priority name)
+            if is_slot_sld and not any(k in blade_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd", "sọt trứng", "sọt trưng")):
                 profile_type = "SLD"
-            elif has_img_slb and not any(k in combined_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd", "sọt trứng", "sọt trưng")):
+            elif has_img_slb and not any(k in blade_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd", "sọt trứng", "sọt trưng")):
                 profile_type = "SLB"
-            elif is_thoi_kt or any(k in combined_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd", "fag", "sag", "rag", "oag", "mag", "pag", "seg", "spg", "seag", "sdg")):
+            elif any(k in combined_search for k in ("nan thẳng", "gió thẳng", "miệng thẳng", "cửa thẳng", "bầu dục", "nan bd", "fag", "sag", "rag", "oag", "mag", "pag", "seg", "spg", "seag", "sdg")):
                 profile_type = "BD"
             else:
                 profile_type = cls.get_subtype(subtype_rules, "CUA_GIO", raw_search, cls.get_subtype(subtype_rules, "CUA_GIO", full_search, "BD"))
@@ -738,6 +763,15 @@ class Agent01_BOQExtractor:
                 if w > 0 and h > 0:
                     b1, b2 = int(max(50, w - 50)), int(max(50, h - 50))
                 note_fslf = note_bfn = f"Cửa nan bầu dục {'2 lớp' if is_double_layer else '1 lớp'}" + (" khung tháo lắp" if is_removable else "") + (" kèm van OBD" if has_obd else "") + (" kèm LCCT" if has_mesh else "") + (" kèm lưới lọc bụi thô" if has_filter else "") + box_note
+
+        # Tháo lắp / 2 khung ghi trong BOQ: chỉ nhân hệ số cho PHẦN CỬA (Agent 06 không nhân OBD / LCCT / lọc).
+        # Cửa kiểm tra SDGK nhận diện theo từ khóa kiểm tra (không có chữ tháo lắp) giữ công thức tháo lắp cũ.
+        removable_factor = 1.0
+        if is_removable_by_text and profile_type not in ("LCCT", "FILTER_G4"):
+            removable_factor = float(K("cua.he_so_thao_lap", 1.15))
+            if "tháo lắp" not in note_fslf:
+                door_note = note_fslf[:-len(box_note)] if (box_note and note_fslf.endswith(box_note)) else note_fslf
+                note_fslf = note_bfn = f"{door_note} (tháo lắp){box_note if door_note != note_fslf else ''}"
 
         w_neck_explicit = float(item.get("w_neck") or 0)
         h_neck_explicit = float(item.get("h_neck") or 0)
@@ -886,7 +920,9 @@ class Agent01_BOQExtractor:
             "has_filter": has_filter,
             "is_double_layer": is_double_layer,
             "is_black_2nd_layer": is_black_2nd_layer,
-            "is_removable": is_removable,
+            # Đã nhân hệ số tháo lắp thì Agent 06 tính phần cửa theo công thức thường (tránh nhân 2 lần)
+            "is_removable": is_removable and removable_factor == 1.0,
+            "removable_factor": removable_factor,
             "is_box_combo": is_box_combo,
             "box_spec": box_spec,
             "n_slots": n_slots,
@@ -1025,6 +1061,7 @@ class Agent01_BOQExtractor:
         is_double_layer = False
         is_black_2nd_layer = False
         is_removable = False
+        removable_factor = 1.0
         is_fire_canvas = False
         is_box_combo = False
         box_spec = None
@@ -1056,6 +1093,7 @@ class Agent01_BOQExtractor:
             note_fslf, note_bfn = dif_res["note_fslf"], dif_res["note_bfn"]
             has_obd, has_mesh, has_filter = dif_res["has_obd"], dif_res["has_mesh"], dif_res["has_filter"]
             is_double_layer, is_black_2nd_layer, is_removable = dif_res["is_double_layer"], dif_res["is_black_2nd_layer"], dif_res["is_removable"]
+            removable_factor = float(dif_res.get("removable_factor") or 1.0)
             is_box_combo = dif_res["is_box_combo"]
             box_spec = dif_res.get("box_spec")
             n_slots = int(dif_res.get("n_slots") or 0)
@@ -1097,6 +1135,7 @@ class Agent01_BOQExtractor:
             "has_mesh": has_mesh,
             "has_filter": has_filter,
             "is_double_layer": is_double_layer,
+            "removable_factor": removable_factor,
             "is_black_2nd_layer": is_black_2nd_layer,
             "is_removable": is_removable,
             "is_fire_canvas": is_fire_canvas,

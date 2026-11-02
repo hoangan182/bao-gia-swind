@@ -188,6 +188,9 @@ def detect_boq_header(ws):
                     elif any(k in v for k in THK_KEYWORDS) or "độ dầy" in v or "độ dày tole" in v:
                         col_map["thickness"] = c
                         matched_sub = True
+                    elif v in ("vật liệu", "vật liệu tôn", "chủng loại tôn", "loại tôn", "material"):
+                        # Cột Vật liệu (VD: 'Z08-0.75') -> nguồn độ dày tôn khi BOQ không có cột Độ dày
+                        if "material" not in col_map: col_map["material"] = c
                     elif any(k in v for k in SPEC_KEYWORDS) or v in ("spec", "specs", "specification", "specifications"):
                         if "spec" not in col_map: col_map["spec"] = c
                         matched_sub = True

@@ -13,7 +13,7 @@
     "l_col": 1000,
     "thk_col": 0.58,
     "area_m2": 1.6,
-    "sell_unit_price": 252000
+    "sell_unit_price": 264000
   },
   {
     "input_text": "Ống gió vuông 800x400xL1110",
@@ -29,7 +29,7 @@
     "l_col": 1110,
     "thk_col": 0.75,
     "area_m2": 2.664,
-    "sell_unit_price": 517800
+    "sell_unit_price": 553800
   },
   {
     "input_text": "Ống gió vuông 1200x600 nẹp C",
@@ -45,7 +45,7 @@
     "l_col": 1180,
     "thk_col": 0.95,
     "area_m2": 1.0,
-    "sell_unit_price": 223300
+    "sell_unit_price": 235000
   },
   {
     "input_text": "Côn thu vuông 600x400/400x300 L=500",
@@ -61,7 +61,7 @@
     "l_col": 500,
     "thk_col": 0.58,
     "area_m2": 1.09,
-    "sell_unit_price": 206100
+    "sell_unit_price": 224900
   },
   {
     "input_text": "Chân rẽ 400x200/300x150 L=300",
@@ -77,7 +77,7 @@
     "l_col": 300,
     "thk_col": 0.58,
     "area_m2": 0.443,
-    "sell_unit_price": 83800
+    "sell_unit_price": 91400
   },
   {
     "input_text": "Côn thu vuông tròn 400x200/D200 L=300",
@@ -109,7 +109,7 @@
     "l_col": 250,
     "thk_col": 0.58,
     "area_m2": 1.542,
-    "sell_unit_price": 291400
+    "sell_unit_price": 318000
   },
   {
     "input_text": "Cút vuông 45 độ 400x200",
@@ -125,7 +125,7 @@
     "l_col": 200,
     "thk_col": 0.58,
     "area_m2": 0.536,
-    "sell_unit_price": 101300
+    "sell_unit_price": 110500
   },
   {
     "input_text": "Zét lượn 400x200 L=600 E=200",
@@ -141,7 +141,7 @@
     "l_col": 600,
     "thk_col": 0.58,
     "area_m2": 1.296,
-    "sell_unit_price": 244900
+    "sell_unit_price": 267300
   },
   {
     "input_text": "Chạc 3 Y vuông 500x300/300x300",
@@ -157,7 +157,7 @@
     "l_col": 250,
     "thk_col": 0.58,
     "area_m2": 1.775,
-    "sell_unit_price": 335400
+    "sell_unit_price": 366000
   },
   {
     "input_text": "Tê vuông 600x300/400x200",
@@ -173,7 +173,7 @@
     "l_col": 800,
     "thk_col": 0.58,
     "area_m2": 1.945,
-    "sell_unit_price": 367600
+    "sell_unit_price": 401100
   },
   {
     "input_text": "Bịt đầu ống gió 400x200",
@@ -189,7 +189,7 @@
     "l_col": 100,
     "thk_col": 0.58,
     "area_m2": 0.3,
-    "sell_unit_price": 56700
+    "sell_unit_price": 61900
   },
   {
     "input_text": "Hộp gió 600x600xL300 (1 cổ D200)",
@@ -205,7 +205,7 @@
     "l_col": 300,
     "thk_col": 0.58,
     "area_m2": 1.227,
-    "sell_unit_price": 231900
+    "sell_unit_price": 253100
   },
   {
     "input_text": "Hộp gió 600x600xL300 có bảo ôn (2 cổ D150)",
@@ -221,7 +221,7 @@
     "l_col": 300,
     "thk_col": 0.58,
     "area_m2": 1.249,
-    "sell_unit_price": 398500
+    "sell_unit_price": 420000
   },
   {
     "input_text": "Ống gió tròn xoắn D300",

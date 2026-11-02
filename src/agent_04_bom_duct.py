@@ -172,7 +172,7 @@ class Agent04_DuctworkBOM:
             return "PLENUM_BOX"
         if any(k in t for k in ("côn thu vuông tròn", "con thu vuong tron", "côn vuông tròn", "con vuong tron", "vuông tròn", "vuong tron", "vuông sang tròn", "tròn sang vuông", "chuyển tiết diện", "chuyen tiet dien", "côn đầu quạt", "con dau quat", "v-t", "cvt")) or (not is_round and w1 > 0 and h1 > 0 and d1 > 0 and w2 == 0):
             return "SQUARE_TO_ROUND"
-        if any(k in t for k in ("bịt đầu", "bit dau", "nắp bịt", "nap bit", "bịt 1 đầu", "bit 1 dau", "bịt ống", "bit ong")):
+        if any(k in t for k in ("bịt đầu", "bit dau", "nắp bịt", "nap bit", "bịt 1 đầu", "bit 1 dau", "bịt ống", "bit ong", "ống bịt", "ong bit")):
             return "END_CAP_RT" if is_round else "END_CAP_SQ"
         if any(k in t for k in ("măng xông", "mang xong", "măng sông", "mang song", "nối ống", "noi ong")):
             return "COUPLING_RT"
@@ -180,7 +180,7 @@ class Agent04_DuctworkBOM:
             return "WYE_RT" if is_round else "WYE_SQ"
         if any(k in t for k in ("tê vuông", "te vuong", "tê tròn", "te tron", "tê đều", "tê thu", "tê ống", "tee")) or re.search(r'\btê\b', t):
             return "TEE_RT" if is_round else "TEE_SQ"
-        if any(k in t for k in ("zét lượn", "zet luon", "zét", "ống lượn", "ong luon", "lượn ống gió", "luon ong gio", "lượn z", "luon z", "z chuyển cao độ", "z chuyen cao do", "z chuyển hướng", "z chuyen huong", "offset")) or re.search(r'\bz\s*vuông\b|(?:^|\s)z\s*\d{2,4}\s*[xX*]\s*\d{2,4}', t):
+        if any(k in t for k in ("zét lượn", "zet luon", "zét", "ống lượn", "ong luon", "lượn ống gió", "luon ong gio", "lượn z", "luon z", "z chuyển cao độ", "z chuyen cao do", "z chuyển hướng", "z chuyen huong", "z đứng", "z dung", "z ngang", "offset")) or re.search(r'\bz\s*vuông\b|(?:^|\s)z\s*\d{2,4}\s*[xX*]\s*\d{2,4}', t):
             return "OFFSET_Z"
         if any(k in t for k in ("cút vuông", "cut vuong", "cút tròn", "cut tron", "cút", "cut ", "co 90", "co 60", "co 45", "co 30", "co vuông", "co tròn", "co ống", "chếch", "chech", "bs90", "bs45", "bt90", "bt45", "elbow")):
             return "ELBOW_RT" if is_round else "ELBOW_SQ"
@@ -240,6 +240,10 @@ class Agent04_DuctworkBOM:
         is_insulated = bool(item.get("is_insulated") or geom["is_insulated"] or prev_geom.get("is_insulated"))
 
         subtype = cls.detect_duct_subtype(full_text, w1, h1, w2, h2, d1, d2, unit)
+        # Dòng con kế thừa Title "Tiêu âm ..." (tên chỉ còn kích thước, VD '500x300x1500, tôn dày 0.58mm') -> vẫn tính tiêu âm
+        if str(item.get("category") or "").upper() == "TIEU_AM" and subtype not in ("SILENCER_SQ", "SILENCER_RT"):
+            is_round_sil = d1 > 0 and w1 == 0
+            subtype = "SILENCER_RT" if is_round_sil else "SILENCER_SQ"
 
         if subtype == "VENTCAP":
             return cls._calc_ventcap_item(w1, h1, d1)
@@ -466,7 +470,7 @@ class Agent04_DuctworkBOM:
         else:
             base_rate = cls.THS_RATES.get(thk, 193294.0) if is_round_m2 else cls.VHS_RATES.get(thk, 157500.0)
         if ei_rating > 0:
-            ei_surcharge = _ei_surcharge_table().get(ei_rating, 345000.0)
+            ei_surcharge = _ei_duct_surcharge(ei_rating, is_fitting=(subtype == "FITTING_M2"))
             base_rate += ei_surcharge
         return {
             "subtype": subtype,
@@ -635,7 +639,7 @@ class Agent04_DuctworkBOM:
             price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_md", 16000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
         if ei_rating > 0:
-            ei_surcharge = _ei_surcharge_table().get(ei_rating, 345000.0)
+            ei_surcharge = _ei_duct_surcharge(ei_rating, is_fitting=False)
             unit_price = excel_round(s_area * ei_surcharge + unit_price, -2)
         spec_label = f"Ống gió vuông {int(w1)}x{int(h1)}xL{int(L_val)}"
         s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if (s_raw < 0.3 and unit not in ("m", "md", "mét", "m2", "m²")) else f"{s_area:.3f}m2"
@@ -663,7 +667,7 @@ class Agent04_DuctworkBOM:
         price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_md", 16000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
         if ei_rating > 0:
-            ei_surcharge = _ei_surcharge_table().get(ei_rating, 345000.0)
+            ei_surcharge = _ei_duct_surcharge(ei_rating, is_fitting=True)
             unit_price = excel_round(s_area * ei_surcharge + unit_price, -2)
         spec_label = f"Côn vuông {int(w1)}x{int(h1)}/{int(W2_val)}x{int(H2_val)} L={int(L_val)}"
         s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
@@ -692,7 +696,7 @@ class Agent04_DuctworkBOM:
         price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_md", 16000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
         if ei_rating > 0:
-            ei_surcharge = _ei_surcharge_table().get(ei_rating, 345000.0)
+            ei_surcharge = _ei_duct_surcharge(ei_rating, is_fitting=True)
             unit_price = excel_round(s_area * ei_surcharge + unit_price, -2)
         spec_label = f"Chân rẽ vuông (SU) {int(w1)}x{int(h1)}/{int(W2_val)}x{int(H2_val)} L={int(L_val)}"
         s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
@@ -761,7 +765,7 @@ class Agent04_DuctworkBOM:
         price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_md", 16000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
         if ei_rating > 0:
-            ei_surcharge = _ei_surcharge_table().get(ei_rating, 345000.0)
+            ei_surcharge = _ei_duct_surcharge(ei_rating, is_fitting=True)
             unit_price = excel_round(s_area * ei_surcharge + unit_price, -2)
         spec_label = f"Cút vuông {angle}° {int(w1)}x{int(h1)} (R={int(R_val)})"
         s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
@@ -1162,6 +1166,26 @@ def _ei_surcharge_table():
     """Phụ thu bọc chống cháy EI theo phút (đ/m2) — nguồn sống: pricing_constants.json -> ong.phu_thu_ei."""
     base = {30: 345000.0, 45: 420000.0, 60: 520000.0, 90: 680000.0, 120: 850000.0}
     return {k: K(f"ong.phu_thu_ei.{k}", v) for k, v in base.items()}
+
+
+def _ei_duct_surcharge(ei_rating, is_fitting):
+    """
+    Phụ thu EI (đ/m2) cho ống gió / phụ kiện ống theo giá trọn gói 'EI + tôn 0.75mm' (pricing_constants.json -> ong.ei_tron_goi).
+    Phụ thu = giá trọn gói (phụ kiện x he_so_phu_kien) - giá tôn 0.75mm cùng loại (VHS / PKVHS) -> tôn 0.75 ra đúng giá trọn gói,
+    tôn dày khác cộng chênh lệch giá tôn. Cấp EI không có trong bảng -> lấy cấp cao hơn gần nhất. Không có cấu hình -> phụ thu cũ.
+    """
+    cfg = (get_pricing_constants().get("ong") or {}).get("ei_tron_goi") or {}
+    table = {int(k): float(v) for k, v in (cfg.get("gia_m2_ton_075") or {}).items() if isinstance(v, (int, float))}
+    if not table:
+        return _ei_surcharge_table().get(ei_rating, 345000.0)
+    higher = [k for k in sorted(table) if k >= ei_rating]
+    total = table[higher[0]] if higher else table[max(table)]
+    if is_fitting:
+        total *= float(cfg.get("he_so_phu_kien", 1.2))
+        ref = Agent04_DuctworkBOM.PKVHS_RATES.get(0.75, 247500.0)
+    else:
+        ref = Agent04_DuctworkBOM.VHS_RATES.get(0.75, 198000.0)
+    return max(total - ref, 0.0)
 
 
 def _apply_rate_table_overrides():

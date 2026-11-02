@@ -1387,6 +1387,27 @@
         "Source_Trace": "BG VAN !R16C49"
     },
     {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-MPRD",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Động cơ tuyến tính 230V Belimo On/Off 10Nm (van xả áp MPRD)",
+        "Unit": "Cái",
+        "Source_Trace": "Rule MPRD (User chốt 2026-11-02): giá mặc định = MAT-ACTUATOR-BELIMO-10NM"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-MPRD-20NM",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Động cơ tuyến tính 230V Belimo On/Off 20Nm (van xả áp MPRD)",
+        "Unit": "Cái",
+        "Source_Trace": "Rule MPRD (User chốt 2026-11-02): giá mặc định = MAT-ACTUATOR-BELIMO-20NM"
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-MPRD-5NM",
+        "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
+        "Name": "Động cơ tuyến tính 230V Belimo On/Off 5Nm (van xả áp MPRD)",
+        "Unit": "Cái",
+        "Source_Trace": "Rule MPRD (User chốt 2026-11-02): giá mặc định = MAT-ACTUATOR-BELIMO-5NM"
+    },
+    {
         "MAT_ID": "MAT-ACTUATOR-BELIMO-20NM",
         "Category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN",
         "Name": "Động cơ van gió Belimo ON/OFF 20Nm",

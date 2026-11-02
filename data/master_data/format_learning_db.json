@@ -12,111 +12,6 @@
       "remarks": 4
     },
     "success": false,
-    "timestamp": "2026-10-26T15:02:00.764525"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:02:00.764879"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:02:00.765062"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "CUSTOM_FORMAT",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:02:00.765222"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:02:00.765362"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:02:00.765511"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:31:15.823710"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
     "timestamp": "2026-10-26T15:31:15.824305"
   },
   {
@@ -1504,5 +1399,271 @@
     },
     "success": true,
     "timestamp": "2026-10-30T08:11:09.537779"
+  },
+  {
+    "file_hash": "de624a7d751f",
+    "filename": "12. Cua gio van gio.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 6,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 7,
+      "qty": 8
+    },
+    "success": true,
+    "timestamp": "2026-11-02T11:42:52.565551"
+  },
+  {
+    "file_hash": "7625ae86a0a6",
+    "filename": "12. Cua gio van gio.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 6,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 7,
+      "qty": 8
+    },
+    "success": true,
+    "timestamp": "2026-11-02T11:47:53.579507"
+  },
+  {
+    "file_hash": "cc86de8142ca",
+    "filename": "12. Cua gio van gio.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 6,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 7,
+      "qty": 8
+    },
+    "success": true,
+    "timestamp": "2026-11-02T11:49:07.388111"
+  },
+  {
+    "file_hash": "9ff2ce8a4e14",
+    "filename": "12. Cua gio van gio.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 6,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 7,
+      "qty": 8
+    },
+    "success": false,
+    "timestamp": "2026-11-02T11:51:00.779667"
+  },
+  {
+    "file_hash": "220a85b05e96",
+    "filename": "12. Cua gio van gio.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 6,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 7,
+      "qty": 8
+    },
+    "success": false,
+    "timestamp": "2026-11-02T11:51:47.238878"
+  },
+  {
+    "file_hash": "e9720ed4e930",
+    "filename": "12. Cua gio van gio.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 6,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 7,
+      "qty": 8
+    },
+    "success": false,
+    "timestamp": "2026-11-02T11:52:20.266488"
+  },
+  {
+    "file_hash": "23f54e61f174",
+    "filename": "12. Cua gio van gio.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 6,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 7,
+      "qty": 8
+    },
+    "success": true,
+    "timestamp": "2026-11-02T11:53:09.171275"
+  },
+  {
+    "file_hash": "329f45758e26",
+    "filename": "12. Cua gio van gio.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 6,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 7,
+      "qty": 8
+    },
+    "success": true,
+    "timestamp": "2026-11-02T11:53:23.401237"
+  },
+  {
+    "file_hash": "bdb66850575b",
+    "filename": "12. Cua gio van gio.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 6,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 7,
+      "qty": 8
+    },
+    "success": true,
+    "timestamp": "2026-11-02T11:53:27.357216"
+  },
+  {
+    "file_hash": "7b8aa8727764",
+    "filename": "12. Cua gio van gio.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 6,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 7,
+      "qty": 8
+    },
+    "success": true,
+    "timestamp": "2026-11-02T12:00:21.443804"
+  },
+  {
+    "file_hash": "fff578d80ea3",
+    "filename": "12. Cua gio van gio.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 6,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 7,
+      "qty": 8
+    },
+    "success": true,
+    "timestamp": "2026-11-02T19:00:55.147048"
+  },
+  {
+    "file_hash": "4477c515facb",
+    "filename": "12. Cua gio van gio.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 6,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 7,
+      "qty": 8
+    },
+    "success": true,
+    "timestamp": "2026-11-02T19:01:51.119759"
+  },
+  {
+    "file_hash": "b0144c107f28",
+    "filename": "12. Cua gio van gio.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 6,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 7,
+      "qty": 8
+    },
+    "success": true,
+    "timestamp": "2026-11-02T19:02:29.238159"
+  },
+  {
+    "file_hash": "e7135b2e3a34",
+    "filename": "12. Cua gio van gio.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 6,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 7,
+      "qty": 8
+    },
+    "success": true,
+    "timestamp": "2026-11-02T19:08:01.249661"
+  },
+  {
+    "file_hash": "0c059b0d24a6",
+    "filename": "12. Cua gio van gio.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 6,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 7,
+      "qty": 8
+    },
+    "success": true,
+    "timestamp": "2026-11-02T19:11:36.403485"
+  },
+  {
+    "file_hash": "96a5ade7251d",
+    "filename": "BDKSCT-3.VGCG-26-09-11-Lan 1 - Copy.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 10,
+    "col_map": {
+      "stt": 1,
+      "name": 8,
+      "unit": 9,
+      "qty": 12,
+      "remarks": 14
+    },
+    "success": true,
+    "timestamp": "2026-11-02T21:05:13.106451"
+  },
+  {
+    "file_hash": "f48329ff42f7",
+    "filename": "14. Ống thông gió và pk - Minh Triết.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 11,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "desc": 3,
+      "model": 4,
+      "brand": 5,
+      "w": 6,
+      "h": 7,
+      "l": 11,
+      "thickness": 12,
+      "unit": 13,
+      "qty": 14,
+      "price": 15,
+      "total": 16,
+      "remarks": 17
+    },
+    "success": false,
+    "timestamp": "2026-11-02T22:43:55.422075"
   }
 ]

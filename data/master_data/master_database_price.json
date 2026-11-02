@@ -829,6 +829,21 @@
         "Purchase_Price": 2098000.0
     },
     {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-MPRD",
+        "Price": 2800000.0,
+        "Purchase_Price": 2098000.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-MPRD-20NM",
+        "Price": 3150000.0,
+        "Purchase_Price": 2472500.0
+    },
+    {
+        "MAT_ID": "MAT-ACTUATOR-BELIMO-MPRD-5NM",
+        "Price": 2200000.0,
+        "Purchase_Price": 1650000.0
+    },
+    {
         "MAT_ID": "MAT-ACTUATOR-BELIMO-20NM",
         "Price": 3150000.0,
         "Purchase_Price": 2472500.0

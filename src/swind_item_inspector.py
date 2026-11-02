@@ -360,7 +360,8 @@ def _evaluate_parsed_item_in_ram(
             is_double_layer=spec["is_double_layer"],
             is_black_2nd_layer=spec["is_black_2nd_layer"],
             is_removable=bool(spec.get("is_removable")),
-            n_slots=int(spec.get("n_slots") or 0)
+            n_slots=int(spec.get("n_slots") or 0),
+            removable_factor=float(spec.get("removable_factor") or 1.0)
         )
         components.extend(bom["components"])
         combo_dmps = item.get("combo_dampers") or ([item["combo_damper"]] if item.get("combo_damper") else [])
@@ -1119,6 +1120,10 @@ def audit_boq_fast(
                     spec_diff_notes.append("Spec ghi 'nan Z/Louver'")
                 if ("khuếch tán" in nb_low) and not any(k in rn_low for k in ("khuếch tán", "4 hướng")):
                     spec_diff_notes.append("Spec ghi 'khuếch tán'")
+                if (any(k in nb_low for k in ("bầu dục", "nan thẳng"))
+                        and any(k in rn_low for k in ("khuếch tán", "sọt trứng", "sọt trưng", "kiểu lưới", "dạng lưới", "nan z", "louver", "slot", "kiểu khe"))
+                        and not any(k in rn_low for k in ("bầu dục", "nan thẳng"))):
+                    spec_diff_notes.append("Spec ghi 'nan bầu dục/nan thẳng'")
                 if spec_diff_notes:
                     conflicts.append((
                         "ℹ️  KHÁC BIỆT CỘT TÊN vs SPEC (CỬA GIÓ)",
