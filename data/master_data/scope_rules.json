@@ -1,0 +1,743 @@
+{
+ "_mo_ta": "Bảng rule PHẠM VI BÁO GIÁ (scope_filter) — nguồn dữ liệu của src/scope_filter.py: dòng nào Swind báo / không báo / giữ giá đối tác / hỏi lại User. Thay các danh sách từ khóa rải rác trong SwindBOQParser.parse_sheet và swind_master_runner (bỏ ống / canvas theo cờ, dòng ống kèm LCCT, Full-BOQ Coverage Audit). Mã rule PV-xx; sửa rule theo AGENTS.md mục 7 → chạy tests/test_swind_scope_rules.py + self-test + E2E 2 chế độ.",
+ "phien_ban": "2026-11-03",
+ "quy_tac": [
+  {
+   "id": "PV-01_ONG_NUOC_PCCC_DIEN",
+   "ten": "Hệ ống nước / chữa cháy / ống đồng / cáp điện / bộ nguồn van / van nước DN → THUONG_MAI (không báo)",
+   "nguon": "bd1d662 20/10; cáp điện + van nước DN 1e5672d 29/10; bộ nguồn van 7cdc069 02/11 (User chốt, AGENTS.md 3c)",
+   "ly_do": "Không thuộc sản phẩm Swind. Van giảm áp / xả áp có kích thước AxB hoặc chữ tôn / EI / động cơ là van gió (không phải van nước).",
+   "tu_khoa_ong_nuoc": [
+    "thép hàn",
+    "thép ren",
+    "thép đen",
+    "thép tráng kẽm",
+    "thép mạ kẽm",
+    "ống thép",
+    "u.pvc",
+    "upvc",
+    "ppr",
+    "hdpe",
+    "ống nhựa",
+    "ống đồng",
+    "ông đồng",
+    "ống bảo ôn",
+    "bảo ôn ống đồng",
+    "gen cách nhiệt",
+    "superlon",
+    "van cổng",
+    "van bướm",
+    "van bi",
+    "van giảm áp",
+    "van y lọc",
+    "van an toàn",
+    "van xả khí",
+    "van một chiều lá lật",
+    "van một chiều lò xo",
+    "van báo động",
+    "van tràn ngập",
+    "đầu phun",
+    "sprinkler",
+    "bình chữa cháy",
+    "cuộn vòi",
+    "tủ chữa cháy",
+    "trụ cứu hỏa",
+    "họng tiếp nước",
+    "khớp nối mềm cao su",
+    "khớp nối mềm inox",
+    "rọ bơm",
+    "y lọc",
+    "van búa nước",
+    "chống va",
+    "van góc",
+    "van tiểu",
+    "van phao",
+    "van điện từ",
+    "van cửa thân gang"
+   ],
+   "tu_khoa_van_gio": [
+    "vcd",
+    "mfd",
+    "mfsd",
+    "fd",
+    "nrd",
+    "prd",
+    "obd",
+    "gió",
+    "tôn",
+    "tole",
+    "lửa",
+    "khói",
+    "cháy",
+    "ei"
+   ],
+   "regex_cap_dien": "\\bcu\\s*/|\\d\\s*(?:mm2|mm²)|\\bxlpe\\b|\\bcxv\\b|\\bcvv\\b|^(?:dây|cáp)\\s",
+   "regex_bo_nguon": "chuyển\\s+đổi\\s+ngu[ồố]n|^bộ\\s+ngu[ồố]n\\b",
+   "van_nuoc_bat_dau": [
+    "van ",
+    "bộ van"
+   ],
+   "regex_van_nuoc_dn": "\\bdn\\s*\\d{2,3}\\b",
+   "van_gio_xa_ap": [
+    "van giảm áp",
+    "van xả áp"
+   ],
+   "regex_kt": "\\b\\d{2,4}\\s*[xX*]\\s*\\d{2,4}\\b",
+   "tu_khoa_van_xa_ap_gio": [
+    "tôn",
+    "tole",
+    "ei",
+    "chịu lửa",
+    "chống cháy",
+    "mfd",
+    "động cơ",
+    "on/off",
+    "on-off"
+   ],
+   "title_ong_nuoc": [
+    "chữa cháy",
+    "cấp nước",
+    "thoát nước",
+    "ống đồng",
+    "bảo ôn ống"
+   ],
+   "tru_ten_title_ong_nuoc": [
+    "ống gió",
+    "tôn",
+    "tole",
+    "cửa gió",
+    "miệng gió",
+    "van gió",
+    "vcd",
+    "mfd",
+    "fd",
+    "nrd",
+    "prd",
+    "obd",
+    "louver"
+   ],
+   "phu_kien_ong_nuoc_bat_dau": [
+    "cút ",
+    "tê ",
+    "y ",
+    "chếch ",
+    "côn ",
+    "măng sông",
+    "rắc co",
+    "bích thép",
+    "nút bịt"
+   ],
+   "regex_phu_kien_ong_nuoc": "\\b(?:[dD][nN]?\\s*(?:15|20|21|25|27|32|34|40|42|48|50|60|65|75|80|90|110|114|140|160|168|219)|PN\\s*\\d+|SCH\\s*\\d+)\\b",
+   "tru_phu_kien_ong_nuoc": [
+    "ống gió",
+    "tôn",
+    "tole"
+   ],
+   "vi_du": [
+    {
+     "ten": "Ống thép tráng kẽm DN50",
+     "ket_qua": true
+    },
+    {
+     "ten": "Cáp Cu/XLPE/PVC 3x2.5mm2",
+     "ket_qua": true
+    },
+    {
+     "ten": "Bộ chuyển đổi nguồn cho van MFD",
+     "ket_qua": true
+    },
+    {
+     "ten": "Van xả áp 600x400",
+     "ket_qua": false
+    },
+    {
+     "ten": "Van cổng DN100",
+     "ket_qua": true
+    }
+   ]
+  },
+  {
+   "id": "PV-02_THUONG_MAI_THEO_TEN",
+   "ten": "Tên bắt đầu bằng thiết bị / phụ trợ (quạt, máy lạnh, tủ điện, cảm biến, giá đỡ...) → THUONG_MAI",
+   "nguon": "bd1d662 20/10; dde7498 28/10; giá đỡ / quang treo kể cả tiền tố 'lắp đặt' User chốt 2026-11-03 (việc C2, TAHK R66)",
+   "ly_do": "Loại hàng chính dòng tự ghi thắng Title cha (AGENTS.md 1a).",
+   "regex_gia_do": "^(?:lắp\\s*đặt\\s+|gia\\s*công\\s+)?(?:giá\\s*đỡ|giá\\s*treo|quang\\s*treo|ty\\s*treo)\\b",
+   "bat_dau": [
+    "quạt ",
+    "máy lạnh",
+    "dàn lạnh",
+    "dàn nóng",
+    "hướng dòng",
+    "thiết bị xử lý",
+    "cửa sổ",
+    "tủ điện",
+    "tủ điều khiển",
+    "đầu cảm biến",
+    "đầu báo",
+    "cảm biến",
+    "dây tín hiệu",
+    "cáp điều khiển",
+    "dây điện",
+    "khối lượng sắt thép",
+    "giá đỡ ống",
+    "quang treo",
+    "hồ sơ kiểm định",
+    "chi phí ",
+    "chi phi ",
+    "vật tư phụ",
+    "lượng tác nhân lạnh",
+    "phụ kiện ống nước ngưng",
+    "lò xo giảm chấn",
+    "cao su giảm chấn",
+    "chụp hút bếp",
+    "điều hòa cục bộ",
+    "+ điều hòa cục bộ"
+   ],
+   "vi_du": [
+    {
+     "ten": "Quạt hút 2000 m3/h",
+     "ket_qua": true
+    },
+    {
+     "ten": "Lắp đặt giá đỡ ống gió kích thước ≤400 bằng thép góc L25x25x3mm",
+     "ket_qua": true
+    },
+    {
+     "ten": "Cửa gió 600x300",
+     "ket_qua": false
+    }
+   ]
+  },
+  {
+   "id": "PV-03_PHU_TRO_CON_LAI",
+   "ten": "Chưa phân loại mà Tên có kẹp bích / ty treo / bu lông → THUONG_MAI",
+   "nguon": "bd1d662 20/10",
+   "ly_do": "Vật tư phụ lắp đặt.",
+   "tu_khoa": [
+    "kẹp bích",
+    "kep bich",
+    "ty treo",
+    "bulong",
+    "bu lông"
+   ],
+   "vi_du": [
+    {
+     "ten": "Bu lông M8",
+     "ket_qua": true
+    }
+   ]
+  },
+  {
+   "id": "PV-04_KHONG_BAO_THEO_NHOM",
+   "ten": "Nhóm THUONG_MAI / KHAC / ONG_MEM (trừ --include-flex-duct) và ống / tiêu âm / canvas không kích thước → không báo; BOQ có đơn giá đối tác thì GIỮ dòng (giữ giá)",
+   "nguon": "bd1d662 20/10; giữ giá đối tác eeebc61 03/11 (User chốt)",
+   "ly_do": "Giá đối tác có sẵn được giữ nguyên trên BG (kể cả hàng thương mại).",
+   "nhom_khong_bao": [
+    "THUONG_MAI",
+    "ONG_MEM",
+    "KHAC"
+   ],
+   "nhom_khong_bao_khi_bao_ong_mem": [
+    "THUONG_MAI",
+    "KHAC"
+   ],
+   "nhom_can_kich_thuoc": [
+    "ONG_GIO",
+    "TIEU_AM",
+    "CANVAS"
+   ],
+   "giu_dong_khong_gia": [
+    "chống cháy ei",
+    "lưới bảo vệ"
+   ],
+   "giu_dong_khong_gia_tru_bat_dau": "quạt ",
+   "vi_du": [
+    {
+     "nhom": "THUONG_MAI",
+     "gia_doi_tac": 0,
+     "ket_qua": "bo"
+    },
+    {
+     "nhom": "THUONG_MAI",
+     "gia_doi_tac": 1500000,
+     "ket_qua": "giu"
+    }
+   ]
+  },
+  {
+   "id": "PV-05_CUA_VAN_THIEU_KICH_THUOC",
+   "ten": "Cửa / Van / Canvas không có kích thước → không báo giá (lý do MISSING_DIMS), giữ đơn giá đối tác nếu có, THÔNG BÁO USER (không chặn)",
+   "nguon": "User chốt 2026-11-03 (việc B)",
+   "ly_do": "AGENTS.md cổng kiểm soát 1b.",
+   "nhom": [
+    "VAN_GIO",
+    "CUA_GIO",
+    "CANVAS"
+   ],
+   "vi_du": [
+    {
+     "nhom": "VAN_GIO",
+     "kt": [
+      0,
+      0
+     ],
+     "ket_qua": "MISSING_DIMS"
+    }
+   ]
+  },
+  {
+   "id": "PV-06_CUA_TRON_EAD",
+   "ten": "Cửa gió tròn có chữ 'ead' → THUONG_MAI",
+   "nguon": "bd1d662 20/10",
+   "ly_do": "",
+   "tu_khoa": [
+    "ead"
+   ],
+   "vi_du": [
+    {
+     "nhom": "CUA_GIO",
+     "ten": "EAD D200",
+     "d": 200,
+     "ket_qua": "THUONG_MAI"
+    }
+   ]
+  },
+  {
+   "id": "PV-07_CHI_LAY_HOP",
+   "ten": "Dòng cửa ghi chỉ gồm hộp / không gồm cửa gió → hộp gió (ONG_GIO): mặc định không báo + HỎI LẠI USER; --include-duct báo hộp",
+   "nguon": "User duyệt 2026-11-03 (BG DT C08 R18–22)",
+   "ly_do": "AGENTS.md quy tắc 4c-0.",
+   "regex": "chỉ\\s+(?:gồm|có|tính|lấy|báo)\\s+(?:phần\\s+)?(?:hộp|box)|không\\s+(?:bao\\s+)?(?:gồm|kèm|tính|lấy)\\s+(?:phần\\s+)?(?:cửa|miệng)\\s*gió",
+   "vi_du": [
+    {
+     "ten": "Miệng gió cấp kèm hộp gió",
+     "ghi_chu": "Chỉ gồm hộp, không gồm cửa gió",
+     "ket_qua": true
+    }
+   ]
+  },
+  {
+   "id": "PV-08_HOP_KEP_BICH_KHONG_KT",
+   "ten": "Ống gió không kích thước mà là kẹp bích / hộp (ĐVT khác m²) → THUONG_MAI",
+   "nguon": "bd1d662 20/10",
+   "ly_do": "",
+   "tu_khoa": [
+    "kẹp bích"
+   ],
+   "bat_dau": [
+    "box ",
+    "hộp ",
+    "hôp "
+   ],
+   "don_vi_m2": [
+    "m2",
+    "m²"
+   ],
+   "vi_du": [
+    {
+     "ten": "Kẹp bích",
+     "ket_qua": "THUONG_MAI"
+    }
+   ]
+  },
+  {
+   "id": "PV-09_MAC_DINH_KHONG_BAO_THEO_CO",
+   "ten": "Mặc định không báo: Ống gió & phụ kiện (ONG_GIO, mở bằng --include-duct), Khớp nối mềm / Canvas / Chụp thông hơi (CANVAS, --include-canvas), Ống mềm (ONG_MEM, --include-flex-duct); --only-cua-van chỉ giữ CUA_GIO / VAN_GIO",
+   "nguon": "Ống gió 2026-10-29; canvas 590365b 30/10; ventcap User chốt 2026-11-03",
+   "ly_do": "AGENTS.md quy tắc 4, 4b, 6.",
+   "nhom_theo_co": {
+    "ONG_GIO": "--include-duct",
+    "CANVAS": "--include-canvas",
+    "ONG_MEM": "--include-flex-duct"
+   },
+   "chi_cua_van": [
+    "CUA_GIO",
+    "VAN_GIO"
+   ],
+   "vi_du": [
+    {
+     "nhom": "ONG_GIO",
+     "co": [],
+     "ket_qua": "bo"
+    }
+   ]
+  },
+  {
+   "id": "PV-10_ONG_KEM_SAN_PHAM_SWIND",
+   "ten": "Không báo ống: dòng ống / cút kèm LCCT / lọc G4 → chỉ báo phần LCCT / lọc; ống ghi van / OBD / cửa / louver hoặc Ghi chú phủ định lọc → HỎI LẠI USER",
+   "nguon": "User chốt 2026-11-02 (7cdc069)",
+   "ly_do": "AGENTS.md quy tắc 4: không bỏ cả dòng — đọc nội dung dòng.",
+   "regex_san_pham_khac": "\\b(?:van|vcd|obd|mfd|fd|nrd|prd|md)\\b|cửa\\s+gió|miệng\\s+gió|louver",
+   "regex_phu_dinh": "không\\s+(?:bao\\s+)?(?:gồm|kèm|có)\\s+(?:lọc|lưới|lcct|g4)",
+   "vi_du": [
+    {
+     "ten": "CO 45 + LCCT 1500x1500 kèm bộ lọc G4",
+     "ket_qua": "chi_bao_phan_swind"
+    }
+   ]
+  },
+  {
+   "id": "PV-11_QUET_DO_PHU",
+   "ten": "Full-BOQ Coverage Audit: dòng bị lọc có KL mà tên thuộc phạm vi Swind → ⚠️ cần xác nhận; dòng có KL/kích thước parser không đọc → ⚠️ sót dòng",
+   "nguon": "bd1d662 20/10; tiền tố ngoài phạm vi dde7498 28/10; 'ống tole / ống tôn' vào tiền tố ống gió (User duyệt 2026-11-03, CAND R253 'Ống tole tráng kẽm dày 0.6mm D150')",
+   "ly_do": "AGENTS.md quy tắc 2 (zero-omission).",
+   "tu_khoa_pham_vi": [
+    "cửa gió",
+    "miệng gió",
+    "cửa cấp",
+    "cửa hồi",
+    "miệng cấp",
+    "miệng hồi",
+    "louver",
+    "cửa chớp",
+    "van ",
+    "van gió",
+    "vcd",
+    "mfd",
+    "nrd",
+    "lọc",
+    "phin lọc",
+    "filter",
+    "ống gió",
+    "tiêu âm",
+    "hộp gió",
+    "plenum",
+    "nối mềm",
+    "canvas"
+   ],
+   "tu_khoa_pham_vi_chi_cua_van": [
+    "cửa gió",
+    "miệng gió",
+    "cửa cấp",
+    "cửa hồi",
+    "miệng cấp",
+    "miệng hồi",
+    "louver",
+    "cửa chớp",
+    "van ",
+    "van gió",
+    "vcd",
+    "mfd",
+    "nrd",
+    "lọc",
+    "phin lọc",
+    "filter"
+   ],
+   "tu_khoa_ngoai_pham_vi": [
+    "quạt",
+    "thiết bị",
+    "chi phí",
+    "dàn nóng",
+    "dàn lạnh",
+    "điều hòa",
+    "máy ",
+    "ahu",
+    "fcu",
+    "nhân công",
+    "bảo ôn",
+    "cách nhiệt"
+   ],
+   "tien_to_ngoai_pham_vi": [
+    "giá treo",
+    "gía treo",
+    "giá đỡ",
+    "gía đỡ",
+    "bộ lò",
+    "lò xo",
+    "bộ điều khiển",
+    "điều khiển",
+    "nút ấn",
+    "nút nhấn",
+    "tủ ",
+    "tủ điện",
+    "cảm biến",
+    "dây ",
+    "cáp ",
+    "quạt",
+    "thiết bị",
+    "chi phí",
+    "nhân công",
+    "máy ",
+    "đồng hồ",
+    "công tắc",
+    "aptomat",
+    "atomat",
+    "mcb",
+    "mccb",
+    "mcc",
+    "hồ sơ",
+    "khối lượng sắt",
+    "sắt thép",
+    "thép ",
+    "chụp hút mùi",
+    "vật tư phụ",
+    "vật tư  phụ",
+    "khung treo",
+    "khung đỡ",
+    "bệ đỡ",
+    "ti treo",
+    "ty treo",
+    "vỏ tủ",
+    "rơ le",
+    "rơle",
+    "đèn",
+    "ống điện",
+    "ống điên",
+    "ống nước",
+    "ống đồng",
+    "ống pvc",
+    "ống ppr",
+    "ống upvc",
+    "ống thép"
+   ],
+   "dvt_tron_goi": [
+    "lô",
+    "gói",
+    "hệ",
+    "hệ thống",
+    "ls",
+    "lot",
+    "trọn gói",
+    "tg"
+   ],
+   "tien_to_ong_gio": [
+    "ống gió",
+    "ong gio",
+    "ống tròn",
+    "ống xoắn",
+    "ống vuông",
+    "cút",
+    "co 90",
+    "co 45",
+    "côn",
+    "con giam",
+    "con chuyen",
+    "chân rẽ",
+    "chan re",
+    "tê ",
+    "chạc",
+    "bịt đầu",
+    "ống lượn",
+    "chếch",
+    "măng xông",
+    "phụ kiện ống",
+    "pk ống",
+    "ống tole",
+    "ống tôn"
+   ],
+   "tien_to_canvas": [
+    "bạt",
+    "khớp nối mềm",
+    "khớp mềm",
+    "nối mềm",
+    "canvas",
+    "ống nối mềm",
+    "cổ bạt",
+    "flexible connection"
+   ],
+   "regex_dong_tu_dau_dong": "(?:cung cấp|gia công|sản xuất|sx|lắp đặt|lắp|lđ|vận chuyển)",
+   "vi_du": [
+    {
+     "ten": "Cung cấp và lắp đặt giá treo",
+     "ket_qua": "ngoai_pham_vi"
+    }
+   ],
+   "khong_phai_hang_swind_sot_dong": {
+    "nguon": "User duyệt 2026-11-03 (đợt kiểm bất biến E2E): ống gas / PVC / PPR / uPVC, bảo ôn, đường link URL không phải hàng Swind → không cảnh báo SÓT DÒNG. LCCT KHÔNG được đưa vào (mặt hàng có báo giá). Bổ sung (User duyệt 2026-11-03, PLH Gói 1): ống inox, Y lọc, bích rỗng / bích đặc (KHÔNG dùng chữ 'bích' đứng riêng — van/cửa gió có '2 đầu bích TDC'), nắp thăm, rọ hút (crefin), mối nối mềm DN (nước), ký hiệu ống giảm nước 'D200/90'. 'Măng xông D90' (đường kính 2 chữ số / DN = phụ kiện nước, PLH Gói 1) — User chốt 2026-11-03.",
+    "tu_khoa": [
+     "ống gas",
+     "ống ga ",
+     "ống đồng",
+     "ống pvc",
+     "ống upvc",
+     "ống upcv",
+     "upvc",
+     "upcv",
+     "ống ppr",
+     "ppr",
+     "pn8",
+     "pn10",
+     "pn16",
+     "pn 10",
+     "pn 16",
+     "bảo ôn",
+     "http://",
+     "https://",
+     "www.",
+     "pvc",
+     "pn6",
+     "pn9",
+     "pn12",
+     "ống inox",
+     "y lọc",
+     "bích rỗng",
+     "bích đặc",
+     "nắp thăm",
+     "rọ hút",
+     "crefin"
+    ],
+    "vi_du": [
+     {
+      "ten": "Ống gas D12.7 dày 0.81 mm kèm bảo ôn 19mm",
+      "ket_qua": true
+     },
+     {
+      "ten": "Ống PPR PN10  / Pipe PPR PN10 D32",
+      "ket_qua": true
+     },
+     {
+      "ten": "Ống D200 PN8",
+      "ket_qua": true
+     },
+     {
+      "ten": "Bảo ôn ống nước ngưng uPVC D27 dày 13mmm",
+      "ket_qua": true
+     },
+     {
+      "ten": "https://vattuphuclam.com.vn/bao-gia-dai-treo-ong-d110",
+      "ket_qua": true
+     },
+     {
+      "ten": "LƯỚI CHẮN CÔN TRÙNG, KÍCH THƯỚC:",
+      "ket_qua": false
+     },
+     {
+      "ten": "Cửa gió nan Z 600x300",
+      "ket_qua": false
+     },
+     {
+      "ten": "PVC D110 (Ống cứng đi âm)",
+      "ket_qua": true
+     },
+     {
+      "ten": "Ống inox sus304 sch10s DN150",
+      "ket_qua": true
+     },
+     {
+      "ten": "Y lọc DN65",
+      "ket_qua": true
+     },
+     {
+      "ten": "Bích rỗng DN125",
+      "ket_qua": true
+     },
+     {
+      "ten": "Nắp thăm bể nước KT 800x800x70",
+      "ket_qua": true
+     },
+     {
+      "ten": "Crefin (rọ hút) DN80",
+      "ket_qua": true
+     },
+     {
+      "ten": "Mối nối mềm DN80",
+      "ket_qua": true
+     },
+     {
+      "ten": "D200/90 D160/110",
+      "ket_qua": true
+     },
+     {
+      "ten": "Van chặn lửa FD 600x400 2 đầu bích TDC",
+      "ket_qua": false
+     },
+     {
+      "ten": "Khớp nối mềm 600x400",
+      "ket_qua": false
+     },
+     {
+      "ten": "Măng xông D90",
+      "ket_qua": true
+     },
+     {
+      "ten": "Măng xông D200",
+      "ket_qua": false
+     }
+    ],
+    "regex": [
+     "mối\\s*nối\\s*mềm\\s*dn\\s*\\d",
+     "^\\s*d\\d{2,3}\\s*/\\s*\\d{2,3}\\b",
+     "m[ăa]ng\\s*x[ôo]ng\\s*(?:dn\\s*\\d+|d\\s*\\d{2}\\b)"
+    ]
+   },
+   "dong_tieu_de_khong_kl_dvt": {
+    "nguon": "User chốt 2026-11-03 (CAND R253 'Ống tole tráng kẽm dày 0.6mm D150'): dòng KHÔNG có KL và KHÔNG có đơn vị tính = tiêu đề → Coverage Audit không cảnh báo SÓT DÒNG.",
+    "ap_dung": true
+   }
+  },
+  {
+   "id": "PV-12_MA_IS_LCCT",
+   "ten": "Tên ghi mã 'IS' đứng riêng kèm kích thước (IS 850x250, AL IS-1000x800) → lưới chắn côn trùng (CUA_GIO, LCCT); 'mprd' là từ khóa van (manufacturable_catalog VAN_GIO)",
+   "nguon": "User chốt 2026-11-03 (việc C3, BOQ_ANH_KHACH_01 R20–22, R24–25, R27–29)",
+   "ly_do": "IS = Insect Screen. Chỉ nhận khi 'IS' đứng ĐẦU Tên (trước đó tối đa 1 mã ngắn như AL / AG) và ngay sau là kích thước — không bắt chữ 'is' trong câu tiếng Anh.",
+   "regex": "^(?:[a-z]{1,3}[\\s\\-]+)?is[\\s\\-]*\\d{2,4}\\s*[x×*]\\s*\\d{2,4}",
+   "vi_du": [
+    {
+     "ten": "IS 850x250",
+     "ket_qua": true
+    },
+    {
+     "ten": "AL IS-1000x800",
+     "ket_qua": true
+    },
+    {
+     "ten": "This is 600x300 grille",
+     "ket_qua": false
+    },
+    {
+     "ten": "Van MFD is 1000x500",
+     "ket_qua": false
+    }
+   ]
+  },
+  {
+   "id": "PV-13_KIEM_CHUNG_DOC_BOQ",
+   "ten": "Cảnh báo bộ kiểm chứng đọc BOQ (Agent 00B StructureVerifier) ở sheet CÓ dòng được báo giá → ⚠️ [HỎI LẠI USER] ở Kiểm soát cuối (không chặn)",
+   "nguon": "User chốt 2026-11-03 (việc C3)",
+   "ly_do": "Parser chọn cột SL / dòng lệch so với đếm thô file gốc thì giá có thể sai → User xác nhận trước khi gửi khách. Sheet không có dòng báo giá thì chỉ in ở Agent 00B.",
+   "vi_du": [
+    {
+     "sheet_co_bao_gia": true,
+     "ket_qua": "hoi_lai"
+    },
+    {
+     "sheet_co_bao_gia": false,
+     "ket_qua": "chi_in_canh_bao"
+    }
+   ]
+  },
+  {
+   "id": "PV-14_MA_AL_LOUVER",
+   "ten": "Tên bắt đầu bằng mã 'AL' (Air Louver) ngay trước kích thước (AL 600x300, AL-1000x500, AL_800x400) → Louver nan Z (CUA_GIO, WL)",
+   "nguon": "User chốt 2026-11-03: 'AL (nan Z) phải có ghi nhận khi đứng 1 mình' (trước đó dòng 'AL 600x300' bị lọc KHAC / ngoài phạm vi)",
+   "ly_do": "AL = louver nan Z. Chỉ nhận khi 'AL' đứng ĐẦU Tên và ngay sau là kích thước — không bắt chữ 'al' trong từ khác. 'AL IS-1000x800' vẫn là LCCT (PV-12, mã IS đứng ngay trước kích thước).",
+   "regex": "^\\s*al[\\s\\-_:.]*\\d{2,4}\\s*[x×*]\\s*\\d{2,4}",
+   "vi_du": [
+    {
+     "ten": "AL 600x300",
+     "ket_qua": true
+    },
+    {
+     "ten": "AL-1000x500",
+     "ket_qua": true
+    },
+    {
+     "ten": "AL_800x400",
+     "ket_qua": true
+    },
+    {
+     "ten": "AL IS-1000x800",
+     "ket_qua": false
+    },
+    {
+     "ten": "Aluminium grille 600x300",
+     "ket_qua": false
+    },
+    {
+     "ten": "Van MFD AL 600x300",
+     "ket_qua": false
+    }
+   ]
+  }
+ ]
+}

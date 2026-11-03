@@ -1,0 +1,798 @@
+{
+ "_mo_ta": "Bảng rule nhận diện VAN GIÓ (VAN_GIO) — nguồn dữ liệu của src/damper_classifier.py (thay chuỗi if/elif cũ trong Agent01._resolve_damper_spec và _detect_damper_type trong SwindBOQParser.parse_sheet). Các bước chạy theo thứ tự id VG-01 → VG-13; từ khóa / ngưỡng / mẫu ghi chú nằm ngay trong rule. Sửa rule: theo AGENTS.md mục 7 (git log -S tìm nguồn → rẽ nhánh giữ case cũ → ghi nguon/ly_do → thêm vi_du_dung/vi_du_sai → chạy tests/test_swind_damper_rules.py + self-test + E2E 2 chế độ). Bảng subtype_rules.json → VAN_GIO (từ khóa → loại van) vẫn là bảng tra dùng chung ở bước VG-02.",
+ "phien_ban": "2026-11-03",
+ "bien_van_ban": {
+  "raw_search": "(Tên gốc + cột Model + Ghi chú).lower() — chỉ chính dòng",
+  "full_search": "(Title cha + Tên + aux + cột Model + Ghi chú).lower()",
+  "ten_model": "(Tên hiệu lực + cột Model).lower(); Tên hiệu lực = Tên gốc nếu còn ≥ 2 chữ cái sau khi bỏ mm/kt/w/h/l/d/dn/phi, ngược lại = Tên đã ghép Title",
+  "ghi_chu": "Ghi chú / Spec BOQ (lower)"
+ },
+ "quy_tac": [
+  {
+   "id": "VG-01_MA_COT_MODEL",
+   "ten": "Cột Model ghi mã / loại van Swind → chốt loại van, không tra từ khóa",
+   "nguon": "bd1d662 20/10 (khung); MPRD dde7498 28/10",
+   "ly_do": "Cột Model là mã Swind (1.01..1.05, 2.01, E-FD) hoặc loại van do parser tách combo ghi lại (van chính) — tin trước từ khóa trong Tên.",
+   "ma_model": [
+    "1.01",
+    "1.02",
+    "1.03",
+    "1.04",
+    "1.05",
+    "2.01"
+   ],
+   "thu_tu": [
+    {
+     "loai": "FD",
+     "bang": [
+      "FD"
+     ],
+     "chua": [
+      "2.01",
+      "E-FD"
+     ]
+    },
+    {
+     "loai": "MFSD",
+     "chua": [
+      "1.01",
+      "MFSD"
+     ]
+    },
+    {
+     "loai": "MFD",
+     "bang": [
+      "MFD"
+     ],
+     "chua": [
+      "1.02",
+      "1.03",
+      "1.04",
+      "1.05"
+     ]
+    },
+    {
+     "loai": "MPRD",
+     "bang": [
+      "MPRD",
+      "M-PRD",
+      "MRD"
+     ],
+     "raw_search_chua": [
+      "mprd",
+      "m-prd",
+      "mrd",
+      "xả áp điện",
+      "xả áp điều khiển"
+     ]
+    },
+    {
+     "loai": "@chinh_no",
+     "bang": [
+      "OBD",
+      "VCD",
+      "MD",
+      "NRD",
+      "PRD"
+     ]
+    }
+   ],
+   "vi_du_dung": [
+    {
+     "ten": "Van gió 400x300",
+     "model_cot": "1.04",
+     "kt": [
+      400,
+      300
+     ],
+     "loai": "MFD",
+     "model": "SWIND-1.04-MFD-EI60"
+    },
+    {
+     "ten": "Van xả áp 600x400",
+     "model_cot": "MPRD",
+     "kt": [
+      600,
+      400
+     ],
+     "loai": "MPRD",
+     "model": "M-PRD"
+    }
+   ]
+  },
+  {
+   "id": "VG-02A_DONG_CHI_GHI_KICH_THUOC",
+   "ten": "Tên dòng chỉ ghi kích thước (loại van nằm ở Title cha) mà Ghi chú / cột Model của chính dòng ghi loại van → theo dòng",
+   "nguon": "User chốt 2026-11-03 (việc C1, phát hiện #1: BG ĐHKK-TAHK 12.10 R542)",
+   "ly_do": "AGENTS.md quy tắc 1a: loại hàng do chính dòng ghi thắng Title. Trước đây Tên hiệu lực lấy Title ('Van giảm áp kèm động cơ ...') nên tra Title trước Ghi chú 'Van MFD EI60' → ra MPRD sai. Chỉ áp chế độ mặc định (chế độ note đã ưu tiên Ghi chú). Nhận diện bằng bộ VG-13 (mã van / cụm 'chặn lửa', 'một chiều'...), bỏ cụm vật liệu 'tấm/bọc chống cháy' trước khi xét. Sau VG-02A vẫn chạy VG-03 / VG-04: động cơ / xả áp ghi ở Title là phụ kiện / chức năng kế thừa (VD Title 'Van chặn lửa, khói kèm động cơ loại on/off FD' + Ghi chú 'Van FD EI60' → MFD).",
+   "vi_du_dung": [
+    {
+     "nguon_boq": "BG ĐHKK-TAHK 12.10 (DT) 'BÁO GIÁ' R542",
+     "title": "Van giảm áp kèm động cơ điện on/off",
+     "ten": "1000x600",
+     "ghi_chu": "Van MFD EI60",
+     "kt": [
+      1000,
+      600
+     ],
+     "loai": "MFD",
+     "model": "SWIND-1.02-MFD-EI90"
+    },
+    {
+     "nguon_boq": "BG ĐHKK-TAHK 12.10 (DT) 'BÁO GIÁ' R599",
+     "title": "Van chặn lửa, khói kèm động cơ loại",
+     "ten": "900x300",
+     "ghi_chu": "Van MFD EI60",
+     "kt": [
+      900,
+      300
+     ],
+     "loai": "MFD",
+     "model": "SWIND-1.02-MFD-EI90"
+    },
+    {
+     "nguon_boq": "BG ĐHKK-TAHK 12.10 (DT) 'BÁO GIÁ' R327",
+     "title": "Van chặn lửa, khói kèm động cơ loại on/off FD có giới hạn chịu lửa",
+     "ten": "1600x800",
+     "ghi_chu": "Van FD EI60",
+     "kt": [
+      1600,
+      800
+     ],
+     "loai": "MFD",
+     "model": "SWIND-1.02-MFD-EI90"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "nguon_boq": "BG ĐHKK-TAHK 12.10 (DT) 'BÁO GIÁ' R540",
+     "title": "Van giảm áp cơ có giới hạn chịu lửa",
+     "ten": "600x600",
+     "ghi_chu": "EI30: Tôn HS Z08-0.75mm + tấm chống cháy",
+     "kt": [
+      600,
+      600
+     ],
+     "loai": "PRD",
+     "model": "PRD",
+     "ghi_chu_vi_du": "Ghi chú chỉ ghi vật liệu bọc chống cháy → không phải loại van, vẫn theo Title"
+    }
+   ]
+  },
+  {
+   "id": "VG-02_TRA_BANG_SUBTYPE",
+   "ten": "Tra bảng subtype_rules.json VAN_GIO theo thứ tự nguồn văn bản (mặc định VCD)",
+   "nguon": "bd1d662 20/10; Tên hiệu lực + --spec-priority note 1e5672d 29/10",
+   "ly_do": "Tên của chính dòng thắng Title cha (AGENTS.md 1a: loại hàng dòng tự ghi thắng Title). Chế độ note: Ghi chú trước, bỏ cụm 'tấm/bọc/vật liệu/sơn/keo chống cháy' (là vật liệu bọc, không phải van chống cháy).",
+   "regex_bo_don_vi_ten": "\\b(?:mm|kt|w|h|l|d|dn|phi)\\b",
+   "regex_ten_co_chu": "[a-zA-ZÀ-ỹ]{2,}",
+   "thu_tu_nguon": [
+    "ten_model",
+    "raw_search",
+    "full_search"
+   ],
+   "thu_tu_nguon_che_do_note": [
+    "ghi_chu_bo_vat_lieu",
+    "ten_model",
+    "full_search"
+   ],
+   "regex_bo_vat_lieu_chong_chay": "(?:tấm|bọc|vật\\s*liệu|sơn|keo)\\s+chống\\s*cháy",
+   "mac_dinh": "VCD",
+   "vi_du_dung": [
+    {
+     "ten": "Van một chiều 500x300",
+     "kt": [
+      500,
+      300
+     ],
+     "loai": "NRD",
+     "model": "NRD"
+    },
+    {
+     "ten": "Van gió tay gạt 300x200",
+     "kt": [
+      300,
+      200
+     ],
+     "loai": "VCD",
+     "model": "VCD"
+    },
+    {
+     "ten": "Van chặn lửa 600x400",
+     "kt": [
+      600,
+      400
+     ],
+     "loai": "FD",
+     "model": "SWIND-2.01- E-FD-EI120"
+    },
+    {
+     "nguon_boq": "260910_MKS BP05a 'Biểu 5. BoQ-DHTG' R185",
+     "ten": "Van điều chỉnh lưu lượng VCD, kt 300x300",
+     "kt": [
+      300,
+      300
+     ],
+     "loai": "VCD",
+     "model": "VCD"
+    },
+    {
+     "nguon_boq": "14. Ống thông gió và pk - Minh Triết Sheet1 R259",
+     "ten": "Van xả áp cơ KT: 1200x300/L=200",
+     "kt": [
+      1200,
+      300
+     ],
+     "loai": "PRD",
+     "model": "PRD"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Van chỉnh lưu lượng 400x400",
+     "title": "HỆ THỐNG HÚT KHÓI CHỐNG CHÁY",
+     "kt": [
+      400,
+      400
+     ],
+     "loai": "VCD",
+     "model": "VCD",
+     "ghi_chu_vi_du": "Title cha chữ 'chống cháy' không kéo van VCD thành FD"
+    }
+   ]
+  },
+  {
+   "id": "VG-03_NANG_MPRD_THEO_TEN",
+   "ten": "PRD / MD có chữ xả áp + động cơ / điện / điều khiển → MPRD",
+   "nguon": "1e5672d 29/10",
+   "ly_do": "'Van xả áp động cơ' chứa 'động cơ' nên bảng tra ra MD; ghép lại thành van xả áp động cơ MPRD.",
+   "ap_cho": [
+    "PRD",
+    "MD"
+   ],
+   "tu_khoa_xa_ap": [
+    "xả áp",
+    "giảm áp"
+   ],
+   "tu_khoa_dieu_khien": [
+    "mprd",
+    "m-prd",
+    "mrd",
+    "động cơ",
+    "on/off",
+    "on-off",
+    "điện",
+    "điều khiển"
+   ],
+   "vi_du_dung": [
+    {
+     "ten": "Van xả áp động cơ 800x400",
+     "kt": [
+      800,
+      400
+     ],
+     "loai": "MPRD",
+     "model": "M-PRD",
+     "ghi_chu_chua": "Belimo On/Off 5Nm"
+    },
+    {
+     "nguon_boq": "26BDCC09-3.VGCG-Lan 1 Sheet1 R64",
+     "ten": "Van xả áp động cơ 1100x600",
+     "ghi_chu": "Van tuyến tính",
+     "kt": [
+      1100,
+      600
+     ],
+     "loai": "MPRD",
+     "model": "M-PRD",
+     "ghi_chu_chua": "Động cơ tuyến tính 230V Belimo On/Off 10Nm"
+    }
+   ]
+  },
+  {
+   "id": "VG-04_NANG_MFD_CHONG_CHAY_DONG_CO",
+   "ten": "FD / MD / VCD có chữ chống cháy + động cơ → MFD",
+   "nguon": "bd1d662 20/10; ngoại lệ chế độ note 1e5672d 29/10",
+   "ly_do": "'Van chặn lửa đóng mở bằng động cơ' ... không có trong bảng tra cụm → ghép 2 nhóm từ khóa. Chế độ note: FD mà Ghi chú không ghi động cơ thì giữ FD.",
+   "ap_cho": [
+    "FD",
+    "MD",
+    "VCD"
+   ],
+   "tu_khoa_chong_chay": [
+    "chặn lửa",
+    "ngăn cháy",
+    "dập lửa",
+    "chống cháy",
+    "chịu lửa"
+   ],
+   "tu_khoa_dong_co": [
+    "động cơ",
+    "mô tơ",
+    "môtơ",
+    "mo tơ",
+    "motor",
+    "mfd"
+   ],
+   "vi_du_dung": [
+    {
+     "ten": "Van chống cháy gắn mô tơ 500x500",
+     "kt": [
+      500,
+      500
+     ],
+     "loai": "MFD",
+     "model": "SWIND-1.02-MFD-EI90"
+    }
+   ]
+  },
+  {
+   "id": "VG-05_PRD_MPRD_RAW",
+   "ten": "PRD (kể cả từ cột Model) mà chính dòng ghi MPRD / xả áp động cơ → MPRD",
+   "nguon": "dde7498 28/10",
+   "ly_do": "Cột Model 'PRD' do parser tách combo nhưng Tên ghi xả áp điện → vẫn là MPRD.",
+   "tu_khoa": [
+    "mprd",
+    "m-prd",
+    "mrd",
+    "xả áp động cơ",
+    "xả áp điện",
+    "xả áp điều khiển"
+   ],
+   "vi_du_dung": [
+    {
+     "ten": "Van xả áp điều khiển điện 600x600",
+     "model_cot": "PRD",
+     "kt": [
+      600,
+      600
+     ],
+     "loai": "MPRD",
+     "model": "M-PRD"
+    }
+   ]
+  },
+  {
+   "id": "VG-06_EI_THEO_GHI_CHU",
+   "ten": "--spec-priority note: EI lấy từ Ghi chú; NRD/PRD/MPRD/VCD ghi bọc MgO → EI60",
+   "nguon": "1e5672d 29/10",
+   "ly_do": "Chế độ ưu tiên Ghi chú: EI ghi ở Ghi chú thắng EI đọc từ Tên.",
+   "regex_ei": "(?<![a-z])ei\\s*[-:]?\\s*(\\d{2,3})\\b",
+   "ap_cho_boc": [
+    "NRD",
+    "PRD",
+    "MPRD",
+    "VCD"
+   ],
+   "tu_khoa_boc": [
+    "bọc tấm mgo",
+    "tấm chống cháy mgo",
+    "bọc chống cháy"
+   ],
+   "ei_khi_boc": 60,
+   "vi_du_dung": [
+    {
+     "ten": "Van một chiều 400x400",
+     "ghi_chu": "Bọc tấm MgO",
+     "spec_priority": "note",
+     "kt": [
+      400,
+      400
+     ],
+     "loai": "NRD",
+     "model": "NRD",
+     "ghi_chu_chua": "bọc thêm tấm cách nhiệt KSH"
+    }
+   ]
+  },
+  {
+   "id": "VG-07_DONG_CO_MAC_DINH_BELIMO",
+   "ten": "Hãng động cơ mặc định Belimo (mã 1.02); chỉ đổi theo cờ User hoặc mã Swind ở cột Model",
+   "nguon": "bd1d662 20/10; cố định theo AGENTS.md 4d (User chốt)",
+   "ly_do": "KHÔNG tự đổi hãng theo chữ KLB / Viweco / Honeywell / Kepler trong BOQ.",
+   "ma_hang": {
+    "1.03": "KLB",
+    "1.04": "HONEYWELL"
+   },
+   "vi_du_dung": [
+    {
+     "ten": "Van MFD 600x400",
+     "ghi_chu": "Động cơ Honeywell",
+     "kt": [
+      600,
+      400
+     ],
+     "loai": "MFD",
+     "model": "SWIND-1.02-MFD-EI90"
+    }
+   ]
+  },
+  {
+   "id": "VG-08_MD_KHONG_EI",
+   "ten": "Van MD có EI (BOQ ghi) → bọc tấm cách nhiệt KSH 10mm như NRD / PRD / VCD",
+   "nguon": "bd1d662 20/10 (cũ: MD luôn EI = 0); User chốt 2026-11-03 (việc C1, phát hiện #4): MD ghi EI thì báo bọc",
+   "ly_do": "Trước 2026-11-03 MD bị bỏ EI ở Agent 01 / 05 / runner / inspector. Nay giữ EI, bọc thân van giống MPRD (Agent05 _append_fire_insulation_components + cộng tiền bọc m²), ghi chú thêm câu bọc KSH.",
+   "vi_du_dung": [
+    {
+     "nguon_boq": "14. Ống thông gió và pk - Minh Triết Sheet1 R241",
+     "ten": "Van MD KT: 1800x400, EI60",
+     "ei": 60,
+     "kt": [
+      1800,
+      400
+     ],
+     "loai": "MD",
+     "model": "MD",
+     "ghi_chu_chua": "ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm"
+    },
+    {
+     "ten": "Van MD 400x400",
+     "kt": [
+      400,
+      400
+     ],
+     "loai": "MD",
+     "model": "MD",
+     "ghi_chu_khong_chua": "KSH",
+     "ghi_chu_chua": "BELIMO 5Nm"
+    }
+   ]
+  },
+  {
+   "id": "VG-09_FD_MAC_DINH_EI120",
+   "ten": "Van FD mặc định EI120 có bọc (SWIND-2.01- E-FD-EI120); chỉ FD thường khi BOQ ghi rõ → HỎI LẠI USER",
+   "nguon": "590365b 30/10 (User chốt); FD tròn → vuông b5bf9c1 26/10",
+   "ly_do": "AGENTS.md 4c. FD tròn Ø D báo như van vuông D x D.",
+   "tu_khoa_fd_thuong": [
+    "fd thường",
+    "van chặn lửa thường",
+    "loại thường",
+    "không ei",
+    "không có ei",
+    "không chống cháy",
+    "không bọc",
+    "non-ei",
+    "non ei"
+   ],
+   "vi_du_dung": [
+    {
+     "ten": "Van chặn lửa FD 500x400",
+     "kt": [
+      500,
+      400
+     ],
+     "loai": "FD",
+     "model": "SWIND-2.01- E-FD-EI120"
+    },
+    {
+     "ten": "Van chặn lửa FD loại thường 500x400",
+     "kt": [
+      500,
+      400
+     ],
+     "loai": "FD",
+     "model": "FD",
+     "fd_thuong": "loại thường"
+    },
+    {
+     "nguon_boq": "14. Ống thông gió và pk - Minh Triết Sheet1 R231",
+     "ten": "Van FD KT: 1000x400 - EI60",
+     "ei": 60,
+     "kt": [
+      1000,
+      400
+     ],
+     "loai": "FD",
+     "model": "SWIND-2.01- E-FD-EI120"
+    }
+   ]
+  },
+  {
+   "id": "VG-10_MA_MFD",
+   "ten": "Mã MFD: KLB → 1.03, Honeywell → 1.04, Belimo → 1.02; chế độ note: Ghi chú ghi đa cánh / 2390 → 1.05, EI ≥ 120 / BFN / 4751 → 1.01",
+   "nguon": "bd1d662 20/10; chế độ note 1e5672d 29/10",
+   "ly_do": "Mã ghi rõ ở cột Model hoặc --mfd-model thắng tất cả.",
+   "tu_khoa_1_05": [
+    "1.05",
+    "2390",
+    "đa cánh"
+   ],
+   "tu_khoa_1_01": [
+    "1.01",
+    "4751",
+    "bfn",
+    "60s"
+   ],
+   "ei_1_01_tu": 120,
+   "mac_dinh_belimo": "1.02",
+   "vi_du_dung": [
+    {
+     "ten": "Van MFD 600x400",
+     "ghi_chu": "EI120",
+     "spec_priority": "note",
+     "kt": [
+      600,
+      400
+     ],
+     "loai": "MFD",
+     "model": "SWIND-1.01-MFD-EI120"
+    }
+   ]
+  },
+  {
+   "id": "VG-11_MO_MEN_DONG_CO",
+   "ten": "Mô-men động cơ van MD / MPRD theo kích thước 1 modul",
+   "nguon": "Honeywell 4e14743 22/10; Belimo cạnh ≥ 1000 → 10Nm, MPRD tuyến tính 7cdc069 02/11 (Kỹ thuật / User chốt)",
+   "ly_do": "AGENTS.md 4d: Belimo có 1 cạnh modul ≥ 1000mm → 10Nm, cả 2 cạnh < 1000 → 5Nm, > 1.8 m²/modul → 20Nm. Hãng khác theo diện tích modul.",
+   "belimo": {
+    "canh_lon_mm": 1000,
+    "nho": "5Nm",
+    "bac_dien_tich": [
+     {
+      "s_max": 1.8,
+      "nm": "10Nm"
+     },
+     {
+      "nm": "20Nm"
+     }
+    ]
+   },
+   "theo_dien_tich": [
+    {
+     "s_max": 0.8,
+     "nm": "5Nm",
+     "model_honeywell": "CN4605A"
+    },
+    {
+     "s_max": 1.8,
+     "nm": "10Nm",
+     "model_honeywell": "CN4610A"
+    },
+    {
+     "nm": "20Nm",
+     "model_honeywell": "CN4620A"
+    }
+   ],
+   "vi_du_dung": [
+    {
+     "ten": "Van MD 1000x400",
+     "kt": [
+      1000,
+      400
+     ],
+     "loai": "MD",
+     "model": "MD",
+     "ghi_chu_chua": "BELIMO 10Nm"
+    },
+    {
+     "ten": "Van MD 900x900",
+     "kt": [
+      900,
+      900
+     ],
+     "loai": "MD",
+     "model": "MD",
+     "ghi_chu_chua": "BELIMO 5Nm"
+    }
+   ]
+  },
+  {
+   "id": "VG-12_MAU_MODEL_GHI_CHU",
+   "ten": "Model + ghi chú báo giá theo loại van / mã",
+   "nguon": "bd1d662 20/10; Honeywell 4e14743 22/10; MPRD 7cdc069 02/11",
+   "ly_do": "Mẫu chữ ghi trên sheet BG. Biến: {mod_txt} chia modul, {mod_hw_txt} chia modul (Honeywell), {clamp_txt} thu côn, {lv_txt} kèm Louver, {canh} 1 cánh / đa cánh, {mod_cnt}, {nm}, {model_hw}, {mod_dmp_txt}, {act_txt}.",
+   "bien": {
+    "mod_txt": "\n- Chia {mod_cnt} modul khi sản xuất",
+    "mod_hw_txt": "\n- Chia {mod_cnt} modul theo bản vẽ chi tiết",
+    "clamp_txt": "\n- Van thu côn 2 đầu",
+    "lv_txt": "\n- Kết hợp cửa Louver nan Z ngoài trời + LCCT",
+    "mod_dmp_txt": ", chia {mod_cnt} modul ({mod_cnt} động cơ)",
+    "canh_1": "Van 1 cánh",
+    "canh_nhieu": "Van chia đa cánh"
+   },
+   "model_mfd_louver": "MFD + Louver",
+   "mfd": {
+    "1.03": {
+     "model": "SWIND-1.03-MFD-EI90",
+     "louver_doi_model": false,
+     "ghi_chu": "- Van ngăn cháy động cơ - Tiêu chuẩn EI 90\n- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 5Nm, Hãng KLB\n- Sản xuất theo BCTN số 4651/VLXD-TBMT{mod_txt}{clamp_txt}{lv_txt}"
+    },
+    "1.04": {
+     "model": "SWIND-1.04-MFD-EI60",
+     "ghi_chu": "- Van động cơ MFD - Tiêu chuẩn EI 60\n- 2 đầu bích TDC - HoneyWell, 9Nm, 230V, Type đóng mở nhanh: 15s - Model: MS4609F1010/B\n- Sản xuất theo BCTN số 1515/VLXD-TBMT{mod_hw_txt}{clamp_txt}{lv_txt}"
+    },
+    "1.01": {
+     "model": "SWIND-1.01-MFD-EI120",
+     "ghi_chu": "- Van chống cháy động cơ - Tiêu chuẩn EI 120\n- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 9Nm, 24V/230V BELIMO - Model: BFN 24\n- Sản xuất theo BCTN số 4751/VLXD-TBMT{mod_txt}{clamp_txt}{lv_txt}"
+    },
+    "1.05": {
+     "model": "SWIND-1.05-MFD-EI120",
+     "ghi_chu": "- Van động cơ SWIND-MFD - Tiêu chuẩn EI 120\n- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 9Nm, 24V BELIMO - Model: BFN 24\n- Sản xuất theo BCTN số 2390/VLXD-TBMT{mod_txt}{clamp_txt}{lv_txt}"
+    },
+    "*": {
+     "model": "SWIND-1.02-MFD-EI90",
+     "ghi_chu": "- Van chống cháy động cơ - Tiêu chuẩn EI 90\n- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 3.5Nm, 24V (Type: đóng mở nhanh) BELIMO - Model: FSLF US\n- Sản xuất theo BCTN số 4752/VLXD-TBMT{mod_txt}{clamp_txt}{lv_txt}"
+    },
+    "_phuong_an_da_canh": {
+     "model": "SWIND-1.05-MFD-EI120",
+     "ghi_chu": "- Van động cơ SWIND-MFD - Tiêu chuẩn EI 120\n- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 9Nm, 24V BELIMO - Model: BFN 24\n- Sản xuất theo BCTN số 2390/VLXD-TBMT\n- {canh}{mod_txt}{clamp_txt}{lv_txt}"
+    }
+   },
+   "fd_ei": {
+    "model": "SWIND-2.01- E-FD-EI120",
+    "ghi_chu": "- Van chặn lửa cầu chì - Tiêu chuẩn EI 120\n- 2 đầu bích TDC - gắn cầu chì 70-74 độ C\n- Sản xuất theo BCTN số: 4761/VLXD-TBMT{mod_txt}{clamp_txt}"
+   },
+   "fd_thuong": {
+    "model": "FD",
+    "ghi_chu": "Van chặn lửa cầu chì tôn mạ kẽm"
+   },
+   "md": {
+    "model": "MD",
+    "KLB_1_modul": "Van MD, động cơ KLB/VIWECO 24V - 10Nm ON/OFF",
+    "KLB_nhieu_modul": "Van MD chia {mod_cnt} modul,  {mod_cnt} động cơ KLB/VIWECO 24V - 10Nm ON/OFF",
+    "HONEYWELL": "Van động cơ ON-OFF HoneyWell {nm}, 230V, đóng mở 90s-150s (Model: {model_hw}/tđ){mod_dmp_txt}",
+    "BELIMO": "Van động cơ ON-OFF BELIMO {nm} (đóng mở 150s), điện áp 230V, xuất xứ Thụy Sỹ{mod_dmp_txt}",
+    "hau_to_co_ei": ". ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm",
+    "truc_cho_1_modul": "Van MD tôn mạ kẽm, trục chờ lắp động cơ (không gồm động cơ)",
+    "truc_cho_nhieu_modul": "Van MD tôn mạ kẽm chia {mod_cnt} modul, {mod_cnt} trục chờ lắp động cơ (không gồm động cơ)"
+   },
+   "mprd": {
+    "model": "M-PRD",
+    "dong_co_belimo": "Động cơ tuyến tính 230V Belimo On/Off {nm}",
+    "dong_co_khac": "Động cơ {hang} On/Off {nm}",
+    "ten_hang": {
+     "HONEYWELL": "HoneyWell"
+    },
+    "co_ei": "Van xả áp động cơ, thân van bọc tấm KSH 10mm, không có kiểm định. {act_txt}",
+    "khong_ei": "Van xả áp động cơ tôn mạ kẽm. {act_txt}"
+   },
+   "don_gian": {
+    "NRD": {
+     "model": "NRD",
+     "khong_ei": "Van 1 chiều tôn mạ kẽm",
+     "co_ei": "Van 1 chiều tôn mạ kẽm. ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm"
+    },
+    "PRD": {
+     "model": "PRD",
+     "khong_ei": "Van xả áp đối trọng tôn mạ kẽm",
+     "co_ei": "Van xả áp đối trọng tôn mạ kẽm. ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm"
+    },
+    "OBD": {
+     "model": "OBD",
+     "khong_ei": "Van điều chỉnh lưu lượng OBD tôn mạ kẽm",
+     "co_ei": "Van điều chỉnh lưu lượng OBD tôn mạ kẽm"
+    },
+    "*": {
+     "model": "VCD",
+     "khong_ei": "Van điều chỉnh lưu lượng tay gạt tôn mạ kẽm",
+     "co_ei": "Van điều chỉnh lưu lượng tay gạt tôn mạ kẽm. ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm"
+    }
+   },
+   "vi_du_dung": [
+    {
+     "ten": "Van MFD 2000x1000",
+     "kt": [
+      2000,
+      1000
+     ],
+     "loai": "MFD",
+     "model": "SWIND-1.02-MFD-EI90",
+     "ghi_chu_chua": "Chia 4 modul"
+    }
+   ]
+  },
+  {
+   "id": "VG-13_TACH_COMBO_PARSER",
+   "ten": "Parser: tách các van trong 1 dòng (combo Van + Van / Cửa + Van), chọn van chính theo thứ bậc",
+   "nguon": "1805d82 20/10; thứ bậc 4e14743 22/10; 'van MDF' = MFD và Mã SP chỉ bổ sung khi Tên chưa ghi van 7ebdc48 03/11 (Kỹ thuật 02/11); chữ 'và' = nối 2 van (User chốt 2026-11-03, Minh Triết R240 'Van FD và NRD')",
+   "ly_do": "Tên 'Van chặn lửa MFD' + Mã SP 'FD - EI' = 1 van MFD, không phải combo MFD + FD. Chữ 'kèm động cơ / cầu chì' không tách thành van riêng.",
+   "sua_go_nham": [
+    [
+     "\\bvan\\s+mdf\\b",
+     "van mfd"
+    ]
+   ],
+   "thu_bac": [
+    "MFSD",
+    "MFD",
+    "FD",
+    "MD",
+    "PRD",
+    "NRD",
+    "VCD"
+   ],
+   "regex_tach": "\\s*(?:\\+|(?:\\bkèm\\b|\\bvà\\b|\\bgắn\\b|\\btích\\s*hợp\\b|\\bkết\\s*hợp\\b|\\bc/w\\.?\\b|\\bwith\\b)(?!\\s*(?:động\\s*cơ|mô\\s*tơ|môtơ|mo\\s*tơ|motor|cầu\\s*chì)))\\s*",
+   "regex_ma_van": "\\b(mfsd|mfd|vcd|vd|nrd|prd|md|fd)\\b",
+   "regex_phan_van": "\\bvan\\b.*",
+   "nhan_dien": [
+    [
+     "MFSD",
+     "\\bmfsd\\b"
+    ],
+    [
+     "MFD",
+     "\\bmfd\\b|ngăn\\s*cháy.*động\\s*cơ|chống\\s*cháy.*động\\s*cơ|chặn\\s*lửa.*động\\s*cơ"
+    ],
+    [
+     "VCD",
+     "\\bvcd\\b|\\bvd\\b|điều\\s*chỉnh.*lưu\\s*lượng"
+    ],
+    [
+     "NRD",
+     "\\bnrd\\b|1\\s*chiều|một\\s*chiều"
+    ],
+    [
+     "PRD",
+     "\\bprd\\b|xả\\s*áp|giảm\\s*áp"
+    ],
+    [
+     "MD",
+     "\\bmd\\b|động\\s*cơ|on/off|on-off"
+    ],
+    [
+     "FD",
+     "\\bfd\\b|chặn\\s*lửa|chống\\s*cháy|dập\\s*lửa|cầu\\s*chì"
+    ]
+   ],
+   "vi_du_combo": [
+    {
+     "ten": "Van chặn lửa MFD",
+     "model_cot": "FD - EI",
+     "van": [
+      "MFD"
+     ]
+    },
+    {
+     "ten": "Van MDF 600x400",
+     "van": [
+      "MFD"
+     ]
+    },
+    {
+     "ten": "Van FD + Van một chiều 400x400",
+     "van": [
+      "FD",
+      "NRD"
+     ]
+    },
+    {
+     "ten": "Van chặn lửa kèm cầu chì 400x400",
+     "van": [
+      "FD"
+     ]
+    },
+    {
+     "nguon_boq": "BG DT C08 'Minh Triết BG' R46",
+     "ten": "Van FD+VCD",
+     "van": [
+      "FD",
+      "VCD"
+     ]
+    },
+    {
+     "nguon_boq": "BG DT C08 'Minh Triết BG' R542",
+     "ten": "Van MFD + VD",
+     "van": [
+      "MFD",
+      "VCD"
+     ]
+    },
+    {
+     "nguon_boq": "14. Ống thông gió và pk - Minh Triết Sheet1 R240",
+     "ten": "Van FD và NRD KT: 300x200",
+     "van": [
+      "FD",
+      "NRD"
+     ]
+    },
+    {
+     "ten": "Van chặn lửa và động cơ 400x400",
+     "van": [
+      "MFD"
+     ],
+     "ghi_chu_vi_du": "'và động cơ' không tách thành van riêng → 1 van MFD"
+    }
+   ]
+  }
+ ]
+}

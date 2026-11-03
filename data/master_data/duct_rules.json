@@ -1,0 +1,737 @@
+{
+ "_mo_ta": "Bảng rule nhận diện ỐNG GIÓ & PHỤ KIỆN (ONG_GIO / CANVAS / TIEU_AM / ONG_MEM) — nguồn dữ liệu của src/duct_classifier.py (thay chuỗi if cũ trong Agent04.detect_duct_subtype và các danh sách từ khóa LCCT / G4 / canvas chống cháy / hộp trong Ghi chú). Chỉ PHÂN LOẠI: công thức tôn / giá (Agent04._calc_*) không nằm ở đây. Văn bản xét = Tên gốc + Ghi chú của CHÍNH DÒNG (không gồm Title cha — AGENTS.md 1a). Sửa rule: theo AGENTS.md mục 7 → chạy tests/test_swind_duct_rules.py + self-test + E2E 2 chế độ.",
+ "phien_ban": "2026-11-03",
+ "cu_phap": {
+  "thu_tu_nhan_dien": "Rule đầu tiên khớp thắng. Khớp = (có 1 'tu_khoa' trong văn bản) HOẶC (khớp 1 'regex') HOẶC (văn bản bắt đầu bằng 1 'bat_dau') HOẶC (đơn vị chứa 1 'don_vi') HOẶC (điều kiện hình học 'hoac_hinh_hoc' đúng); sau đó phải thỏa 'va_hinh_hoc' (nếu có), không chứa 'tru_cum', không bắt đầu bằng 'tru_bat_dau'.",
+  "ket_qua": "Chuỗi = loại cố định; {'tron': A, 'vuong': B} = theo ống tròn / vuông (is_round).",
+  "hinh_hoc": {
+   "tron": "is_round (xem 'ong_tron')",
+   "vuong_co_d_khong_w2": "không tròn, có W1, H1, D1 và chưa có W2 (côn vuông → tròn)",
+   "hai_dau_khac_nhau": "có W1 và W2 và (W1 ≠ W2 hoặc H1 ≠ H2)",
+   "khong_w_khong_d": "W1 = 0 và D1 = 0",
+   "khong_kich_thuoc": "W1 = H1 = D1 = 0"
+  }
+ },
+ "ong_tron": {
+  "_mo_ta": "is_round = (có D1, không W1) HOẶC (D1 = W1 = H1, văn bản không có cặp AxB, có từ khóa tròn)",
+  "regex_cap_vuong": "(?<![dDØø])\\b\\d{2,4}\\s*[xX*]\\s*\\d{2,4}\\b",
+  "tu_khoa": [
+   "tròn",
+   "xoắn",
+   "ø",
+   "dn",
+   "phi",
+   "d1",
+   "d2",
+   "d3",
+   "d4",
+   "d5",
+   "d6",
+   "d7",
+   "d8"
+  ]
+ },
+ "thu_tu_nhan_dien": [
+  {
+   "id": "OG-01_CHUP_THONG_HOI",
+   "ket_qua": "VENTCAP",
+   "tu_khoa": [
+    "chụp thông hơi",
+    "chup thong hoi",
+    "ventcap",
+    "vent cap",
+    "chụp khí",
+    "chụp hút",
+    "chụp thông gió",
+    "chup thong gio"
+   ],
+   "nguon": "bd1d662 20/10; 'chụp thông gió' User chốt 2026-11-03 (việc C2, CAND 'DHKK A3' R272)",
+   "ly_do": "Chụp thông hơi / ventcap / chụp thông gió: Swind mặc định KHÔNG báo giá (nhóm CANVAS → bỏ cùng canvas, User chốt 2026-11-03); phân loại đúng để khi bật --include-canvas tính theo bảng giá chụp, không thành ống xoắn.",
+   "vi_du_dung": [
+    {
+     "ten": "Chụp thông hơi D200",
+     "d": 200,
+     "loai": "VENTCAP"
+    },
+    {
+     "nguon_boq": "Xin giá cửa dự án CAND 'DHKK A3' R272",
+     "ten": "Chụp thông gió D110",
+     "d": 110,
+     "loai": "VENTCAP"
+    }
+   ]
+  },
+  {
+   "id": "OG-02_CANVAS",
+   "ket_qua": {
+    "tron": "CANVAS_RT",
+    "vuong": "CANVAS_SQ"
+   },
+   "tu_khoa": [
+    "khớp nối mềm",
+    "khop noi mem",
+    "nối mềm",
+    "noi mem",
+    "bạt mềm",
+    "canvas",
+    "cổ bạt",
+    "co bat",
+    "flexible connection"
+   ],
+   "nguon": "bd1d662 20/10; 'flexible connection' User chốt 2026-11-03 (việc C2)",
+   "ly_do": "Khớp nối mềm — mặc định không báo (AGENTS.md 4b), vẫn phân loại để --include-canvas tính được.",
+   "vi_du_dung": [
+    {
+     "ten": "Khớp nối mềm 600x400",
+     "kt": [
+      600,
+      400
+     ],
+     "loai": "CANVAS_SQ"
+    },
+    {
+     "ten": "Flexible connection 600x400",
+     "kt": [
+      600,
+      400
+     ],
+     "loai": "CANVAS_SQ"
+    }
+   ]
+  },
+  {
+   "id": "OG-03_ONG_MEM",
+   "ket_qua": "FLEX_DUCT",
+   "tu_khoa": [
+    "ống mềm",
+    "ong mem",
+    "ống gió mềm",
+    "ong gio mem",
+    "flexible"
+   ],
+   "tru_cum": [
+    "lắp ống mềm",
+    "lap ong mem",
+    "nối ống mềm",
+    "noi ong mem",
+    "ra ống mềm",
+    "chờ ống mềm"
+   ],
+   "tru_bat_dau": [
+    "côn",
+    "con ",
+    "chân rẽ",
+    "chan re",
+    "hộp",
+    "hôp",
+    "hop ",
+    "cút",
+    "cut ",
+    "tê ",
+    "te "
+   ],
+   "nguon": "bd1d662 20/10; ngoại lệ 'lắp / nối / chờ ống mềm' và phụ kiện đầu dòng b5bf9c1 26/10",
+   "ly_do": "'Hộp gió ... chờ ống mềm', 'Côn ... ra ống mềm' là phụ kiện ống cứng, không phải ống mềm.",
+   "vi_du_dung": [
+    {
+     "ten": "Ống gió mềm D200 có bảo ôn",
+     "d": 200,
+     "loai": "FLEX_DUCT"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Hộp gió 600x300 chờ ống mềm D200",
+     "kt": [
+      600,
+      300
+     ],
+     "loai": "PLENUM_BOX"
+    },
+    {
+     "ten": "Flexible connection 600x400",
+     "kt": [
+      600,
+      400
+     ],
+     "loai": "CANVAS_SQ",
+     "ghi_chu_vi_du": "khớp nối mềm, không phải ống mềm (OG-02 đứng trước)"
+    }
+   ]
+  },
+  {
+   "id": "OG-04_TIEU_AM",
+   "ket_qua": {
+    "tron": "SILENCER_RT",
+    "vuong": "SILENCER_SQ"
+   },
+   "tu_khoa": [
+    "tiêu âm",
+    "tieu am",
+    "silencer"
+   ],
+   "nguon": "bd1d662 20/10",
+   "ly_do": "Ống / hộp tiêu âm — không phải ống gió (vẫn báo giá mặc định, AGENTS.md 4b).",
+   "vi_du_dung": [
+    {
+     "ten": "Ống tiêu âm 800x400 L1000",
+     "kt": [
+      800,
+      400
+     ],
+     "loai": "SILENCER_SQ"
+    }
+   ]
+  },
+  {
+   "id": "OG-05_HOP_GIO",
+   "ket_qua": "PLENUM_BOX",
+   "tu_khoa": [
+    "hộp gió",
+    "hôp gió",
+    "hop gio",
+    "box cửa gió",
+    "box gió",
+    "hộp cho cửa",
+    "hộp góp gió",
+    "hộp tĩnh áp",
+    "plenum"
+   ],
+   "nguon": "bd1d662 20/10",
+   "ly_do": "Hộp gió / hộp tĩnh áp theo công thức BG PKV.",
+   "vi_du_dung": [
+    {
+     "nguon_boq": "260910_MKS BP05a 'Biểu 5. BoQ-DHTG' R116",
+     "ten": "Hộp gió FCU KT 700x300 tole dày 0,75mm dài 400 cho dàn lạnh",
+     "kt": [
+      700,
+      300
+     ],
+     "loai": "PLENUM_BOX"
+    }
+   ]
+  },
+  {
+   "id": "OG-06_CON_VUONG_TRON",
+   "ket_qua": "SQUARE_TO_ROUND",
+   "tu_khoa": [
+    "côn thu vuông tròn",
+    "con thu vuong tron",
+    "côn vuông tròn",
+    "con vuong tron",
+    "vuông tròn",
+    "vuong tron",
+    "vuông sang tròn",
+    "tròn sang vuông",
+    "chuyển tiết diện",
+    "chuyen tiet dien",
+    "côn đầu quạt",
+    "con dau quat",
+    "v-t",
+    "cvt"
+   ],
+   "hoac_hinh_hoc": "vuong_co_d_khong_w2",
+   "nguon": "bd1d662 20/10",
+   "ly_do": "Có cặp AxB + đường kính D (chưa có cạnh thứ 2) = côn vuông → tròn.",
+   "vi_du_dung": [
+    {
+     "ten": "Côn thu vuông tròn 600x400/D300",
+     "kt": [
+      600,
+      400
+     ],
+     "d": 300,
+     "loai": "SQUARE_TO_ROUND"
+    }
+   ]
+  },
+  {
+   "id": "OG-07_BIT_DAU",
+   "ket_qua": {
+    "tron": "END_CAP_RT",
+    "vuong": "END_CAP_SQ"
+   },
+   "tu_khoa": [
+    "bịt đầu",
+    "bit dau",
+    "nắp bịt",
+    "nap bit",
+    "bịt 1 đầu",
+    "bit 1 dau",
+    "bịt ống",
+    "bit ong",
+    "ống bịt",
+    "ong bit"
+   ],
+   "nguon": "bd1d662 20/10",
+   "ly_do": "",
+   "vi_du_dung": [
+    {
+     "ten": "Bịt đầu ống gió 500x300",
+     "kt": [
+      500,
+      300
+     ],
+     "loai": "END_CAP_SQ"
+    }
+   ]
+  },
+  {
+   "id": "OG-08_MANG_SONG",
+   "ket_qua": "COUPLING_RT",
+   "tu_khoa": [
+    "măng xông",
+    "mang xong",
+    "măng sông",
+    "mang song",
+    "nối ống",
+    "noi ong"
+   ],
+   "nguon": "bd1d662 20/10",
+   "ly_do": "Măng sông chỉ có ống tròn.",
+   "vi_du_dung": [
+    {
+     "ten": "Măng sông D200",
+     "d": 200,
+     "loai": "COUPLING_RT"
+    }
+   ]
+  },
+  {
+   "id": "OG-09_CHAC_Y",
+   "ket_qua": {
+    "tron": "WYE_RT",
+    "vuong": "WYE_SQ"
+   },
+   "tu_khoa": [
+    "chạc 3",
+    "chac 3",
+    "chạc ba",
+    "chạc y",
+    "chữ y",
+    "chu y",
+    "ống quần",
+    "y vuông",
+    "y tròn"
+   ],
+   "regex": [
+    "\\by\\s*[:=]\\s*d\\d+"
+   ],
+   "nguon": "bd1d662 20/10",
+   "ly_do": "",
+   "vi_du_dung": [
+    {
+     "ten": "Chạc Y 600x400",
+     "kt": [
+      600,
+      400
+     ],
+     "loai": "WYE_SQ"
+    }
+   ]
+  },
+  {
+   "id": "OG-10_TE",
+   "ket_qua": {
+    "tron": "TEE_RT",
+    "vuong": "TEE_SQ"
+   },
+   "tu_khoa": [
+    "tê vuông",
+    "te vuong",
+    "tê tròn",
+    "te tron",
+    "tê đều",
+    "tê thu",
+    "tê ống",
+    "tee"
+   ],
+   "regex": [
+    "\\btê\\b"
+   ],
+   "nguon": "bd1d662 20/10",
+   "ly_do": "",
+   "vi_du_dung": [
+    {
+     "ten": "Tê 600x400/400x300",
+     "kt": [
+      600,
+      400
+     ],
+     "w2": 400,
+     "h2": 300,
+     "loai": "TEE_SQ"
+    }
+   ]
+  },
+  {
+   "id": "OG-11_ZET",
+   "ket_qua": "OFFSET_Z",
+   "tu_khoa": [
+    "zét lượn",
+    "zet luon",
+    "zét",
+    "ống lượn",
+    "ong luon",
+    "lượn ống gió",
+    "luon ong gio",
+    "lượn z",
+    "luon z",
+    "z chuyển cao độ",
+    "z chuyen cao do",
+    "z chuyển hướng",
+    "z chuyen huong",
+    "z đứng",
+    "z dung",
+    "z ngang",
+    "chữ z",
+    "chu z",
+    "offset"
+   ],
+   "regex": [
+    "\\bz\\s*vuông\\b|(?:^|\\s)z\\s*\\d{2,4}\\s*[xX*]\\s*\\d{2,4}"
+   ],
+   "nguon": "bd1d662 20/10; thiếu độ lệch E → để trống giá 7ebdc48 03/11 (Kỹ thuật 02/11, xem OG-20)",
+   "ly_do": "",
+   "vi_du_dung": [
+    {
+     "ten": "Zét lượn 500x300 E200",
+     "kt": [
+      500,
+      300
+     ],
+     "loai": "OFFSET_Z"
+    }
+   ]
+  },
+  {
+   "id": "OG-12_CUT",
+   "ket_qua": {
+    "tron": "ELBOW_RT",
+    "vuong": "ELBOW_SQ"
+   },
+   "tu_khoa": [
+    "cút vuông",
+    "cut vuong",
+    "cút tròn",
+    "cut tron",
+    "cút",
+    "cut ",
+    "co 90",
+    "co 60",
+    "co 45",
+    "co 30",
+    "co vuông",
+    "co tròn",
+    "co ống",
+    "chếch",
+    "chech",
+    "bs90",
+    "bs45",
+    "bt90",
+    "bt45",
+    "elbow"
+   ],
+   "nguon": "bd1d662 20/10",
+   "ly_do": "",
+   "vi_du_dung": [
+    {
+     "ten": "Cút 90 độ 800x400 tôn 0.75",
+     "kt": [
+      800,
+      400
+     ],
+     "loai": "ELBOW_SQ"
+    }
+   ]
+  },
+  {
+   "id": "OG-13_CHAN_RE",
+   "ket_qua": {
+    "tron": "TAKEOFF_RT",
+    "vuong": "SHOE_TAP"
+   },
+   "tu_khoa": [
+    "chân rẽ",
+    "chan re",
+    "gót giày",
+    "got giay",
+    "cổ trích",
+    "co trich",
+    "chân trích",
+    "take off",
+    "take-off"
+   ],
+   "nguon": "bd1d662 20/10",
+   "ly_do": "",
+   "vi_du_dung": [
+    {
+     "ten": "Chân rẽ 400x300",
+     "kt": [
+      400,
+      300
+     ],
+     "loai": "SHOE_TAP"
+    }
+   ]
+  },
+  {
+   "id": "OG-14_CON",
+   "ket_qua": {
+    "tron": "REDUCER_RT",
+    "vuong": "REDUCER_SQ"
+   },
+   "tu_khoa": [
+    "côn vuông",
+    "con vuong",
+    "côn tròn",
+    "con tron",
+    "côn thu",
+    "con thu",
+    "côn giảm",
+    "con giam",
+    "giảm đều",
+    "giam deu",
+    "giảm vuông",
+    "giảm tròn",
+    "côn lệch",
+    "côn phẳng",
+    "con phang",
+    "côn đồng tâm",
+    "thu vuông",
+    "thu tròn",
+    "reducer"
+   ],
+   "bat_dau": [
+    "côn ",
+    "con "
+   ],
+   "hoac_hinh_hoc": "hai_dau_khac_nhau",
+   "nguon": "bd1d662 20/10",
+   "ly_do": "Có 2 đầu kích thước khác nhau mà không ghi loại = côn.",
+   "vi_du_dung": [
+    {
+     "ten": "Côn 1000x400/600x150 L=200",
+     "kt": [
+      1000,
+      400
+     ],
+     "w2": 600,
+     "h2": 150,
+     "loai": "REDUCER_SQ"
+    }
+   ]
+  },
+  {
+   "id": "OG-15_PHU_KIEN_M2",
+   "ket_qua": "FITTING_M2",
+   "tu_khoa": [
+    "phụ kiện"
+   ],
+   "va_hinh_hoc": "khong_w_khong_d",
+   "nguon": "bd1d662 20/10",
+   "ly_do": "Phụ kiện ống gió tính theo m² khi BOQ không ghi kích thước.",
+   "vi_du_dung": [
+    {
+     "ten": "Phụ kiện ống gió tôn 0.75",
+     "dvt": "m2",
+     "loai": "FITTING_M2"
+    }
+   ]
+  },
+  {
+   "id": "OG-16_ONG_TRON",
+   "ket_qua": "SPIRAL_DUCT",
+   "tu_khoa": [
+    "tròn xoắn",
+    "ống tròn",
+    "ống gió tròn"
+   ],
+   "hoac_hinh_hoc": "tron",
+   "nguon": "bd1d662 20/10",
+   "ly_do": "",
+   "vi_du_dung": [
+    {
+     "ten": "Ống gió tròn xoắn D200",
+     "d": 200,
+     "loai": "SPIRAL_DUCT"
+    }
+   ]
+  },
+  {
+   "id": "OG-17_ONG_M2",
+   "ket_qua": "DUCT_M2",
+   "tu_khoa": [
+    "m2"
+   ],
+   "don_vi": [
+    "m2",
+    "m²"
+   ],
+   "va_hinh_hoc": "khong_kich_thuoc",
+   "nguon": "bd1d662 20/10",
+   "ly_do": "Ống gió ghi tổng m², không kích thước.",
+   "vi_du_dung": [
+    {
+     "ten": "Ống gió tôn 0.75mm",
+     "dvt": "m2",
+     "loai": "DUCT_M2"
+    }
+   ]
+  },
+  {
+   "id": "OG-18_ONG_VUONG",
+   "ket_qua": "DUCT_RECT",
+   "mac_dinh": true,
+   "nguon": "bd1d662 20/10",
+   "ly_do": "Còn lại = ống gió vuông.",
+   "vi_du_dung": [
+    {
+     "ten": "Ống gió 600x400",
+     "kt": [
+      600,
+      400
+     ],
+     "loai": "DUCT_RECT"
+    }
+   ]
+  }
+ ],
+ "quy_tac_bo_sung": [
+  {
+   "id": "OG-19_TIEU_AM_THEO_TITLE",
+   "ten": "Dòng nhóm TIEU_AM (kế thừa Title 'Tiêu âm ...') mà Tên chỉ còn kích thước → vẫn tính tiêu âm",
+   "nguon": "b5bf9c1 26/10",
+   "ly_do": "Title cha truyền loại tiêu âm khi dòng không tự ghi loại (AGENTS.md 1a: dòng chỉ ghi kích thước → theo Title).",
+   "vi_du_dung": [
+    {
+     "ten": "500x300x1500, tôn dày 0.58mm",
+     "nhom": "TIEU_AM",
+     "kt": [
+      500,
+      300
+     ],
+     "loai": "SILENCER_SQ"
+    }
+   ]
+  },
+  {
+   "id": "OG-20_ZET_THIEU_DO_LECH",
+   "ten": "Zét (OG-11) không ghi độ lệch E và BOQ không có đơn giá → để trống giá, tô vàng cho Kỹ thuật",
+   "nguon": "7ebdc48 03/11 (Kỹ thuật 02/11)",
+   "ly_do": "Không tự áp độ lệch mặc định. Kiểm tra ở parser (SwindBOQParser.parse_sheet, is_missing_z_offset) bằng duct_classifier.detect_subtype.",
+   "vi_du_dung": [
+    {
+     "ten": "Zét 500x300",
+     "kt": [
+      500,
+      300
+     ],
+     "loai": "OFFSET_Z"
+    }
+   ]
+  },
+  {
+   "id": "OG-21_HOP_TRONG_GHI_CHU",
+   "ten": "Ghi chú liệt kê hộp dạng 'BOX/Hộp <nhãn> WxHxL': ≥ 2 hộp → 1 dòng, đơn giá = tổng các hộp; đúng 1 hộp khác kích thước Tên → vẫn tính theo Ghi chú + HỎI LẠI USER",
+   "nguon": "Nhiều hộp: User chốt 2026-11-03 (MKS BP05a 'Hộp gió FCU'); 1 hộp khác Tên: User chốt 2026-11-03 (việc C2)",
+   "ly_do": "Ghi chú là thông số chi tiết của chính dòng nên được dùng, nhưng khi mâu thuẫn với kích thước ở Tên thì phải hỏi lại.",
+   "regex_hop": "\\b(?:box|hộp)(?:\\s+gió)?\\s*([^\\d\\n,;+]{0,12}?)\\s*(\\d{2,4})\\s*[xX*×]\\s*(\\d{2,4})\\s*[xX*×]\\s*(\\d{2,4})",
+   "regex_kt_ten": "(\\d{2,4})\\s*[xX*×]\\s*(\\d{2,4})",
+   "vi_du_dung": [
+    {
+     "nguon_boq": "260910_MKS BP05a 'Biểu 5. BoQ-DHTG' R116",
+     "ten": "Hộp gió FCU KT 700x300 tole dày 0,75mm dài 400 cho dàn lạnh",
+     "ghi_chu": "BOX CẤP 600x300x300 BOX HỒI 700x300x300 Cách nhiệt ngoài dày 25mm",
+     "so_hop": 2,
+     "hoi_lai": false
+    },
+    {
+     "ten": "Hộp gió 700x300 L400",
+     "ghi_chu": "BOX 600x300x300",
+     "so_hop": 1,
+     "hoi_lai": true
+    },
+    {
+     "ten": "Hộp gió 600x300 L300",
+     "ghi_chu": "BOX 600x300x300",
+     "so_hop": 1,
+     "hoi_lai": false
+    }
+   ]
+  },
+  {
+   "id": "OG-22_LCCT_LOC_TRONG_CUT",
+   "ten": "Cút (ELBOW_*) mà Tên ghi kèm LCCT / lọc G4 → Model + LCCT / + G4, ghi chú nêu phần lưới / lọc",
+   "nguon": "7cdc069 02/11 (User chốt — dòng ống kèm LCCT/G4 vẫn báo phần LCCT/lọc)",
+   "ly_do": "AGENTS.md quy tắc 4: không bỏ cả dòng ống — báo phần LCCT / lọc.",
+   "tu_khoa_luoi": [
+    "lcct",
+    "lưới chắn côn trùng"
+   ],
+   "tu_khoa_loc": [
+    "lọc g4",
+    "bộ lọc g4",
+    "lọc bụi"
+   ],
+   "vi_du_dung": [
+    {
+     "ten": "CO 45 + LCCT 1500x1500 kèm bộ lọc G4",
+     "kt": [
+      1500,
+      1500
+     ],
+     "loai": "ELBOW_SQ",
+     "model_chua": "+ LCCT + G4"
+    }
+   ]
+  },
+  {
+   "id": "OG-23_LCCT_TRONG_PHU_KIEN_VUONG",
+   "ten": "Ống / phụ kiện vuông ghi kèm lưới chắn côn trùng → cộng tiền lưới W×H×cua.luoi_m2, Model + LCCT",
+   "nguon": "bd1d662 20/10",
+   "ly_do": "",
+   "tu_khoa": [
+    "côn trùng",
+    "lcct",
+    "lưới chắn",
+    "insect screen",
+    "i.s"
+   ],
+   "regex": "\\b(?:i\\.s\\.?|c/w\\s*is)\\b",
+   "vi_du_dung": [
+    {
+     "ten": "Hộp gió 600x300 kèm lưới chắn côn trùng",
+     "kt": [
+      600,
+      300
+     ],
+     "loai": "PLENUM_BOX",
+     "model_chua": "+ LCCT"
+    }
+   ]
+  },
+  {
+   "id": "OG-24_CANVAS_CHONG_CHAY",
+   "ten": "Canvas chống cháy khi Model chuẩn là CHONG-CHAY hoặc dòng ghi chống cháy / chịu nhiệt / tahk / hút khói",
+   "nguon": "bd1d662 20/10",
+   "ly_do": "",
+   "tu_khoa": [
+    "chống cháy",
+    "chịu nhiệt",
+    "tahk",
+    "hút khói"
+   ],
+   "vi_du_dung": [
+    {
+     "ten": "Khớp nối mềm chống cháy 600x400",
+     "kt": [
+      600,
+      400
+     ],
+     "loai": "CANVAS_SQ"
+    }
+   ]
+  }
+ ]
+}
