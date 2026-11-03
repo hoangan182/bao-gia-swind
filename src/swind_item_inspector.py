@@ -1270,6 +1270,26 @@ def refresh_formula_index(index_path=None):
     return n_upd
 
 
+def typo_scan(path, sheet=None):
+    """In các dòng có sự kiện DOAN / HOI_LAI (typo_normalizer TY-04) của 1 file BOQ — chỉ đọc, không ghi file."""
+    import io
+    import contextlib
+    from swind_boq_parser import SwindBOQParser
+    with contextlib.redirect_stdout(io.StringIO()):
+        parser = SwindBOQParser(path)
+        items = parser.parse_sheets([sheet] if sheet else None)
+    seen = set()
+    for it in items:
+        evs = [e for e in it.get("typo_events") or [] if e["loai"] in ("DOAN", "HOI_LAI")]
+        key = (it.get("source_sheet"), it.get("source_row"))
+        if not evs or key in seen:
+            continue
+        seen.add(key)
+        desc = "; ".join(f"{e['goc'].upper()}→{e['sua'].upper()}" if e["sua"] else f"{e['goc'].upper()}? ({' / '.join(c.upper() for c in e['ung_vien'])})" for e in evs)
+        kind = "ĐÃ ĐOÁN" if all(e["loai"] == "DOAN" for e in evs) else "HỎI LẠI"
+        print(f"[{kind}] {os.path.basename(path)} | {key[0]}!R{key[1]} | '{it.get('raw_name')}' | {desc}")
+
+
 def main():
     ap = argparse.ArgumentParser(description="Công cụ kiểm tra nhanh công thức, tra cứu dữ liệu & đối chiếu giá Swind")
     ap.add_argument("items", nargs="*", help="Một hoặc nhiều chuỗi mô tả vật tư (có thể ngăn cách bằng dấu ';')")
@@ -1289,9 +1309,13 @@ def main():
     ap.add_argument("--save-baseline", action="store_true", help="Cập nhật file baseline chuẩn")
     ap.add_argument("--audit-boq", default=None, help="Kiểm toán siêu tốc (0.25s) sai mã hiệu, xung đột Spec & bất thường giá trong file BOQ/Báo giá")
     ap.add_argument("--include-box", action="store_true", help="Tính thêm hộp gió (Plenum Box theo công thức sheet PKV) cho các cửa gió kèm hộp")
+    ap.add_argument("--typo-scan", default=None, help="Liệt kê lỗi gõ mã nghi ngờ (ĐÃ ĐOÁN / HỎI LẠI) trong 1 file BOQ theo typo_rules.json (chỉ đọc)")
     ap.add_argument("--refresh-index", action="store_true", help="Cập nhật lại tọa độ dòng trong .agents/rules/03_FORMULA_INDEX.md theo AST sống")
     args = ap.parse_args()
 
+    if args.typo_scan:
+        typo_scan(args.typo_scan, args.sheet)
+        return
     if args.refresh_index:
         refresh_formula_index()
         sys.exit(0)

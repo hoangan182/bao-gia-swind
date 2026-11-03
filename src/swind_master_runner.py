@@ -21,7 +21,7 @@ except ImportError:
 # (Quy trình A - Agent 00 giải mã Bảng tính chuẩn 1 lần & Agent 09 cập nhật giá theo yêu cầu được tách độc lập)
 from agent_00b_input_normalizer import Agent00B_InputNormalizer
 from agent_01_boq_extractor import Agent01_BOQExtractor
-from agent_02_boq_reviewer import find_ambiguous_items, resolve_ambiguous_interactive, apply_suggestions_non_interactive
+from agent_02_boq_reviewer import find_ambiguous_items, resolve_ambiguous_interactive, apply_suggestions_non_interactive, save_typo_proposal
 from agent_03_input_auditor import Agent03_InputAuditor
 from agent_04_bom_duct import Agent04_DuctworkBOM
 from agent_05_bom_damper import Agent05_DamperBOM
@@ -31,6 +31,7 @@ from agent_08_qa_checker import Agent08_QAChecker
 from swind_boq_parser import BOX_ONLY_RX
 import duct_classifier
 import scope_filter
+import typo_normalizer
 from swind_utils import vietnamese_slugify, prune_named_styles_in_file, get_quotation_profile, vat_label
 from openpyxl.cell.cell import MergedCell
 
@@ -1311,6 +1312,8 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
             "suspect_unparsed": suspect_unparsed,
             "flag_rows": flag_rows,
             "skipped_rows_detail": {str(k): v for k, v in skip_reasons.items()},
+            "typo_events": [{"row": it.get("source_row"), "raw_name": it.get("raw_name"), "events": it["typo_events"]}
+                            for it in quoted_list if it.get("typo_events")],
         }
     return coverage
 
@@ -1513,6 +1516,11 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
             unresolved_items = apply_suggestions_non_interactive(ambiguous_items, auto_accept=auto_accept, project_name=project_name)
     else:
         print("  -> Tuyệt vời! 100% mặt hàng đã được nhận diện và phân nhóm chuẩn xác.")
+    # Lỗi gõ mã hệ thống đã đoán (typo_normalizer TY-04) → hàng chờ duyệt Agent 02 (--approve-pending), không ghi từ điển
+    for it in all_items:
+        for e in it.get("typo_events") or ():
+            if e.get("loai") == "DOAN":
+                save_typo_proposal(e["goc"], e["sua"], project_name, it.get("raw_name"))
     input_audit = Agent03_InputAuditor(project_name=project_name, out_dir=os.path.join(project_dir, "internal_estimation")).audit_parsed_boq_items(all_items)
 
     # -------------------------------------------------------------
@@ -1752,6 +1760,8 @@ def evaluate_quotation_gate(coverage, qa_reports, input_audit, unresolved_items,
         blocking.append(f"Agent 03: {len(crit_in)} lỗi nghiêm trọng đầu vào (VD: van ghi ĐVT m2): " + "; ".join(f"R{c['row']}" for c in crit_in[:10]))
     if unresolved_items:
         confirm.append(f"Agent 02: {len(unresolved_items)} mặt hàng chưa phân loại (giữ KHAC, chưa báo giá)")
+    # Lỗi gõ mã đã đoán / chưa rõ (typo_normalizer TY-04) — không chặn, tô vàng trên Sheet BG (User chốt 2026-11-03)
+    confirm.extend(typo_normalizer.gate_lines(all_items))
     fd_plain = [it for it in (all_items or []) if it.get("fd_non_ei_keyword") and float(it.get("qty") or 0) > 0]
     if fd_plain:
         confirm.append(f"[HỎI LẠI USER] {len(fd_plain)} van chặn lửa đang báo FD THƯỜNG (không EI) vì BOQ ghi rõ — mặc định Swind là EI120 có bọc, xác nhận lại: "

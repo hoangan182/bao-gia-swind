@@ -39,7 +39,8 @@ def load_excluded(baseline_path):
 RUNNER = os.path.join(BASE_DIR, "src", "swind_master_runner.py")
 # Các file học/ghi nhớ mà pipeline có thể ghi vào -> sao lưu & khôi phục để chạy kiểm thử không làm đổi dữ liệu thật
 LEARNING_FILES = [os.path.join(BASE_DIR, "data", "master_data", f) for f in
-                  ("format_learning_db.json", "boq_keyword_learning.json", "pending_approval_queue.json", "swind_experience_db.json")]
+                  ("format_learning_db.json", "boq_keyword_learning.json", "pending_approval_queue.json", "swind_experience_db.json",
+                   "typo_rules.json")]
 PY = os.path.join(BASE_DIR, "venv", "bin", "python")
 
 ROW_RX = re.compile(r"^\|\s*(\d+)\s*\|\s*(.+?)\s*\|\s*(\d+)\s*\|\s*([\d,]+)\s*\|")

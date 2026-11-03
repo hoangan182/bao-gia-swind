@@ -2,6 +2,7 @@ import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from swind_utils import detect_boq_header, get_quotation_profile, vat_label
+import typo_normalizer
 
 class SwindExcelBuilder:
     """
@@ -469,6 +470,19 @@ class SwindExcelBuilder:
                                 cell.number_format = "0.00"
                             row_style_cache[s_key] = _copy_style(cell._style)
 
+        def _write_quoted_row(r_num, item, row_std, row_fslf, row_bfn):
+            """Dòng đã báo giá; dòng có lỗi gõ mã đã đoán / chưa rõ (typo_normalizer) → thêm ghi chú + tô vàng (User chốt 2026-11-03)."""
+            flag = typo_normalizer.bg_flag(item.get("typo_events"))
+            if flag:
+                for row in (row_std, row_fslf, row_bfn):
+                    row[15] = f"{row[15]} | {flag}" if row[15] else flag
+            _write_row_cells(r_num, row_std, row_fslf, row_bfn, is_section=False)
+            if flag:
+                for ws_f, _m in worksheets:
+                    for c_i in range(1, 17):
+                        ws_f.cell(r_num, c_i).fill = flag_fill
+                self.flagged_bg_rows.append((r_num, item.get("source_row"), item.get("raw_name"), item.get("qty"), flag))
+
         if ws_orig is not None:
             # Nhận diện Header BOQ (dùng hàm chung từ swind_utils)
             header_row, col_map, hidden_rows, hidden_cols, max_scan_col = detect_boq_header(ws_orig)
@@ -589,7 +603,7 @@ class SwindExcelBuilder:
                             spec["modul"], spec["l_col"], spec["thk_col"], unit, disp_qty,
                             f_price_bfn, f"=N{curr_row}*M{curr_row}", spec["note_bfn"]
                         ]
-                        _write_row_cells(curr_row, row_std, row_fslf, row_bfn, is_section=False)
+                        _write_quoted_row(curr_row, item, row_std, row_fslf, row_bfn)
                         curr_row += 1
                 else:
                     c2_cell = ws_orig.cell(r, name_col)
@@ -685,7 +699,7 @@ class SwindExcelBuilder:
                         spec["modul"], spec["l_col"], spec["thk_col"], unit, disp_qty,
                         f_price_bfn, f"=N{curr_row}*M{curr_row}", spec["note_bfn"]
                     ]
-                    _write_row_cells(curr_row, row_std, row_fslf, row_bfn, is_section=False)
+                    _write_quoted_row(curr_row, item, row_std, row_fslf, row_bfn)
                     curr_row += 1
         else:
             for idx, item in enumerate(all_items, 1):
@@ -728,7 +742,7 @@ class SwindExcelBuilder:
                     spec["modul"], spec["l_col"], spec["thk_col"], unit, qty,
                     f_price_bfn, f"=N{curr_row}*M{curr_row}", spec["note_bfn"]
                 ]
-                _write_row_cells(curr_row, row_std, row_fslf, row_bfn, is_section=False)
+                _write_quoted_row(curr_row, item, row_std, row_fslf, row_bfn)
                 curr_row += 1
 
         # Footer Totals on quotation sheets (đóng khung chuẩn mẫu Swind)

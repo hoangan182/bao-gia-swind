@@ -1,0 +1,448 @@
+{
+ "_mo_ta": "Bảng rule chuẩn hóa LỖI CHÍNH TẢ BOQ — nguồn dữ liệu của src/typo_normalizer.py (dùng chung cho parser, Agent 01, bộ phân loại cửa / van / ống / phạm vi). Chỉ tạo CHUỖI SO KHỚP, không ghi lại nội dung BOQ. TY-01 từ điển đã duyệt (chạy theo thứ tự trong file, mỗi mục chỉ áp cho các phạm vi trong pham_vi); TY-02 khôi phục dấu theo từ vựng Swind; TY-03 mã chuẩn & chữ loại trừ; TY-04 đoán mã gõ sai theo ngữ cảnh. Thiết kế: docs/superpowers/specs/2026-11-03-typo-normalizer-design.md. Sửa rule: ghi nguon / ly_do, thêm vi_du_dung rồi chạy tests/test_swind_typo_rules.py + self-test + E2E 2 chế độ.",
+ "phien_ban": "2026-11-03",
+ "pham_vi": {
+  "ten": "Tên dòng (parser name_lower)",
+  "title": "Title cha (parser sec_lower)",
+  "full": "Title cha + Tên + aux (parser full_name_lower)",
+  "combo": "Chuỗi dò combo Cửa + Van (parser search_combo_txt / own_txt)",
+  "van": "Cụm chữ nhận diện loại van (damper_classifier.detect_damper_type)",
+  "agent01": "raw_search / full_search của Agent01.resolve_item_spec"
+ },
+ "quy_tac": [
+  {
+   "id": "TY-01_TU_DIEN",
+   "ten": "Từ điển lỗi chính tả đã duyệt",
+   "nguon": "2026-11-03 — gom các bản vá rải rác: parser .replace('ồ','ố') (1805d82 20/10), parser _match_text (User chốt 2026-11-03, BOQ_ANH_KHACH_01 R13/R37), damper_rules VG-13.sua_go_nham (User xác nhận 2026-11-02)",
+   "ly_do": "Một chỗ duy nhất cho lỗi gõ đã biết; thứ tự & phạm vi giữ đúng hành vi cũ của từng chỗ vá.",
+   "tu_dien": [
+    {
+     "mau": "ồ",
+     "thay": "ố",
+     "pham_vi": [
+      "ten",
+      "title"
+     ],
+     "nguon": "1805d82 2026-10-20 (parser .replace('ồ', 'ố') cho Tên và Title)"
+    },
+    {
+     "mau": "\\bvan\\s+mdf\\b",
+     "thay": "van mfd",
+     "pham_vi": [
+      "combo",
+      "van"
+     ],
+     "nguon": "User xác nhận 2026-11-02 (damper_rules VG-13 'van MDF' = MFD)"
+    },
+    {
+     "mau": "\\b(miệng|cửa|mặt)\\s+gio\\b",
+     "thay": "\\1 gió",
+     "pham_vi": [
+      "ten",
+      "full",
+      "combo"
+     ],
+     "nguon": "User chốt 2026-11-03, BOQ_ANH_KHACH_01 R13 ('Miệng gio kèm OBD')"
+    },
+    {
+     "mau": "_",
+     "thay": " ",
+     "pham_vi": [
+      "ten",
+      "full",
+      "combo"
+     ],
+     "nguon": "User chốt 2026-11-03, BOQ_ANH_KHACH_01 R37 ('AG_AAG-OBD')"
+    }
+   ],
+   "vi_du_dung": [
+    {
+     "vao": "cửa hồi",
+     "pham_vi": "ten",
+     "ra": "cửa hối"
+    },
+    {
+     "vao": "van mdf 400x400",
+     "pham_vi": "combo",
+     "ra": "van mfd 400x400"
+    },
+    {
+     "vao": "miệng gio kèm obd",
+     "pham_vi": "ten",
+     "ra": "miệng gió kèm obd"
+    },
+    {
+     "vao": "ag_aag-obd",
+     "pham_vi": "ten",
+     "ra": "ag aag-obd"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "vao": "van mdf",
+     "pham_vi": "ten",
+     "ra": "van mdf",
+     "ly_do": "mục mdf chỉ áp cho combo / van"
+    }
+   ]
+  },
+  {
+   "id": "TY-02_KHOI_PHUC_DAU",
+   "ten": "Khôi phục dấu theo từ vựng Swind (cụm ≥ 2 chữ)",
+   "nguon": "2026-11-03 — User chốt hướng A (bộ chuẩn hóa dùng chung); thiết kế docs/superpowers/specs/2026-11-03-typo-normalizer-design.md mục 5.1",
+   "ly_do": "BOQ không dấu ('cua gio hoi', 'cửa gio hoi') → đưa về cụm có dấu chuẩn để mọi từ khóa có dấu trong file rule vẫn khớp. Chỉ cụm ≥ 2 chữ (chữ đơn lẻ quá mơ hồ). Cụm bỏ dấu trùng nhiều cụm có dấu → bỏ, trừ khi có trong 'uu_tien'. CHỈ thay chữ hoàn toàn không dấu: chữ đã có dấu không bao giờ bị đổi ('ống luồn' dây điện ≠ 'ống lượn', TONG HOP HVAC R715, E2E 2026-11-03); nhầm dấu ('cửa giò') xử lý bằng từ điển TY-01. 'bo': 'ống lượn' — 'ong luon' không dấu cũng có thể là 'ống luồn' dây điện (review 2026-11-03, TONG HOP HVAC R715).",
+   "pham_vi": [
+    "ten",
+    "title",
+    "full",
+    "combo",
+    "agent01"
+   ],
+   "nguon_tu_vung": {
+    "files": [
+     "diffuser_rules.json",
+     "damper_rules.json",
+     "duct_rules.json",
+     "scope_rules.json",
+     "manufacturable_catalog.json",
+     "subtype_rules.json"
+    ],
+    "khoa_regex": "tu_khoa|keywords|tien_to|bat_dau"
+   },
+   "giu_dau": [
+    "hộp",
+    "hợp",
+    "tắc",
+    "tác"
+   ],
+   "uu_tien": {
+    "hop gio": "hộp gió",
+    "gia do": "giá đỡ",
+    "do day": "độ dày",
+    "tang ap": "tăng áp",
+    "gia treo": "giá treo",
+    "mo to": "mô tơ",
+    "cua gio hoi": "cửa gió hồi",
+    "ong dien": "ống điện",
+    "ong dong": "ống đồng",
+    "sot trung": "sọt trứng",
+    "chan lua dong mo bang mo to": "chặn lửa đóng mở bằng mô tơ"
+   },
+   "them": [
+    "điều chỉnh lưu lượng",
+    "chỉnh lưu lượng",
+    "lưu lượng",
+    "tích hợp",
+    "kết hợp",
+    "chống cháy",
+    "ngăn cháy",
+    "một chiều",
+    "xả áp",
+    "cửa nan",
+    "cửa chớp",
+    "cửa thăm",
+    "cửa kiểm tra",
+    "cửa công tác",
+    "van chặn lửa",
+    "van một chiều",
+    "van xả áp",
+    "van điều chỉnh lưu lượng"
+   ],
+   "bo": [
+    "ống lượn"
+   ],
+   "vi_du_dung": [
+    {
+     "vao": "cua gio hoi 300x300",
+     "ra": "cửa gió hồi 300x300"
+    },
+    {
+     "vao": "con thu 800x400",
+     "ra": "côn thu 800x400"
+    },
+    {
+     "vao": "hop gio 600x600",
+     "ra": "hộp gió 600x600"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "vao": "ống luồn dây điện d50",
+     "ra": "ống luồn dây điện d50",
+     "ly_do": "'luồn' đã có dấu — không đổi thành 'lượn'"
+    },
+    {
+     "vao": "dòng có kl",
+     "ra": "dòng có kl",
+     "ly_do": "2 chữ đã có dấu khác cụm chuẩn 'động cơ'"
+    },
+    {
+     "vao": "hợp gió",
+     "ra": "hợp gió",
+     "ly_do": "'hợp' thuộc giu_dau"
+    },
+    {
+     "vao": "cong tac 1",
+     "ra": "cong tac 1",
+     "ly_do": "trùng 'công tắc' / 'công tác' khác nghĩa"
+    },
+    {
+     "vao": "ong luon d20",
+     "ra": "ong luon d20",
+     "ly_do": "'ống lượn' nằm trong 'bo' (trùng 'ống luồn' dây điện)"
+    }
+   ]
+  },
+  {
+   "id": "TY-03_MA_CHUAN",
+   "ten": "Mã viết tắt chuẩn Swind & chữ loại trừ (nguồn để phát hiện mã gõ sai)",
+   "nguon": "2026-11-03 — User chốt: hệ thống đoán theo ngữ cảnh nếu được, không đoán được thì hỏi lại (thiết kế mục 5.3)",
+   "ly_do": "Token không thuộc mã chuẩn nhưng là mã chuẩn bị ĐẢO 2 chữ liền nhau (ODB→OBD, RND→NRD, MDF→MFD) hoặc LẶP THỪA 1 chữ (LCCCT→LCCT) → nghi gõ sai. Không nhận thay / thêm / bớt chữ tùy ý: quét input/ 2026-11-03 cho thấy đó là mã riêng của khách (EAG / PAG / RAG / SEG họ miệng gió, FSD van khói-lửa, SL2 khe). Chữ tiếng Việt không dấu (khớp 'am_tiet') và chữ trong 'loai_tru' không bao giờ bị nghi. loai_tru thêm 'vdc'/'vac' (điện áp), 'rnd' (round — tiếng Anh 'tròn'), 'dm' (danh mục) — review 2026-11-03: đoán nhầm thành VCD / NRD / MD làm đổi giá. Đoán bị User từ chối (--approve-pending → r) cũng vào loai_tru.",
+   "ma_chuan": {
+    "obd": {
+     "nhom": [
+      "CUA_GIO",
+      "VAN_GIO"
+     ]
+    },
+    "ei": {
+     "nhom": [
+      "CUA_GIO",
+      "VAN_GIO"
+     ]
+    },
+    "lcct": {
+     "nhom": [
+      "CUA_GIO"
+     ]
+    },
+    "g4": {
+     "nhom": [
+      "CUA_GIO"
+     ]
+    },
+    "sdg": {
+     "nhom": [
+      "CUA_GIO"
+     ]
+    },
+    "sdgk": {
+     "nhom": [
+      "CUA_GIO"
+     ]
+    },
+    "swl": {
+     "nhom": [
+      "CUA_GIO"
+     ]
+    },
+    "wl": {
+     "nhom": [
+      "CUA_GIO"
+     ]
+    },
+    "slb": {
+     "nhom": [
+      "CUA_GIO"
+     ]
+    },
+    "scd": {
+     "nhom": [
+      "CUA_GIO"
+     ]
+    },
+    "sag": {
+     "nhom": [
+      "CUA_GIO"
+     ]
+    },
+    "dag": {
+     "nhom": [
+      "CUA_GIO"
+     ]
+    },
+    "seeg": {
+     "nhom": [
+      "CUA_GIO"
+     ]
+    },
+    "sobd": {
+     "nhom": [
+      "CUA_GIO"
+     ]
+    },
+    "vcd": {
+     "nhom": [
+      "VAN_GIO"
+     ],
+     "chay": false,
+     "dong_co": false
+    },
+    "nrd": {
+     "nhom": [
+      "VAN_GIO"
+     ],
+     "chay": false,
+     "dong_co": false
+    },
+    "prd": {
+     "nhom": [
+      "VAN_GIO"
+     ],
+     "chay": false,
+     "dong_co": false
+    },
+    "md": {
+     "nhom": [
+      "VAN_GIO"
+     ],
+     "chay": false,
+     "dong_co": true
+    },
+    "fd": {
+     "nhom": [
+      "VAN_GIO"
+     ],
+     "chay": true,
+     "dong_co": false
+    },
+    "mfd": {
+     "nhom": [
+      "VAN_GIO"
+     ],
+     "chay": true,
+     "dong_co": true
+    },
+    "mfsd": {
+     "nhom": [
+      "VAN_GIO"
+     ],
+     "chay": true,
+     "dong_co": true
+    },
+    "mprd": {
+     "nhom": [
+      "VAN_GIO"
+     ],
+     "chay": false,
+     "dong_co": true
+    }
+   },
+   "loai_tru": [
+    "kt",
+    "mm",
+    "dn",
+    "pvc",
+    "ppr",
+    "upvc",
+    "ac",
+    "dc",
+    "tc",
+    "tcvn",
+    "ul",
+    "with",
+    "and",
+    "for",
+    "the",
+    "air",
+    "fan",
+    "duct",
+    "type",
+    "size",
+    "box",
+    "fcu",
+    "ahu",
+    "pau",
+    "erv",
+    "ref",
+    "inox",
+    "sus",
+    "ea",
+    "oa",
+    "sa",
+    "ra",
+    "fa",
+    "vdc",
+    "vac",
+    "rnd",
+    "dm"
+   ],
+   "am_tiet": "^(ngh|ng|nh|ch|gh|gi|kh|ph|qu|th|tr|[bcdghklmnpqrstvx])?[aeiouy]{1,3}(ng|nh|ch|[cmnpt])?$",
+   "vi_du_dung": [
+    {
+     "ten": "Cửa gió hồi KT 250x250 + ODB",
+     "ngu_canh": "Cửa gió hồi KT 250x250 + ODB",
+     "loai": "DOAN",
+     "sua": "obd"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Gia do thep sat ma kem 600x400",
+     "ngu_canh": "Gia do thep sat ma kem 600x400",
+     "ly_do": "chữ tiếng Việt không dấu"
+    },
+    {
+     "ten": "Miệng gió tạo áp PAG 800x350 + OBD",
+     "ngu_canh": "Miệng gió tạo áp PAG 800x350 + OBD",
+     "ly_do": "PAG là mã riêng của khách (thay 1 chữ so với SAG/DAG — không nhận)"
+    }
+   ]
+  },
+  {
+   "id": "TY-04_DOAN",
+   "ten": "Đoán mã gõ sai theo ngữ cảnh dòng + Title cha",
+   "nguon": "2026-11-03 — User chốt: đoán nếu ngữ cảnh đủ, không thì hỏi lại; dòng đã đoán tô vàng trên Sheet BG",
+   "ly_do": "Giữ ứng viên hợp nhóm hàng của dòng (cửa gió / van). Còn ≥ 2 thì dùng tín hiệu chống cháy / động cơ để phân biệt mã van (không dùng để loại ứng viên duy nhất: NRD / MD ghi EI là hợp lệ — NRD/MD ghi EI — bọc KSH). Còn đúng 1 → DOAN (áp vào chuỗi so khớp, tô vàng trên BG chờ xác nhận). Còn 0 hoặc ≥ 2 → HOI_LAI (đọc nguyên chữ).",
+   "tin_hieu_cua": [
+    "cửa gió",
+    "miệng gió",
+    "cửa nan",
+    "cửa hồi",
+    "cửa cấp",
+    "louver",
+    "grille",
+    "diffuser",
+    "khuếch tán"
+   ],
+   "tin_hieu_van": [
+    "van",
+    "damper"
+   ],
+   "tin_hieu_chay": [
+    "chặn lửa",
+    "chống cháy",
+    "ngăn cháy",
+    "fire"
+   ],
+   "regex_chay": "\\bei\\s*\\d{2,3}\\b",
+   "tin_hieu_dong_co": [
+    "động cơ",
+    "mô tơ",
+    "môtơ",
+    "motor",
+    "actuator"
+   ],
+   "vi_du_dung": [
+    {
+     "ten": "MDF 600x400",
+     "ngu_canh": "Van chặn lửa động cơ MDF 600x400",
+     "loai": "DOAN",
+     "sua": "mfd"
+    },
+    {
+     "ten": "Van gió một chiều NDR KT: 1000x600mm, chống cháy EI60",
+     "ngu_canh": "Van gió một chiều NDR KT: 1000x600mm, chống cháy EI60",
+     "loai": "DOAN",
+     "sua": "nrd"
+    },
+    {
+     "ten": "ODB 300x300",
+     "ngu_canh": "ODB 300x300",
+     "loai": "HOI_LAI",
+     "sua": null
+    }
+   ]
+  }
+ ]
+}

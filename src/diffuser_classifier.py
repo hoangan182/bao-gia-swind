@@ -13,6 +13,7 @@ import re
 import json
 
 from swind_utils import remove_vietnamese_accents, K
+import typo_normalizer
 
 RULES_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "master_data", "diffuser_rules.json")
 _RULES_CACHE = {}
@@ -234,6 +235,10 @@ def _subtype_lookup(ctx):
                            A01.get_subtype(ctx.subtype_rules, "CUA_GIO", ctx.text["full_search"], "BD"))
 
 
+def _nm(text, item):
+    return typo_normalizer.normalize_for_match(text, "agent01", item.get("typo_events"))
+
+
 def classify(item, subtype_rules, raw_name, name, raw_search, full_search, w, h, d, a1, a2, combo_cfg, include_box, rules=None):
     """
     Phân loại 1 dòng CUA_GIO. Ghi lại vào `item` như code cũ (w/h/d sau KTC, w_pre_ktc, is_ktc_applied, *_damper).
@@ -244,10 +249,11 @@ def classify(item, subtype_rules, raw_name, name, raw_search, full_search, w, h,
     combined_search = (raw_search + " " + full_search).lower()
     ctx.text.update(
         combined_search=combined_search,
-        primary_diff_search=(raw_name + " " + name + " " + str(item.get("model", ""))).lower(),
-        note_boq_low=str(item.get("note_boq") or "").lower(),
-        note_model_low=(str(item.get("note_boq") or "") + " " + str(item.get("model") or "")).lower(),
-        raw_name_low=raw_name.lower(),
+        # Chuỗi so khớp qua bộ chuẩn hóa lỗi chính tả (typo_normalizer, phạm vi agent01) — BOQ không dấu (review 2026-11-03)
+        primary_diff_search=_nm((raw_name + " " + name + " " + str(item.get("model", ""))).lower(), item),
+        note_boq_low=_nm(str(item.get("note_boq") or "").lower(), item),
+        note_model_low=_nm((str(item.get("note_boq") or "") + " " + str(item.get("model") or "")).lower(), item),
+        raw_name_low=_nm(raw_name.lower(), item),
         raw_search=raw_search,
         full_search=full_search,
         raw_name=raw_name,

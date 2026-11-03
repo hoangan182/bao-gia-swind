@@ -6,6 +6,7 @@ import unicodedata
 from swind_utils import detect_boq_header, get_subtype_rules, extract_duct_fitting_geometry
 import damper_classifier
 import scope_filter
+import typo_normalizer
 
 FILTER_PREFIXES = ("lọc bụi", "lọc thô", "lọc sơ cấp", "lọc g4", "phin lọc", "lưới lọc", "tấm lọc", "bộ lọc", "khung lọc", "filter g4", "g4 filter", "pre filter", "pre-filter")
 # Dòng cửa gió mà BOQ ghi rõ chỉ lấy phần hộp gió, không lấy cửa (BG DT C08: 'Chỉ gồm hộp, không gồm cửa gió')
@@ -20,11 +21,12 @@ def is_standalone_coarse_filter(name_lower):
     return n.startswith(FILTER_PREFIXES) and not FINE_FILTER_RX.search(n)
 
 
-def _match_text(text_lower):
-    """Chuỗi CHỈ dùng để so khớp phân loại (không ghi lại BOQ): 'miệng/cửa/mặt gio' thiếu dấu = 'gió',
-    '_' = khoảng trắng để tách mã ghép kiểu 'AG_AAG-OBD' (User chốt 2026-11-03, BOQ_ANH_KHACH_01 R13, R37)."""
-    text_lower = re.sub(r'\b(miệng|cửa|mặt)\s+gio\b', r'\1 gió', text_lower)
-    return text_lower.replace('_', ' ')
+def tag_typo_events(items, row_typo_events):
+    """Gắn sự kiện lỗi chính tả của dòng vào item. Bỏ qua item bảng phụ (side table): bảng phụ nằm cạnh bảng chính
+    nên trùng số dòng — sự kiện của nó do lần gọi đệ quy tự gắn (review 2026-11-03)."""
+    for it in items:
+        if not it.get("is_side_table") and it.get("source_row") in row_typo_events:
+            it["typo_events"] = row_typo_events[it["source_row"]]
 
 
 def _safe_qty(v):
@@ -153,6 +155,7 @@ class SwindBOQParser:
             if sheet_default_flange:
                 break
         
+        row_typo_events = {}  # dòng → sự kiện lỗi chính tả (typo_normalizer), gắn vào item ở cuối hàm
         for r in range(header_row + 1, ws.max_row + 1):
             if r in hidden_rows:
                 continue
@@ -290,9 +293,16 @@ class SwindBOQParser:
                 
             # Phân loại sản phẩm (Category detection) động từ Master Catalog
             aux_context = " ".join(x for x in (current_section_aux, col1_str if col1_str.lower() != raw_name_str.lower() else "") if x).strip()
-            name_lower = _match_text(name_str.lower().replace('ồ', 'ố'))
-            full_name_lower = _match_text(f"{full_name_str} {aux_context}".lower().strip())
-            sec_lower = f"{current_section} {current_section_aux}".lower().replace('ồ', 'ố').strip()
+            # Lỗi chính tả (typo_rules.json, src/typo_normalizer.py): TY-01 từ điển, TY-02 khôi phục dấu,
+            # TY-04 mã gõ sai đoán theo ngữ cảnh (CHỈ chuỗi so khớp — không ghi lại BOQ)
+            row_own_txt = f"{raw_name_str} {note_boq} {model_val if model_val is not None else ''}"
+            typo_events = typo_normalizer.detect_code_typos(row_own_txt, f"{clean_section} {current_section_aux} {row_own_txt}")
+            typo_events = typo_normalizer.restore_accents(row_own_txt.lower())[1] + typo_events
+            if typo_events:
+                row_typo_events[r] = typo_events
+            name_lower = typo_normalizer.normalize_for_match(name_str.lower(), "ten", typo_events)
+            full_name_lower = typo_normalizer.normalize_for_match(f"{full_name_str} {aux_context}".lower().strip(), "full", typo_events)
+            sec_lower = typo_normalizer.normalize_for_match(f"{current_section} {current_section_aux}".lower(), "title").strip()
             model_str = str(model_val).strip() if model_val is not None else ""
             category = "KHAC"
             
@@ -654,8 +664,8 @@ class SwindBOQParser:
             if clean_section and full_name_str != raw_full_name_str and re.match(cat_list_rx, clean_section.strip().lower()):
                 combo_name_str = raw_full_name_str
             search_combo_txt = re.sub(r'\(\s*(?:for|cho)\s+[^)]*\)', '', f"{raw_name_str} {combo_name_str} {model_str}".lower().replace("\n", " "))
-            # Lỗi gõ nhầm phổ biến 'van MDF' = van MFD (User xác nhận 2026-11-02) — damper_rules.json VG-13
-            search_combo_txt = _match_text(damper_classifier.fix_typos(search_combo_txt))
+            # Lỗi gõ nhầm phổ biến 'van MDF' = van MFD (User xác nhận 2026-11-02) — typo_rules.json TY-01
+            search_combo_txt = typo_normalizer.normalize_for_match(search_combo_txt, "combo", typo_events)
             diff_rx = combo_cfg.get("combo_diffuser_regex", r'\bmiệng\s*gió\b|\bcửa\s*gió\b|\bcửa\s*nan\b|\blouver\s*|\bluover\b|\blouvre\b|\bgrille\b|\bgriller\b|\bdiffuser\b|cửa\s*(?:chớp|nan|thẳng|gió|hút|cấp|hồi|thải|lấy|xả|tăng\s*áp|tạo\s*áp|\+)')
             damp_rx = combo_cfg.get("combo_damper_regex", r'\b(mfd|mfsd|md|fd|prd|nrd|vcd)\b|van\s+(?:on/off|on-off|chống\s*cháy|chặn\s*lửa|ngăn\s*cháy|động\s*cơ|một\s*chiều|1\s*chiều|xả\s*áp)')
             is_access_door_item = any(k in search_combo_txt for k in ("access door", "cửa công tác", "cửa thăm", "cửa kiểm tra"))
@@ -664,7 +674,7 @@ class SwindBOQParser:
             # Tên dòng là VAN mà chính dòng (Tên / Model / Ghi chú) không ghi cửa / miệng gió -> không lấy chữ 'cửa gió'
             # từ Title cha để ghép combo. VD NOVH 'Van MFD' dưới Title 'Cấp gió tự nhiên (cửa gió + van qua tường...)',
             # CAND 'Van xả áp 700x250' dưới Title 'Miệng gió' -> van rời (trước đây bị 'SDG + MFD/PRD').
-            own_txt = _match_text(damper_classifier.fix_typos(f"{raw_name_str} {raw_full_name_str} {model_str} {note_boq}".lower().replace("\n", " ")))
+            own_txt = typo_normalizer.normalize_for_match(f"{raw_name_str} {raw_full_name_str} {model_str} {note_boq}".lower().replace("\n", " "), "combo", typo_events)
             if has_diffuser and re.match(r'^\s*(?:van\b|damper\b)', raw_full_name_str.lower()) and not re.search(diff_rx, own_txt):
                 has_diffuser = False
             m_damper = re.search(damp_rx, search_combo_txt) if not is_access_door_item else None
@@ -912,6 +922,7 @@ class SwindBOQParser:
                     for cc in range(c_stt_side or c_scan, c_qty_side + 2):
                         used_side_cols.add(cc)
                 
+        tag_typo_events(items, row_typo_events)
         if not _is_side_table and _override_col_map is None and _override_header_row is None and max_items is None and not self.row_overrides:
             if not hasattr(self.wb, "_swind_parsed_cache"):
                 self.wb._swind_parsed_cache = {}

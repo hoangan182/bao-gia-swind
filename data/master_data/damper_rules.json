@@ -686,12 +686,7 @@
    "ten": "Parser: tách các van trong 1 dòng (combo Van + Van / Cửa + Van), chọn van chính theo thứ bậc",
    "nguon": "1805d82 20/10; thứ bậc 4e14743 22/10; 'van MDF' = MFD và Mã SP chỉ bổ sung khi Tên chưa ghi van 7ebdc48 03/11 (Kỹ thuật 02/11); chữ 'và' = nối 2 van (User chốt 2026-11-03, Minh Triết R240 'Van FD và NRD')",
    "ly_do": "Tên 'Van chặn lửa MFD' + Mã SP 'FD - EI' = 1 van MFD, không phải combo MFD + FD. Chữ 'kèm động cơ / cầu chì' không tách thành van riêng.",
-   "sua_go_nham": [
-    [
-     "\\bvan\\s+mdf\\b",
-     "van mfd"
-    ]
-   ],
+   "sua_go_nham_chuyen_sang": "typo_rules.json TY-01 (2026-11-03 — bộ chuẩn hóa lỗi chính tả dùng chung)",
    "thu_bac": [
     "MFSD",
     "MFD",

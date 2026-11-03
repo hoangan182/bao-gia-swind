@@ -1,8 +1,10 @@
 import sys
 import os
 import json
+from datetime import date
 from difflib import SequenceMatcher
 from swind_boq_parser import SwindBOQParser
+import typo_normalizer
 
 
 def resolve_path(rel_path):
@@ -118,6 +120,20 @@ def save_learned_keyword(name, category, project_name="General", approved=False,
     _write_json(QUEUE_PATH, queue)
 
 
+def save_typo_proposal(goc, sua, project_name, context):
+    """Lỗi gõ mã hệ thống đã đoán (typo_normalizer TY-04) → hàng chờ duyệt; duyệt xong ghi vào typo_rules.json TY-01."""
+    goc, sua = goc.strip().lower(), sua.strip().lower()
+    queue = _load_json(QUEUE_PATH, {"pending_proposals": []})
+    queue.setdefault("pending_proposals", [])
+    if any(p.get("loai") == "TYPO" and p.get("raw_name") == goc and p.get("proposed_id") == sua for p in queue["pending_proposals"]):
+        return
+    queue["pending_proposals"].append({
+        "loai": "TYPO", "raw_name": goc, "proposed_id": sua, "standard_name": sua,
+        "project": project_name, "context": context, "proposed_by": "TypoGuess", "status": "PENDING_APPROVAL",
+    })
+    _write_json(QUEUE_PATH, queue)
+
+
 def approve_pending_keywords(approve_all=False, interactive=True):
     """Duyệt hàng chờ từ khóa tự học -> chuyển các đề xuất được chấp thuận vào từ điển sống."""
     queue = _load_json(QUEUE_PATH, {"pending_proposals": []})
@@ -139,12 +155,21 @@ def approve_pending_keywords(approve_all=False, interactive=True):
         else:
             print(f"  {label}")
             continue
-        if choice == "Y":
+        if choice == "Y" and prop.get("loai") == "TYPO":
+            # Lỗi gõ mã → từ điển typo_rules.json TY-01, không ghi từ điển từ khóa
+            typo_normalizer.add_dictionary_entry(prop["raw_name"], prop["proposed_id"],
+                                                 f"{date.today().isoformat()} — duyệt từ dự án {prop.get('project')} ('{prop.get('context')}')")
+            prop["status"] = "APPROVED"
+            n_ok += 1
+        elif choice == "Y":
             data[prop["raw_name"]] = prop["proposed_id"]
             prop["status"] = "APPROVED"
             n_ok += 1
         elif choice == "R":
             prop["status"] = "REJECTED"
+            if prop.get("loai") == "TYPO":
+                # Đoán sai → chữ khách viết là mã thật, không nghi lại lần sau
+                typo_normalizer.add_exclusion(prop["raw_name"], f"{date.today().isoformat()} — User từ chối đoán '{prop['proposed_id']}' (dự án {prop.get('project')})")
     if not approve_all and not interactive:
         return 0
     _write_json(LEARNING_PATH, data, indent=4)
@@ -298,6 +323,15 @@ class Agent02_BOQReviewer:
 
 
 if __name__ == "__main__":
+    if "--add-typo" in sys.argv:
+        # Câu trả lời của User cho dòng HỎI LẠI lỗi gõ mã: --add-typo "fmd=mfd"
+        goc, _, sua = sys.argv[sys.argv.index("--add-typo") + 1].partition("=")
+        if not (goc.strip() and sua.strip()):
+            print('Usage: python agent_02_boq_reviewer.py --add-typo "<chữ gõ sai>=<mã đúng>"')
+            sys.exit(1)
+        added = typo_normalizer.add_dictionary_entry(goc, sua, f"{date.today().isoformat()} — User chốt")
+        print(f"[Agent 02] {'Đã thêm' if added else 'Đã có sẵn'} lỗi gõ '{goc.strip().lower()}' = '{sua.strip().lower()}' trong typo_rules.json TY-01.")
+        sys.exit(0)
     if "--approve-pending" in sys.argv:
         # Duyệt hàng chờ từ khóa tự học: --approve-pending [--all | --list]
         approve_pending_keywords(approve_all="--all" in sys.argv, interactive="--list" not in sys.argv)
@@ -305,6 +339,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python agent_02_boq_reviewer.py <path_to_boq_excel> [--interactive]")
         print("       python agent_02_boq_reviewer.py --approve-pending [--all | --list]")
+        print('       python agent_02_boq_reviewer.py --add-typo "<chữ gõ sai>=<mã đúng>"')
         sys.exit(1)
     is_interactive = "--interactive" in sys.argv
     success = run_reviewer(sys.argv[1], interactive=is_interactive)

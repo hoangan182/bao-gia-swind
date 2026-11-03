@@ -30,7 +30,7 @@ Các bước chạy **theo thứ tự id** `VG-01 → VG-13`; mỗi rule mang t�
 | `VG-10` | Mã MFD (1.02 mặc định; KLB 1.03; Honeywell 1.04; chế độ note 1.05 / 1.01) |
 | `VG-11` | Mô-men động cơ MD / MPRD theo kích thước 1 modul |
 | `VG-12` | Mẫu Model + ghi chú báo giá |
-| `VG-13` | Parser: tách các van trong dòng combo, thứ bậc van chính, sửa gõ nhầm `van MDF` |
+| `VG-13` | Parser: tách các van trong dòng combo, thứ bậc van chính (sửa gõ nhầm `van MDF` đã chuyển sang `typo_rules.json` TY-01) |
 
 ## 3. QUY TẮC SỬA RULE (AGENTS.md mục 7)
 1. Đổi từ khóa / ngưỡng / mẫu chữ / thứ tự nguồn tra → **sửa JSON**. Đổi cấu trúc bước (thêm điều kiện mới) → sửa đúng hàm của bước đó trong `damper_classifier.py`, ghi id rule; không viết nhánh riêng cho 1 dự án.

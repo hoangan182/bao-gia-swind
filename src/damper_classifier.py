@@ -13,6 +13,8 @@ import os
 import re
 import json
 
+import typo_normalizer
+
 RULES_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "master_data", "damper_rules.json")
 _RULES_CACHE = {}
 
@@ -280,9 +282,8 @@ def build_model_note(res, mod_cnt, is_clamped, w_mod, h_mod, is_single_blade, ru
 # ---------------------------------------------------------------- Parser: tách van trong combo (VG-13)
 
 def fix_typos(text, rules=None):
-    for pat, rep in (rules or load_rules())["VG-13"]["sua_go_nham"]:
-        text = re.sub(pat, rep, text)
-    return text
+    """Lỗi gõ nhầm đã biết ('van mdf' = van mfd...) — chuyển sang typo_rules.json TY-01 (2026-11-03)."""
+    return typo_normalizer.apply_dictionary(text, "van")
 
 
 def detect_damper_type(tok_str, diff_rx, rules=None):

@@ -7,6 +7,7 @@ import duct_classifier
 from agent_05_bom_damper import Agent05_DamperBOM
 from agent_06_bom_diffuser import Agent06_DiffuserBOM
 import diffuser_classifier
+import typo_normalizer
 from swind_utils import get_subtype_rules
 
 
@@ -501,8 +502,10 @@ class Agent01_BOQExtractor:
         note_boq = str(item.get("note_boq") or "")
         sec_txt = str(item.get("section") or "")
         aux_txt = str(item.get("aux_text") or "")
-        raw_search = (raw_name + " " + str(item.get("model", "")) + " " + note_boq).lower()
-        full_search = (sec_txt + " " + name + " " + aux_txt + " " + str(item.get("model", "")) + " " + note_boq).lower()
+        # Chuỗi so khớp qua bộ chuẩn hóa lỗi chính tả (typo_rules.json, phạm vi agent01) — không ghi lại BOQ
+        typo_events = item.get("typo_events")
+        raw_search = typo_normalizer.normalize_for_match((raw_name + " " + str(item.get("model", "")) + " " + note_boq).lower(), "agent01", typo_events)
+        full_search = typo_normalizer.normalize_for_match((sec_txt + " " + name + " " + aux_txt + " " + str(item.get("model", "")) + " " + note_boq).lower(), "agent01", typo_events)
 
         model_fslf = item.get("model") or None
         model_bfn = model_fslf
