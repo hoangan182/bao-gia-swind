@@ -12,186 +12,6 @@
       "remarks": 4
     },
     "success": false,
-    "timestamp": "2026-10-26T15:31:15.824305"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:31:15.824535"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "CUSTOM_FORMAT",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:31:15.824760"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:31:15.824977"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:31:15.825202"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:33:26.883159"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:33:26.883630"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:33:26.883919"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "CUSTOM_FORMAT",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:33:26.884230"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:33:26.884548"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:33:26.884855"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:35:09.623013"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
     "timestamp": "2026-10-26T15:35:09.623593"
   },
   {
@@ -1665,5 +1485,207 @@
     },
     "success": false,
     "timestamp": "2026-11-02T22:43:55.422075"
+  },
+  {
+    "file_hash": "1e1bfd682589",
+    "filename": "Xin giá cửa dự án CAND.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 2,
+    "col_map": {
+      "stt": 1,
+      "brand": 4,
+      "unit": 5,
+      "price": 11,
+      "total": 15,
+      "remarks": 17,
+      "name": 2,
+      "qty": 6
+    },
+    "success": true,
+    "timestamp": "2026-11-03T07:57:58.692450"
+  },
+  {
+    "file_hash": "1e1bfd682589",
+    "filename": "Xin giá cửa dự án CAND.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 2,
+    "col_map": {
+      "stt": 1,
+      "brand": 4,
+      "unit": 5,
+      "price": 11,
+      "total": 15,
+      "remarks": 17,
+      "name": 2,
+      "qty": 6
+    },
+    "success": true,
+    "timestamp": "2026-11-03T07:57:58.693748"
+  },
+  {
+    "file_hash": "993b5431f7e3",
+    "filename": "NV- DỰ ÁN NHIÊN LIỆU- VAN, ỐNG GIÓ.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 18,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 3,
+      "qty": 4,
+      "remarks": 11
+    },
+    "success": true,
+    "timestamp": "2026-11-03T08:02:33.662598"
+  },
+  {
+    "file_hash": "993b5431f7e3",
+    "filename": "NV- DỰ ÁN NHIÊN LIỆU- VAN, ỐNG GIÓ.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 18,
+    "col_map": {
+      "stt": 1,
+      "unit": 3,
+      "spec": 5,
+      "model": 6,
+      "brand": 7,
+      "price": 9,
+      "remarks": 11,
+      "name": 2,
+      "qty": 4
+    },
+    "success": true,
+    "timestamp": "2026-11-03T08:02:34.372020"
+  },
+  {
+    "file_hash": "764629ca3b93",
+    "filename": "2 KL ĐH TG.xlsx",
+    "company": null,
+    "format_type": "SEMI_STANDARD",
+    "header_row": 3,
+    "col_map": {
+      "stt": 1,
+      "unit": 4,
+      "remarks": 6,
+      "name": 2,
+      "qty": 5
+    },
+    "success": true,
+    "timestamp": "2026-11-03T08:02:35.320833"
+  },
+  {
+    "file_hash": "764629ca3b93",
+    "filename": "2 KL ĐH TG.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 3,
+    "col_map": {
+      "stt": 1,
+      "unit": 4,
+      "remarks": 6,
+      "name": 2,
+      "qty": 5
+    },
+    "success": true,
+    "timestamp": "2026-11-03T08:02:35.322029"
+  },
+  {
+    "file_hash": "764629ca3b93",
+    "filename": "2 KL ĐH TG.xlsx",
+    "company": null,
+    "format_type": "SEMI_STANDARD",
+    "header_row": 3,
+    "col_map": {
+      "stt": 1,
+      "unit": 4,
+      "remarks": 6,
+      "name": 2,
+      "qty": 5
+    },
+    "success": true,
+    "timestamp": "2026-11-03T08:02:35.323347"
+  },
+  {
+    "file_hash": "764629ca3b93",
+    "filename": "2 KL ĐH TG.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 3,
+    "col_map": {
+      "stt": 1,
+      "unit": 4,
+      "remarks": 6,
+      "name": 2,
+      "qty": 5
+    },
+    "success": true,
+    "timestamp": "2026-11-03T08:02:35.324312"
+  },
+  {
+    "file_hash": "764629ca3b93",
+    "filename": "2 KL ĐH TG.xlsx",
+    "company": null,
+    "format_type": "SEMI_STANDARD",
+    "header_row": 3,
+    "col_map": {
+      "stt": 1,
+      "unit": 4,
+      "remarks": 6,
+      "name": 2,
+      "qty": 5
+    },
+    "success": true,
+    "timestamp": "2026-11-03T08:02:35.325277"
+  },
+  {
+    "file_hash": "993b5431f7e3",
+    "filename": "NV- DỰ ÁN NHIÊN LIỆU- VAN, ỐNG GIÓ.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 18,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 3,
+      "qty": 4,
+      "remarks": 11
+    },
+    "success": true,
+    "timestamp": "2026-11-03T08:03:26.396289"
+  },
+  {
+    "file_hash": "1e1bfd682589",
+    "filename": "Xin giá cửa dự án CAND.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 2,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 5,
+      "qty": 6,
+      "remarks": 17
+    },
+    "success": true,
+    "timestamp": "2026-11-03T08:05:13.413991"
+  },
+  {
+    "file_hash": "1e1bfd682589",
+    "filename": "Xin giá cửa dự án CAND.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 2,
+    "col_map": {
+      "stt": 1,
+      "name": 2,
+      "unit": 5,
+      "qty": 6,
+      "remarks": 17
+    },
+    "success": true,
+    "timestamp": "2026-11-03T08:05:13.415112"
   }
 ]
