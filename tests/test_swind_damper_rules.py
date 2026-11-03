@@ -29,6 +29,7 @@ def _run_example(ex):
         "note_boq": ex.get("ghi_chu", ""), "section": title, "model": ex.get("model_cot", ""),
         "w": w, "h": h, "d": ex.get("d", 0), "ei_rating": ex.get("ei", 0),
         "spec_priority": ex.get("spec_priority", "name"),
+        "motor_brand_override": ex.get("hang_dong_co", ""),  # = cờ --motor-brand
     }
     spec = Agent01_BOQExtractor.resolve_item_spec(item, get_subtype_rules(), price_map={}, idx=1)
     return spec, item

@@ -37,7 +37,7 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(BASE_DIR, "src"))
-from swind_utils import detect_boq_header  # noqa: E402
+from swind_utils import detect_boq_header, get_quotation_profile, vat_label  # noqa: E402
 
 RUNNER = os.path.join(BASE_DIR, "src", "swind_master_runner.py")
 VALVE_FAMILIES = {"FD", "MFD", "MD", "VCD", "NRD", "PRD", "PRD_MOTOR"}
@@ -575,10 +575,11 @@ def build_merged_bg(wb_out, ws_runner, boq_rows, carried, bg_title):
                 ws.merge_cells(start_row=m.min_row + off, start_column=m.min_col, end_row=m.max_row + off, end_column=m.max_col)
     else:
         bold = Font(name="Times New Roman", size=10, bold=True)
+        vat_rate = get_quotation_profile()["vat_rate"]  # VAT theo financial_policy.json (gom giá 2026-11-03)
         for i, (lbl, f) in enumerate([
             ("Total/ Tổng Trước thuế", f"=SUBTOTAL(9,O14:O{last_body})"),
-            ("VAT 8%", f"=ROUND(O{out_r}*0.08, 0)"),
-            ("Total Amount (including VAT 8%)/ Tổng sau thuế", f"=O{out_r}+O{out_r + 1}"),
+            (f"VAT {vat_label()}", f"=ROUND(O{out_r}*{vat_rate}, 0)"),
+            (f"Total Amount (including VAT {vat_label()})/ Tổng sau thuế", f"=O{out_r}+O{out_r + 1}"),
         ]):
             ws.cell(out_r + i, 1, lbl).font = bold
             c = ws.cell(out_r + i, 15, f)
@@ -867,7 +868,7 @@ def main():
 
     # ---------------- Tổng hợp ----------------
     total = stats["carried_value"] + stats["new_value"]
-    vat = round(total * 0.08)
+    vat = round(total * get_quotation_profile()["vat_rate"])
     print("\n" + "=" * 95)
     print("📈 [Agent 10] BẢNG TỔNG HỢP BÁO GIÁ (GIÁ CŨ + BÁO MỚI)")
     print(f"📁 File Báo Giá Cuối Cùng: {final_file}")
@@ -877,7 +878,7 @@ def main():
     print(f"| Nhặt giá từ báo giá cũ | {stats['carried_rows']} | {stats['carried_value']:,.0f} |")
     print(f"| Swind báo giá mới | {stats['new_rows']} | {stats['new_value']:,.0f} |")
     print(f"| **TỔNG TRƯỚC VAT** | **{stats['carried_rows'] + stats['new_rows']}** | **{total:,.0f}** |")
-    print(f"| VAT 8% | | {vat:,.0f} |")
+    print(f"| VAT {vat_label()} | | {vat:,.0f} |")
     print(f"| **TỔNG SAU VAT** | | **{total + vat:,.0f}** |")
     if stats["unpriced_list"]:
         print(f"\n⛔ BÁO GIÁ CHƯA HOÀN CHỈNH: {len(stats['unpriced_list'])} dòng BOQ không có trong BG của runner (tô vàng): "

@@ -573,6 +573,18 @@
      "loai": "MD",
      "model": "MD",
      "ghi_chu_chua": "BELIMO 5Nm"
+    },
+    {
+     "ten": "Van xả áp động cơ MPRD 400x400",
+     "kt": [
+      400,
+      400
+     ],
+     "loai": "MPRD",
+     "model": "M-PRD",
+     "ghi_chu_chua": "KLB On/Off 10Nm",
+     "_nguon": "2026-11-03 gom giá: MPRD hãng KLB tính giá động cơ VIWECO 10Nm -> ghi chú theo mã tính giá",
+     "hang_dong_co": "KLB"
     }
    ]
   },

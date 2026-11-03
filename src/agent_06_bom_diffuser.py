@@ -1,16 +1,8 @@
-import math
 from swind_utils import K
 
 
-def _excel_round(value, ndigits=0):
-    """Excel-compatible ROUND: rounds 0.5 away from zero (not banker's rounding)."""
-    if ndigits >= 0:
-        factor = 10 ** ndigits
-        result = math.floor(value * factor + 0.5) / factor
-        return int(result) if ndigits == 0 else result
-    else:
-        factor = 10 ** (-ndigits)
-        return math.floor(value / factor + 0.5) * factor
+# Làm tròn Excel, hệ số lợi nhuận, giá vật tư dự phòng: dùng chung ở swind_pricing (gom giá 2026-11-03)
+from swind_pricing import excel_round as _excel_round, mfg_markup as _mfg_markup, mat_price, calc_obd, mesh_price, filter_g4_price  # noqa: E402
 
 
 class Agent06_DiffuserBOM:
@@ -30,12 +22,12 @@ class Agent06_DiffuserBOM:
         from swind_utils import get_master_price_map, get_master_bom_rules
         mat_price_map = get_master_price_map()
         diffuser_rules = get_master_bom_rules().get("diffuser_rules", {})
-        mfg_markup = float(diffuser_rules.get("mfg_markup_factor", 1.593))
-        p_alu_bd_master = mat_price_map.get("MAT-ALU-KHUNG-BD", 126000.0)
-        p_alu_obd_master = mat_price_map.get("MAT-ALU-KHUNG-OBD", 133000.0)
-        p_paint_master = mat_price_map.get("MAT-PAINT-POWDER", 75000.0)
-        p_acc_master = mat_price_map.get("MAT-DOOR-ACCESSORY", 15000.0)
-        p_core_master = mat_price_map.get("MAT-ALU-EGGCRATE-CORE", 750000.0)
+        mfg_markup = _mfg_markup("diffuser_rules")
+        p_alu_bd_master = mat_price("MAT-ALU-KHUNG-BD")
+        p_alu_obd_master = mat_price("MAT-ALU-KHUNG-OBD")
+        p_paint_master = mat_price("MAT-PAINT-POWDER")
+        p_acc_master = mat_price("MAT-DOOR-ACCESSORY")
+        p_core_master = mat_price("MAT-ALU-EGGCRATE-CORE")
 
         w_val = float(w) if w > 0 else 300.0
         h_val = float(h) if h > 0 else 300.0
@@ -105,8 +97,8 @@ class Agent06_DiffuserBOM:
     def _calc_profile_lcct(parent_id, w_val, h_val, mat_price_map, mfg_markup, components):
         F, G = w_val, h_val
         D, E = w_val, h_val
-        p_mesh_master = mat_price_map.get("MAT-MESH-INOX-304", 150000.0)
-        target_lcct_sell = _excel_round((F / 1000.0) * (G / 1000.0) * K("cua.luoi_chan_con_trung_m2", 200000.0), 0)
+        p_mesh_master = mat_price("MAT-MESH-INOX-304")
+        target_lcct_sell = mesh_price(F, G, "lcct")
         mesh_qty = max(0.001, target_lcct_sell / (p_mesh_master * mfg_markup))
         components.append({
             "sub_key": f"{parent_id}-MESH",
@@ -123,8 +115,8 @@ class Agent06_DiffuserBOM:
     def _calc_profile_filter_g4(parent_id, w_val, h_val, mat_price_map, mfg_markup, components):
         F, G = w_val, h_val
         D, E = w_val, h_val
-        p_filter_master = mat_price_map.get("MAT-FILTER-G4", 220000.0)
-        target_filter_sell = _excel_round((F / 1000.0) * (G / 1000.0) * K("cua.loc_g4_m2", 200000.0), -3)
+        p_filter_master = mat_price("MAT-FILTER-G4")
+        target_filter_sell = filter_g4_price(F, G)
         filter_qty = max(0.001, target_filter_sell / (p_filter_master * mfg_markup))
         components.append({
             "sub_key": f"{parent_id}-FILTER",
@@ -152,9 +144,9 @@ class Agent06_DiffuserBOM:
         unrounded_swl_sell = ((raw_frame_kg + raw_blade_kg) * p_alu_swl + n_nan * K("cua.swl.phu_kien_moi_nan", 170.0) + (raw_frame_kg + raw_nan_only_kg) * K("cua.son_kg", 20000.0)) * K("cua.he_so_san_xuat", 1.25)
         target_swl_sell = _excel_round(unrounded_swl_sell, -3)
         scale_swl = (target_swl_sell / unrounded_swl_sell) if unrounded_swl_sell > 0 else 1.0
-        p_alu_z_master = mat_price_map.get("MAT-ALU-KHUNG-Z-2-LOP", 126000.0)
-        p_alu_nan_z_master = mat_price_map.get("MAT-ALU-NAN-Z-DAY", 126000.0)
-        p_mesh_master = mat_price_map.get("MAT-MESH-INOX-304", 150000.0)
+        p_alu_z_master = mat_price("MAT-ALU-KHUNG-Z-2-LOP")
+        p_alu_nan_z_master = mat_price("MAT-ALU-NAN-Z-DAY")
+        p_mesh_master = mat_price("MAT-MESH-INOX-304")
 
         frame_kg = raw_frame_kg * (p_alu_swl * 1.25 * scale_swl) / (p_alu_z_master * mfg_markup)
         blade_kg = raw_blade_kg * (p_alu_swl * 1.25 * scale_swl) / (p_alu_nan_z_master * mfg_markup)
@@ -200,7 +192,7 @@ class Agent06_DiffuserBOM:
             }
         ])
         if has_mesh or diffuser_type.upper() == "LOUVER":
-            target_mesh_sell = _excel_round(d_m * e_m * K("cua.luoi_m2", 150000.0), -3)
+            target_mesh_sell = mesh_price(D, E, "luoi")
             mesh_qty = max(0.001, target_mesh_sell / (p_mesh_master * mfg_markup))
             components.append({
                 "sub_key": f"{parent_id}-MESH",
@@ -566,8 +558,8 @@ class Agent06_DiffuserBOM:
     @staticmethod
     def _append_diffuser_accessories(parent_id, profile_type, w_val, D, E, has_mesh, has_filter, has_obd, is_black_2nd_layer, diffuser_rules, mat_price_map, mfg_markup, p_alu_obd_master, p_acc_master, total_alu_kg, components):
         if has_mesh and profile_type != "Z":
-            p_mesh_master = mat_price_map.get("MAT-MESH-INOX-304", 150000.0)
-            target_mesh_sell = _excel_round((D / 1000.0) * (E / 1000.0) * K("cua.luoi_m2", 150000.0), -3)
+            p_mesh_master = mat_price("MAT-MESH-INOX-304")
+            target_mesh_sell = mesh_price(D, E, "luoi")
             mesh_qty = max(0.001, target_mesh_sell / (p_mesh_master * mfg_markup))
             components.append({
                 "sub_key": f"{parent_id}-MESH",
@@ -580,8 +572,8 @@ class Agent06_DiffuserBOM:
             })
 
         if has_filter:
-            p_filter_master = mat_price_map.get("MAT-FILTER-G4", 220000.0)
-            target_filter_sell = _excel_round((D / 1000.0) * (E / 1000.0) * K("cua.loc_g4_m2", 200000.0), -3)
+            p_filter_master = mat_price("MAT-FILTER-G4")
+            target_filter_sell = filter_g4_price(D, E)
             filter_qty = max(0.001, target_filter_sell / (p_filter_master * mfg_markup))
             components.append({
                 "sub_key": f"{parent_id}-FILTER",
@@ -594,18 +586,10 @@ class Agent06_DiffuserBOM:
             })
 
         if has_obd:
-            d_m, e_m = D / 1000.0, E / 1000.0
-            p_alu_obd = float(diffuser_rules.get("aluminum_selling_price_per_kg", 168000.0))
             obd_mult = (1.75 if w_val >= 5000.0 else 1.5) if (profile_type == "SLB" and is_black_2nd_layer) else 1.0
-            raw_obd_frame_kg = 2.0 * (d_m + e_m) * 0.158
-            raw_obd_blade_kg = (d_m / 0.04) * e_m * 0.10
-            raw_obd_acc_cost = (d_m / 0.04) * 1500.0 + 5000.0
-            unrounded_obd_sell = ((raw_obd_frame_kg + raw_obd_blade_kg) * p_alu_obd + raw_obd_acc_cost) * 1.15 * obd_mult
-            target_obd_sell = _excel_round(unrounded_obd_sell, -3)
-            scale_obd = (target_obd_sell / unrounded_obd_sell) if unrounded_obd_sell > 0 else 1.0
-            obd_frame_kg = raw_obd_frame_kg * (p_alu_obd * 1.15 * obd_mult * scale_obd) / (p_alu_obd_master * mfg_markup)
-            obd_blade_kg = raw_obd_blade_kg * (p_alu_obd * 1.15 * obd_mult * scale_obd) / (p_alu_obd_master * mfg_markup)
-            obd_acc_bo = (raw_obd_acc_cost * 1.15 * obd_mult * scale_obd) / (p_acc_master * mfg_markup)
+            # Công thức OBD dùng chung swind_pricing.calc_obd (hằng số: pricing_constants.json -> obd) — gom giá 2026-11-03
+            obd = calc_obd(D, E, mult=obd_mult, markup_group="diffuser_rules")
+            obd_frame_kg, obd_blade_kg, obd_acc_bo = obd["frame_kg"], obd["blade_kg"], obd["acc_bo"]
 
             components.extend([
                 {

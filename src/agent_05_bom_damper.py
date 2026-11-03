@@ -14,15 +14,8 @@ _DEFAULT_SQUARE_ACC = {
 }
 
 
-def _excel_round(value, ndigits=0):
-    """Excel-compatible ROUND: rounds 0.5 away from zero (not banker's rounding)."""
-    if ndigits >= 0:
-        factor = 10 ** ndigits
-        result = math.floor(value * factor + 0.5) / factor
-        return int(result) if ndigits == 0 else result
-    else:
-        factor = 10 ** (-ndigits)
-        return math.floor(value / factor + 0.5) * factor
+# Làm tròn Excel, hệ số lợi nhuận, giá vật tư dự phòng: dùng chung ở swind_pricing (gom giá 2026-11-03)
+from swind_pricing import excel_round as _excel_round, mfg_markup as _mfg_markup, mat_price, select_actuator, calc_obd  # noqa: E402
 
 
 class Agent05_DamperBOM:
@@ -71,7 +64,7 @@ class Agent05_DamperBOM:
         mat_price_map = get_master_price_map()
         damper_rules = get_master_bom_rules().get("damper_rules", {})
         split_rules = damper_rules.get("module_split_rules", {})
-        mfg_markup = float(damper_rules.get("mfg_markup_factor", 1.593))
+        mfg_markup = _mfg_markup("damper_rules")
 
         mod_w, mod_h, modules_count, w_mod, h_mod = Agent05_DamperBOM._calculate_damper_modules(
             w_eff, h_eff, is_round, is_fd_ei, is_mfd, is_md, is_nrd, is_prd,
@@ -140,24 +133,9 @@ class Agent05_DamperBOM:
     @staticmethod
     def _calc_obd_damper(parent_id, w, h):
         """Tính BOM và giá bán Van OBD rời bằng nhôm định hình sơn tĩnh điện (168,000 đ/kg, nan 0.10kg/m, x1.15)."""
-        a_m = float(w or 200.0) / 1000.0
-        b_m = float(h or 200.0) / 1000.0
-        raw_obd_frame_kg = 2.0 * (a_m + b_m) * 0.158
-        raw_obd_blade_kg = (a_m / 0.04) * b_m * 0.10
-        raw_obd_acc_cost = (a_m / 0.04) * 1500.0 + 5000.0
-        from swind_utils import get_master_price_map, get_master_bom_rules
-        mat_price_map = get_master_price_map()
-        bom_rules = get_master_bom_rules()
-        p_alu_obd = float(bom_rules.get("diffuser_rules", {}).get("aluminum_selling_price_per_kg", 168000.0))
-        unrounded_obd_sell = ((raw_obd_frame_kg + raw_obd_blade_kg) * p_alu_obd + raw_obd_acc_cost) * 1.15
-        target_obd_sell = _excel_round(unrounded_obd_sell, -3)
-        mfg_markup = float(bom_rules.get("damper_rules", {}).get("mfg_markup_factor", 1.593))
-        p_alu_obd_master = mat_price_map.get("MAT-ALU-KHUNG-OBD", 133000.0)
-        p_acc_master = mat_price_map.get("MAT-DOOR-ACCESSORY", 15000.0)
-        scale_obd = (target_obd_sell / unrounded_obd_sell) if unrounded_obd_sell > 0 else 1.0
-        obd_frame_kg = raw_obd_frame_kg * (p_alu_obd * 1.15 * scale_obd) / (p_alu_obd_master * mfg_markup)
-        obd_blade_kg = raw_obd_blade_kg * (p_alu_obd * 1.15 * scale_obd) / (p_alu_obd_master * mfg_markup)
-        obd_acc_bo = (raw_obd_acc_cost * 1.15 * scale_obd) / (p_acc_master * mfg_markup)
+        # Công thức OBD dùng chung swind_pricing.calc_obd (hằng số: pricing_constants.json -> obd) — gom giá 2026-11-03
+        obd = calc_obd(w, h, markup_group="damper_rules")
+        obd_frame_kg, obd_blade_kg, obd_acc_bo = obd["frame_kg"], obd["blade_kg"], obd["acc_bo"]
         return {
             "category": "VAN_GIO",
             "modules_count": 1,
@@ -376,36 +354,8 @@ class Agent05_DamperBOM:
             # Cờ dự án --md-shaft-only (User yêu cầu 2026-11-03): van MD trục chờ -> không cộng động cơ
             return
         if is_md:
-            if motor_brand.upper() == "KLB":
-                act_id = "MAT-ACTUATOR-SWIND-VIWECO"
-                act_name = "Động cơ van gió KLB/VIWECO 24V - 10Nm ON/OFF"
-            elif motor_brand.upper() == "HONEYWELL":
-                if cross_section_mod_m2 <= 0.8:
-                    act_id = "MAT-ACTUATOR-HONEYWELL-5NM"
-                    act_name = "Động cơ van gió HoneyWell ON/OFF 5Nm (Model: CN4605A)"
-                elif cross_section_mod_m2 <= 1.8:
-                    act_id = "MAT-ACTUATOR-HONEYWELL-10NM"
-                    act_name = "Động cơ van gió HoneyWell ON/OFF 10Nm (Model: CN4610A)"
-                else:
-                    act_id = "MAT-ACTUATOR-HONEYWELL-20NM"
-                    act_name = "Động cơ van gió HoneyWell ON/OFF 20Nm (Model: CN4620A)"
-            elif is_mprd:
-                # Rule MPRD (User chốt 2026-11-02): van xả áp động cơ -> "động cơ tuyến tính 230V Belimo On/Off", mô-men theo
-                # rule Belimo MD (1 cạnh modul >= 1000mm -> 10Nm, dưới -> 5Nm, > 1.8 m2/modul -> 20Nm). Mã riêng MPRD, giá
-                # mặc định = Belimo cùng mô-men; chỉ đổi giá qua cờ --mprd-motor-price / --motor-price
-                act_nm = "5" if max(w_mod, h_mod) < 1000 else ("10" if cross_section_mod_m2 <= 1.8 else "20")
-                act_id = {"5": "MAT-ACTUATOR-BELIMO-MPRD-5NM", "10": "MAT-ACTUATOR-BELIMO-MPRD", "20": "MAT-ACTUATOR-BELIMO-MPRD-20NM"}[act_nm]
-                act_name = f"Động cơ tuyến tính 230V Belimo On/Off {act_nm}Nm"
-            elif max(w_mod, h_mod) < 1000:
-                # Rule Kỹ thuật (2026-11-02): Van MD động cơ thường Belimo có 1 cạnh (modul) >= 1000mm -> 10Nm, dưới -> 5Nm
-                act_id = "MAT-ACTUATOR-BELIMO-5NM"
-                act_name = "Động cơ van gió Belimo ON/OFF 5Nm"
-            elif cross_section_mod_m2 <= 1.8:
-                act_id = "MAT-ACTUATOR-BELIMO-10NM"
-                act_name = "Động cơ van gió Belimo ON/OFF 10Nm"
-            else:
-                act_id = "MAT-ACTUATOR-BELIMO-20NM"
-                act_name = "Động cơ van gió Belimo ON/OFF 20Nm"
+            # Chọn động cơ MD / MPRD: dùng chung swind_pricing.select_actuator (mô-men theo damper_rules.json VG-11) — gom giá 2026-11-03
+            act_id, act_name, _ = select_actuator("MPRD" if is_mprd else "MD", motor_brand, w_mod, h_mod)
 
             components.append({
                 "sub_key": f"{parent_id}-ACTUATOR",
@@ -428,21 +378,8 @@ class Agent05_DamperBOM:
                 "note": f"Cầu chì kiểm định PCCC ({modules_count} cái)"
             })
         elif is_mfd:
-            if model_code == "1.03" or motor_brand.upper() == "KLB":
-                act_id = "MAT-ACTUATOR-KLB-V6006FS500S"
-                act_name = "Động cơ chặn lửa ON/OFF KLB (Swin V6006FS500S EI90) 5Nm"
-            elif model_code == "1.04" or motor_brand.upper() == "HONEYWELL":
-                act_id = "MAT-ACTUATOR-HONEYWELL"
-                act_name = "Động cơ chặn lửa ON/OFF 9Nm, 230V (HONEYWELL MS4609F1010/B)"
-            elif model_code == "1.01":
-                act_id = "MAT-ACTUATOR-BELIMO-BFN24"
-                act_name = "Động cơ chặn lửa ON/OFF 9Nm, 230V/24V (BELIMO BFN24 / BFN230)"
-            elif is_single_blade or model_code == "1.02" or mfd_mode == "single_fslf24":
-                act_id = "MAT-ACTUATOR-BELIMO-FSLF24"
-                act_name = "Động cơ chặn lửa ON/OFF 3.5Nm, 230V/24V (BELIMO FSLF24 / FSLF230)"
-            else:
-                act_id = "MAT-ACTUATOR-BELIMO-BFN24"
-                act_name = "Động cơ chặn lửa ON/OFF 9Nm, 230V/24V (BELIMO BFN24 / BFN230)"
+            act_id, act_name, _ = select_actuator("MFD", motor_brand, w_mod, h_mod, is_single_blade=is_single_blade,
+                                                  mfd_model=model_code, mfd_mode=mfd_mode)
 
             components.append({
                 "sub_key": f"{parent_id}-ACTUATOR",
@@ -545,7 +482,7 @@ class Agent05_DamperBOM:
                 "note": f"Keo silicon chống cháy & phụ kiện lắp ghép ({modules_count} bộ)"
             })
         elif ei_rating > 0 and not is_md and max(w_eff, h_eff) > 150.0:
-            p_fb10 = mat_price_map.get("MAT-FIREBOARD-10MM-BODY", 518500.0)
+            p_fb10 = mat_price("MAT-FIREBOARD-10MM-BODY")
             area_fb10_ei = (z_total_m2 * K("van.boc_ei.don_gia_m2", 320000.0)) / (p_fb10 * K("van.boc_ei.he_so_quy_doi_tam_10mm", 1.593))
             components.append({
                 "sub_key": f"{parent_id}-FB10-EI",

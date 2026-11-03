@@ -682,6 +682,16 @@ def locate_requirement_target(topic):
     # Bản đồ định tuyến kiến trúc theo chủ đề yêu cầu
     arch_guides = [
         {
+            # Gom giá 2026-11-03: công thức giá dùng chung — sửa ở đây, không sửa trong agent
+            "tags": ["obd", "luoi", "lcct", "g4", "loc", "dong co", "mo men", "actuator", "motor", "lam tron", "markup", "loi nhuan", "vat tu du phong"],
+            "title": "Giá dùng chung: OBD, Lưới/LCCT/Lọc G4, Động cơ van (mô-men + mã theo hãng), Làm tròn, Hệ số lợi nhuận (swind_pricing)",
+            "json_targets": ["data/master_data/pricing_constants.json -> 'obd', 'cua.luoi_m2', 'cua.luoi_chan_con_trung_m2', 'cua.loc_g4_m2'",
+                             "data/master_data/damper_rules.json -> 'VG-11_MO_MEN_DONG_CO'"],
+            "py_targets": [("src/swind_pricing.py", "calc_obd"), ("src/swind_pricing.py", "mesh_price"),
+                           ("src/swind_pricing.py", "filter_g4_price"), ("src/swind_pricing.py", "select_actuator"),
+                           ("src/swind_pricing.py", "excel_round")]
+        },
+        {
             "tags": ["header", "cot", "column", "ten vat tu", "khoi luong", "dvt", "don vi", "boq"],
             "title": "Nhận diện dòng Tiêu đề (Header) & Ánh xạ cột BOQ",
             "json_targets": ["data/master_data/subtype_rules.json -> key 'HEADER_ALIASES'"],
@@ -769,6 +779,7 @@ def locate_requirement_target(topic):
         "src/swind_utils.py",
         "src/swind_master_runner.py",
         "src/agent_00b_input_normalizer.py",
+        "src/swind_pricing.py",
     ]
     ast_index = {}
     for rel_path in src_files:

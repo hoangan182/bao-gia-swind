@@ -14,3 +14,4 @@
        - `single_fslf24`: Van đơn cánh gắn động cơ đóng mở nhanh Belimo `FSLF24V` ($3.5\text{Nm}$).
   2. **Van điều chỉnh lưu lượng `VCD`, Van một chiều `NRD`, Van động cơ thường `MD`:**
      - Áp dụng đúng quy tắc phân tầng kích thước (`1500x950`, `1100x950`, `950x950`) của Sheet `BG VAN CU`, cộng thêm lớp bọc cách nhiệt KHS $10\text{mm}$ khi có yêu cầu `EI`.
+  3. **Phần dùng chung (gom giá 2026-11-03):** chọn động cơ MD / MPRD / MFD (mô-men theo `damper_rules.json` VG-11) gọi `swind_pricing.select_actuator`; giá OBD rời gọi `swind_pricing.calc_obd` (hằng số `pricing_constants.json -> obd`); làm tròn / hệ số lợi nhuận / giá vật tư dự phòng dùng `swind_pricing`. **Không viết lại các công thức này trong agent.**

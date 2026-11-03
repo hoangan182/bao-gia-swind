@@ -267,7 +267,10 @@ def build_model_note(res, mod_cnt, is_clamped, w_mod, h_mod, is_single_blade, ru
         return tm["model"], tm["model"], note, note
     if eff_type == "MPRD":
         tm = t["mprd"]
-        nm, _ = actuator_torque(motor_brand, w_mod, h_mod, R)
+        # Mô-men ghi chú = mô-men của động cơ đã tính giá (swind_pricing.select_actuator) — gom giá 2026-11-03:
+        # MPRD hãng KLB tính giá VIWECO 10Nm, trước đây ghi chú lại theo diện tích (5/10/20Nm)
+        from swind_pricing import select_actuator
+        nm = select_actuator("MPRD", motor_brand, w_mod, h_mod)[2]
         if motor_brand == "BELIMO":
             act_txt = tm["dong_co_belimo"].format(nm=nm)
         else:

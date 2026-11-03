@@ -20,6 +20,7 @@ import json
 import glob
 import time
 import argparse
+import difflib
 import unicodedata
 import subprocess
 
@@ -104,6 +105,115 @@ def check_invariants(res):
     return fails, warns
 
 
+# ---------------------------------------------------------------- Chụp & so giá từng dòng Sheet BG
+# Ngưỡng lệch lớn (User chốt 2026-11-03, đợt gom giá về swind_pricing): dòng > 2% hoặc > 50.000đ; tổng sheet > 0,5%
+LINE_PCT = 0.02
+LINE_VND = 50_000
+SHEET_PCT = 0.005
+
+
+def read_bg_lines(xlsx_path):
+    """Đọc mọi dòng có Đơn giá > 0 trên các sheet báo giá do hệ thống xuất (header 'Danh mục sản phẩm' | 'Model').
+    Cột: B=Tên, C=Model, L=Đơn vị, M=Số lượng, N=Đơn giá (O là công thức -> tự tính amount)."""
+    import openpyxl
+    lines = []
+    wb = openpyxl.load_workbook(xlsx_path, read_only=True, data_only=False)
+    try:
+        for ws in wb.worksheets:
+            rows = list(ws.iter_rows(max_col=14, values_only=True))
+            hdr = next((i for i, r in enumerate(rows[:30]) if len(r) >= 3 and str(r[1] or "").strip() == "Danh mục sản phẩm" and str(r[2] or "").strip() == "Model"), None)
+            if hdr is None:
+                continue
+            for r_idx, row in enumerate(rows[hdr + 1:], start=hdr + 2):
+                row = tuple(row) + (None,) * (14 - len(row))
+                price, qty = row[13], row[12]
+                if not isinstance(price, (int, float)) or isinstance(price, bool) or price <= 0:
+                    continue
+                qty = float(qty) if isinstance(qty, (int, float)) and not isinstance(qty, bool) else 0.0
+                lines.append({"sheet": ws.title, "row": r_idx, "name": str(row[1] or "").strip(), "model": str(row[2] or "").strip(),
+                              "unit": str(row[11] or "").strip(), "qty": qty, "price": float(price), "amount": qty * float(price)})
+    finally:
+        wb.close()
+    return lines
+
+
+def classify_line_diff(before, after):
+    """So 2 snapshot {file: [dòng]}: trong mỗi (file, sheet) căn dòng theo Tên (difflib), không theo số dòng BG. Trả {'major': [...], 'minor': [...], 'sheet_totals': [...]}."""
+    major, minor, sheet_totals = [], [], []
+
+    def rec(f, b, a, ly_do):
+        x = a or b
+        return {"file": f, "sheet": x["sheet"], "row": x["row"], "name": x["name"],
+                "model_truoc": (b or {}).get("model"), "model_sau": (a or {}).get("model"),
+                "gia_truoc": (b or {}).get("price"), "gia_sau": (a or {}).get("price"), "ly_do": ly_do}
+
+    for f in sorted(set(before) | set(after)):
+        totals = {}
+        sheets = sorted({x["sheet"] for x in before.get(f, [])} | {x["sheet"] for x in after.get(f, [])})
+        for sh in sheets:
+            bl = sorted((x for x in before.get(f, []) if x["sheet"] == sh), key=lambda x: x["row"])
+            al = sorted((x for x in after.get(f, []) if x["sheet"] == sh), key=lambda x: x["row"])
+            totals[sh] = [sum(x["amount"] for x in bl), sum(x["amount"] for x in al)]
+            # Căn dòng theo nội dung (Tên) thay vì số dòng BG: chèn / bớt 1 dòng không làm lệch các dòng phía sau
+            sm = difflib.SequenceMatcher(None, [x["name"] for x in bl], [x["name"] for x in al], autojunk=False)
+            for op, i1, i2, j1, j2 in sm.get_opcodes():
+                pairs = list(zip(bl[i1:i2], al[j1:j2])) if op in ("equal", "replace") else []
+                for b, a in pairs:
+                    if b["name"] != a["name"]:
+                        major.append(rec(f, b, a, "đổi dòng"))
+                    elif b["model"] != a["model"]:
+                        major.append(rec(f, b, a, "đổi Model"))
+                    elif b["price"] != a["price"]:
+                        d = abs(a["price"] - b["price"])
+                        big = d > LINE_VND or (b["price"] > 0 and d / b["price"] > LINE_PCT)
+                        (major if big else minor).append(rec(f, b, a, "lệch giá"))
+                n = len(pairs)
+                for b in bl[i1 + n:i2]:
+                    major.append(rec(f, b, None, "mất dòng"))
+                for a in al[j1 + n:j2]:
+                    major.append(rec(f, None, a, "dòng mới"))
+        for sh, (tb, ta) in sorted(totals.items()):
+            if tb != ta:
+                pct = abs(ta - tb) / tb if tb else 1.0
+                sheet_totals.append({"file": f, "sheet": sh, "tong_truoc": tb, "tong_sau": ta, "pct": pct, "major": pct > SHEET_PCT})
+    return {"major": major, "minor": minor, "sheet_totals": sheet_totals}
+
+
+def write_line_diff_report(res, path):
+    def fmt(v):
+        return "" if v is None else f"{v:,.0f}"
+    out = ["# Đối chiếu giá từng dòng Sheet BG", "",
+           f"Ngưỡng lệch lớn: dòng > {LINE_PCT:.0%} hoặc > {LINE_VND:,}đ; tổng sheet > {SHEET_PCT:.1%}.", "",
+           f"**{len(res['major'])} lệch lớn / {len(res['minor'])} lệch nhỏ / "
+           f"{sum(1 for s in res['sheet_totals'] if s['major'])} sheet lệch tổng > {SHEET_PCT:.1%}**", ""]
+    for title, rows in (("Lệch lớn", res["major"]), ("Lệch nhỏ", res["minor"])):
+        out += [f"## {title}", "", "| File | Sheet | Dòng | Tên | Model trước → sau | Giá trước | Giá sau | Lý do |", "|---|---|---|---|---|---|---|---|"]
+        out += [f"| {r['file']} | {r['sheet']} | {r['row']} | {r['name'][:60]} | {r['model_truoc']} → {r['model_sau']} | {fmt(r['gia_truoc'])} | {fmt(r['gia_sau'])} | {r['ly_do']} |" for r in rows]
+        out.append("")
+    out += ["## Tổng sheet", "", "| File | Sheet | Tổng trước | Tổng sau | Lệch | Lớn? |", "|---|---|---|---|---|---|"]
+    out += [f"| {s['file']} | {s['sheet']} | {fmt(s['tong_truoc'])} | {fmt(s['tong_sau'])} | {s['pct']:.2%} | {'⚠️' if s['major'] else ''} |" for s in res["sheet_totals"]]
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("\n".join(out) + "\n")
+
+
+def run_line_diff(before_path, after_path, report_path=None):
+    with open(before_path, "r", encoding="utf-8") as f:
+        before = json.load(f)
+    with open(after_path, "r", encoding="utf-8") as f:
+        after = json.load(f)
+    res = classify_line_diff(before, after)
+    n_sheet = sum(1 for s in res["sheet_totals"] if s["major"])
+    print(f"{len(res['major'])} lệch lớn / {len(res['minor'])} lệch nhỏ / {n_sheet} sheet lệch tổng > {SHEET_PCT:.1%}")
+    for r in res["major"][:30]:
+        print(f"  ⚠️ {r['file']} | {r['sheet']}!R{r['row']} | {r['name'][:50]} | {r['model_truoc']} → {r['model_sau']} | "
+              f"{r['gia_truoc'] or 0:,.0f} → {r['gia_sau'] or 0:,.0f} | {r['ly_do']}")
+    if report_path:
+        write_line_diff_report(res, report_path)
+        print(f"📄 Báo cáo: {report_path}")
+    return 1 if (res["major"] or n_sheet) else 0
+
+
 def run_one(boq_path, timeout=300, extra_args=()):
     t0 = time.time()
     # Chạy trong thư mục tạm: KHÔNG ghi vào data/projects/ & output/ thật (tránh đè file báo giá gửi khách)
@@ -116,7 +226,12 @@ def run_one(boq_path, timeout=300, extra_args=()):
         )
         out = proc.stdout + proc.stderr
         m_file = re.search(r"FILE BÁO GIÁ CUỐI CÙNG GỬI KHÁCH HÀNG:\s*(.+\.xls[xm])", out)
-        row_issues = _check_bg_rows(m_file.group(1).strip()) if m_file and os.path.exists(m_file.group(1).strip()) else []
+        out_xlsx = m_file.group(1).strip() if m_file else ""
+        row_issues = _check_bg_rows(out_xlsx) if out_xlsx and os.path.exists(out_xlsx) else []
+        try:
+            bg_lines = read_bg_lines(out_xlsx) if out_xlsx and os.path.exists(out_xlsx) else []
+        except Exception as e:  # noqa: BLE001
+            bg_lines = [{"sheet": "_LOI_DOC_", "row": 0, "name": str(e), "model": "", "unit": "", "qty": 0, "price": 0, "amount": 0}]
     sheets = {}
     for line in out.splitlines():
         m = ROW_RX.match(line.strip())
@@ -134,6 +249,7 @@ def run_one(boq_path, timeout=300, extra_args=()):
         "duct_only_stop": "⛔ BOQ chỉ gồm Ống gió" in out,
         "price_not_increasing": len(re.findall(r"giá KHÔNG tăng theo kích thước", out)),
         "row_issues": row_issues,
+        "bg_lines": bg_lines,
         "elapsed_s": round(time.time() - t0, 2),
         "traceback": "Traceback" in out,
         "tail": out.strip().splitlines()[-5:] if "Traceback" in out else [],
@@ -146,7 +262,12 @@ def main():
     ap.add_argument("--filter", default=None, help="Chỉ chạy file có tên chứa chuỗi này")
     ap.add_argument("--runner-args", default="", help="Cờ thêm cho swind_master_runner (VD: '--include-duct')")
     ap.add_argument("--baseline", default=None, help="Đường dẫn file baseline (mặc định: e2e_regression_baseline.json)")
+    ap.add_argument("--line-snapshot", default=None, help="Ghi giá từng dòng Sheet BG của mọi file vào JSON này")
+    ap.add_argument("--line-diff", nargs=2, metavar=("TRUOC", "SAU"), default=None, help="So 2 snapshot giá từng dòng (không chạy runner)")
+    ap.add_argument("--report", default=None, help="File Markdown báo cáo cho --line-diff")
     args = ap.parse_args()
+    if args.line_diff:
+        sys.exit(run_line_diff(args.line_diff[0], args.line_diff[1], args.report))
     baseline_path = args.baseline or BASELINE_PATH
     extra_args = tuple(args.runner_args.split()) if args.runner_args else ()
 
@@ -209,6 +330,11 @@ def main():
 
     print(f"\n📋 Kết quả: {counts['OK']} khớp baseline | {counts['INV-OK']} chỉ đạt kiểm bất biến (chưa có baseline duyệt) | "
           f"{counts['DIFF']} lệch baseline | {counts['FAIL']} lỗi bất biến  ({len(files)} file)")
+    if args.line_snapshot:
+        os.makedirs(os.path.dirname(os.path.abspath(args.line_snapshot)), exist_ok=True)
+        with open(args.line_snapshot, "w", encoding="utf-8") as f:
+            json.dump({k: v.get("bg_lines", []) for k, v in results.items()}, f, ensure_ascii=False, indent=1)
+        print(f"📸 Snapshot giá từng dòng: {args.line_snapshot} ({sum(len(v.get('bg_lines', [])) for v in results.values())} dòng)")
     if args.save_baseline:
         # Chỉ lưu file qua kiểm bất biến; không lưu lại dự án cũ đã loại (baseline sai) — User chốt 2026-11-03
         merged = dict(baseline)

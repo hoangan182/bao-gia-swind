@@ -75,27 +75,27 @@ Mỗi loại phụ kiện ống gió đã được tách thành **1 hàm riêng 
 | Nhóm / Subtype | Tên hàm trong `Agent04_DuctworkBOM` | Dòng (`StartLine..EndLine`) | Nội dung công thức chính |
 | :--- | :--- | :---: | :--- |
 | **Bảng tra & Đơn giá m2** | `THICKNESS_RULES` .. `ROUND_FITTING_PRICES` | `20..112` | Quy tắc độ dày TCVN 5687, đơn giá bán 1 m² ống vuông/tròn/Nẹp C/TDF/V30/Bọc EI |
-| **Chuẩn hóa độ dày** | `normalize_thickness`, `get_standard_thickness` | `115..153` | Làm tròn độ dày tôn (`0.58, 0.75, 0.95, 1.15`) & tra độ dày theo `max(W,H)` hoặc `D` |
-| **Nhận diện Subtype** | `detect_duct_subtype` | `156..158` | Phân loại tên BOQ thành `DUCT_RECT`, `ELBOW_SQ`, `REDUCER_SQ`, `SHOE_TAP`, `OFFSET_Z`, v.v. |
-| **Điều phối chính** | `calculate_duct_item` | `161..240` | Hàm gốc điều phối sang các hàm con theo `subtype` |
-| **Chụp thông hơi (`VENTCAP`)** | `_calc_ventcap_item` | `243..257` | Chụp thông hơi / chắn mưa gắn tường tôn mạ kẽm hoặc Inox |
-| **Khớp nối mềm (`CANVAS_SQ`, `CANVAS_RT`)** | `_calc_canvas_item` | `260..307` | Chu vi `2*(W+H)/1000` (vuông) hoặc `3.14*D/1000` (tròn); đơn giá mét dài Canvas thường/chống cháy |
-| **Ống gió mềm (`FLEX_DUCT`)** | `_calc_flex_duct_item` | `310..329` | Ống mềm có bảo ôn (`FLEX-BO`) / không bảo ôn (`FLEX-KBO`) |
-| **Tiêu âm (`SILENCER_SQ`, `SILENCER_RT`)** | `_calc_silencer_item` | `332..427` | Hộp tiêu âm vuông (vỏ tôn + vách tiêu âm theo W) & tiêu âm tròn |
-| **Ống/PK tính theo m² (`DUCT_M2`, `FITTING_M2`)** | `_calc_m2_duct_or_fitting_item` | `430..450` | Khi BOQ có ĐVT là `m2`: lấy trực tiếp đơn giá m² theo độ dày & kiểu bích |
-| **Ống tròn & PK tròn (`SPIRAL_DUCT`, `ELBOW_RT`, `REDUCER_RT`, `TEE_RT`, `WYE_RT`, `TAKEOFF_RT`, `END_CAP_RT`, `COUPLING_RT`)** | `_calc_round_duct_or_fitting_item` | `453..587` | Toàn bộ công thức diện tích & đơn giá ống tròn xoắn, cút tròn, côn thu tròn, tê/y tròn, cổ trích tròn, măng xông |
-| **Ống gió vuông thẳng (`DUCT_RECT`)** | `_calc_rect_duct` | `590..612` | `S = 2*(W+H)*L` (`L=1.0m` nếu ĐVT=`md`, `L=1.12m` nếu ĐVT=`cái`/`ống`) |
-| **Côn thu vuông (`REDUCER_SQ`)** | `_calc_rect_reducer` | `615..640` | Hỗ trợ 3 chế độ `formula_mode`: `standard` (`(W1+H1+W2+H2)*L`), `bienia` (`+0.1m` gờ), `cand` |
-| **Chân rẽ / Cổ trích vuông (`SHOE_TAP`)** | `_calc_rect_shoe_tap` | `643..669` | Hỗ trợ 3 chế độ `formula_mode`: `standard` (`(W1+H1+100+W2+H2)*L`), `bienia`, `cand` |
-| **Côn vuông sang tròn (`SQUARE_TO_ROUND`)** | `_calc_square_to_round` | `672..694` | Hỗ trợ `standard` (`1.2*(W+H+2*D)*L`), `bienia`, `cand` |
-| **Cút / Chếch vuông (`ELBOW_SQ`)** | `_calc_rect_elbow` | `697..738` | Cút 90° (`standard` vs `bienia` vs `cand`), Chếch 45° (`area_90 * 0.5` hoặc `bienia`/`cand`), Cút lượn |
-| **Ống lượn Z / Offset (`OFFSET_Z`)** | `_calc_rect_offset_z` | `741..765` | Hỗ trợ `standard`, `bienia` (`L_cant = sqrt(L^2 + E^2) + 100`), `cand` |
-| **Chạc Y vuông (`WYE_SQ`)** | `_calc_rect_wye` | `768..783` | Chạc ba chữ Y ống vuông (`standard` vs `bienia`) |
-| **Tê vuông (`TEE_SQ`)** | `_calc_rect_tee` | `786..802` | Tê đều / tê thu ống vuông (`standard`, `bienia`, `cand`) |
-| **Bịt đầu ống vuông (`END_CAP_SQ`)** | `_calc_rect_end_cap` | `805..825` | Bịt đầu ống (`standard`, `bienia`, `cand`) |
-| **Hộp gió / Plenum Box (`PLENUM_BOX`)** | `_calc_plenum_box` | `868..886` | Hộp tĩnh áp 5 mặt tôn + bích (`standard`, `bienia`, `cand`) |
-| **Ghép đơn giá & hệ số phụ kiện vuông** | `_calc_rect_duct_or_fitting_item` | `889..972` | Gọi các hàm `_calc_rect_*`, nhân đơn giá m², áp hệ số `1.12x` (cút/tê/zét/hộp) và bọc chống cháy EI |
-| **Quy đổi ra BOM Sheet chi tiết** | `calculate_duct_bom`, `calculate_canvas_bom`, `calculate_acoustic_partition_bom` | `975..1142` | Quy đổi đơn giá bán mục tiêu ngược ra định mức vật tư để xuất sang sheet chi tiết Excel |
+| **Chuẩn hóa độ dày** | `normalize_thickness`, `get_standard_thickness` | `106..144` | Làm tròn độ dày tôn (`0.58, 0.75, 0.95, 1.15`) & tra độ dày theo `max(W,H)` hoặc `D` |
+| **Nhận diện Subtype** | `detect_duct_subtype` | `147..149` | Phân loại tên BOQ thành `DUCT_RECT`, `ELBOW_SQ`, `REDUCER_SQ`, `SHOE_TAP`, `OFFSET_Z`, v.v. |
+| **Điều phối chính** | `calculate_duct_item` | `152..231` | Hàm gốc điều phối sang các hàm con theo `subtype` |
+| **Chụp thông hơi (`VENTCAP`)** | `_calc_ventcap_item` | `234..248` | Chụp thông hơi / chắn mưa gắn tường tôn mạ kẽm hoặc Inox |
+| **Khớp nối mềm (`CANVAS_SQ`, `CANVAS_RT`)** | `_calc_canvas_item` | `251..298` | Chu vi `2*(W+H)/1000` (vuông) hoặc `3.14*D/1000` (tròn); đơn giá mét dài Canvas thường/chống cháy |
+| **Ống gió mềm (`FLEX_DUCT`)** | `_calc_flex_duct_item` | `301..320` | Ống mềm có bảo ôn (`FLEX-BO`) / không bảo ôn (`FLEX-KBO`) |
+| **Tiêu âm (`SILENCER_SQ`, `SILENCER_RT`)** | `_calc_silencer_item` | `323..418` | Hộp tiêu âm vuông (vỏ tôn + vách tiêu âm theo W) & tiêu âm tròn |
+| **Ống/PK tính theo m² (`DUCT_M2`, `FITTING_M2`)** | `_calc_m2_duct_or_fitting_item` | `421..441` | Khi BOQ có ĐVT là `m2`: lấy trực tiếp đơn giá m² theo độ dày & kiểu bích |
+| **Ống tròn & PK tròn (`SPIRAL_DUCT`, `ELBOW_RT`, `REDUCER_RT`, `TEE_RT`, `WYE_RT`, `TAKEOFF_RT`, `END_CAP_RT`, `COUPLING_RT`)** | `_calc_round_duct_or_fitting_item` | `444..578` | Toàn bộ công thức diện tích & đơn giá ống tròn xoắn, cút tròn, côn thu tròn, tê/y tròn, cổ trích tròn, măng xông |
+| **Ống gió vuông thẳng (`DUCT_RECT`)** | `_calc_rect_duct` | `581..603` | `S = 2*(W+H)*L` (`L=1.0m` nếu ĐVT=`md`, `L=1.12m` nếu ĐVT=`cái`/`ống`) |
+| **Côn thu vuông (`REDUCER_SQ`)** | `_calc_rect_reducer` | `606..631` | Hỗ trợ 3 chế độ `formula_mode`: `standard` (`(W1+H1+W2+H2)*L`), `bienia` (`+0.1m` gờ), `cand` |
+| **Chân rẽ / Cổ trích vuông (`SHOE_TAP`)** | `_calc_rect_shoe_tap` | `634..660` | Hỗ trợ 3 chế độ `formula_mode`: `standard` (`(W1+H1+100+W2+H2)*L`), `bienia`, `cand` |
+| **Côn vuông sang tròn (`SQUARE_TO_ROUND`)** | `_calc_square_to_round` | `663..685` | Hỗ trợ `standard` (`1.2*(W+H+2*D)*L`), `bienia`, `cand` |
+| **Cút / Chếch vuông (`ELBOW_SQ`)** | `_calc_rect_elbow` | `688..729` | Cút 90° (`standard` vs `bienia` vs `cand`), Chếch 45° (`area_90 * 0.5` hoặc `bienia`/`cand`), Cút lượn |
+| **Ống lượn Z / Offset (`OFFSET_Z`)** | `_calc_rect_offset_z` | `732..756` | Hỗ trợ `standard`, `bienia` (`L_cant = sqrt(L^2 + E^2) + 100`), `cand` |
+| **Chạc Y vuông (`WYE_SQ`)** | `_calc_rect_wye` | `759..774` | Chạc ba chữ Y ống vuông (`standard` vs `bienia`) |
+| **Tê vuông (`TEE_SQ`)** | `_calc_rect_tee` | `777..793` | Tê đều / tê thu ống vuông (`standard`, `bienia`, `cand`) |
+| **Bịt đầu ống vuông (`END_CAP_SQ`)** | `_calc_rect_end_cap` | `796..816` | Bịt đầu ống (`standard`, `bienia`, `cand`) |
+| **Hộp gió / Plenum Box (`PLENUM_BOX`)** | `_calc_plenum_box` | `859..877` | Hộp tĩnh áp 5 mặt tôn + bích (`standard`, `bienia`, `cand`) |
+| **Ghép đơn giá & hệ số phụ kiện vuông** | `_calc_rect_duct_or_fitting_item` | `880..963` | Gọi các hàm `_calc_rect_*`, nhân đơn giá m², áp hệ số `1.12x` (cút/tê/zét/hộp) và bọc chống cháy EI |
+| **Quy đổi ra BOM Sheet chi tiết** | `calculate_duct_bom`, `calculate_canvas_bom`, `calculate_acoustic_partition_bom` | `966..1133` | Quy đổi đơn giá bán mục tiêu ngược ra định mức vật tư để xuất sang sheet chi tiết Excel |
 
 ---
 
@@ -105,17 +105,17 @@ File `src/agent_05_bom_damper.py` đã được chia nhỏ thành **10 hàm thà
 
 | Nhóm / Chức năng | Tên hàm trong `Agent05_DamperBOM` | Dòng (`StartLine..EndLine`) | Nội dung công thức chính |
 | :--- | :--- | :---: | :--- |
-| **Điều phối tổng** | `calculate_damper_bom` | `36..138` | Điều phối luồng tính van gió từ kích thước -> chia modul -> vật tư -> định giá bán mục tiêu |
-| **Van OBD độc lập (`OBD`, `SOBD`)** | `_calc_obd_damper` | `141..200` | Van OBD nhôm định hình (`OBD_KHUNG 0.45`, `OBD_CANH 0.10`, `OBD_thanh_lien_ket`, sơn `20,000`, giá mục tiêu `round((Al*160000+Paint+Acc)*1.2, -3)`) |
-| **Quy tắc chia Modul van** | `_calculate_damper_modules` | `203..252` | Quy tắc thu côn tối thiểu `150x150` & chia modul theo BCTN (`1.04` `1750x1000`, `1.05` `1700x1000`, `1.01/1.02/1.03/2.01` `1500x800`, MD KLB `1/2/4/8`, MD thường `2000x2000`) |
-| **Khung thân & Lá cánh van** | `_calc_body_and_blade_specs` | `255..369` | Tính chiều dài thân `L`, độ dày thân/cánh, khối lượng tôn khung, lá cánh, lá giữa, thanh chống, ke góc, trục & bạc |
-| **Động cơ / Cầu chì / Tay gạt** | `_append_actuator_or_mechanism` | `372..485` | Chọn động cơ Belimo (`FSLF24`/`BFN24`/`NM230A`/`SM230A`), KLB (`V6006`/`10Nm`), Honeywell (`MS4609`/`CN4605A-20A`), cầu chì `70-74°C`, lò xo, tay gạt VCD/VCD trục vít |
-| **Vật tư chống cháy EI (`FD_EI`, `MFD`)** | `_append_fire_insulation_components` | `488..558` | Tấm chống cháy MGO/CSB/Thạch cao theo BCTN (`1.01..1.05`, `2.01`) hoặc tấm cách nhiệt KSH 10mm (`VCD/NRD/PRD EI`) |
-| **Định giá Van tròn (`D > 0`)** | `_price_round_damper` | `561..595` | Công thức giá bán mục tiêu van tròn VCD, VCD trục vít, FD, NRD, MD, MFD |
-| **Định giá Van chống cháy EI (`FD_EI`, `MFD`)** | `_price_fire_damper_ei_or_mfd` | `598..621` | Công thức chuẩn 2026 Sheet `'BG VAN'`: `target_sell_price = (O + AQ + AR + AS + AY + 100,000) * 1.25 * modules_count` |
-| **Định giá Van cầu chì thường (`FD` non-EI)** | `_price_normal_fd_damper` | `624..639` | Công thức giá bán van cầu chì thường tôn mạ kẽm (`S_m2 <= 0.04` -> `200,000`, hệ số nhân `1.56..1.875`) |
-| **Định giá Van vuông thường (`VCD`, `VCD_VIT`, `NRD`, `PRD`, `MD`)** | `_price_square_standard_damper` | `642..683` | Công thức giá bán van vuông VCD, VCD trục vít, NRD, PRD, MD + cộng bọc KSH 10mm nếu có EI |
-| **Quy đổi ngược ra hệ số BOM** | `_scale_components_to_target_sell` | `686..711` | Co giãn `calc_qty` phần cơ khí để tổng giá bán qua hệ số tài chính (Labor 25%, Overhead 10%, Margin 18%) khớp đúng `target_sell_price` |
+| **Điều phối tổng** | `calculate_damper_bom` | `29..131` | Điều phối luồng tính van gió từ kích thước -> chia modul -> vật tư -> định giá bán mục tiêu |
+| **Van OBD độc lập (`OBD`, `SOBD`)** | `_calc_obd_damper` | `134..178` | Van OBD nhôm định hình (`OBD_KHUNG 0.45`, `OBD_CANH 0.10`, `OBD_thanh_lien_ket`, sơn `20,000`, giá mục tiêu `round((Al*160000+Paint+Acc)*1.2, -3)`) |
+| **Quy tắc chia Modul van** | `_calculate_damper_modules` | `181..230` | Quy tắc thu côn tối thiểu `150x150` & chia modul theo BCTN (`1.04` `1750x1000`, `1.05` `1700x1000`, `1.01/1.02/1.03/2.01` `1500x800`, MD KLB `1/2/4/8`, MD thường `2000x2000`) |
+| **Khung thân & Lá cánh van** | `_calc_body_and_blade_specs` | `233..347` | Tính chiều dài thân `L`, độ dày thân/cánh, khối lượng tôn khung, lá cánh, lá giữa, thanh chống, ke góc, trục & bạc |
+| **Động cơ / Cầu chì / Tay gạt** | `_append_actuator_or_mechanism` | `350..422` | Chọn động cơ Belimo (`FSLF24`/`BFN24`/`NM230A`/`SM230A`), KLB (`V6006`/`10Nm`), Honeywell (`MS4609`/`CN4605A-20A`), cầu chì `70-74°C`, lò xo, tay gạt VCD/VCD trục vít |
+| **Vật tư chống cháy EI (`FD_EI`, `MFD`)** | `_append_fire_insulation_components` | `425..495` | Tấm chống cháy MGO/CSB/Thạch cao theo BCTN (`1.01..1.05`, `2.01`) hoặc tấm cách nhiệt KSH 10mm (`VCD/NRD/PRD EI`) |
+| **Định giá Van tròn (`D > 0`)** | `_price_round_damper` | `498..532` | Công thức giá bán mục tiêu van tròn VCD, VCD trục vít, FD, NRD, MD, MFD |
+| **Định giá Van chống cháy EI (`FD_EI`, `MFD`)** | `_price_fire_damper_ei_or_mfd` | `535..558` | Công thức chuẩn 2026 Sheet `'BG VAN'`: `target_sell_price = (O + AQ + AR + AS + AY + 100,000) * 1.25 * modules_count` |
+| **Định giá Van cầu chì thường (`FD` non-EI)** | `_price_normal_fd_damper` | `561..576` | Công thức giá bán van cầu chì thường tôn mạ kẽm (`S_m2 <= 0.04` -> `200,000`, hệ số nhân `1.56..1.875`) |
+| **Định giá Van vuông thường (`VCD`, `VCD_VIT`, `NRD`, `PRD`, `MD`)** | `_price_square_standard_damper` | `579..620` | Công thức giá bán van vuông VCD, VCD trục vít, NRD, PRD, MD + cộng bọc KSH 10mm nếu có EI |
+| **Quy đổi ngược ra hệ số BOM** | `_scale_components_to_target_sell` | `623..648` | Co giãn `calc_qty` phần cơ khí để tổng giá bán qua hệ số tài chính (Labor 25%, Overhead 10%, Margin 18%) khớp đúng `target_sell_price` |
 
 ---
 
@@ -125,16 +125,16 @@ File `src/agent_06_bom_diffuser.py` đã được chia nhỏ thành **8 hàm ri�
 
 | Mã hệ (`profile_type`) | Tên hàm trong `Agent06_DiffuserBOM` | Dòng (`StartLine..EndLine`) | Nội dung công thức chính |
 | :--- | :--- | :---: | :--- |
-| **Điều phối tổng** | `calculate_diffuser_bom` | `29..102` | Chuẩn hóa kích thước cổ -> mặt (`W_face = W_neck + 50`), điều phối sang hàm hệ nhôm và cộng phụ kiện |
-| **Lưới chắn côn trùng rời (`LCCT`)** | `_calc_profile_lcct` | `105..120` | Lưới Inox 304 rời tính theo diện tích `S = W * H / 1,000,000`, giá mục tiêu `max(120000, round(S * 200000, -3))` |
-| **Lọc bụi G4 rời (`FILTER_G4`)** | `_calc_profile_filter_g4` | `123..138` | Khung lọc bụi G4 rời `max(150000, round((S*150000 + P*60000)*1.3, -3))` |
-| **Cửa Louver nan Z (`Z` / `WL`)** | `_calc_profile_louver_z` | `141..214` | Khung Z (`0.55 kg/m`), nan Z (`0.33 kg/m`), bước nan `40mm`, thanh liên kết, sơn `20,000`, công thức giá bán `WL` / `WL+N` (`* 1.2`) |
-| **Cửa sọt trứng (`ECG`)** | `_calc_profile_eggcrate` | `217..279` | Khung bầu dục (`0.50` hoặc tháo lắp `0.93 kg/m`), lõi sọt trứng `125,000 đ/m2`, bản lề + chốt nếu tháo lắp |
-| **Cửa Linear nan T (`SLB`)** | `_calc_profile_linear_slb` | `282..346` | Khung SLB (`0.42 kg/m`), nan T (`0.23 kg/m`, bước `20mm`), tăng cứng, sơn đen lớp 2 (`+15%`) |
-| **Cửa gió kiểu khe hẹp Slot (`SLD` / `DLS`)** | `_calc_profile_slot_sld` | `349..424` | 4 hệ nhôm Slot (`SH8061 0.30`, `SH8060 0.25`, `SH8083 0.15`, `SH8057B 0.22 kg/m`), chia `1 slot` (`<150`), `2 slot` (`150..<200`), `3 slot` (`>=200`), phụ kiện `5,000 + 10,000*N`, hệ số `1.25` |
-| **Cửa khuếch tán vuông/tròn (`T` / `SD` / `SRD`)** | `_calc_profile_diffuser_t` | `427..484` | Cửa khuếch tán vuông 4 hướng `SD` (khung KT `0.63 kg/m`, bước nan `37.5mm`) & khuếch tán tròn `SRD` |
-| **Cửa nan bầu dục 1 lớp / 2 lớp / cửa thăm (`BD` / `SDG` / `SDGK`)** | `_calc_profile_oval_bd` | `487..564` | Cửa cấp/hồi nan bầu dục 1 lớp, 2 lớp (`is_double_layer`), cửa kiểm tra tháo lắp (`is_removable` -> `SDGK`) |
-| **Phụ kiện cửa gió (`+O`, `+N`, `+F`)** | `_append_diffuser_accessories` | `567..641` | Cộng thêm Van OBD gắn kèm (`+O`), Lưới chắn côn trùng Inox 304 (`+N`), Lưới lọc bụi G4 (`+F`) và quy đổi `target_sell` |
+| **Điều phối tổng** | `calculate_diffuser_bom` | `21..94` | Chuẩn hóa kích thước cổ -> mặt (`W_face = W_neck + 50`), điều phối sang hàm hệ nhôm và cộng phụ kiện |
+| **Lưới chắn côn trùng rời (`LCCT`)** | `_calc_profile_lcct` | `97..112` | Lưới Inox 304 rời tính theo diện tích `S = W * H / 1,000,000`, giá mục tiêu `max(120000, round(S * 200000, -3))` |
+| **Lọc bụi G4 rời (`FILTER_G4`)** | `_calc_profile_filter_g4` | `115..130` | Khung lọc bụi G4 rời `max(150000, round((S*150000 + P*60000)*1.3, -3))` |
+| **Cửa Louver nan Z (`Z` / `WL`)** | `_calc_profile_louver_z` | `133..206` | Khung Z (`0.55 kg/m`), nan Z (`0.33 kg/m`), bước nan `40mm`, thanh liên kết, sơn `20,000`, công thức giá bán `WL` / `WL+N` (`* 1.2`) |
+| **Cửa sọt trứng (`ECG`)** | `_calc_profile_eggcrate` | `209..271` | Khung bầu dục (`0.50` hoặc tháo lắp `0.93 kg/m`), lõi sọt trứng `125,000 đ/m2`, bản lề + chốt nếu tháo lắp |
+| **Cửa Linear nan T (`SLB`)** | `_calc_profile_linear_slb` | `274..338` | Khung SLB (`0.42 kg/m`), nan T (`0.23 kg/m`, bước `20mm`), tăng cứng, sơn đen lớp 2 (`+15%`) |
+| **Cửa gió kiểu khe hẹp Slot (`SLD` / `DLS`)** | `_calc_profile_slot_sld` | `341..416` | 4 hệ nhôm Slot (`SH8061 0.30`, `SH8060 0.25`, `SH8083 0.15`, `SH8057B 0.22 kg/m`), chia `1 slot` (`<150`), `2 slot` (`150..<200`), `3 slot` (`>=200`), phụ kiện `5,000 + 10,000*N`, hệ số `1.25` |
+| **Cửa khuếch tán vuông/tròn (`T` / `SD` / `SRD`)** | `_calc_profile_diffuser_t` | `419..476` | Cửa khuếch tán vuông 4 hướng `SD` (khung KT `0.63 kg/m`, bước nan `37.5mm`) & khuếch tán tròn `SRD` |
+| **Cửa nan bầu dục 1 lớp / 2 lớp / cửa thăm (`BD` / `SDG` / `SDGK`)** | `_calc_profile_oval_bd` | `479..556` | Cửa cấp/hồi nan bầu dục 1 lớp, 2 lớp (`is_double_layer`), cửa kiểm tra tháo lắp (`is_removable` -> `SDGK`) |
+| **Phụ kiện cửa gió (`+O`, `+N`, `+F`)** | `_append_diffuser_accessories` | `559..625` | Cộng thêm Van OBD gắn kèm (`+O`), Lưới chắn côn trùng Inox 304 (`+N`), Lưới lọc bụi G4 (`+F`) và quy đổi `target_sell` |
 
 ---
 

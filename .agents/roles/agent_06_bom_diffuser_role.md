@@ -11,3 +11,4 @@
   2. **Cửa sọt trứng (`SEEG` / `ECG`):** Bóc tách khung sọt trứng, nan sọt trứng $12.7\times12.7$, lá thép và ke góc.
   3. **Cửa gió Linear (`SLB`):** Bóc tách khung biên dạng 30, nan T, ti suốt tăng cứng, hỗ trợ cấu hình sơn tĩnh điện đen lớp 2 (`is_black_2nd_layer`) và nối khung khổ dài ($\ge 5000\text{mm}$).
   4. **Cửa khuếch tán vuông (`SCD` / `SD`) & Cửa nan bầu dục 1 lớp / 2 lớp (`SAG/DAG` / `SDG`):** Bóc tách khung, nan, tăng cứng, phụ kiện cửa, kèm tùy chọn Van `SOBD` nhôm gắn liền cửa và Phin lọc bụi `G4`.
+- **Phần dùng chung (gom giá 2026-11-03):** OBD gắn cửa gọi `swind_pricing.calc_obd` (Agent 06 chỉ tự tính hệ số `obd_mult` SLB 2 lớp nan đen); lưới / LCCT / lọc G4 gọi `swind_pricing.mesh_price` (`"lcct"` = `cua.luoi_chan_con_trung_m2`, `"luoi"` = `cua.luoi_m2`) và `swind_pricing.filter_g4_price`; làm tròn / hệ số lợi nhuận / giá vật tư dự phòng dùng `swind_pricing`. **Không viết lại các công thức này trong agent.**

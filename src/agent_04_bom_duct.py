@@ -6,17 +6,8 @@ import duct_classifier
 from swind_utils import get_master_bom_rules, get_master_price_map, extract_duct_fitting_geometry, K, get_pricing_constants
 
 
-def excel_round(val, digits=0):
-    """Làm tròn số học chuẩn Excel (ROUND HALF UP) khớp với hàm ROUND(..., digits) của Excel."""
-    if val is None or val == 0:
-        return 0.0
-    factor = 10.0 ** digits
-    scaled = val * factor
-    if scaled >= 0:
-        rounded = math.floor(scaled + 0.5 + 1e-9)
-    else:
-        rounded = math.ceil(scaled - 0.5 - 1e-9)
-    return float(rounded / factor)
+# Làm tròn Excel & hệ số lợi nhuận: dùng chung ở swind_pricing (gom giá 2026-11-03)
+from swind_pricing import excel_round, mfg_markup as _mfg_markup, mesh_price  # noqa: E402
 
 
 class Agent04_DuctworkBOM:
@@ -569,7 +560,7 @@ class Agent04_DuctworkBOM:
         }
         model_out = rt_model_map.get(subtype, subtype)
         if duct_classifier.has_mesh_on_rect(full_text):  # OG-23
-            mesh_surcharge = excel_round((D_main / 1000.0) * (D_main / 1000.0) * K("cua.luoi_m2", 150000.0), 0)
+            mesh_surcharge = mesh_price(D_main, D_main, "lcct")  # Gom giá 2026-11-03: LCCT trên ống/cút tính theo luoi_chan_con_trung_m2 (JSON thắng, spec mục 5) — trước: luoi_m2 150k
             unit_price += mesh_surcharge
             model_out = f"{model_out} + LCCT"
             spec_label = f"{spec_label} kèm lưới chắn côn trùng"
@@ -953,7 +944,7 @@ class Agent04_DuctworkBOM:
         }
         model_out = sq_model_map.get(subtype, subtype)
         if duct_classifier.has_mesh_on_rect(full_text):  # OG-23
-            mesh_surcharge = excel_round((w1 / 1000.0) * (h1 / 1000.0) * K("cua.luoi_m2", 150000.0), 0)
+            mesh_surcharge = mesh_price(w1, h1, "lcct")  # Gom giá 2026-11-03: LCCT trên ống/cút tính theo luoi_chan_con_trung_m2 (JSON thắng, spec mục 5) — trước: luoi_m2 150k
             unit_price += mesh_surcharge
             model_out = f"{model_out} + LCCT"
             spec_label = f"{spec_label} kèm lưới chắn côn trùng"
@@ -994,7 +985,7 @@ class Agent04_DuctworkBOM:
         area_m2 = calc["area_m2"] if calc["area_m2"] > 0 else 1.0
 
         mat_price_map = get_master_price_map()
-        mfg_markup = 1.593  # (1 + 0.25 + 0.10) * 1.18 = 1.593
+        mfg_markup = _mfg_markup("ductwork_rules")
         mat_id = f"MAT-STEEL-HOASEN-{thk:.2f}"
         if mat_id not in mat_price_map:
             mat_id = "MAT-STEEL-HOASEN-0.58"
@@ -1039,7 +1030,7 @@ class Agent04_DuctworkBOM:
             calc = cls.calculate_duct_item(item_dict)
         target_sell = calc["unit_price"]
         mat_price_map = get_master_price_map()
-        mfg_markup = 1.593
+        mfg_markup = _mfg_markup("ductwork_rules")
         mat_id = "CANVAS_FIRE_RESISTANT"
         p_mat = mat_price_map.get(mat_id, 57600.0)
         calc_qty = target_sell / (p_mat * mfg_markup) if (p_mat * mfg_markup) > 0 else 1.0
@@ -1079,7 +1070,7 @@ class Agent04_DuctworkBOM:
         area_m2 = calc["area_m2"] if calc["area_m2"] > 0 else 1.0
 
         mat_price_map = get_master_price_map()
-        mfg_markup = 1.593
+        mfg_markup = _mfg_markup("ductwork_rules")
 
         p_rock = mat_price_map.get("ROCKWOOL_50MM_50KG", 65000.0)
         p_cloth = mat_price_map.get("GLASS_CLOTH", 15000.0)

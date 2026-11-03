@@ -1530,11 +1530,8 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     if motor_price is not None and float(motor_price) > 0:
         mp_val = float(motor_price)
         mb_up = str(motor_brand or "").strip().upper()
-        target_act_ids = {"MAT-ACTUATOR-HONEYWELL", "MAT-ACTUATOR-HONEYWELL-5NM", "MAT-ACTUATOR-HONEYWELL-10NM", "MAT-ACTUATOR-HONEYWELL-20NM"} if mb_up == "HONEYWELL" else (
-            {"MAT-ACTUATOR-KLB-V6006FS500S", "MAT-ACTUATOR-SWIND-VIWECO"} if mb_up == "KLB" else (
-                {"MAT-ACTUATOR-BELIMO-FSLF24", "MAT-ACTUATOR-BELIMO-BFN24", "MAT-ACTUATOR-BELIMO-5NM", "MAT-ACTUATOR-BELIMO-10NM", "MAT-ACTUATOR-BELIMO-20NM", "MAT-ACTUATOR-BELIMO-MPRD", "MAT-ACTUATOR-BELIMO-MPRD-5NM", "MAT-ACTUATOR-BELIMO-MPRD-20NM"}
-            )
-        )
+        from swind_pricing import ACTUATOR_IDS  # bảng mã động cơ theo hãng dùng chung (gom giá 2026-11-03)
+        target_act_ids = ACTUATOR_IDS.get(mb_up, ACTUATOR_IDS["BELIMO"])
         changed = []
         for pr in price_records:
             if pr.get("MAT_ID") in target_act_ids:
@@ -1548,7 +1545,8 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
             print("     ⚠️ Các mã trên vốn có giá gốc KHÁC NHAU (khác moment xoắn / loại). Nếu chỉ muốn ghi đè 1 loại, chạy kèm --motor-brand và kiểm tra lại.")
     if mprd_motor_price is not None and float(mprd_motor_price) > 0:
         # Chỉ ghi đè giá động cơ van xả áp MPRD (5/10/20Nm) cho dự án này, không đụng MFD/MD, không sửa Master Data
-        mprd_ids = ("MAT-ACTUATOR-BELIMO-MPRD-5NM", "MAT-ACTUATOR-BELIMO-MPRD", "MAT-ACTUATOR-BELIMO-MPRD-20NM")
+        from swind_pricing import ACTUATOR_IDS
+        mprd_ids = ACTUATOR_IDS["MPRD"]
         print(f"\n  -> [--mprd-motor-price] Ghi đè giá động cơ van xả áp MPRD = {float(mprd_motor_price):,.0f}đ cho dự án này:")
         for pr in price_records:
             if pr.get("MAT_ID") in mprd_ids:
