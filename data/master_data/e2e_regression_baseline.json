@@ -19,14 +19,6 @@
   },
   "2 KL ĐH TG.xlsx": {
     "sheets": {
-      "3 nhà xưởng sx +": {
-        "count": 2,
-        "sub_total": 6396000
-      },
-      "10 trạm bơm +": {
-        "count": 1,
-        "sub_total": 894000
-      },
       "1 Nhà VP +": {
         "count": 13,
         "sub_total": 72060500
@@ -35,21 +27,29 @@
         "count": 4,
         "sub_total": 6359000
       },
+      "3 nhà xưởng sx +": {
+        "count": 2,
+        "sub_total": 6943000
+      },
       "4 nhà xe +": {
         "count": 7,
         "sub_total": 108171000
+      },
+      "10 trạm bơm +": {
+        "count": 1,
+        "sub_total": 1468000
       }
     },
-    "total": 193880500
+    "total": 195001500
   },
   "260910_MKS_BoQ goi thau (BP05a)_Tach cac thap-ham-canh quan (1).xlsx": {
     "sheets": {
       "Biểu 5. BoQ-DHTG": {
         "count": 110,
-        "sub_total": 8044955700
+        "sub_total": 8048623700
       }
     },
-    "total": 8044955700
+    "total": 8048623700
   },
   "26BDCC09-3.VGCG-Lan 1.xlsx": {
     "sheets": {
@@ -245,10 +245,10 @@
     "sheets": {
       "BG": {
         "count": 22,
-        "sub_total": 923434400
+        "sub_total": 681661400
       }
     },
-    "total": 923434400
+    "total": 681661400
   },
   "MPQ ( BAT) OG-056T2810 28.10.xlsx": {
     "sheets": {
@@ -357,10 +357,10 @@
     "sheets": {
       "Cáp HVAC": {
         "count": 34,
-        "sub_total": 31562200
+        "sub_total": 32770200
       }
     },
-    "total": 31562200
+    "total": 32770200
   },
   "Nếnh-BOQ PCCC 2026.10.03 -OG.xlsx": {
     "sheets": {
@@ -391,14 +391,6 @@
   },
   "Xin giá cửa dự án CAND.xlsx": {
     "sheets": {
-      "DHKK A3": {
-        "count": 46,
-        "sub_total": 1786694000
-      },
-      "DHKK tgio A3": {
-        "count": 53,
-        "sub_total": 1232747700
-      },
       "Tăng áp HK A1,2": {
         "count": 131,
         "sub_total": 6670809000
@@ -406,9 +398,17 @@
       "Tang áp HK A3": {
         "count": 55,
         "sub_total": 2130811900
+      },
+      "DHKK A3": {
+        "count": 115,
+        "sub_total": 121393937347
+      },
+      "DHKK tgio A3": {
+        "count": 117,
+        "sub_total": 59265854587
       }
     },
-    "total": 11821062600
+    "total": 189461412834
   },
   "cửa gió 26102026.xlsx": {
     "sheets": {
@@ -450,10 +450,10 @@
     "sheets": {
       "Eusteel BG": {
         "count": 44,
-        "sub_total": 1020921800
+        "sub_total": 1435851200
       }
     },
-    "total": 1020921800
+    "total": 1435851200
   },
   "DNBG VGCG.xlsx": {
     "sheets": {
@@ -544,5 +544,14 @@
       }
     },
     "total": 1425879800
+  },
+  "Q.26.0036 Penta- Swind Báo giá Cổ bi.xlsx": {
+    "sheets": {
+      "BG": {
+        "count": 44,
+        "sub_total": 1435851200
+      }
+    },
+    "total": 1435851200
   }
 }

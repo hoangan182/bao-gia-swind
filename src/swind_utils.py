@@ -76,6 +76,40 @@ def vietnamese_slugify(text, max_len=40, add_hash=True):
     else:
         return slug[:max_len].rstrip('_')
 
+# ---------------------------------------------------------------------------
+# Reader core: mọi agent đọc BOQ (00B, 01, 07, 10...) lấy dòng/cột ẩn & header qua các hàm dưới,
+# cấm tự dò riêng (kế hoạch plan/KE_HOACH_TACH_AGENT_DOC_BOQ.md).
+# ---------------------------------------------------------------------------
+
+def hidden_col_letters(ws):
+    """Chữ cái các cột bị ẩn, tính cả dải nhóm: openpyxl lưu cột ẩn D:F dưới 1 khóa 'D' (min=4, max=6)."""
+    hidden = set()
+    for key, dim in ws.column_dimensions.items():
+        if not dim.hidden:
+            continue
+        hidden.add(key)
+        if dim.min and dim.max:
+            hidden.update(get_column_letter(c) for c in range(dim.min, dim.max + 1))
+    return hidden
+
+
+def hidden_row_indices(ws):
+    """Chỉ số các dòng bị ẩn."""
+    return {r_idx for r_idx, dim in ws.row_dimensions.items() if dim.hidden}
+
+
+def visible_rows(ws, start=1, end=None):
+    """Các dòng hiển thị trong [start, end] (mặc định đến ws.max_row)."""
+    hidden = hidden_row_indices(ws)
+    return [r for r in range(start, (end or ws.max_row) + 1) if r not in hidden]
+
+
+def visible_cols(ws, start=1, end=None):
+    """Chỉ số các cột hiển thị trong [start, end] (mặc định đến ws.max_column)."""
+    hidden = hidden_col_letters(ws)
+    return [c for c in range(start, (end or ws.max_column) + 1) if get_column_letter(c) not in hidden]
+
+
 def detect_boq_header(ws):
     """
     Nhận diện dòng header và ánh xạ cột (col_map) của file BOQ khách hàng.
@@ -88,8 +122,8 @@ def detect_boq_header(ws):
         _, h_r, c_m, h_rows, h_cols, m_sc = cached_hdr
         return h_r, dict(c_m), set(h_rows), set(h_cols), m_sc
 
-    hidden_cols = {col_let for col_let, dim in ws.column_dimensions.items() if dim.hidden}
-    hidden_rows = {r_idx for r_idx, dim in ws.row_dimensions.items() if dim.hidden}
+    hidden_cols = hidden_col_letters(ws)
+    hidden_rows = hidden_row_indices(ws)
     max_scan_col = min(ws.max_column, 60)
 
     header_row = None

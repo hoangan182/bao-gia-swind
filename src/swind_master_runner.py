@@ -1382,28 +1382,20 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     print(f"  • Thời gian chạy: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
     # -------------------------------------------------------------
-    # BƯỚC 0B: AGENT 00B - INPUT NORMALIZER (CHUẨN HÓA ĐẦU VÀO)
+    # BƯỚC 0B: AGENT 00B - INPUT ANALYZER (CHỈ ĐỌC, KHÔNG VIẾT LẠI BOQ)
     # -------------------------------------------------------------
     shared_wb = None
     try:
         agent_00b = Agent00B_InputNormalizer(boq_file, interactive=interactive, sheet_names=sheet_names)
-        normalized_file, norm_report = agent_00b.normalize()
-        if normalized_file != boq_file:
+        _, norm_report = agent_00b.normalize()
+        shared_wb = getattr(agent_00b, "wb", None)
+        if norm_report.get("warnings"):
             internal_dir = os.path.join(project_dir, "internal_estimation")
             os.makedirs(internal_dir, exist_ok=True)
-            norm_dest = os.path.join(internal_dir, f"{project_name}_NORMALIZED.xlsx")
-            if os.path.exists(normalized_file) and os.path.abspath(normalized_file) != os.path.abspath(norm_dest):
-                shutil.move(normalized_file, norm_dest)
-                normalized_file = norm_dest
-                norm_report["output_file"] = norm_dest
-            norm_report_path = os.path.join(internal_dir, "INPUT_NORMALIZATION_REPORT.json")
-            with open(norm_report_path, "w", encoding="utf-8") as f:
+            with open(os.path.join(internal_dir, "INPUT_NORMALIZATION_REPORT.json"), "w", encoding="utf-8") as f:
                 json.dump(norm_report, f, ensure_ascii=False, indent=2, default=str)
-            boq_file = normalized_file
-        else:
-            shared_wb = getattr(agent_00b, "wb", None)
     except Exception as e:
-        print(f"  [Agent 00B] Cảnh báo: Không thể normalize ({e}). Tiếp tục với file gốc.")
+        print(f"  [Agent 00B] Cảnh báo: Không thể phân tích cấu trúc BOQ ({e}). Tiếp tục với file gốc.")
 
     # -------------------------------------------------------------
     # BƯỚC 1: AGENT 01 - BOQ EXTRACTOR & SPEC RESOLVER
@@ -1414,7 +1406,6 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     Agent01_BOQExtractor.INCLUDE_BOX = bool(include_box)
     agent_01 = Agent01_BOQExtractor(boq_file=boq_file, project_name=project_name, wb=shared_wb, include_flex_duct=include_flex_duct)
     target_sheets, all_items = agent_01.detect_and_parse(sheet_names=sheet_names)
-        # skip=1 áp cho mọi dòng (kể cả dòng đã bóc tách & có giá); w/h/d chỉ cần parse lại với dòng parser đã loại
     # Override kích thước cho dòng parser đã loại (thiếu kích thước) -> parse lại với kích thước User cung cấp
     if row_overrides:
         ov_by_sheet = {}
@@ -1423,6 +1414,7 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
                 ov_by_sheet[k_ov] = v_ov
             elif len(target_sheets) == 1:
                 ov_by_sheet[(target_sheets[0], k_ov)] = v_ov
+        # skip=1 áp cho mọi dòng (kể cả dòng đã bóc tách & có giá); w/h/d chỉ cần parse lại với dòng parser đã loại
         need_reparse = any(
             str(v.get("skip", "0")).strip() not in ("", "0", "false", "False")
             or (any(k in v for k in ("w", "h", "d")) and r in agent_01.parser.skipped_rows.get(sh, set()))

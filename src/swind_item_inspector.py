@@ -685,7 +685,7 @@ def locate_requirement_target(topic):
             "tags": ["header", "cot", "column", "ten vat tu", "khoi luong", "dvt", "don vi", "boq"],
             "title": "Nhận diện dòng Tiêu đề (Header) & Ánh xạ cột BOQ",
             "json_targets": ["data/master_data/subtype_rules.json -> key 'HEADER_ALIASES'"],
-            "py_targets": [("src/swind_utils.py", "detect_boq_header"), ("src/agent_00b_input_normalizer.py", "normalize_sheet")]
+            "py_targets": [("src/swind_utils.py", "detect_boq_header"), ("src/swind_utils.py", "hidden_col_letters"), ("src/agent_00b_input_normalizer.py", "_scan_header_area")]
         },
         {
             "tags": ["tu khoa", "keyword", "phan loai", "category", "subtype", "khac", "nhan dien", "model"],

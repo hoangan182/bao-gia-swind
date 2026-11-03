@@ -245,6 +245,13 @@ class Agent04_DuctworkBOM:
             is_round_sil = d1 > 0 and w1 == 0
             subtype = "SILENCER_RT" if is_round_sil else "SILENCER_SQ"
 
+        if subtype == "PLENUM_BOX":
+            boxes = cls._parse_note_boxes(note_boq)
+            if len(boxes) >= 2:
+                return cls._calc_multi_plenum_boxes(
+                    boxes, item, full_text, unit, d1, explicit_thk, flange_type, neck_count, ei_rating, is_insulated
+                )
+
         if subtype == "VENTCAP":
             return cls._calc_ventcap_item(w1, h1, d1)
 
@@ -858,6 +865,54 @@ class Agent04_DuctworkBOM:
         s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
         trace_str = f"{trace_prefix} (Bịt đầu, tôn {thk}mm, {flange_type}): S={s_note}, pkvhs={pkvhs:,.0f}"
         return None, None, l_out, s_area, unit_price, spec_label, trace_str
+
+    NOTE_BOX_RX = re.compile(
+        r'\b(?:box|hộp)(?:\s+gió)?\s*([^\d\n,;+]{0,12}?)\s*(\d{2,4})\s*[xX*×]\s*(\d{2,4})\s*[xX*×]\s*(\d{2,4})',
+        re.IGNORECASE,
+    )
+
+    @classmethod
+    def _parse_note_boxes(cls, note_text):
+        """Các hộp ghi trong Ghi chú dạng 'BOX CẤP 600x300x300 / BOX HỒI 700x300x300' -> [(nhãn, W, H, L), ...]."""
+        return [
+            (m.group(1).strip().lower(), float(m.group(2)), float(m.group(3)), float(m.group(4)))
+            for m in cls.NOTE_BOX_RX.finditer(note_text or "")
+        ]
+
+    @classmethod
+    def _calc_multi_plenum_boxes(cls, boxes, item, full_text, unit, d1, explicit_thk, flange_type, neck_count, ei_rating, is_insulated):
+        """
+        Rule User (2026-11-03, MKS BP05a 'Hộp gió FCU', Remark 'BOX CẤP ... BOX HỒI ...'): Ghi chú liệt kê >= 2 hộp trên
+        1 dòng BOQ -> tính đủ từng hộp theo công thức Hộp gió, đơn giá dòng = tổng các hộp, ghi chú nêu đủ các hộp
+        (KHÔNG thêm dòng; trước đây chỉ lấy kích thước hộp đầu tiên và bỏ mất hộp còn lại).
+        """
+        parts = []
+        for label, bw, bh, bl in boxes:
+            calc = cls._calc_rect_duct_or_fitting_item(
+                "PLENUM_BOX", item, full_text, unit, bw, bh, 0.0, 0.0, d1,
+                bl, True, 0.0, 0.0, 90, explicit_thk, flange_type, neck_count, ei_rating, is_insulated
+            )
+            parts.append((label, calc))
+        first = parts[0][1]
+        thks = {c["thickness"] for _, c in parts}
+        if len(thks) == 1:
+            # Cùng độ dày: 'Hộp gió cấp 600x300xL300 + Hộp gió hồi 700x300xL300, tôn ... dày 0.75mm, kết nối ...'
+            heads = [c["spec_note"].split(",", 1)[0].replace("Hộp gió", f"Hộp gió {lb}" if lb else "Hộp gió", 1) for lb, c in parts]
+            spec_note = " + ".join(heads) + "," + first["spec_note"].split(",", 1)[1]
+        else:
+            spec_note = " + ".join(c["spec_note"] for _, c in parts)
+        return {
+            "subtype": "PLENUM_BOX",
+            "model_std": f"Hộp gió x{len(parts)}",
+            "thickness": max(thks),
+            "l_mm": first["l_mm"],
+            "b1": first["b1"],
+            "b2": first["b2"],
+            "area_m2": round(sum(c["area_m2"] for _, c in parts), 3),
+            "unit_price": sum(c["unit_price"] for _, c in parts),
+            "spec_note": spec_note,
+            "trace": " + ".join(f"[{lb or 'hộp'}] {c['trace']} = {c['unit_price']:,.0f}" for lb, c in parts),
+        }
 
     @classmethod
     def _calc_plenum_box(cls, w1, h1, d1, length, has_explicit_l, neck_count, full_text, thk, is_insulated):

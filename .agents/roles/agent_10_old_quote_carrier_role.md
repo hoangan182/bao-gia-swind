@@ -29,7 +29,7 @@
 - `--converted-yellow-only`: nhóm *BG cũ đã đổi loại* chỉ nhặt giá loại mới khi dòng BG cũ được **bôi vàng** (Kỹ thuật chỉ định); dòng không vàng báo mới theo loại ghi trong BOQ.
 - `--multi-price-new`: dòng mà BG cũ có ≥2 đơn giá khác nhau cho cùng mặt hàng → Swind báo mới.
 - `--force-new "r1,r2"`: bắt buộc Swind báo mới các dòng BOQ chỉ định.
-- `--neck-rows "r1,r2"`: dòng báo mới hiểu kích thước là **kích thước cổ** (ghi dấu `(KTC)` vào cột Tên bản BOQ tạm, tên gốc được trả lại trên `BG`). Không dùng `--override` theo số dòng vì Agent 00B có thể đánh lại số dòng khi chuẩn hóa.
+- `--neck-rows "r1,r2"`: dòng báo mới hiểu kích thước là **kích thước cổ** (ghi dấu `(KTC)` vào cột Tên bản BOQ tạm, tên gốc được trả lại trên `BG`). Không dùng `--override` theo số dòng vì BOQ tạm rút gọn có số dòng khác BOQ gốc.
 - Không ghi `--old-sheets` → in danh sách sheet có dạng báo giá để hỏi User.
 - `--dry-run` → chỉ in kết quả ghép, không báo giá phần còn lại.
 

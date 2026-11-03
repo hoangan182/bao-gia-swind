@@ -30,3 +30,15 @@ Ngày lập: 2026-11-02. Nguồn: phản hồi Kỹ thuật về 3 dự án BDKS
 2. Bỏ chèn tiêu đề giả; kiểm tra lại 5 dự án đang đi qua 00B: CAND, CC17, `2 KL ĐH TG`, `NV- DỰ ÁN NHIÊN LIỆU`, `14. Ống thông gió - Minh Triết` (chạy E2E cả 2 baseline mặc định và `--include-duct`).
 3. Trích bảng rule cửa gió ra JSON + test mẫu, giữ nguyên kết quả E2E hiện tại rồi mới đổi.
 4. Lặp lại cho van, ống, phạm vi.
+
+## 4. Tiến độ
+
+**2026-11-03 — Xong bước 1 & 2:**
+- Agent 00B chỉ đọc: bỏ `StructureNormalizer` / `ValidationGate` (viết lại BOQ, chèn tiêu đề giả), bỏ bộ dò header riêng → dùng Reader core. Vai trò: `.agents/roles/agent_00b_input_normalizer_role.md`; đăng ký trong `AGENTS.md`.
+- Reader core `swind_utils`: `hidden_col_letters` (tính cả dải cột ẩn nhóm `B:E` — trước đây `detect_boq_header` chỉ thấy cột đầu dải), `hidden_row_indices`, `visible_rows`, `visible_cols`.
+- Không thêm cờ `duct_context`: đối chiếu 5 dự án, parser đọc file gốc đã nhận đủ dòng ống — chưa có case cần.
+- E2E mặc định lệch 4 file, đều là sửa đúng: NV (đọc lại cột Spec `EAL kèm LCCT` / Model `Kèm OBD`), TG (Title cha `kèm LCCT` / `kèm OBD` được kế thừa), MKS BP05a (bỏ cột ẩn `AN`/`Z` trong dải ẩn, đọc cột Remark hiển thị `AU`), CAND DHKK (giữ giá đối tác hàng thương mại theo rule chung — User duyệt, bản 11,8 tỷ cũ là do Kỹ thuật yêu cầu bỏ giá đối tác riêng CAND). Đã cập nhật baseline mặc định.
+- Rule mới (User chốt 2026-11-03): Ghi chú liệt kê ≥ 2 hộp (`BOX CẤP ... / BOX HỒI ...`) trên 1 dòng → đơn giá = tổng các hộp, ghi chú nêu đủ, không thêm dòng (`Agent04._calc_multi_plenum_boxes`).
+- Baseline `e2e_baseline_include_duct.json` đã lệch 32 file từ trước đợt này (chưa cập nhật sau các đợt sửa rule trước) — chưa lưu lại, chờ User rà.
+
+**Còn lại:** bước 3 (bảng rule cửa gió JSON) & 4 — mỗi bước một hội thoại riêng.

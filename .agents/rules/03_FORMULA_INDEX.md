@@ -77,25 +77,25 @@ Mỗi loại phụ kiện ống gió đã được tách thành **1 hàm riêng 
 | **Bảng tra & Đơn giá m2** | `THICKNESS_RULES` .. `ROUND_FITTING_PRICES` | `20..112` | Quy tắc độ dày TCVN 5687, đơn giá bán 1 m² ống vuông/tròn/Nẹp C/TDF/V30/Bọc EI |
 | **Chuẩn hóa độ dày** | `normalize_thickness`, `get_standard_thickness` | `114..152` | Làm tròn độ dày tôn (`0.58, 0.75, 0.95, 1.15`) & tra độ dày theo `max(W,H)` hoặc `D` |
 | **Nhận diện Subtype** | `detect_duct_subtype` | `155..197` | Phân loại tên BOQ thành `DUCT_RECT`, `ELBOW_SQ`, `REDUCER_SQ`, `SHOE_TAP`, `OFFSET_Z`, v.v. |
-| **Điều phối chính** | `calculate_duct_item` | `200..275` | Hàm gốc điều phối sang các hàm con theo `subtype` |
-| **Chụp thông hơi (`VENTCAP`)** | `_calc_ventcap_item` | `278..292` | Chụp thông hơi / chắn mưa gắn tường tôn mạ kẽm hoặc Inox |
-| **Khớp nối mềm (`CANVAS_SQ`, `CANVAS_RT`)** | `_calc_canvas_item` | `295..342` | Chu vi `2*(W+H)/1000` (vuông) hoặc `3.14*D/1000` (tròn); đơn giá mét dài Canvas thường/chống cháy |
-| **Ống gió mềm (`FLEX_DUCT`)** | `_calc_flex_duct_item` | `345..364` | Ống mềm có bảo ôn (`FLEX-BO`) / không bảo ôn (`FLEX-KBO`) |
-| **Tiêu âm (`SILENCER_SQ`, `SILENCER_RT`)** | `_calc_silencer_item` | `367..462` | Hộp tiêu âm vuông (vỏ tôn + vách tiêu âm theo W) & tiêu âm tròn |
-| **Ống/PK tính theo m² (`DUCT_M2`, `FITTING_M2`)** | `_calc_m2_duct_or_fitting_item` | `465..485` | Khi BOQ có ĐVT là `m2`: lấy trực tiếp đơn giá m² theo độ dày & kiểu bích |
-| **Ống tròn & PK tròn (`SPIRAL_DUCT`, `ELBOW_RT`, `REDUCER_RT`, `TEE_RT`, `WYE_RT`, `TAKEOFF_RT`, `END_CAP_RT`, `COUPLING_RT`)** | `_calc_round_duct_or_fitting_item` | `488..622` | Toàn bộ công thức diện tích & đơn giá ống tròn xoắn, cút tròn, côn thu tròn, tê/y tròn, cổ trích tròn, măng xông |
-| **Ống gió vuông thẳng (`DUCT_RECT`)** | `_calc_rect_duct` | `625..647` | `S = 2*(W+H)*L` (`L=1.0m` nếu ĐVT=`md`, `L=1.12m` nếu ĐVT=`cái`/`ống`) |
-| **Côn thu vuông (`REDUCER_SQ`)** | `_calc_rect_reducer` | `650..675` | Hỗ trợ 3 chế độ `formula_mode`: `standard` (`(W1+H1+W2+H2)*L`), `bienia` (`+0.1m` gờ), `cand` |
-| **Chân rẽ / Cổ trích vuông (`SHOE_TAP`)** | `_calc_rect_shoe_tap` | `678..704` | Hỗ trợ 3 chế độ `formula_mode`: `standard` (`(W1+H1+100+W2+H2)*L`), `bienia`, `cand` |
-| **Côn vuông sang tròn (`SQUARE_TO_ROUND`)** | `_calc_square_to_round` | `707..729` | Hỗ trợ `standard` (`1.2*(W+H+2*D)*L`), `bienia`, `cand` |
-| **Cút / Chếch vuông (`ELBOW_SQ`)** | `_calc_rect_elbow` | `732..773` | Cút 90° (`standard` vs `bienia` vs `cand`), Chếch 45° (`area_90 * 0.5` hoặc `bienia`/`cand`), Cút lượn |
-| **Ống lượn Z / Offset (`OFFSET_Z`)** | `_calc_rect_offset_z` | `776..800` | Hỗ trợ `standard`, `bienia` (`L_cant = sqrt(L^2 + E^2) + 100`), `cand` |
-| **Chạc Y vuông (`WYE_SQ`)** | `_calc_rect_wye` | `803..818` | Chạc ba chữ Y ống vuông (`standard` vs `bienia`) |
-| **Tê vuông (`TEE_SQ`)** | `_calc_rect_tee` | `821..837` | Tê đều / tê thu ống vuông (`standard`, `bienia`, `cand`) |
-| **Bịt đầu ống vuông (`END_CAP_SQ`)** | `_calc_rect_end_cap` | `840..860` | Bịt đầu ống (`standard`, `bienia`, `cand`) |
-| **Hộp gió / Plenum Box (`PLENUM_BOX`)** | `_calc_plenum_box` | `863..881` | Hộp tĩnh áp 5 mặt tôn + bích (`standard`, `bienia`, `cand`) |
-| **Ghép đơn giá & hệ số phụ kiện vuông** | `_calc_rect_duct_or_fitting_item` | `884..967` | Gọi các hàm `_calc_rect_*`, nhân đơn giá m², áp hệ số `1.12x` (cút/tê/zét/hộp) và bọc chống cháy EI |
-| **Quy đổi ra BOM Sheet chi tiết** | `calculate_duct_bom`, `calculate_canvas_bom`, `calculate_acoustic_partition_bom` | `970..1137` | Quy đổi đơn giá bán mục tiêu ngược ra định mức vật tư để xuất sang sheet chi tiết Excel |
+| **Điều phối chính** | `calculate_duct_item` | `200..282` | Hàm gốc điều phối sang các hàm con theo `subtype` |
+| **Chụp thông hơi (`VENTCAP`)** | `_calc_ventcap_item` | `285..299` | Chụp thông hơi / chắn mưa gắn tường tôn mạ kẽm hoặc Inox |
+| **Khớp nối mềm (`CANVAS_SQ`, `CANVAS_RT`)** | `_calc_canvas_item` | `302..349` | Chu vi `2*(W+H)/1000` (vuông) hoặc `3.14*D/1000` (tròn); đơn giá mét dài Canvas thường/chống cháy |
+| **Ống gió mềm (`FLEX_DUCT`)** | `_calc_flex_duct_item` | `352..371` | Ống mềm có bảo ôn (`FLEX-BO`) / không bảo ôn (`FLEX-KBO`) |
+| **Tiêu âm (`SILENCER_SQ`, `SILENCER_RT`)** | `_calc_silencer_item` | `374..469` | Hộp tiêu âm vuông (vỏ tôn + vách tiêu âm theo W) & tiêu âm tròn |
+| **Ống/PK tính theo m² (`DUCT_M2`, `FITTING_M2`)** | `_calc_m2_duct_or_fitting_item` | `472..492` | Khi BOQ có ĐVT là `m2`: lấy trực tiếp đơn giá m² theo độ dày & kiểu bích |
+| **Ống tròn & PK tròn (`SPIRAL_DUCT`, `ELBOW_RT`, `REDUCER_RT`, `TEE_RT`, `WYE_RT`, `TAKEOFF_RT`, `END_CAP_RT`, `COUPLING_RT`)** | `_calc_round_duct_or_fitting_item` | `495..629` | Toàn bộ công thức diện tích & đơn giá ống tròn xoắn, cút tròn, côn thu tròn, tê/y tròn, cổ trích tròn, măng xông |
+| **Ống gió vuông thẳng (`DUCT_RECT`)** | `_calc_rect_duct` | `632..654` | `S = 2*(W+H)*L` (`L=1.0m` nếu ĐVT=`md`, `L=1.12m` nếu ĐVT=`cái`/`ống`) |
+| **Côn thu vuông (`REDUCER_SQ`)** | `_calc_rect_reducer` | `657..682` | Hỗ trợ 3 chế độ `formula_mode`: `standard` (`(W1+H1+W2+H2)*L`), `bienia` (`+0.1m` gờ), `cand` |
+| **Chân rẽ / Cổ trích vuông (`SHOE_TAP`)** | `_calc_rect_shoe_tap` | `685..711` | Hỗ trợ 3 chế độ `formula_mode`: `standard` (`(W1+H1+100+W2+H2)*L`), `bienia`, `cand` |
+| **Côn vuông sang tròn (`SQUARE_TO_ROUND`)** | `_calc_square_to_round` | `714..736` | Hỗ trợ `standard` (`1.2*(W+H+2*D)*L`), `bienia`, `cand` |
+| **Cút / Chếch vuông (`ELBOW_SQ`)** | `_calc_rect_elbow` | `739..780` | Cút 90° (`standard` vs `bienia` vs `cand`), Chếch 45° (`area_90 * 0.5` hoặc `bienia`/`cand`), Cút lượn |
+| **Ống lượn Z / Offset (`OFFSET_Z`)** | `_calc_rect_offset_z` | `783..807` | Hỗ trợ `standard`, `bienia` (`L_cant = sqrt(L^2 + E^2) + 100`), `cand` |
+| **Chạc Y vuông (`WYE_SQ`)** | `_calc_rect_wye` | `810..825` | Chạc ba chữ Y ống vuông (`standard` vs `bienia`) |
+| **Tê vuông (`TEE_SQ`)** | `_calc_rect_tee` | `828..844` | Tê đều / tê thu ống vuông (`standard`, `bienia`, `cand`) |
+| **Bịt đầu ống vuông (`END_CAP_SQ`)** | `_calc_rect_end_cap` | `847..867` | Bịt đầu ống (`standard`, `bienia`, `cand`) |
+| **Hộp gió / Plenum Box (`PLENUM_BOX`)** | `_calc_plenum_box` | `918..936` | Hộp tĩnh áp 5 mặt tôn + bích (`standard`, `bienia`, `cand`) |
+| **Ghép đơn giá & hệ số phụ kiện vuông** | `_calc_rect_duct_or_fitting_item` | `939..1022` | Gọi các hàm `_calc_rect_*`, nhân đơn giá m², áp hệ số `1.12x` (cút/tê/zét/hộp) và bọc chống cháy EI |
+| **Quy đổi ra BOM Sheet chi tiết** | `calculate_duct_bom`, `calculate_canvas_bom`, `calculate_acoustic_partition_bom` | `1025..1192` | Quy đổi đơn giá bán mục tiêu ngược ra định mức vật tư để xuất sang sheet chi tiết Excel |
 
 ---
 
@@ -146,8 +146,8 @@ File `src/agent_06_bom_diffuser.py` đã được chia nhỏ thành **8 hàm ri�
 | `src/agent_01_boq_extractor.py` | `_resolve_diffuser_spec` | `411..931` | Giải mã Model & Ghi chú kỹ thuật nhóm `CUA_GIO` (Rule 1 KTC->KTM `+50mm`, Rule 2..6 `SD`, `SDG`, `SDGK`, `WL`, `SLB`, `ECG`, Combo Cửa+Van) |
 | `src/agent_01_boq_extractor.py` | `_resolve_duct_spec` | `934..1019` | Giải mã Model & Ghi chú kỹ thuật nhóm `ONG_GIO`, `CANVAS`, `TIEU_AM`, `ONG_MEM` |
 | `src/agent_01_boq_extractor.py` | `resolve_item_spec` | `1022..1154` | Hàm điều phối tổng giải mã `resolved_spec` cho từng dòng BOQ |
-| `src/swind_utils.py` | `detect_boq_header` | `79..516` | Tự động tìm dòng Header BOQ và ánh xạ cột (`name`, `w`, `h`, `l`, `unit`, `qty`, `remarks`, phiếu đặt hàng `Lần N`) |
-| `src/swind_utils.py` | `extract_duct_fitting_geometry` | `519..703` | Bóc tách hình học phụ kiện ống gió phức tạp từ chuỗi văn bản (`W1xH1`, `W2xH2`, `D`, `L`, `R`, `offset`, góc độ, kiểu bích) |
+| `src/swind_utils.py` | `detect_boq_header` | `113..550` | Tự động tìm dòng Header BOQ và ánh xạ cột (`name`, `w`, `h`, `l`, `unit`, `qty`, `remarks`, phiếu đặt hàng `Lần N`) |
+| `src/swind_utils.py` | `extract_duct_fitting_geometry` | `553..737` | Bóc tách hình học phụ kiện ống gió phức tạp từ chuỗi văn bản (`W1xH1`, `W2xH2`, `D`, `L`, `R`, `offset`, góc độ, kiểu bích) |
 | `src/swind_boq_parser.py` | `parse_sheet` (Phân loại Category) | `213..344` | Phân loại dòng BOQ vào `ONG_GIO`, `VAN_GIO`, `CUA_GIO`, `TIEU_AM`, `CANVAS`, `ONG_MEM`, `THUONG_MAI` |
 | `src/swind_boq_parser.py` | `parse_sheet` (Bóc kích thước & EI) | `345..509` | Bóc tách `W, H, D, L`, độ dày `thickness`, chỉ số `ei_rating`, quy tắc `KTC +50mm` |
 | `src/swind_boq_parser.py` | `parse_sheet` (Combo Cửa+Van / Van+Van) | `510..641` | Nhận diện và tách cấu trúc Combo Cửa kèm Van (`SDG + MFD`) hoặc Van kèm Van (`FD + VCD`) |

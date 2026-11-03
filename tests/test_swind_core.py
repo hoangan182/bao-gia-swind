@@ -147,5 +147,65 @@ class LearningTest(unittest.TestCase):
                 reviewer.LEARNING_PATH, reviewer.QUEUE_PATH, reviewer.resolve_path = orig
 
 
+class ReaderCoreTest(unittest.TestCase):
+    """Reader core (swind_utils) & Agent 00B chỉ đọc — plan/KE_HOACH_TACH_AGENT_DOC_BOQ.md."""
+
+    def _boq(self, path):
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "OG"
+        ws.append(["STT", "Tên vật tư", "Đơn vị", "KL CĐT", "KL tạm", "KL ECB", "Ghi chú"])
+        rows = [("Ống gió 600x400", "m2", 9, 9, 12), ("Cút 90 độ 800x400", "cái", 7, 7, 3),
+                ("Cách nhiệt ống D60 dày 10mm", "m", 900, 900, 500), ("Côn thu 600x400/400x300", "cái", 5, 5, 2),
+                ("Miệng gió thải 450x200", "cái", 8, 8, 4)]
+        for i, (n, u, q1, q2, q3) in enumerate(rows, 1):
+            ws.append([i, n, u, q1, q2, q3, None])
+        ws.column_dimensions.group("D", "E", hidden=True)  # 'KL CĐT' + 'KL tạm' ẩn theo dải nhóm D:E
+        wb.save(path)
+
+    def test_hidden_col_range_is_skipped(self):
+        from swind_utils import hidden_col_letters, detect_boq_header, visible_cols
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "boq.xlsx")
+            self._boq(p)
+            ws = openpyxl.load_workbook(p)["OG"]
+            self.assertTrue({"D", "E"} <= hidden_col_letters(ws))
+            self.assertNotIn(5, visible_cols(ws))
+            _, col_map, _, _, _ = detect_boq_header(ws)
+            self.assertEqual(col_map.get("qty"), 6)  # cột KL ECB hiển thị, không lấy cột ẩn trong dải
+
+    def test_agent00b_never_rewrites_boq(self):
+        import agent_00b_input_normalizer as a00b
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "boq.xlsx")
+            self._boq(p)
+            orig_db = a00b.FormatLearningDB.DB_PATH
+            a00b.FormatLearningDB.DB_PATH = os.path.join(td, "fmt.json")
+            try:
+                out, report = a00b.Agent00B_InputNormalizer(p, interactive=False).normalize()
+            finally:
+                a00b.FormatLearningDB.DB_PATH = orig_db
+            self.assertEqual(out, p)
+            self.assertEqual(report["action"], "analysis-only")
+            self.assertEqual(sorted(os.listdir(td)), sorted(f for f in ["boq.xlsx", "fmt.json"] if os.path.exists(os.path.join(td, f))))
+            names = [c.value for c in openpyxl.load_workbook(p)["OG"]["B"] if c.value]
+            self.assertFalse(any("0.58" in str(n) for n in names))  # không chèn tiêu đề giả 'Ống gió tôn dày 0.58mm'
+
+
+class MultiBoxNoteTest(unittest.TestCase):
+    """Ghi chú liệt kê nhiều hộp trên 1 dòng BOQ -> đơn giá = tổng các hộp, ghi chú nêu đủ (User chốt 2026-11-03, MKS BP05a)."""
+
+    def test_box_cap_and_box_hoi_are_summed(self):
+        from agent_04_bom_duct import Agent04_DuctworkBOM as A
+        base = {"raw_name": "Hộp gió FCU KT 700x300 tole dày 0,75mm dài 400", "w": 600, "h": 300, "l": 300,
+                "thickness": 0.75, "unit": "nos", "category": "ONG_GIO"}
+        cap = A.calculate_duct_item(dict(base, note_boq="BOX CẤP 600x300x300"))
+        hoi = A.calculate_duct_item(dict(base, w=700, note_boq="BOX HỒI 700x300x300"))
+        both = A.calculate_duct_item(dict(base, note_boq="BOX CẤP 600x300x300\nBOX HỒI 700x300x300"))
+        self.assertEqual(both["unit_price"], cap["unit_price"] + hoi["unit_price"])
+        self.assertIn("cấp 600x300xL300", both["spec_note"])
+        self.assertIn("hồi 700x300xL300", both["spec_note"])
+
+
 if __name__ == "__main__":
     unittest.main()
