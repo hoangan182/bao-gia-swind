@@ -1260,7 +1260,12 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
             if info.get("reason") == "USER_SKIP" or (info.get("reason") == "MISSING_DIMS" and is_skip_rule):
                 skipped_other_cnt += 1
                 continue
-            if info.get("reason") == "MISSING_DIMS" and not is_non_product and not is_lump_sum:
+            if info.get("reason") == "MISSING_Z_OFFSET" and not include_duct:
+                skipped_other_cnt += 1
+            elif info.get("reason") == "MISSING_Z_OFFSET":
+                skipped_in_scope.append(f"{desc} | Lý do lọc=MISSING_Z_OFFSET (chưa có độ lệch E)")
+                flag_rows[r] = "⚠️ CHƯA BÁO GIÁ: Chữ Z chưa ghi độ lệch E (chênh cao độ) — Kỹ thuật kiểm tra & bổ sung"
+            elif info.get("reason") == "MISSING_DIMS" and not is_non_product and not is_lump_sum:
                 missing_dims.append(desc)
                 flag_rows[r] = "⛔ CHƯA BÁO GIÁ: thiếu kích thước / mã ký hiệu chưa tra được — cần xác nhận"
             elif not is_non_product and is_swind_product_name(nm_l, scope_kws) and not any(k in nm_l for k in SWIND_NON_SCOPE_KWS):
@@ -1409,6 +1414,7 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     Agent01_BOQExtractor.INCLUDE_BOX = bool(include_box)
     agent_01 = Agent01_BOQExtractor(boq_file=boq_file, project_name=project_name, wb=shared_wb, include_flex_duct=include_flex_duct)
     target_sheets, all_items = agent_01.detect_and_parse(sheet_names=sheet_names)
+        # skip=1 áp cho mọi dòng (kể cả dòng đã bóc tách & có giá); w/h/d chỉ cần parse lại với dòng parser đã loại
     # Override kích thước cho dòng parser đã loại (thiếu kích thước) -> parse lại với kích thước User cung cấp
     if row_overrides:
         ov_by_sheet = {}
@@ -1418,7 +1424,8 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
             elif len(target_sheets) == 1:
                 ov_by_sheet[(target_sheets[0], k_ov)] = v_ov
         need_reparse = any(
-            any(k in v for k in ("w", "h", "d", "skip")) and r in agent_01.parser.skipped_rows.get(sh, set())
+            str(v.get("skip", "0")).strip() not in ("", "0", "false", "False")
+            or (any(k in v for k in ("w", "h", "d")) and r in agent_01.parser.skipped_rows.get(sh, set()))
             for (sh, r), v in ov_by_sheet.items()
         )
         if need_reparse:

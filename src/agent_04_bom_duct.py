@@ -176,11 +176,11 @@ class Agent04_DuctworkBOM:
             return "END_CAP_RT" if is_round else "END_CAP_SQ"
         if any(k in t for k in ("măng xông", "mang xong", "măng sông", "mang song", "nối ống", "noi ong")):
             return "COUPLING_RT"
-        if any(k in t for k in ("chạc 3", "chac 3", "chạc ba", "chạc y", "ống quần", "y vuông", "y tròn")) or re.search(r'\by\s*[:=]\s*d\d+', t):
+        if any(k in t for k in ("chạc 3", "chac 3", "chạc ba", "chạc y", "chữ y", "chu y", "ống quần", "y vuông", "y tròn")) or re.search(r'\by\s*[:=]\s*d\d+', t):
             return "WYE_RT" if is_round else "WYE_SQ"
         if any(k in t for k in ("tê vuông", "te vuong", "tê tròn", "te tron", "tê đều", "tê thu", "tê ống", "tee")) or re.search(r'\btê\b', t):
             return "TEE_RT" if is_round else "TEE_SQ"
-        if any(k in t for k in ("zét lượn", "zet luon", "zét", "ống lượn", "ong luon", "lượn ống gió", "luon ong gio", "lượn z", "luon z", "z chuyển cao độ", "z chuyen cao do", "z chuyển hướng", "z chuyen huong", "z đứng", "z dung", "z ngang", "offset")) or re.search(r'\bz\s*vuông\b|(?:^|\s)z\s*\d{2,4}\s*[xX*]\s*\d{2,4}', t):
+        if any(k in t for k in ("zét lượn", "zet luon", "zét", "ống lượn", "ong luon", "lượn ống gió", "luon ong gio", "lượn z", "luon z", "z chuyển cao độ", "z chuyen cao do", "z chuyển hướng", "z chuyen huong", "z đứng", "z dung", "z ngang", "chữ z", "chu z", "offset")) or re.search(r'\bz\s*vuông\b|(?:^|\s)z\s*\d{2,4}\s*[xX*]\s*\d{2,4}', t):
             return "OFFSET_Z"
         if any(k in t for k in ("cút vuông", "cut vuong", "cút tròn", "cut tron", "cút", "cut ", "co 90", "co 60", "co 45", "co 30", "co vuông", "co tròn", "co ống", "chếch", "chech", "bs90", "bs45", "bt90", "bt45", "elbow")):
             return "ELBOW_RT" if is_round else "ELBOW_SQ"

@@ -642,6 +642,8 @@ class SwindBOQParser:
 
             # Rule 6 & 7: Kiểm tra dòng sản phẩm kết hợp Van + Cửa (Combo)
             search_combo_txt = re.sub(r'\(\s*(?:for|cho)\s+[^)]*\)', '', f"{raw_name_str} {name_str} {model_str}".lower().replace("\n", " "))
+            # Lỗi gõ nhầm phổ biến 'van MDF' = van MFD (User xác nhận 2026-11-02)
+            search_combo_txt = re.sub(r'\bvan\s+mdf\b', 'van mfd', search_combo_txt)
             diff_rx = combo_cfg.get("combo_diffuser_regex", r'\bmiệng\s*gió\b|\bcửa\s*gió\b|\bcửa\s*nan\b|\blouver\s*|\bluover\b|\blouvre\b|\bgrille\b|\bgriller\b|\bdiffuser\b|cửa\s*(?:chớp|nan|thẳng|gió|hút|cấp|hồi|thải|lấy|xả|tăng\s*áp|tạo\s*áp|\+)')
             damp_rx = combo_cfg.get("combo_damper_regex", r'\b(mfd|mfsd|md|fd|prd|nrd|vcd)\b|van\s+(?:on/off|on-off|chống\s*cháy|chặn\s*lửa|ngăn\s*cháy|động\s*cơ|một\s*chiều|1\s*chiều|xả\s*áp)')
             is_access_door_item = any(k in search_combo_txt for k in ("access door", "cửa công tác", "cửa thăm", "cửa kiểm tra"))
@@ -652,6 +654,7 @@ class SwindBOQParser:
 
             def _detect_damper_type(tok_str):
                 t = tok_str.strip().lower()
+                t = re.sub(r'\bvan\s+mdf\b', 'van mfd', t)
                 if re.search(diff_rx, t) and not re.search(r'\b(mfsd|mfd|vcd|vd|nrd|prd|md|fd)\b', t):
                     m_v = re.search(r'\bvan\b.*', t)
                     if not m_v:
@@ -667,17 +670,33 @@ class SwindBOQParser:
                 return None
 
             scan_base = raw_name_str if re.search(r'[a-zA-ZÀ-ỹ]{2,}', re.sub(r'\b(?:mm|kt|w|h|l|d|dn|phi)\b', '', raw_name_str, flags=re.IGNORECASE)) else name_str
-            scan_source = f"{scan_base} + {model_str}" if model_str else scan_base
-            tokens = [tk.strip() for tk in re.split(r'\s*(?:\+|(?:\bkèm\b|\bgắn\b|\btích\s*hợp\b|\bkết\s*hợp\b|\bc/w\.?\b|\bwith\b)(?!\s*(?:động\s*cơ|mô\s*tơ|môtơ|mo\s*tơ|motor|cầu\s*chì)))\s*', scan_source, flags=re.IGNORECASE) if tk.strip()]
+            combo_split_rx = r'\s*(?:\+|(?:\bkèm\b|\bgắn\b|\btích\s*hợp\b|\bkết\s*hợp\b|\bc/w\.?\b|\bwith\b)(?!\s*(?:động\s*cơ|mô\s*tơ|môtơ|mo\s*tơ|motor|cầu\s*chì)))\s*'
             detected_dampers = []
-            for tk in tokens:
-                dt = _detect_damper_type(tk)
+            for tk in re.split(combo_split_rx, scan_base, flags=re.IGNORECASE):
+                dt = _detect_damper_type(tk) if tk.strip() else None
                 if dt and dt not in detected_dampers:
                     detected_dampers.append(dt)
+            # Cột Mã SP/Model chỉ bổ sung loại van khi Tên chưa chỉ ra van nào (Tên 'Van chặn lửa MFD' + Mã SP 'FD - EI' = 1 van, KHÔNG phải combo MFD+FD)
+            if model_str and not detected_dampers:
+                for tk in re.split(combo_split_rx, model_str, flags=re.IGNORECASE):
+                    dt = _detect_damper_type(tk) if tk.strip() else None
+                    if dt and dt not in detected_dampers:
+                        detected_dampers.append(dt)
             if not detected_dampers and m_damper:
                 dt = _detect_damper_type(m_damper.group(0))
                 if dt:
                     detected_dampers.append(dt)
+
+            # Rule User (2026-11-02): Chữ Z / Zét chưa ghi rõ độ lệch E -> KHÔNG áp độ lệch mặc định: để trống giá,
+            # tô vàng ghi chú cho Kỹ thuật (giữ nguyên nếu BOQ đã có đơn giá sẵn)
+            is_missing_z_offset = False
+            if category == "ONG_GIO" and not is_user_skip and (w > 0 or d_val > 0) and offset_num <= 0:
+                from agent_04_bom_duct import Agent04_DuctworkBOM
+                z_txt = f"{raw_name_str} {note_boq}"
+                if Agent04_DuctworkBOM.detect_duct_subtype(z_txt, w, h, w2, h2, d_val, 0.0, unit_val) == "OFFSET_Z":
+                    ref_z = ws.cell(r, col_map["price"]).value if "price" in col_map else None
+                    has_ref_z = isinstance(ref_z, (int, float)) and ref_z > 0
+                    is_missing_z_offset = not has_ref_z and not (extract_duct_fitting_geometry(z_txt).get("offset_h") or 0) > 0
 
             if category in ("CUA_GIO", "VAN_GIO") and has_diffuser and m_damper and detected_dampers:
                 sorted_dampers = sorted(detected_dampers, key=lambda x: damper_priority.get(x, 99))
@@ -778,14 +797,14 @@ class SwindBOQParser:
 
             else:
                 non_quotable_cats = ("THUONG_MAI", "KHAC") if self.include_flex_duct else ("THUONG_MAI", "ONG_MEM", "KHAC")
-                if category in non_quotable_cats or (w == 0 and h == 0 and d_val == 0 and category in ("ONG_GIO", "TIEU_AM", "CANVAS")):
+                if is_missing_z_offset or category in non_quotable_cats or (w == 0 and h == 0 and d_val == 0 and category in ("ONG_GIO", "TIEU_AM", "CANVAS")):
                     ref_p = ws.cell(r, col_map["price"]).value if "price" in col_map else None
                     if (not isinstance(ref_p, (int, float)) or ref_p <= 0) and not (not name_lower.startswith("quạt ") and any(k in name_lower for k in ("chống cháy ei", "lưới bảo vệ"))):
                         self.skipped_rows[sheet_name].add(r)
                         raw_spec_cell = ws.cell(r, col_map["spec"]).value if "spec" in col_map else None
                         raw_spec_disp = raw_spec_cell if raw_spec_cell not in (None, "") else (spec_str or None)
                         self.skip_reasons.setdefault(sheet_name, {})[r] = {
-                            "reason": "USER_SKIP" if is_user_skip else "MISSING_DIMS" if is_missing_dims else (f"NO_DIMS_{category}" if category in ("ONG_GIO", "TIEU_AM", "CANVAS") else f"OUT_OF_SCOPE_{category}"),
+                            "reason": "USER_SKIP" if is_user_skip else "MISSING_Z_OFFSET" if is_missing_z_offset else "MISSING_DIMS" if is_missing_dims else (f"NO_DIMS_{category}" if category in ("ONG_GIO", "TIEU_AM", "CANVAS") else f"OUT_OF_SCOPE_{category}"),
                             "category": category,
                             "orig_category": orig_category,
                             "name": raw_name_str,
