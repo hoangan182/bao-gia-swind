@@ -55,4 +55,22 @@ Ngày lập: 2026-11-02. Nguồn: phản hồi Kỹ thuật về 3 dự án BDKS
 **2026-11-03 — Sửa 4 lỗi phát hiện khi kiểm kê (User duyệt):** chi tiết + giải trình E2E ở `plan/BANG_RULE_CUA_GIO.md` mục 3. Chốt nguyên tắc Title cha (AGENTS.md quy tắc 1a): thông số / phụ kiện kế thừa, loại hàng dòng tự ghi thắng Title. E2E lệch đúng 5 file đã giải trình (C08, BG01_SLAND, Cổ bi, Q.26.0036 Penta, Haus_Dalat) — User duyệt, **đã lưu baseline mặc định**.
 - Rule mới (User chốt 2026-11-03): dòng Cửa/Van **không có kích thước → không báo giá**, giữ đơn giá đối tác nếu BOQ có, chỉ `⚠️ [THÔNG BÁO USER]` (không còn `⛔` chặn / mã thoát 2). AGENTS.md cổng kiểm soát 1b.
 
-**Còn lại:** bước 4 (van, ống, phạm vi — việc C).
+**2026-11-03 — Xong việc C1 (bảng rule VAN GIÓ):**
+- Phần phân loại của `Agent01._resolve_damper_spec` + `_detect_damper_type` / thứ bậc van trong `parse_sheet` chuyển sang `data/master_data/damper_rules.json` (13 bước `VG-01..VG-13` có `nguon`/`ly_do`/ví dụ) + `src/damper_classifier.py`. BOM / tỷ lệ giá đơn – đa cánh / ghép van phụ vẫn ở Agent 01. Vai trò: `.agents/roles/damper_classifier_role.md`; kiểm kê: `plan/BANG_RULE_VAN_GIO.md`.
+- Tương đương 100% so code cũ (worktree `f31a9d4`): 52 BOQ (9.315 dòng parser, 46.575 lần gọi `resolve_item_spec` × 5 biến thể cờ), 20.000 ca van + 100.000 ca tách combo ngẫu nhiên → 0 lệch. Self-test 53/53, unit 33/33 (thêm `tests/test_swind_damper_rules.py`), E2E 2 chế độ không lệch.
+- 4 phát hiện khi kiểm kê — đã sửa (User duyệt 2026-11-03): `VG-02A` dòng chỉ ghi KT theo Ghi chú, tách combo theo *và*, `miệng gio` / mã `AAG` là cửa gió, MD có EI thì bọc. E2E lệch 6 file đã giải trình (`plan/BANG_RULE_VAN_GIO.md` mục 3) — **chờ User duyệt để lưu baseline**.
+
+- Baseline mặc định đã lưu sau C1 (User duyệt 2026-11-03).
+
+**2026-11-03 — Xong việc C2 (bảng rule ỐNG GIÓ):**
+- `Agent04.detect_duct_subtype` + từ khóa LCCT/G4/canvas chống cháy/hộp trong Ghi chú chuyển sang `data/master_data/duct_rules.json` (`OG-01..OG-24`) + `src/duct_classifier.py`. Vai trò: `.agents/roles/duct_classifier_role.md`; kiểm kê: `plan/BANG_RULE_ONG_GIO.md`.
+- Tương đương 100% so code sau C1: 52 BOQ + 75.000 ca ống ngẫu nhiên → 0 lệch; unit 39/39 (thêm `tests/test_swind_duct_rules.py`), E2E 2 chế độ không lệch.
+- Rule mới (User chốt): hộp gió Ghi chú 1 hộp khác Tên → theo Ghi chú + `⚠️ [HỎI LẠI USER]` (`OG-21`).
+- 4 phát hiện — đã sửa (User duyệt 2026-11-03): chụp thông gió → VENTCAP, Ventcap mặc định không báo; giá đỡ → thương mại; flexible connection → canvas. E2E mặc định & `--include-duct` không lệch; `--include-canvas` lệch TAHK / CAND đã giải trình (`plan/BANG_RULE_ONG_GIO.md` mục 3).
+
+**2026-11-03 — Xong việc C3 (bảng rule PHẠM VI):**
+- Danh sách từ khóa / điều kiện phạm vi trong `parse_sheet` và runner chuyển sang `data/master_data/scope_rules.json` (`PV-01..PV-13`) + `src/scope_filter.py`. Vai trò: `.agents/roles/scope_filter_role.md`; kiểm kê: `plan/BANG_RULE_PHAM_VI.md`.
+- Tương đương 100% so code sau C2: 520 lần chạy runner (52 BOQ × 5 tổ hợp cờ), so log / Kiểm soát cuối / coverage / BG → 0 lệch.
+- Rule mới (User chốt): PV-12 mã `IS` → LCCT, `mprd` → van; PV-13 cảnh báo kiểm chứng đọc BOQ → `⚠️ [HỎI LẠI USER]` (không chặn). E2E lệch 1 file (BOQ_ANH_KHACH_01, +8 dòng) đã giải trình — chờ User duyệt lưu baseline.
+
+**Còn lại:** rà 32 file lệch tồn đọng của baseline `--include-duct` rồi lưu baseline đó.

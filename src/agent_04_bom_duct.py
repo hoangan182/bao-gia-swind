@@ -2,6 +2,7 @@ import math
 import os
 import re
 import unicodedata
+import duct_classifier
 from swind_utils import get_master_bom_rules, get_master_price_map, extract_duct_fitting_geometry, K, get_pricing_constants
 
 
@@ -153,48 +154,8 @@ class Agent04_DuctworkBOM:
 
     @classmethod
     def detect_duct_subtype(cls, text, w1=0.0, h1=0.0, w2=0.0, h2=0.0, d1=0.0, d2=0.0, unit=""):
-        t = unicodedata.normalize("NFC", str(text or "")).lower().strip()
-        u = unicodedata.normalize("NFC", str(unit or "")).lower().strip()
-        has_rect_pair = bool(re.search(r'(?<![dDØø])\b\d{2,4}\s*[xX*]\s*\d{2,4}\b', t))
-        is_round = (d1 > 0 and w1 == 0) or (
-            d1 > 0 and w1 == d1 and h1 == d1 and not has_rect_pair and any(k in t for k in ("tròn", "xoắn", "ø", "dn", "phi", "d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8"))
-        )
-
-        if any(k in t for k in ("chụp thông hơi", "chup thong hoi", "ventcap", "vent cap", "chụp khí", "chụp hút")):
-            return "VENTCAP"
-        if any(k in t for k in ("khớp nối mềm", "khop noi mem", "nối mềm", "noi mem", "bạt mềm", "canvas", "cổ bạt", "co bat")):
-            return "CANVAS_RT" if is_round else "CANVAS_SQ"
-        if any(k in t for k in ("ống mềm", "ong mem", "ống gió mềm", "ong gio mem", "flexible")) and not any(p in t for p in ("lắp ống mềm", "lap ong mem", "nối ống mềm", "noi ong mem", "ra ống mềm", "chờ ống mềm")) and not t.startswith(("côn", "con ", "chân rẽ", "chan re", "hộp", "hôp", "hop ", "cút", "cut ", "tê ", "te ")):
-            return "FLEX_DUCT"
-        if any(k in t for k in ("tiêu âm", "tieu am", "silencer")):
-            return "SILENCER_RT" if is_round else "SILENCER_SQ"
-        if any(k in t for k in ("hộp gió", "hôp gió", "hop gio", "box cửa gió", "box gió", "hộp cho cửa", "hộp góp gió", "hộp tĩnh áp", "plenum")):
-            return "PLENUM_BOX"
-        if any(k in t for k in ("côn thu vuông tròn", "con thu vuong tron", "côn vuông tròn", "con vuong tron", "vuông tròn", "vuong tron", "vuông sang tròn", "tròn sang vuông", "chuyển tiết diện", "chuyen tiet dien", "côn đầu quạt", "con dau quat", "v-t", "cvt")) or (not is_round and w1 > 0 and h1 > 0 and d1 > 0 and w2 == 0):
-            return "SQUARE_TO_ROUND"
-        if any(k in t for k in ("bịt đầu", "bit dau", "nắp bịt", "nap bit", "bịt 1 đầu", "bit 1 dau", "bịt ống", "bit ong", "ống bịt", "ong bit")):
-            return "END_CAP_RT" if is_round else "END_CAP_SQ"
-        if any(k in t for k in ("măng xông", "mang xong", "măng sông", "mang song", "nối ống", "noi ong")):
-            return "COUPLING_RT"
-        if any(k in t for k in ("chạc 3", "chac 3", "chạc ba", "chạc y", "chữ y", "chu y", "ống quần", "y vuông", "y tròn")) or re.search(r'\by\s*[:=]\s*d\d+', t):
-            return "WYE_RT" if is_round else "WYE_SQ"
-        if any(k in t for k in ("tê vuông", "te vuong", "tê tròn", "te tron", "tê đều", "tê thu", "tê ống", "tee")) or re.search(r'\btê\b', t):
-            return "TEE_RT" if is_round else "TEE_SQ"
-        if any(k in t for k in ("zét lượn", "zet luon", "zét", "ống lượn", "ong luon", "lượn ống gió", "luon ong gio", "lượn z", "luon z", "z chuyển cao độ", "z chuyen cao do", "z chuyển hướng", "z chuyen huong", "z đứng", "z dung", "z ngang", "chữ z", "chu z", "offset")) or re.search(r'\bz\s*vuông\b|(?:^|\s)z\s*\d{2,4}\s*[xX*]\s*\d{2,4}', t):
-            return "OFFSET_Z"
-        if any(k in t for k in ("cút vuông", "cut vuong", "cút tròn", "cut tron", "cút", "cut ", "co 90", "co 60", "co 45", "co 30", "co vuông", "co tròn", "co ống", "chếch", "chech", "bs90", "bs45", "bt90", "bt45", "elbow")):
-            return "ELBOW_RT" if is_round else "ELBOW_SQ"
-        if any(k in t for k in ("chân rẽ", "chan re", "gót giày", "got giay", "cổ trích", "co trich", "chân trích", "take off", "take-off")):
-            return "TAKEOFF_RT" if is_round else "SHOE_TAP"
-        if any(k in t for k in ("côn vuông", "con vuong", "côn tròn", "con tron", "côn thu", "con thu", "côn giảm", "con giam", "giảm đều", "giam deu", "giảm vuông", "giảm tròn", "côn lệch", "côn phẳng", "con phang", "côn đồng tâm", "thu vuông", "thu tròn", "reducer")) or t.startswith(("côn ", "con ")) or (w1 > 0 and w2 > 0 and (w1 != w2 or h1 != h2)):
-            return "REDUCER_RT" if is_round else "REDUCER_SQ"
-        if "phụ kiện" in t and w1 == 0 and d1 == 0:
-            return "FITTING_M2"
-        if is_round or any(k in t for k in ("tròn xoắn", "ống tròn", "ống gió tròn")):
-            return "SPIRAL_DUCT"
-        if w1 == 0 and h1 == 0 and d1 == 0 and ("m2" in u or "m²" in u or "m2" in t):
-            return "DUCT_M2"
-        return "DUCT_RECT"
+        """Loại ống / phụ kiện: bảng rule data/master_data/duct_rules.json (src/duct_classifier.py, OG-01..OG-18)."""
+        return duct_classifier.detect_subtype(text, w1, h1, w2, h2, d1, d2, unit)
 
     @classmethod
     def calculate_duct_item(cls, item):
@@ -239,11 +200,8 @@ class Agent04_DuctworkBOM:
         ei_rating = int(item.get("ei_rating") or geom["ei_rating"] or prev_geom.get("ei_rating") or 0)
         is_insulated = bool(item.get("is_insulated") or geom["is_insulated"] or prev_geom.get("is_insulated"))
 
-        subtype = cls.detect_duct_subtype(full_text, w1, h1, w2, h2, d1, d2, unit)
-        # Dòng con kế thừa Title "Tiêu âm ..." (tên chỉ còn kích thước, VD '500x300x1500, tôn dày 0.58mm') -> vẫn tính tiêu âm
-        if str(item.get("category") or "").upper() == "TIEU_AM" and subtype not in ("SILENCER_SQ", "SILENCER_RT"):
-            is_round_sil = d1 > 0 and w1 == 0
-            subtype = "SILENCER_RT" if is_round_sil else "SILENCER_SQ"
+        # Dòng nhóm TIEU_AM kế thừa Title "Tiêu âm ..." mà Tên chỉ còn kích thước -> vẫn tính tiêu âm (OG-19)
+        subtype = duct_classifier.detect_subtype(full_text, w1, h1, w2, h2, d1, d2, unit, category=item.get("category"))
 
         if subtype == "PLENUM_BOX":
             boxes = cls._parse_note_boxes(note_boq)
@@ -610,7 +568,7 @@ class Agent04_DuctworkBOM:
             "END_CAP_RT": "Bịt đầu tròn",
         }
         model_out = rt_model_map.get(subtype, subtype)
-        if any(k in full_text.lower() for k in ("côn trùng", "lcct", "lưới chắn", "insect screen", "i.s")) or bool(re.search(r'\b(?:i\.s\.?|c/w\s*is)\b', full_text.lower())):
+        if duct_classifier.has_mesh_on_rect(full_text):  # OG-23
             mesh_surcharge = excel_round((D_main / 1000.0) * (D_main / 1000.0) * K("cua.luoi_m2", 150000.0), 0)
             unit_price += mesh_surcharge
             model_out = f"{model_out} + LCCT"
@@ -866,18 +824,10 @@ class Agent04_DuctworkBOM:
         trace_str = f"{trace_prefix} (Bịt đầu, tôn {thk}mm, {flange_type}): S={s_note}, pkvhs={pkvhs:,.0f}"
         return None, None, l_out, s_area, unit_price, spec_label, trace_str
 
-    NOTE_BOX_RX = re.compile(
-        r'\b(?:box|hộp)(?:\s+gió)?\s*([^\d\n,;+]{0,12}?)\s*(\d{2,4})\s*[xX*×]\s*(\d{2,4})\s*[xX*×]\s*(\d{2,4})',
-        re.IGNORECASE,
-    )
-
     @classmethod
     def _parse_note_boxes(cls, note_text):
-        """Các hộp ghi trong Ghi chú dạng 'BOX CẤP 600x300x300 / BOX HỒI 700x300x300' -> [(nhãn, W, H, L), ...]."""
-        return [
-            (m.group(1).strip().lower(), float(m.group(2)), float(m.group(3)), float(m.group(4)))
-            for m in cls.NOTE_BOX_RX.finditer(note_text or "")
-        ]
+        """Các hộp ghi trong Ghi chú dạng 'BOX CẤP 600x300x300 / BOX HỒI 700x300x300' -> [(nhãn, W, H, L), ...] (OG-21)."""
+        return duct_classifier.parse_note_boxes(note_text)
 
     @classmethod
     def _calc_multi_plenum_boxes(cls, boxes, item, full_text, unit, d1, explicit_thk, flange_type, neck_count, ei_rating, is_insulated):
@@ -1002,7 +952,7 @@ class Agent04_DuctworkBOM:
             "PLENUM_BOX": "Hộp gió",
         }
         model_out = sq_model_map.get(subtype, subtype)
-        if any(k in full_text.lower() for k in ("côn trùng", "lcct", "lưới chắn", "insect screen", "i.s")) or bool(re.search(r'\b(?:i\.s\.?|c/w\s*is)\b', full_text.lower())):
+        if duct_classifier.has_mesh_on_rect(full_text):  # OG-23
             mesh_surcharge = excel_round((w1 / 1000.0) * (h1 / 1000.0) * K("cua.luoi_m2", 150000.0), 0)
             unit_price += mesh_surcharge
             model_out = f"{model_out} + LCCT"

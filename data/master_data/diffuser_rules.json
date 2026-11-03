@@ -454,11 +454,12 @@
       ]
      },
      {
-      "regex": "\\b(?:i\\.s\\.?|l\\.s\\.?|lc+[tc])\\b|(?:c/w|\\+|kèm|with)\\s*(?:is|ls)\\b",
+      "regex": "\\b(?:i\\.s\\.?|l\\.s\\.?|lc+[tc])\\b|(?:c/w|\\+|kèm|with)\\s*(?:is|ls)\\b|^(?:[a-z]{1,3}[\\s\\-_]+)?is[\\s\\-_]*\\d{2,4}\\s*[x×*]\\s*\\d{2,4}",
       "trong": "mesh_search"
      }
     ]
-   }
+   },
+   "nguon": "mã 'IS' đứng đầu Tên ngay trước kích thước (IS 850x250, AL IS-1000x800) = LCCT — User chốt 2026-11-03 (việc C3, BOQ_ANH_KHACH_01)"
   },
   {
    "co": "has_filter",
@@ -680,7 +681,7 @@
   },
   {
    "co": "is_louver_z",
-   "mo_ta": "Louver nan Z: (a) Tên/kiểu nan louver; (b) cấp khí bù không ghi mã cửa nan thẳng; (c) cạnh >= 3000mm không OBD/2 lớp/sọt trứng/nan thẳng; (d) chỉ ghi kèm lưới (không OBD/lọc/mã cửa)",
+   "mo_ta": "Louver nan Z: (a) Tên/kiểu nan louver; (b) cấp khí bù không ghi mã cửa nan thẳng; (c) cạnh >= 3000mm không OBD/2 lớp/sọt trứng/nan thẳng; (d) chỉ ghi kèm lưới (không OBD/lọc/mã cửa); (e) Tên bắt đầu bằng mã 'AL' ngay trước kích thước (User chốt 2026-11-03, PV-14)",
    "nguon": "bd1d662 2026-10-20 (khởi tạo); (c) LARGE_SINGLE_LAYER_GRILLE_LOUVER_WL",
    "dieu_kien": {
     "mot_trong": [
@@ -791,6 +792,10 @@
         }
        }
       ]
+     },
+     {
+      "regex": "^\\s*al[\\s\\-_:.]*\\d{2,4}\\s*[x×*]\\s*\\d{2,4}",
+      "trong": "raw_search"
      }
     ]
    }
@@ -1430,6 +1435,24 @@
      ],
      "model": "LCCT+F",
      "nguon_boq": "mẫu tự dựng"
+    },
+    {
+     "nguon_boq": "BOQ_ANH_KHACH_01 'BOQ_TU_ANH' R20",
+     "ten": "IS 850x250",
+     "kt": [
+      850,
+      250
+     ],
+     "model": "LCCT"
+    },
+    {
+     "nguon_boq": "BOQ_ANH_KHACH_01 'BOQ_TU_ANH' R24",
+     "ten": "AL IS-1000x800",
+     "kt": [
+      1000,
+      800
+     ],
+     "model": "LCCT"
     }
    ]
   },
@@ -1825,6 +1848,20 @@
      ],
      "model": "WL",
      "nguon_boq": "mẫu tự dựng (LARGE_SINGLE_LAYER_GRILLE_LOUVER_WL)"
+    },
+    {
+     "ten": "AL 600x300",
+     "title": "SẢN PHẨM",
+     "kt": [
+      600,
+      300
+     ],
+     "model": "WL",
+     "b": [
+      550,
+      250
+     ],
+     "nguon_boq": "User chốt 2026-11-03 (mã AL đứng riêng = louver nan Z)"
     }
    ]
   },

@@ -133,20 +133,25 @@
   },
   "PROJECT_EXPERIENCE_RULES": {
     "PLUMBING_VENT_CAP_EXCLUSION": {
-      "rule": "Bỏ trống (không báo giá) các mục 'Chụp thông hơi inox DN80/DN100/D200/D110/D90/D160/D140' thuộc hệ cấp thoát nước (PS/FF).",
-      "category": "THUONG_MAI",
-      "keywords": ["chụp thông hơi", "chụp thông gió d110", "chụp thông gió d160"]
+      "rule": "(User chốt 2026-11-03) Chụp thông hơi / Ventcap / chụp thông gió mặc định KHÔNG báo giá — cùng nhóm Canvas (CANVAS/VENTCAP), chỉ báo khi chạy cờ --include-canvas. Gồm cả 'Chụp thông hơi inox DN80/DN100/D110...' của hệ cấp thoát nước.",
+      "category": "CANVAS",
+      "keywords": [
+        "chụp thông hơi",
+        "chụp thông gió",
+        "ventcap",
+        "vent cap"
+      ]
     },
     "COMBO_GRILLE_PLUS_MD": {
-      "rule": "Khi BOQ gộp Cửa gió + Van MD trên 1 dòng (ví dụ 'Miệng gió SAG+MD', 'Miệng gió PAG + MD'), giữ nguyên 1 dòng khớp BOQ và cộng gộp đơn giá (Cửa gió 1 lớp + Van MD động cơ Belimo ON/OFF theo tiết diện 5Nm/10Nm/20Nm).",
+      "rule": "Khi BOQ gộp Cửa gió + Van MD trên 1 dòng (ví dụ 'Miệng gió SAG+MD', 'Miệng gió PAG + MD'), giữ nguyên 1 dòng khớp BOQ và cộng gộp đơn giá (Cửa gió 1 lớp + Van MD động cơ Belimo ON/OFF). Mô-men theo rule MD (Kỹ thuật chốt 2026-11-02, thay cách cũ 'theo tiết diện'): 1 cạnh/modul >= 1000mm -> 10Nm, cả 2 cạnh < 1000mm -> 5Nm, > 1.8 m²/modul -> 20Nm.",
       "model_format": "SDG+MD"
     },
     "MOTORIZED_RELIEF_DAMPER": {
-      "rule": "Mục 'Van xả áp động cơ' (kèm ghi chú 'Van tuyến tính') tính theo van động cơ thường MD dùng động cơ Belimo theo tiết diện (5Nm/10Nm/20Nm), phân biệt với 'Van xả áp cơ' (PRD đối trọng).",
-      "subtype": "MD"
+      "rule": "(User chốt 2026-11-02/03, thay cách cũ 'tính theo MD') 'Van xả áp động cơ' / mã MPRD (kể cả 'AG MPRD-...') -> subtype MPRD, ghi 'Động cơ tuyến tính 230V Belimo On/Off {5/10/20}Nm'; mô-men theo rule MD (1 cạnh/modul >= 1000mm -> 10Nm, cả 2 cạnh < 1000 -> 5Nm, > 1.8 m²/modul -> 20Nm). Mã động cơ riêng MAT-ACTUATOR-BELIMO-MPRD-5NM / MPRD / MPRD-20NM; giá riêng dự án chỉ đổi qua cờ --mprd-motor-price. Phân biệt với 'Van xả áp cơ' (PRD đối trọng).",
+      "subtype": "MPRD"
     },
     "NORMAL_DAMPER_EI_WRAPPING": {
-      "rule": "Các van thường (NRD, PRD, VCD) có yêu cầu EI30/EI60 trong cột Ghi chú: tính diện tích bọc thân van * 320,000đ cộng vào đơn giá van thường.",
+      "rule": "Các van thường (NRD, PRD, VCD) và van MD (User chốt 2026-11-03, rule VG-08) có yêu cầu EI trong Tên / Ghi chú: tính diện tích bọc thân van * đơn giá bọc (pricing_constants van.boc_ei.don_gia_m2 = 320,000đ) cộng vào đơn giá van. NRD ghi 'chống cháy EI60' vẫn là NRD bọc KSH, không đổi sang FD.",
       "rate_vnd_per_m2": 320000,
       "mandatory_note": "ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm"
     },
@@ -163,7 +168,7 @@
       "aluminum_selling_price_per_kg": 168000
     },
     "UNSPECIFIED_DIMENSION_DAMPER_EXCLUSION": {
-      "rule": "Các mục Cửa gió / Van gió không ghi kích thước trong BOQ (w=0, h=0, d=0, ví dụ 'Van xả áp cơ cho quạt tăng áp thang máy' không có KT) thì bỏ trống không báo giá (chuyển về THUONG_MAI)."
+      "rule": "(User chốt 2026-11-03, thay cách cũ 'chuyển về THUONG_MAI') Cửa gió / Van gió không ghi kích thước: không báo giá; BOQ có sẵn đơn giá đối tác thì giữ nguyên, không có thì để trống + tô vàng trên sheet BG ('⚠️ KHÔNG BÁO GIÁ: BOQ không ghi kích thước'). Không chặn báo giá, chỉ thông báo User (⚠️ [THÔNG BÁO USER]); User muốn báo thì cấp KT bằng --override."
     },
     "ELECTRICAL_CABINET_EXCLUSION": {
       "rule": "Các mục 'Tủ điện cho van gió...', 'Tủ điều khiển cưỡng bức van...' là tủ điện điều khiển (THUONG_MAI), không phải van gió, bỏ trống khi báo giá Cửa/Van."
@@ -175,7 +180,7 @@
       "rule": "QUY TẮC BẤT BIẾN (KHÔNG ĐƯỢC SỬA): 1) Nhận diện MFD: Mọi dòng VAN_GIO vừa có từ khóa chống cháy ('chặn lửa', 'ngăn cháy', 'dập lửa') vừa có từ khóa động cơ ('động cơ', 'mô tơ', 'môtơ', 'mo tơ', 'motor') chỉ nhận diện về subtype = 'MFD' (độc lập hoàn toàn với hãng động cơ). 2) Không gán cứng theo tên dự án: Hãng động cơ & mã đốt MFD chỉ lấy từ thông tin dòng BOQ hoặc tham số '--motor-brand' / '--mfd-model' khi User ra yêu cầu. 3) Mặc định cố định của hệ thống: Nếu User không ra yêu cầu riêng và BOQ không chỉ định khác, hệ thống MẶC ĐỊNH CỐ ĐỊNH dùng mã MFD 1.02 (SWIND-1.02-MFD-EI90) và động cơ BELIMO."
     },
     "VENT_CAP_EXCLUSION": {
-      "rule": "Bỏ trống không báo giá các mục 'Vent cap D100 / D140' (chụp thông hơi trục uPVC ngoài phạm vi Cửa/Van gió, phân loại về THUONG_MAI)."
+      "rule": "(User chốt 2026-11-03) Chụp thông hơi / Ventcap / chụp thông gió mặc định KHÔNG báo giá — cùng nhóm Canvas (CANVAS/VENTCAP), chỉ báo khi chạy cờ --include-canvas. Gồm cả 'Vent cap D100 / D140' uPVC."
     },
     "COMBO_LOUVER_PLUS_FD": {
       "rule": "Khi BOQ gộp Cửa gió nan Z kèm LCCT & Van FD trên cùng 1 dòng (ví dụ 'Cửa gió nan Z kèm lưới chắn côn trùng & van FD, 700x500'), giữ nguyên 1 dòng khớp BOQ và cộng gộp đơn giá Cửa nan Z kèm LCCT (WL+N) + Van chặn lửa cầu chì (FD 2.01), Model ghi 'WL+N + FD'."
@@ -201,15 +206,24 @@
     "OPTIMAL_2D_DAMPER_MODULE_SPLITTING": {
       "formula": "mod_w = ceil(W / max_w_mm), mod_h = ceil(H / max_h_mm), modules_count = mod_w * mod_h, B1 = W / mod_w, B2 = H / mod_h",
       "limits_by_model": {
-        "standard_101_102_103_201": {"max_w_mm": 1500, "max_h_mm": 800},
-        "honeywell_104": {"max_w_mm": 1750, "max_h_mm": 1000},
-        "large_105": {"max_w_mm": 1700, "max_h_mm": 1000},
-        "standard_md": {"max_w_mm": 2000, "max_h_mm": 2000}
+        "standard_101_102_103_201": {
+          "max_w_mm": 1500,
+          "max_h_mm": 800
+        },
+        "honeywell_104": {
+          "max_w_mm": 1750,
+          "max_h_mm": 1000
+        },
+        "large_105": {
+          "max_w_mm": 1700,
+          "max_h_mm": 1000
+        },
+        "standard_md": {
+          "max_w_mm": 2000,
+          "max_h_mm": 2000
+        }
       },
       "rule": "Khi chia modul van 2 chiều (W x H), luôn bám sát kích thước tối đa 2 chiều (max_w_mm, max_h_mm) của từng mã BCTN trong master_bom_rules.json: mod_w = ceil(W / max_w_mm), mod_h = ceil(H / max_h_mm), tổng số modul = mod_w * mod_h (tuyệt đối không chia W cho 1000mm khi W > 1500mm). Ví dụ với mã 1.02 (max 1500x800): 5000x700 chia 4 modul (1250x700), 6000x700 chia 4 modul (1500x700), 6500x700 chia 5 modul (1300x700), giúp tối ưu số lượng động cơ và không làm đội giá."
-    },
-    "NON_EI_FD_COL_O_PRICING": {
-      "rule": "Khi BOQ chỉ ghi 'Van chặn lửa FD WxH' mà không có chỉ số EI / BCTN / hệ thống PCCC chống cháy, áp theo Cột O ('Van cầu chì / Fuse Fire damper' - van tôn mạ kẽm gắn cầu chì, không bọc tấm chống cháy EI, Model: FD, L=200mm, mặc định dùng tôn mạ kẽm dày 1.15mm MAT-STEEL-PN-1.15 tương ứng đơn giá m2 AJ17=321,300đ) trong BẢNG TÍNH GIÁ SWIND chuẩn 2026.xls (Sheet 'BG VAN ')."
     },
     "SINGLE_DIM_ROUND_DAMPER_DEFAULT": {
       "rule": "Khi van gió chỉ ghi 1 kích thước đơn mà không ghi ký hiệu D/Ø hay WxH (ví dụ 'VCD 150'), mặc định hiểu là van tròn đường kính D (ví dụ D150, A1='Ø', A2=150, L=200, độ dày 0.75mm)."
@@ -236,7 +250,7 @@
       "rule": "(User chốt 2026-11-02) Không báo ống gió KHÔNG có nghĩa bỏ cả dòng: dòng ống/cút kèm LCCT / lọc G4 vẫn báo phần LCCT / lọc theo kích thước dòng; dòng ống ghi kèm van / OBD / cửa / louver hoặc Ghi chú phủ định phần Swind -> hỏi lại User."
     },
     "COMBO_DIFFUSER_WITH_PLENUM_BOX_RULE": {
-      "rule": "Khi BOQ có 'Cửa gió kèm hộp gió' hoặc 'Miệng gió kèm hộp gió': Swind chỉ báo giá phần Cửa gió trên sheet báo giá của Swind (hoặc cộng giá hộp gió đã báo khi ref_price > 0), ghi chú rõ quy cách."
+      "rule": "Cửa / miệng gió kèm hộp gió: mặc định chỉ báo phần cửa, ghi chú '. Không tính box do nhà thầu tự thi công'; cộng thêm hộp chỉ khi User yêu cầu (--include-box). Dòng ghi 'chỉ gồm hộp, không gồm cửa' -> không báo cửa, xếp hộp gió (ONG_GIO): mặc định không báo + hỏi lại; --include-duct báo phần hộp (User duyệt 2026-11-03)."
     },
     "DAMPER_PLUS_DAMPER_COMBO_RULE": {
       "rule": "Khi BOQ gộp nhiều loại van trên cùng 1 dòng (ví dụ 'FD+VD', 'NRD+VCD', 'MD+NRD', phân tách bởi dấu '+', 'kèm', 'gắn', 'tích hợp'), hệ thống tự động tách chuỗi token, chọn van chính theo thứ tự ưu tiên (MFSD > MFD > FD > MD > PRD > NRD > VCD), giữ nguyên 1 dòng BOQ, cộng gộp BOM & đơn giá của tất cả các van trong combo và nối Model (ví dụ 'FD + VCD', 'NRD + VCD')."
@@ -248,13 +262,34 @@
       "rule": "Khi BOQ ghi cả 'kt bì W1xH1' và 'kt cổ W2xH2' trên cùng 1 dòng (hoặc đính chính ở cột Ghi chú), lấy trực tiếp W1xH1 làm kích thước phủ bì (A1, A2 - không cộng thêm 50mm) và W2xH2 làm kích thước cổ (B1, B2). Nếu cột Ghi chú có ghi rõ hệ cửa và kích thước đính chính (ví dụ 'Cửa nan Z, kt bì 1040x240, kt cổ 990x190'), ưu tiên áp dụng quy cách và kích thước tại cột Ghi chú."
     },
     "IMAGE_BOQ_DUAL_INPUT_WORKFLOW": {
-      "rule": "Hỗ trợ song song cả 2 luồng đầu vào: (1) Khách gửi file Excel trong thư mục 'input/', và (2) Khách gửi ảnh chụp màn hình BOQ trong thư mục 'input picture/'. Agent 01B (agent_01b_image_boq_reader.py) tự động đọc OCR từ ảnh và kết xuất thành file Excel chuẩn trong 'input/' trước khi chạy định giá."
+      "rule": "Hỗ trợ song song cả 2 luồng đầu vào: (1) Khách gửi file Excel trong thư mục 'input/', và (2) Khách gửi ảnh chụp màn hình BOQ trong thư mục 'input picture/'. Agent 01B (agent_01b_image_boq_reader.py) tự động đọc OCR từ ảnh và kết xuất thành file Excel chuẩn trong 'input/' trước khi chạy định giá. Lưu ý: OCR hay gộp dòng và đọc EI60 thành E160 -> nên tự chép ảnh ra xlsx; ảnh không có KL thì báo KL = 1."
     },
     "UNIT_PRICE_ROUNDUP_100_RULE": {
       "rule": "Làm tròn giá LÊN hàng trăm đồng ở cột Đơn giá (ROUNDUP(Đơn_giá, -2), ví dụ 2405 -> 2500, 28940 -> 29000), không làm tròn ở cột Thành tiền (Thành tiền = Đơn giá * Số lượng)."
     },
     "ROUND_DIFFUSER_EAD_AND_CAV_ACOUSTIC_LOUVER_EXCLUSION": {
       "rule": "Khi chạy báo giá Cửa gió & Van gió: các mục miệng hút/cửa gió tròn chỉ ghi đường kính D (như 'Miệng hút EAD kèm hộp gió D150 / D300' - trừ lưới chắn côn trùng LCCT rời hoặc cửa tròn SRD), 'Hộp điều chỉnh lưu lượng gió (CAV) D150' và 'Cửa chớp tiêu âm đầu vào/ra (L=100)' là hàng mua ngoài (THUONG_MAI / TIEU_AM), để trống không báo giá."
+    },
+    "AL_CODE_LOUVER_Z_RULE": {
+      "rule": "(User chốt 2026-11-03) Mã 'AL' đứng đầu Tên ngay trước kích thước (AL 600x300, AL-1000x500, AL_800x400) = Louver nan Z (WL, kèm hậu tố O/N/F theo dòng). 'AL IS-...' vẫn là lưới chắn côn trùng LCCT. Rule: scope_rules.json PV-14 + diffuser_rules.json is_louver_z (e)."
+    },
+    "FD_DEFAULT_EI120_RULE": {
+      "rule": "(User chốt 2026-10-29, thay kinh nghiệm cũ NON_EI_FD_COL_O_PRICING đã sai) Van chặn lửa FD ghi hay không ghi EI -> mặc định báo EI120 có bọc (SWIND-2.01- E-FD-EI120). Chỉ khi BOQ ghi rõ 'FD thường' / 'loại thường' / 'không EI' / 'không chống cháy' / 'không bọc' mới báo FD thường (cột O BG VAN) và LUÔN hỏi lại User."
+    },
+    "CATEGORY_LIST_TITLE_NOT_COMBO": {
+      "rule": "(User duyệt 2026-11-03, dự án Fezix Cầu Giấy Ver2 → mở rộng theo kiểm bất biến E2E) Dòng Tên bắt đầu 'Van'/'Damper' mà bản thân dòng (Tên/Model/Ghi chú) không ghi cửa/miệng gió -> van rời, KHÔNG ghép combo Cửa + Van từ chữ trong Title (VD Title 'Van, miệng gió', 'Cấp gió tự nhiên (cửa gió + van qua tường...)', 'Miệng gió'). Title có thông số (OBD, EI, động cơ...) vẫn kế thừa. Code: src/swind_boq_parser.py. Đã sửa sai ở Fezix, Nam Việt 43, PLH Gói 1, NOVH ×5, CAND."
+    },
+    "QTY_TEXT_NUMBER_RULE": {
+      "rule": "(2026-11-03, KL ong gio cap va hut) Cột KL ghi dạng chữ thuần số ('1', '2,5' — ô Text Excel) đọc như số; trước đây cả dòng bị bỏ âm thầm."
+    },
+    "DUCT_FITTING_UNDER_CANVAS_TITLE_RULE": {
+      "rule": "(User duyệt 2026-11-03, quy tắc 1a) Dòng tự ghi là ống / phụ kiện ống (chân rẽ, co 90, côn, chạc Y — kể cả viết không dấu 'Chan re', 'Con giam deu', 'Co tron') nằm dưới Title canvas (VD 'Cổ bạt chống rung quạt') -> ONG_GIO, không kế thừa CANVAS. Từ khóa không dấu >= 2 chữ thêm vào manufacturable_catalog DUCT_AND_FITTINGS."
+    },
+    "COVERAGE_AUDIT_NON_SWIND_ITEMS": {
+      "rule": "(User duyệt 2026-11-03) Coverage Audit không cảnh báo SÓT DÒNG cho: ống gas / PVC / PPR / uPVC (cấp áp PN), bảo ôn, URL, ống inox, Y lọc, bích rỗng / bích đặc (không dùng 'bích' đứng riêng — van/cửa có '2 đầu bích TDC'), nắp thăm, rọ hút, mối nối mềm DN, ký hiệu ống giảm nước 'D200/90'. LCCT KHÔNG loại trừ (mặt hàng có báo giá). Rule PV-11 khong_phai_hang_swind_sot_dong. Thêm: 'Măng xông D90' (đường kính 2 chữ số / DN = phụ kiện nước). Dòng KHÔNG có KL và KHÔNG có ĐVT = tiêu đề, không cảnh báo (CAND R253)."
+    },
+    "LCCT_PER_M2_RULE": {
+      "rule": "(User chốt 2026-11-03, TONG_HOP_KHOI_LUONG_DHKK R429/R572) LCCT ghi ĐVT m² + KL mà không có kích thước (VD 'LƯỚI CHẮN CÔN TRÙNG, KÍCH THƯỚC:' | 0.57 | M2) -> vẫn báo: đơn giá = giá LCCT/m² (pricing_constants cua.luoi_chan_con_trung_m2 = 200,000đ), KL = số m² BOQ; sheet BG để trống kích thước, ghi chú 'đơn giá theo m²'. Dòng đó vẫn là Title cho dòng con bên dưới."
     }
   }
 }

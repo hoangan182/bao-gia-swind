@@ -2,15 +2,12 @@ import re
 from swind_boq_parser import SwindBOQParser
 from swind_universal_extractor import SwindUniversalExtractor
 from agent_04_bom_duct import Agent04_DuctworkBOM
+import damper_classifier
+import duct_classifier
 from agent_05_bom_damper import Agent05_DamperBOM
 from agent_06_bom_diffuser import Agent06_DiffuserBOM
 import diffuser_classifier
 from swind_utils import get_subtype_rules
-
-
-# Từ khóa BOQ quy định rõ van chặn lửa FD thường (không EI). Ngoài các trường hợp này, mọi van FD tính EI120 có bọc.
-FD_NON_EI_KEYWORDS = ("fd thường", "van chặn lửa thường", "loại thường", "không ei", "không có ei", "không chống cháy",
-                      "không bọc", "non-ei", "non ei")
 
 
 class Agent01_BOQExtractor:
@@ -110,99 +107,14 @@ class Agent01_BOQExtractor:
         fslf_ratio, act_unit = 1.0, 0.0
         has_fslf_formula_diff = False
 
-        model_item = str(item.get("model") or "").strip().upper()
-        model_code = None
-        for mc in ("1.01", "1.02", "1.03", "1.04", "1.05", "2.01"):
-            if mc in model_item:
-                model_code = mc
-                break
-
-        if model_item == "FD" or "2.01" in model_item or "E-FD" in model_item:
-            damper_type = "FD"
-        elif "1.01" in model_item or "MFSD" in model_item:
-            damper_type = "MFSD"
-        elif model_item == "MFD" or any(k in model_item for k in ("1.02", "1.03", "1.04", "1.05")):
-            damper_type = "MFD"
-        elif model_item in ("MPRD", "M-PRD", "MRD") or any(k in raw_search.lower() for k in ("mprd", "m-prd", "mrd", "xả áp điện", "xả áp điều khiển")):
-            damper_type = "MPRD"
-        elif model_item in ("OBD", "VCD", "MD", "NRD", "PRD"):
-            damper_type = model_item
-        else:
-            raw_nm_s = str(item.get("raw_name") or "")
-            eff_nm_s = raw_nm_s if re.search(r'[a-zA-ZÀ-ỹ]{2,}', re.sub(r'\b(?:mm|kt|w|h|l|d|dn|phi)\b', '', raw_nm_s, flags=re.IGNORECASE)) else str(item.get("name", ""))
-            name_model_search = (eff_nm_s + " " + str(item.get("model", ""))).lower()
-            note_only_search = str(item.get("note_boq") or "").lower()
-            if item.get("spec_priority") == "note" and note_only_search:
-                note_sub_search = re.sub(r'(?:tấm|bọc|vật\s*liệu|sơn|keo)\s+chống\s*cháy', ' ', note_only_search)
-                damper_type = cls.get_subtype(
-                    subtype_rules, "VAN_GIO", note_sub_search,
-                    cls.get_subtype(subtype_rules, "VAN_GIO", name_model_search, cls.get_subtype(subtype_rules, "VAN_GIO", full_search, "VCD"))
-                )
-            else:
-                damper_type = cls.get_subtype(
-                    subtype_rules, "VAN_GIO", name_model_search,
-                    cls.get_subtype(subtype_rules, "VAN_GIO", raw_search, cls.get_subtype(subtype_rules, "VAN_GIO", full_search, "VCD"))
-                )
-            chk_mprd_src = (note_only_search + " " + raw_search.lower() + " " + full_search.lower()) if item.get("spec_priority") == "note" else name_model_search
-            if damper_type in ("PRD", "MD") and any(k in chk_mprd_src for k in ("xả áp", "giảm áp")) and any(k in chk_mprd_src for k in ("mprd", "m-prd", "mrd", "động cơ", "on/off", "on-off", "điện", "điều khiển")):
-                damper_type = "MPRD"
-            if damper_type in ("FD", "MD", "VCD"):
-                rs_low = (note_only_search + " " + raw_search.lower()) if item.get("spec_priority") == "note" else (name_model_search + " " + raw_search.lower())
-                if not (item.get("spec_priority") == "note" and damper_type == "FD" and not any(mk in note_only_search for mk in ("động cơ", "mô tơ", "môtơ", "mo tơ", "motor", "mfd"))):
-                    if any(fk in rs_low for fk in ("chặn lửa", "ngăn cháy", "dập lửa", "chống cháy", "chịu lửa")) and any(mk in rs_low for mk in ("động cơ", "mô tơ", "môtơ", "mo tơ", "motor", "mfd")):
-                        damper_type = "MFD"
-        if damper_type == "PRD" and any(k in raw_search.lower() for k in ("mprd", "m-prd", "mrd", "xả áp động cơ", "xả áp điện", "xả áp điều khiển")):
-            damper_type = "MPRD"
+        # Phân loại (VG-01..VG-10): bảng rule data/master_data/damper_rules.json — src/damper_classifier.py
+        cls_res = damper_classifier.classify(item, subtype_rules, raw_search, full_search, w, h, d, ei_rating, a1, a2)
+        damper_type, eff_type = cls_res["damper_type"], cls_res["eff_type"]
         subtype = damper_type
-        eff_type = "MFD" if damper_type == "MFD_LOUVER" else damper_type
-        w_use = w if w > 0 else (d if d > 0 else 300.0)
-        h_use = h if h > 0 else (d if d > 0 else 300.0)
-        req_motor = str(item.get("motor_brand_override") or "").strip().upper()
-        req_mfd_model = str(item.get("mfd_model_override") or "").strip()
-        eff_req_code = model_code or (req_mfd_model if eff_type in ("MFD", "MFSD") else "")
-        note_prio_low = str(item.get("note_boq") or "").lower() if item.get("spec_priority") == "note" else ""
-        if note_prio_low:
-            m_ei_np = re.search(r'(?<![a-z])ei\s*[-:]?\s*(\d{2,3})\b', note_prio_low)
-            if m_ei_np:
-                ei_rating = int(m_ei_np.group(1))
-                item["ei_rating"] = ei_rating
-            elif eff_type in ("NRD", "PRD", "MPRD", "VCD") and ei_rating == 0 and any(k in note_prio_low for k in ("bọc tấm mgo", "tấm chống cháy mgo", "bọc chống cháy")):
-                ei_rating = 60
-                item["ei_rating"] = 60
-        # Rule cố định: mặc định mã 1.02 - Belimo. Hãng động cơ CHỈ đổi theo chỉ định của User (--motor-brand / --mfd-model)
-        # hoặc mã Swind ghi rõ ở cột Model; KHÔNG tự đổi theo chữ KLB/Viweco/Honeywell trong BOQ.
-        is_klb_req = (req_motor == "KLB") or (eff_req_code == "1.03")
-        is_honeywell_req = (req_motor == "HONEYWELL") or (eff_req_code == "1.04")
-        motor_brand = "KLB" if is_klb_req else ("HONEYWELL" if is_honeywell_req else "BELIMO")
-        if eff_type == "MD":
-            ei_rating = 0
-            item["ei_rating"] = 0
-        # Rule van FD: ghi hay không ghi EI -> mặc định EI120 có bọc (SWIND-2.01- E-FD-EI120).
-        # Chỉ trường hợp BOQ quy định rõ "FD thường / không EI" mới báo FD thường -> luôn đưa vào danh sách HỎI LẠI USER.
-        fd_txt_low = (raw_search + " " + full_search + " " + str(item.get("note_boq") or "")).lower()
-        fd_non_ei_kw = next((k for k in FD_NON_EI_KEYWORDS if k in fd_txt_low), None) if eff_type == "FD" else None
-        is_fd_explicit_non_ei = bool(fd_non_ei_kw) and ei_rating == 0 and eff_req_code != "2.01"
-        if eff_type == "FD":
-            item["fd_non_ei_keyword"] = fd_non_ei_kw if is_fd_explicit_non_ei else None
-        is_fd_ei = (eff_type == "FD") and not is_fd_explicit_non_ei
-        if is_fd_ei and d > 0:
-            w = d
-            h = d
-            d = 0.0
-            w_use = w
-            h_use = h
-            item["w"] = w
-            item["h"] = h
-            item["d"] = 0.0
-            a1 = int(w)
-            a2 = int(h)
-        belimo_mfd_def = "1.02"
-        if note_prio_low and eff_type in ("MFD", "MFSD") and motor_brand == "BELIMO":
-            if any(k in note_prio_low for k in ("1.05", "2390", "đa cánh")):
-                belimo_mfd_def = "1.05"
-            elif ei_rating >= 120 or any(k in note_prio_low for k in ("1.01", "4751", "bfn", "60s")):
-                belimo_mfd_def = "1.01"
-        eff_model_code = eff_req_code or (("2.01" if is_fd_ei else "FD") if eff_type == "FD" else ("1.03" if is_klb_req else ("1.04" if is_honeywell_req else belimo_mfd_def)))
+        eff_model_code, motor_brand = cls_res["eff_model_code"], cls_res["motor_brand"]
+        ei_rating = cls_res["ei_rating"]
+        w, h, d, a1, a2 = cls_res["w"], cls_res["h"], cls_res["d"], cls_res["a1"], cls_res["a2"]
+        w_use, h_use = cls_res["w_use"], cls_res["h_use"]
         bom_multi = Agent05_DamperBOM.calculate_damper_bom(
             parent_id=f"Q-{idx}",
             damper_type=eff_type,
@@ -232,60 +144,11 @@ class Agent01_BOQExtractor:
         elif mod_cnt > 1:
             b1, b2 = int(w_mod), int(h_mod)
 
-        if eff_type in ("MFD", "MFSD"):
-            mod_txt = f"\n- Chia {mod_cnt} modul khi sản xuất" if mod_cnt > 1 else ""
-            clamp_txt = "\n- Van thu côn 2 đầu" if is_clamped else ""
-            lv_txt = "\n- Kết hợp cửa Louver nan Z ngoài trời + LCCT" if damper_type == "MFD_LOUVER" else ""
+        # Model + ghi chú báo giá, mô-men động cơ (VG-11, VG-12)
+        model_fslf, model_bfn, note_fslf, note_bfn = damper_classifier.build_model_note(
+            cls_res, mod_cnt, is_clamped, w_mod, h_mod, bom_multi["is_single_blade"])
 
-            if eff_model_code == "1.03":
-                model_fslf = "SWIND-1.03-MFD-EI90"
-                note_fslf = (
-                    "- Van ngăn cháy động cơ - Tiêu chuẩn EI 90\n"
-                    "- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 5Nm, Hãng KLB\n"
-                    "- Sản xuất theo BCTN số 4651/VLXD-TBMT"
-                    f"{mod_txt}{clamp_txt}{lv_txt}"
-                )
-            elif eff_model_code == "1.04":
-                mod_hw_txt = f"\n- Chia {mod_cnt} modul theo bản vẽ chi tiết" if mod_cnt > 1 else ""
-                model_fslf = "MFD + Louver" if damper_type == "MFD_LOUVER" else "SWIND-1.04-MFD-EI60"
-                note_fslf = (
-                    "- Van động cơ MFD - Tiêu chuẩn EI 60\n"
-                    "- 2 đầu bích TDC - HoneyWell, 9Nm, 230V, Type đóng mở nhanh: 15s - Model: MS4609F1010/B\n"
-                    "- Sản xuất theo BCTN số 1515/VLXD-TBMT"
-                    f"{mod_hw_txt}{clamp_txt}{lv_txt}"
-                )
-            elif eff_model_code == "1.01":
-                model_fslf = "MFD + Louver" if damper_type == "MFD_LOUVER" else "SWIND-1.01-MFD-EI120"
-                note_fslf = (
-                    "- Van chống cháy động cơ - Tiêu chuẩn EI 120\n"
-                    "- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 9Nm, 24V/230V BELIMO - Model: BFN 24\n"
-                    "- Sản xuất theo BCTN số 4751/VLXD-TBMT"
-                    f"{mod_txt}{clamp_txt}{lv_txt}"
-                )
-            elif eff_model_code == "1.05":
-                model_fslf = "MFD + Louver" if damper_type == "MFD_LOUVER" else "SWIND-1.05-MFD-EI120"
-                note_fslf = (
-                    "- Van động cơ SWIND-MFD - Tiêu chuẩn EI 120\n"
-                    "- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 9Nm, 24V BELIMO - Model: BFN 24\n"
-                    "- Sản xuất theo BCTN số 2390/VLXD-TBMT"
-                    f"{mod_txt}{clamp_txt}{lv_txt}"
-                )
-            else:
-                model_fslf = "MFD + Louver" if damper_type == "MFD_LOUVER" else "SWIND-1.02-MFD-EI90"
-                note_fslf = (
-                    "- Van chống cháy động cơ - Tiêu chuẩn EI 90\n"
-                    "- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 3.5Nm, 24V (Type: đóng mở nhanh) BELIMO - Model: FSLF US\n"
-                    "- Sản xuất theo BCTN số 4752/VLXD-TBMT"
-                    f"{mod_txt}{clamp_txt}{lv_txt}"
-                )
-            model_bfn = "MFD + Louver" if damper_type == "MFD_LOUVER" else "SWIND-1.05-MFD-EI120"
-            note_bfn = (
-                "- Van động cơ SWIND-MFD - Tiêu chuẩn EI 120\n"
-                "- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 9Nm, 24V BELIMO - Model: BFN 24\n"
-                "- Sản xuất theo BCTN số 2390/VLXD-TBMT\n"
-                f"- {'Van 1 cánh' if bom_multi['is_single_blade'] else 'Van chia đa cánh'}"
-                f"{mod_txt}{clamp_txt}{lv_txt}"
-            )
+        if eff_type in ("MFD", "MFSD"):
             if not (w_eff <= 150.0 and h_eff <= 150.0) and price_map:
                 bom_single = Agent05_DamperBOM.calculate_damper_bom(
                     parent_id=f"QS-{idx}",
@@ -309,64 +172,6 @@ class Agent01_BOQExtractor:
                 act_unit = sum(c["calc_qty"] * price_map.get(c["mat_id"], 0.0) for c in bom_multi["components"] if c["category"] == "ĐỘNG_CƠ_VÀ_CẢM_BIẾN")
                 fslf_ratio = (single_mech / multi_mech) if multi_mech > 0 else 1.0
                 has_fslf_formula_diff = True
-
-        elif eff_type == "FD":
-            mod_txt = f"\n- Chia {mod_cnt} modul khi sản xuất" if mod_cnt > 1 else ""
-            clamp_txt = "\n- Van thu côn 2 đầu" if is_clamped else ""
-            if is_fd_ei:
-                model_fslf = model_bfn = "SWIND-2.01- E-FD-EI120"
-                note_fslf = note_bfn = (
-                    "- Van chặn lửa cầu chì - Tiêu chuẩn EI 120\n"
-                    "- 2 đầu bích TDC - gắn cầu chì 70-74 độ C\n"
-                    "- Sản xuất theo BCTN số: 4761/VLXD-TBMT"
-                    f"{mod_txt}{clamp_txt}"
-                )
-            else:
-                model_fslf = model_bfn = "FD"
-                note_fslf = note_bfn = "Van chặn lửa cầu chì tôn mạ kẽm"
-        elif eff_type == "MD":
-            model_fslf = model_bfn = "MD"
-            s_mod = (w_mod * h_mod) / 1_000_000.0
-            if is_klb_req:
-                if mod_cnt > 1:
-                    note_fslf = note_bfn = f"Van MD chia {mod_cnt} modul,  {mod_cnt} động cơ KLB/VIWECO 24V - 10Nm ON/OFF"
-                else:
-                    note_fslf = note_bfn = "Van MD, động cơ KLB/VIWECO 24V - 10Nm ON/OFF"
-            elif is_honeywell_req or motor_brand == "HONEYWELL":
-                act_nm = "5Nm" if s_mod <= 0.8 else ("10Nm" if s_mod <= 1.8 else "20Nm")
-                act_md = "CN4605A" if s_mod <= 0.8 else ("CN4610A" if s_mod <= 1.8 else "CN4620A")
-                mod_dmp_txt = f", chia {mod_cnt} modul ({mod_cnt} động cơ)" if mod_cnt > 1 else ""
-                note_fslf = note_bfn = f"Van động cơ ON-OFF HoneyWell {act_nm}, 230V, đóng mở 90s-150s (Model: {act_md}/tđ){mod_dmp_txt}"
-            else:
-                act_nm = "5Nm" if max(w_mod, h_mod) < 1000 else ("10Nm" if s_mod <= 1.8 else "20Nm")  # Belimo MD có 1 cạnh >= 1000mm -> 10Nm
-                mod_dmp_txt = f", chia {mod_cnt} modul ({mod_cnt} động cơ)" if mod_cnt > 1 else ""
-                note_fslf = note_bfn = f"Van động cơ ON-OFF BELIMO {act_nm} (đóng mở 150s), điện áp 230V, xuất xứ Thụy Sỹ{mod_dmp_txt}"
-        elif eff_type == "MPRD":
-            model_fslf = model_bfn = "M-PRD"
-            s_mod = (w_mod * h_mod) / 1_000_000.0
-            if motor_brand == "BELIMO":
-                # Rule MPRD (User chốt 2026-11-02): động cơ tuyến tính 230V Belimo On/Off, mô-men theo rule Belimo MD (Agent05)
-                act_nm = "5Nm" if max(w_mod, h_mod) < 1000 else ("10Nm" if s_mod <= 1.8 else "20Nm")
-                act_txt = f"Động cơ tuyến tính 230V Belimo On/Off {act_nm}"
-            else:
-                act_nm = "5Nm" if s_mod <= 0.8 else ("10Nm" if s_mod <= 1.8 else "20Nm")
-                act_txt = f"Động cơ {'HoneyWell' if motor_brand == 'HONEYWELL' else motor_brand} On/Off {act_nm}"
-            if ei_rating > 0:
-                note_fslf = note_bfn = f"Van xả áp động cơ, thân van bọc tấm KSH 10mm, không có kiểm định. {act_txt}"
-            else:
-                note_fslf = note_bfn = f"Van xả áp động cơ tôn mạ kẽm. {act_txt}"
-        elif eff_type == "NRD":
-            model_fslf = model_bfn = "NRD"
-            note_fslf = note_bfn = "Van 1 chiều tôn mạ kẽm. ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm" if ei_rating > 0 else "Van 1 chiều tôn mạ kẽm"
-        elif eff_type == "PRD":
-            model_fslf = model_bfn = "PRD"
-            note_fslf = note_bfn = "Van xả áp đối trọng tôn mạ kẽm. ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm" if ei_rating > 0 else "Van xả áp đối trọng tôn mạ kẽm"
-        elif eff_type == "OBD":
-            model_fslf = model_bfn = "OBD"
-            note_fslf = note_bfn = "Van điều chỉnh lưu lượng OBD tôn mạ kẽm"
-        else:
-            model_fslf = model_bfn = "VCD"
-            note_fslf = note_bfn = "Van điều chỉnh lưu lượng tay gạt tôn mạ kẽm. ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm" if ei_rating > 0 else "Van điều chỉnh lưu lượng tay gạt tôn mạ kẽm"
 
         # Van+Van Combo: Nối thêm model suffix & note cho tất cả van phụ trong combo
         sec_dmps = item.get("secondary_dampers") or ([item.get("secondary_damper")] if item.get("secondary_damper") else [])
@@ -594,6 +399,11 @@ class Agent01_BOQExtractor:
         calc_duct = Agent04_DuctworkBOM.calculate_duct_item(item)
         item["duct_calc"] = calc_duct
         subtype = calc_duct["subtype"]
+        if subtype == "PLENUM_BOX":
+            # OG-21: Ghi chú ghi 1 hộp khác kích thước Tên -> vẫn tính theo Ghi chú, HỎI LẠI USER (User chốt 2026-11-03)
+            box_conflict = duct_classifier.note_box_conflict(raw_name, item.get("note_boq"))
+            if box_conflict:
+                item["box_note_conflict"] = box_conflict
         is_fitting = subtype not in ("DUCT_RECT", "SPIRAL_DUCT", "DUCT_M2", "FLEX_DUCT")
         brand = "SWIND" if cat == "ONG_GIO" else None
 
@@ -635,15 +445,13 @@ class Agent01_BOQExtractor:
             subtype = "INSUL" if is_insul else "NON_INSUL"
             model_fslf = model_bfn = calc_duct.get("model_std") or ("FLEX-INSUL" if is_insul else "FLEX-BARE")
         elif subtype in ("CANVAS_SQ", "CANVAS_RT"):
-            is_fire_canvas = ("CHONG-CHAY" in str(calc_duct.get("model_std", ""))) or any(k in raw_search for k in ("chống cháy", "chịu nhiệt", "tahk", "hút khói"))
+            is_fire_canvas = duct_classifier.is_fire_canvas(calc_duct.get("model_std", ""), raw_search)  # OG-24
             model_fslf = model_bfn = calc_duct.get("model_std") or "CANVAS"
         else:
             model_fslf = model_bfn = calc_duct.get("model_std") or subtype
         note_fslf = note_bfn = calc_duct.get("spec_note", "")
         if subtype in ("ELBOW_SQ", "ELBOW_45", "ELBOW_90", "ELBOW_RT"):
-            raw_low = raw_name.lower()
-            has_mesh = any(k in raw_low for k in ("lcct", "lưới chắn côn trùng"))
-            has_filter = any(k in raw_low for k in ("lọc g4", "bộ lọc g4", "lọc bụi"))
+            has_mesh, has_filter = duct_classifier.elbow_mesh_filter(raw_name)  # OG-22
             if has_mesh or has_filter:
                 model_fslf = model_bfn = model_fslf + (" + LCCT" if has_mesh else "") + (" + G4" if has_filter else "")
                 note_fslf = note_bfn = (
@@ -803,6 +611,14 @@ class Agent01_BOQExtractor:
             "box_spec": box_spec,
             "n_slots": n_slots
         }
+        if item.get("lcct_per_m2") and subtype == "LCCT":
+            # LCCT báo theo m² (BOQ ĐVT m2, không có kích thước): BOM quy đổi 1000x1000 = 1 m², BG không ghi kích thước giả
+            # (User chốt 2026-11-03, TONG_HOP_KHOI_LUONG_DHKK R429, R572)
+            for k_dim in ("a1", "a2", "b1", "b2"):
+                resolved_spec[k_dim] = None
+            m2_note = "Lưới chắn côn trùng Inox 304 — đơn giá theo m² (BOQ ghi khối lượng theo m²)"
+            for k_note in ("note_std", "note_fslf", "note_bfn"):
+                resolved_spec[k_note] = m2_note
         item["resolved_spec"] = resolved_spec
         item["is_box_combo"] = is_box_combo
         return resolved_spec

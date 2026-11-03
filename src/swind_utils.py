@@ -380,6 +380,11 @@ def detect_boq_header(ws):
                 ]
                 if not valid_qty:
                     valid_qty = qty_cands
+                # Cột KL ẩn (ngoại lệ 'tổng khối lượng' từ b5bf9c1) chỉ dùng khi KHÔNG còn cột KL nào đang hiện có số liệu.
+                # Nguồn: User chốt 2026-11-03, dự án 150-YCVT LUXQV — cột I 'Tổng KL dự kiến' ẩn, KL đúng ở cột O 'KL PVT mua mới'.
+                visible_qty = [c for c in valid_qty if get_column_letter(c) not in hidden_cols and _count_pos_qty(c) > 0]
+                if visible_qty:
+                    valid_qty = [c for c in valid_qty if get_column_letter(c) not in hidden_cols]
                 order_qty = [
                     c for c in valid_qty
                     if any(ok in qty_labels.get(c, "") for ok in ("cần về", "đặt hàng", "kl đặt", "sl đặt", "cung cấp đợt này", "yêu cầu cấp"))

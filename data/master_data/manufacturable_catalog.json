@@ -4,6 +4,7 @@
         "name": "Khớp nối mềm (Canvas) & Chụp thông hơi (Ventcap)",
         "keywords": [
             "canvas",
+            "flexible connection",
             "khớp nối mềm",
             "nối mềm",
             "nối mềm fcu",
@@ -89,6 +90,7 @@
             "kitchen hood",
             "kag",
             "seag",
+            "aag",
             "air grille",
             "cửa dạng lưới",
             "miệng dạng lưới",
@@ -105,6 +107,7 @@
             "fd",
             "mfd",
             "mfsd",
+            "mprd",
             "md",
             "nrd",
             "prd",
@@ -188,8 +191,31 @@
             "hộp tĩnh áp",
             "plenum",
             "tole",
-            "tôn"
+            "tôn",
+            "ong gio",
+            "phu kien ong gio",
+            "chan re",
+            "got giay",
+            "co trich",
+            "con giam",
+            "con thu",
+            "con vuong",
+            "con tron",
+            "giam deu",
+            "chuyen vuong tron",
+            "vuong tron",
+            "cut vuong",
+            "cut tron",
+            "chac chu y",
+            "chac y",
+            "chac ba",
+            "co tron",
+            "co vuong",
+            "cut cong",
+            "te vuong",
+            "te tron"
         ],
-        "mapping_category": "ONG_GIO"
+        "mapping_category": "ONG_GIO",
+        "_nguon_tu_khoa_khong_dau": "User duyệt 2026-11-03 (kiểm bất biến E2E --include-duct, 'KL ong gio cap va hut' sheet WC/Gio Tuoi): phụ kiện ống ghi không dấu 'Chan re', 'Con chuyen vuong tron', 'Con giam deu' bị bỏ. Chỉ thêm cụm ≥ 2 chữ, không thêm 'co'/'con' đơn lẻ. Subtype do duct_rules.json (đã có từ khóa không dấu)."
     }
 ]

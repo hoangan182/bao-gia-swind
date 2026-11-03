@@ -294,7 +294,7 @@ def _evaluate_parsed_item_in_ram(
 
     elif cat == "VAN_GIO":
         damper_type = spec["subtype"]
-        ei_rating = 0 if damper_type == "MD" else item.get("ei_rating", 0)
+        ei_rating = item.get("ei_rating", 0)  # MD có EI cũng bọc (User chốt 2026-11-03)
         m_code = spec.get("model_code")
         motor_brand = spec.get("motor_brand", "BELIMO")
         bom = Agent05_DamperBOM.calculate_damper_bom(
@@ -709,14 +709,23 @@ def locate_requirement_target(topic):
         {
             "tags": ["ong", "cut", "con", "te", "chan re", "zet", "chac", "bit dau", "hop gio", "tieu am", "canvas", "ventcap", "ong mem", "dien tich"],
             "title": "Công thức tính diện tích S (m2) & BOM Ống gió, Phụ kiện, Tiêu âm, Canvas (Agent 04)",
-            "json_targets": ["data/master_data/master_bom_rules.json -> 'ductwork_rules'"],
-            "py_targets": [("src/agent_04_bom_duct.py", None)]
+            "json_targets": ["data/master_data/master_bom_rules.json -> 'ductwork_rules'",
+                             "data/master_data/duct_rules.json -> 'thu_tu_nhan_dien' (bảng rule nhận diện ống / phụ kiện OG-01..OG-24)"],
+            "py_targets": [("src/agent_04_bom_duct.py", None), ("src/duct_classifier.py", "detect_subtype")]
+        },
+        {
+            "tags": ["pham vi", "thuong mai", "khong bao", "ong nuoc", "gia doi tac", "coverage", "sot dong", "canvas", "ventcap", "ong mem"],
+            "title": "Phạm vi báo giá: thương mại / không báo / giữ giá đối tác / hỏi lại (scope_filter PV-01..PV-13)",
+            "json_targets": ["data/master_data/scope_rules.json -> 'quy_tac'"],
+            "py_targets": [("src/scope_filter.py", None), ("src/swind_master_runner.py", "audit_full_boq_coverage")]
         },
         {
             "tags": ["van", "vcd", "mfd", "fd", "nrd", "prd", "md", "ei", "ei60", "ei90", "ei120", "belimo", "klb", "honeywell", "dong co", "modul"],
             "title": "Công thức & Barem giá Van gió, Van chặn lửa EI, Chia Modul & Động cơ (Agent 05)",
-            "json_targets": ["data/master_data/master_bom_rules.json -> 'damper_rules'"],
-            "py_targets": [("src/agent_05_bom_damper.py", None), ("src/agent_01_boq_extractor.py", "_resolve_damper_spec")]
+            "json_targets": ["data/master_data/master_bom_rules.json -> 'damper_rules'",
+                             "data/master_data/damper_rules.json -> 'quy_tac' (bảng rule nhận diện van gió VG-01..VG-13)"],
+            "py_targets": [("src/agent_05_bom_damper.py", None), ("src/damper_classifier.py", "classify"),
+                           ("src/agent_01_boq_extractor.py", "_resolve_damper_spec")]
         },
         {
             "tags": ["cua", "mieng gio", "louver", "linear", "slot", "sld", "slb", "khuech tan", "sot trung", "nan z", "bau duc", "nhom"],

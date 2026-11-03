@@ -33,7 +33,7 @@ class Agent05_DamperBOM:
     """
 
     @staticmethod
-    def calculate_damper_bom(parent_id, damper_type, w, h, brand="PN", ei_rating=0, mfd_mode="multi_bfn24", model_code=None, motor_brand="BELIMO", d=0, raw_name="", allow_ei=None, ei_damper_mode=None, split_module=None):
+    def calculate_damper_bom(parent_id, damper_type, w, h, brand="PN", ei_rating=0, mfd_mode="multi_bfn24", model_code=None, motor_brand="BELIMO", d=0, raw_name="", allow_ei=None, ei_damper_mode=None, split_module=None, md_shaft_only=False):
         """
         Bóc tách Van Gió (VCD, MD, NRD, PRD, OBD, FD, MFD) theo chuẩn Swind:
         - Điều phối qua các hàm con độc lập để dễ dàng tra cứu & kiểm tra từng công thức.
@@ -90,15 +90,17 @@ class Agent05_DamperBOM:
         Agent05_DamperBOM._append_actuator_or_mechanism(
             parent_id, w_mod, h_mod, modules_count, mod_note,
             is_md, is_fd, is_mfd, is_nrd, is_prd, is_single_blade,
-            mfd_mode, model_code, motor_brand, components, is_mprd=is_mprd
+            mfd_mode, model_code, motor_brand, components, is_mprd=is_mprd,
+            md_shaft_only=md_shaft_only
         )
 
         z_total_m2 = ((w_eff + h_eff) * 2.0 * 300.0 + w_eff * h_eff) / 1_000_000.0
-        ei_wrap_rating = 0 if (is_md and not is_mprd) else ei_rating
+        # MD / MPRD có EI (BOQ ghi) -> bọc tấm KSH như NRD/PRD/VCD (User chốt 2026-11-03; trước đây MD luôn bỏ EI)
+        ei_wrap_rating = ei_rating
         Agent05_DamperBOM._append_fire_insulation_components(
             parent_id, damper_type, w_eff, h_eff, w_mod, h_mod, l_body,
             modules_count, mod_note, z_total_m2, blade_factor_per_mod,
-            is_single_blade, is_fd_ei, is_mfd, (is_md and not is_mprd), ei_wrap_rating, mat_price_map, components
+            is_single_blade, is_fd_ei, is_mfd, False, ei_wrap_rating, mat_price_map, components
         )
 
         if is_round:
@@ -367,9 +369,12 @@ class Agent05_DamperBOM:
         return l_body, thickness_body, is_single_blade, blade_factor_per_mod, mod_note, components
 
     @staticmethod
-    def _append_actuator_or_mechanism(parent_id, w_mod, h_mod, modules_count, mod_note, is_md, is_fd, is_mfd, is_nrd, is_prd, is_single_blade, mfd_mode, model_code, motor_brand, components, is_mprd=False):
+    def _append_actuator_or_mechanism(parent_id, w_mod, h_mod, modules_count, mod_note, is_md, is_fd, is_mfd, is_nrd, is_prd, is_single_blade, mfd_mode, model_code, motor_brand, components, is_mprd=False, md_shaft_only=False):
         """Chọn động cơ van (Belimo / KLB / Honeywell), cầu chì FD, đối trọng PRD/NRD hoặc tay gạt VCD."""
         cross_section_mod_m2 = (w_mod * h_mod) / 1_000_000.0
+        if is_md and md_shaft_only and not is_mprd:
+            # Cờ dự án --md-shaft-only (User yêu cầu 2026-11-03): van MD trục chờ -> không cộng động cơ
+            return
         if is_md:
             if motor_brand.upper() == "KLB":
                 act_id = "MAT-ACTUATOR-SWIND-VIWECO"
