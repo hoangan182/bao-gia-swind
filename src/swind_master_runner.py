@@ -28,6 +28,7 @@ from agent_05_bom_damper import Agent05_DamperBOM
 from agent_06_bom_diffuser import Agent06_DiffuserBOM
 from agent_07_excel_builder import Agent07_ExcelBuilder
 from agent_08_qa_checker import Agent08_QAChecker
+from swind_boq_parser import BOX_ONLY_RX
 from swind_utils import vietnamese_slugify, prune_named_styles_in_file, get_quotation_profile, vat_label
 from openpyxl.cell.cell import MergedCell
 
@@ -219,6 +220,9 @@ def split_duct_rows_with_swind_products(items):
             if neg_rx.search(str(it.get("note_boq") or "")):
                 it["duct_swind_ask_reason"] = f"Ghi chú '{str(it.get('note_boq')).strip()[:60]}' khác Tên — đang báo theo Tên"
                 ask.append(it)
+        elif BOX_ONLY_RX.search(f"{it.get('raw_name') or ''} {it.get('model') or ''} {it.get('note_boq') or ''}"):
+            it["duct_swind_ask_reason"] = "BOQ ghi chỉ gồm hộp, không gồm cửa gió -> không báo cửa; hộp gió chỉ báo khi --include-duct"
+            ask.append(it)
         elif other_swind_rx.search(f"{it.get('raw_name') or ''} {it.get('note_boq') or ''}"):
             it["duct_swind_ask_reason"] = "có ghi sản phẩm Swind khác (van / OBD / cửa / louver) chưa tách được giá, phần ống không báo"
             ask.append(it)
@@ -1214,7 +1218,7 @@ def is_swind_product_name(name, scope_kws):
 def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items, only_cua_van=False, parser=None, include_duct=True, include_canvas=True):
     """
     Quét toàn bộ 100% các dòng trên từng Sheet BOQ gốc để kiểm tra độ phủ, độc lập với quyết định lọc của parser:
-    - Dòng Cửa/Van có KL nhưng thiếu kích thước (không thể báo giá) -> lỗi chặn.
+    - Dòng Cửa/Van có KL nhưng BOQ không ghi kích thước -> không báo giá, thông báo User (User chốt 2026-11-03, không chặn).
     - Dòng bị parser lọc bỏ có KL mà tên thuộc phạm vi sản phẩm Swind (lọc G4, ống gió m2, tiêu âm...) -> cần xác nhận.
     - Dòng có KL/kích thước mà parser không đọc tới -> nghi sót dòng.
     Trả về dict {sheet: {"missing_dims": [...], "skipped_in_scope": [...], "suspect_unparsed": [...]}}.
@@ -1267,7 +1271,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
                 flag_rows[r] = "⚠️ CHƯA BÁO GIÁ: Chữ Z chưa ghi độ lệch E (chênh cao độ) — Kỹ thuật kiểm tra & bổ sung"
             elif info.get("reason") == "MISSING_DIMS" and not is_non_product and not is_lump_sum:
                 missing_dims.append(desc)
-                flag_rows[r] = "⛔ CHƯA BÁO GIÁ: thiếu kích thước / mã ký hiệu chưa tra được — cần xác nhận"
+                flag_rows[r] = "⚠️ KHÔNG BÁO GIÁ: BOQ không ghi kích thước (mã ký hiệu S2/R3... gửi bảng tra để báo)"
             elif not is_non_product and is_swind_product_name(nm_l, scope_kws) and not any(k in nm_l for k in SWIND_NON_SCOPE_KWS):
                 skipped_in_scope.append(f"{desc} | Lý do lọc={info.get('reason')}")
                 flag_rows[r] = f"⚠️ CHƯA BÁO GIÁ: dòng thuộc phạm vi Swind bị lọc ({info.get('reason')}) — cần xác nhận"
@@ -1312,7 +1316,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
         for mq in missing_qty_notes:
             print(f"     • [Lưu ý KL trống] {mq}")
         if missing_dims:
-            print(f"     ⛔ [THIẾU KÍCH THƯỚC — CHƯA CÓ GIÁ, BẮT BUỘC HỎI LẠI USER] {len(missing_dims)} dòng Cửa/Van có KL nhưng không đọc được kích thước (mã ký hiệu S2/R3... cần bảng tra kích thước):")
+            print(f"     ⚠️ [THIẾU KÍCH THƯỚC — KHÔNG BÁO GIÁ, THÔNG BÁO USER] {len(missing_dims)} dòng Cửa/Van có KL nhưng BOQ không ghi kích thước (mã ký hiệu S2/R3... cần bảng tra kích thước):")
             for md in missing_dims:
                 print(f"        - {md}")
         if skipped_in_scope:
@@ -1739,9 +1743,9 @@ def evaluate_quotation_gate(coverage, qa_reports, input_audit, unresolved_items,
     for sh, cv in (coverage or {}).items():
         if sh.startswith("_"):
             continue
+        # Rule User (2026-11-03): không có kích thước -> KHÔNG báo giá, chỉ thông báo (không chặn); BOQ có đơn giá đối tác thì giữ (parser)
         if cv.get("missing_dims"):
-            unpriced_rows += len(cv["missing_dims"])
-            blocking.append(f"Sheet '{sh}': {len(cv['missing_dims'])} dòng Cửa/Van có KL nhưng thiếu kích thước -> CHƯA CÓ GIÁ (đã tô vàng trên Sheet BG)")
+            confirm.append(f"[THÔNG BÁO USER] Sheet '{sh}': {len(cv['missing_dims'])} dòng Cửa/Van có KL nhưng BOQ không ghi kích thước -> KHÔNG báo giá (tô vàng trên Sheet BG); cấp kích thước bằng --override nếu cần báo")
         if cv.get("skipped_in_scope"):
             confirm.append(f"Sheet '{sh}': {len(cv['skipped_in_scope'])} dòng có KL thuộc phạm vi Swind bị lọc (lọc G4, ống gió m2, tiêu âm...) -> xác nhận có báo giá không")
         if cv.get("suspect_unparsed"):
@@ -1769,6 +1773,11 @@ def evaluate_quotation_gate(coverage, qa_reports, input_audit, unresolved_items,
     if fd_plain:
         confirm.append(f"[HỎI LẠI USER] {len(fd_plain)} van chặn lửa đang báo FD THƯỜNG (không EI) vì BOQ ghi rõ — mặc định Swind là EI120 có bọc, xác nhận lại: "
                        + "; ".join(f"R{it.get('source_row')} '{it.get('raw_name')}' (khớp '{it['fd_non_ei_keyword']}')" for it in fd_plain[:10]))
+    partner_nodim = [it for it in (all_items or []) if it.get("is_missing_dims") and float(it.get("qty") or 0) > 0
+                     and isinstance(it.get("ref_price"), (int, float)) and it["ref_price"] > 0]
+    if partner_nodim:
+        confirm.append(f"[THÔNG BÁO USER] {len(partner_nodim)} dòng BOQ không ghi kích thước -> giữ đơn giá đối tác có sẵn trong BOQ, Swind không tự báo giá: "
+                       + "; ".join(f"R{it.get('source_row')} '{it.get('raw_name')}'" for it in partner_nodim[:10]))
     assumed = [it for it in (all_items or []) if it.get("dim_assumption") and float(it.get("qty") or 0) > 0]
     if assumed:
         confirm.append(f"{len(assumed)} dòng BOQ thiếu 1 cạnh kích thước -> đang tính theo kích thước GIẢ ĐỊNH: "

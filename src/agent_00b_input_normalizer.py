@@ -24,8 +24,9 @@ from enum import Enum
 from typing import Dict, List, Tuple, Optional, Any
 
 import openpyxl
+from openpyxl.utils import get_column_letter
 
-from swind_utils import detect_boq_header, hidden_row_indices
+from swind_utils import detect_boq_header, hidden_col_letters, hidden_row_indices
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -64,6 +65,14 @@ class FormatDetector:
         self.filepath = filepath
         self.wb = openpyxl.load_workbook(filepath, data_only=True)
         self.results = {}  # per-sheet analysis
+        self._parser = None
+
+    def _dry_run_parser(self):
+        """SwindBOQParser dùng chung workbook (1 lần nạp danh mục, parse_sheet có cache dùng lại ở Agent 01)."""
+        if self._parser is None:
+            from swind_boq_parser import SwindBOQParser
+            self._parser = SwindBOQParser(self.filepath, wb=self.wb)
+        return self._parser
 
     def analyze_all_sheets(self, sheet_names: Optional[List[str]] = None) -> Dict[str, Any]:
         """Phân tích tất cả sheets hiển thị (hoặc sheets mục tiêu/HVAC) trong workbook."""
@@ -112,6 +121,7 @@ class FormatDetector:
             "issues": [],
             "data_row_count": 0,
             "duct_item_count": 0,
+            "verification": {},
         }
 
         # 1. Scan header area (rows 1-25)
@@ -122,6 +132,7 @@ class FormatDetector:
         if self._check_order_sheet(ws):
             analysis["format_type"] = FormatType.ORDER_MULTI_BATCH
             analysis["has_lan_n_columns"] = True
+            self._verify_structure(ws, analysis)
             return analysis
 
         # 3. Check for section headers
@@ -139,7 +150,22 @@ class FormatDetector:
         analysis["format_type"] = self._classify_format(analysis)
         analysis["confidence"] = self._compute_confidence(analysis)
 
+        # 7. Kiểm chứng độc lập cột/dòng parser đã chọn (chỉ cảnh báo)
+        self._verify_structure(ws, analysis)
+
         return analysis
+
+    def _verify_structure(self, ws, analysis: Dict) -> None:
+        if analysis.get("header_row") is None:
+            return
+        try:
+            parser = self._dry_run_parser()
+            items = parser.parse_sheet(analysis["sheet_name"])  # dùng chung cache parse với Agent 01
+            ver = StructureVerifier(ws, analysis["header_row"], analysis.get("col_map", {}), items,
+                                    parser.skipped_rows.get(analysis["sheet_name"], set())).verify()
+        except Exception as e:
+            ver = {"warnings": [], "_error": f"{type(e).__name__}: {e}"}
+        analysis["verification"] = ver
 
     def _scan_header_area(self, ws) -> Dict:
         """Header & ánh xạ cột lấy từ Reader core (swind_utils.detect_boq_header) — cấm tự dò riêng."""
@@ -282,9 +308,7 @@ class FormatDetector:
         parser_mfg_valid = 0
         parser_duct_valid = 0
         try:
-            from swind_boq_parser import SwindBOQParser as MPriceBOQParser
-            # Dry-run SwindBOQParser trên sheet
-            _parser = MPriceBOQParser(self.filepath, wb=self.wb)
+            _parser = self._dry_run_parser()
             parsed_items = _parser.parse_sheet(analysis["sheet_name"])
             mfg_cats = ("CUA_GIO", "VAN_GIO", "ONG_GIO", "CANVAS", "TIEU_AM", "ONG_MEM")
             mfg_items = [it for it in parsed_items if it.get("category") in mfg_cats]
@@ -347,6 +371,171 @@ class FormatDetector:
         if analysis.get("col_map", {}).get("unit") or analysis.get("format_type") == FormatType.STANDARD_BOQ:
             score += 0.1
         return round(score, 2)
+
+# ---------------------------------------------------------------------------
+# Module 2: Structure Verifier — kiểm chứng độc lập kết quả đọc của Reader core
+# ---------------------------------------------------------------------------
+# Reader core (detect_boq_header) là điểm đọc duy nhất: chọn nhầm cột/dòng là mọi dự án sai theo.
+# Bộ này KHÔNG phải bộ đọc thứ 2 và KHÔNG sửa kết quả: đếm thô trên file gốc rồi so với cột/dòng
+# parser đã chọn, lệch thì in cảnh báo. Lỗi từng gặp: CC17 'DG-CAN HO' chọn cột 'TỔNG' (77) thay
+# 'KL ECB' (313); VGCG/MKS đọc phải cột ẩn. (Việc A — plan/BAN_GIAO_TACH_AGENT_DOC_BOQ.md, 2026-11-03)
+
+VERIFY_TAG = "⚠️ [KIỂM CHỨNG ĐỌC BOQ]"
+# Tiêu đề cột số lượng rõ ràng / chung chung ('Tổng' = cột cộng nhóm, VD 'CĂN HỘ ST - B2 / TỔNG')
+_QTY_EXPLICIT_RX = re.compile(r"\b(?:sl|kl|q'?ty|q\.ty|qty)\b|số lượng|khối lượng|quantit|quanttiy")
+_QTY_GENERIC_RX = re.compile(r"^(?:tổng|tổng số|tổng cộng|total)$")
+# Cột không phải số lượng (tiền, tiến độ, hệ số...) hoặc số lượng cố ý không dùng (tồn kho, kỳ trước, 1 tầng...)
+_QTY_EXCLUDE = ("giá", "tiền", "price", "amount", "vnđ", "vnd", "ngày", "thời gian", "tiến độ", "hao hụt", "hệ số",
+                "%", "m2", "m²", "tồn kho", "kỳ trước", "hợp đồng", "1 tầng", "một tầng", "điển hình", "đơn vị", "đvt")
+_ROLE_COLS = ("name", "qty", "unit", "spec", "model", "w", "h", "l", "thickness", "remarks")
+
+
+def _norm_txt(v) -> str:
+    return re.sub(r"\s+", " ", unicodedata.normalize("NFC", str(v)).lower()).strip()
+
+
+def _is_pos_num(v) -> bool:
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0
+
+
+class StructureVerifier:
+    """Đếm thô 1 sheet trên file gốc và đối chiếu với cột/dòng parser đã chọn (chỉ cảnh báo)."""
+
+    # Ngưỡng 'ít dòng có số hơn hẳn': cột khác phải có ≥ 2 lần VÀ hơn ≥ 5 dòng so với cột parser chọn
+    MORE_ROWS_RATIO = 2.0
+    MORE_ROWS_MIN_DIFF = 5
+    # Tiêu đề rõ ràng khác cột parser chọn: lệch giá trị ở ≥ 50% (tối thiểu 2) dòng parser đã bóc
+    CONFLICT_MIN_ROWS = 2
+    CONFLICT_RATE = 0.5
+    # Dòng có tên + SL>0 ở cột parser chọn mà parser không bóc cũng không ghi lý do bỏ
+    UNACCOUNTED_MIN = 5
+    UNACCOUNTED_RATE = 0.2
+
+    def __init__(self, ws, header_row: int, col_map: Dict, items: List[Dict], skipped_rows=None):
+        self.ws = ws
+        self.header_row = header_row
+        self.col_map = col_map or {}
+        self.items = [it for it in (items or []) if not it.get("is_side_table")]
+        self.skipped_rows = set(skipped_rows or ())
+        self.hidden_rows = hidden_row_indices(ws)
+        self.hidden_cols = hidden_col_letters(ws)
+
+    def _col_label(self, c: int) -> str:
+        """Ghép tiêu đề cột trong khối header (tối đa 3 dòng trên header_row, bỏ dòng ẩn & ô số thứ tự '(13)')."""
+        parts = []
+        for r in range(max(1, self.header_row - 3), self.header_row + 1):
+            if r in self.hidden_rows:
+                continue
+            v = self.ws.cell(r, c).value
+            if v is None or _is_pos_num(v):
+                continue
+            t = _norm_txt(v)
+            # Bỏ số thứ tự cột '(13)' và tiêu đề bảng trải ngang ('BẢNG TỔNG HỢP KHỐI LƯỢNG ...')
+            if t and not re.match(r"^\(?\d+\)?$", t) and not t.startswith(("bảng ", "biểu ")) and len(t) <= 60:
+                parts.append(t)
+        return " / ".join(parts)
+
+    def _qty_kind(self, label: str) -> Optional[str]:
+        if not label or any(k in label for k in _QTY_EXCLUDE):
+            return None
+        if _QTY_EXPLICIT_RX.search(label):
+            return "explicit"
+        if _QTY_GENERIC_RX.match(label.split(" / ")[-1]):
+            return "generic"
+        return None
+
+    def raw_counts(self) -> Dict[int, Dict]:
+        """Mọi cột có số > 0 bên dưới header (dòng hiển thị có tên hàng): số dòng, tổng, tiêu đề, ẩn/hiện."""
+        ws = self.ws
+        name_c = self.col_map.get("name")
+        max_c = min(ws.max_column, 60)
+        stats = {}
+        for r in range(self.header_row + 1, ws.max_row + 1):
+            if r in self.hidden_rows:
+                continue
+            if name_c and ws.cell(r, name_c).value in (None, ""):
+                continue
+            for c in range(1, max_c + 1):
+                v = ws.cell(r, c).value
+                if _is_pos_num(v):
+                    st = stats.setdefault(c, {"rows": {}, "sum": 0.0})
+                    st["rows"][r] = float(v)
+                    st["sum"] += float(v)
+        for c, st in stats.items():
+            letter = get_column_letter(c)
+            st["letter"] = letter
+            st["label"] = self._col_label(c)
+            st["hidden"] = letter in self.hidden_cols
+            st["kind"] = self._qty_kind(st["label"])
+            st["n"] = len(st["rows"])
+        return stats
+
+    def verify(self) -> Dict[str, Any]:
+        warns = []
+        stats = self.raw_counts() if self.header_row is not None else {}
+        qty_c = self.col_map.get("qty")
+        forced = getattr(self.ws, "_forced_qty_col", None)
+        is_order = bool(self.col_map.get("is_order_sheet"))
+        chosen = stats.get(qty_c, {"rows": {}, "sum": 0.0, "n": 0, "label": self._col_label(qty_c) if qty_c else "",
+                                   "letter": get_column_letter(qty_c) if qty_c else "?"})
+        item_rows = sorted({it.get("source_row") for it in self.items if it.get("source_row")})
+        item_qty_sum = sum(float(it.get("qty") or 0) for it in self.items if not it.get("is_missing_qty"))
+
+        # (1) Parser dùng cột ẩn / dòng ẩn
+        for role in _ROLE_COLS:
+            c = self.col_map.get(role)
+            if isinstance(c, int) and c > 0 and get_column_letter(c) in self.hidden_cols and not (role == "qty" and forced == c):
+                warns.append(f"Parser đọc cột {role.upper()} = cột {get_column_letter(c)} ('{self._col_label(c)}') đang BỊ ẨN trên BOQ.")
+        # (1b) Cột kích thước / SL trùng cột STT (lỗi 2026-11-03: mã hạng mục 'A1' bị hiểu là cột kích thước A1)
+        stt_c = self.col_map.get("stt")
+        for role in ("w", "h", "w2", "h2", "l", "qty"):
+            if stt_c and self.col_map.get(role) == stt_c:
+                warns.append(f"Parser đọc cột {role.upper()} trùng cột STT {get_column_letter(stt_c)} ('{self._col_label(stt_c)}').")
+        hid_items = [r for r in item_rows if r in self.hidden_rows]
+        if hid_items:
+            warns.append(f"Parser bóc {len(hid_items)} dòng đang BỊ ẨN: " + ", ".join(f"R{r}" for r in hid_items[:10]))
+
+        cands = {c: st for c, st in stats.items()
+                 if st["kind"] and not st["hidden"] and c not in (qty_c, self.col_map.get("stt"))}
+        if qty_c and not is_order and not forced:
+            # (2) Cột số lượng khác cùng nhóm tiêu đề có số ở nhiều dòng hơn hẳn
+            for c, st in sorted(cands.items()):
+                if st["n"] >= self.MORE_ROWS_RATIO * chosen["n"] and st["n"] - chosen["n"] >= self.MORE_ROWS_MIN_DIFF:
+                    warns.append(f"Cột SL parser chọn {chosen['letter']} ('{chosen['label']}') chỉ có số ở {chosen['n']} dòng, "
+                                 f"cột {st['letter']} ('{st['label']}') có số ở {st['n']} dòng — kiểm tra lại cột SL.")
+            # (3) Cột tiêu đề KL/SL rõ ràng mang giá trị KHÁC cột parser chọn trên các dòng đã bóc
+            # (bắt case CC17: chọn 'TỔNG' 77 thay 'KL ECB' 313). Hai cột KL rõ ràng cùng có số → cũng cảnh báo.
+            for c, st in sorted(cands.items()):
+                if st["kind"] != "explicit":
+                    continue
+                both = [r for r in item_rows if r in st["rows"] and r in chosen["rows"]]
+                diff = [r for r in both if abs(st["rows"][r] - chosen["rows"][r]) > 1e-6]
+                if len(diff) >= self.CONFLICT_MIN_ROWS and len(diff) >= self.CONFLICT_RATE * len(both):
+                    ex = "; ".join(f"R{r}: {chosen['rows'][r]:g} vs {st['rows'][r]:g}" for r in diff[:5])
+                    warns.append(f"Cột SL parser chọn {chosen['letter']} ('{chosen['label']}') lệch cột {st['letter']} ('{st['label']}') "
+                                 f"ở {len(diff)}/{len(both)} dòng đã bóc ({ex}) — xác nhận cột KL đúng.")
+
+        # (4) Dòng có tên + SL > 0 ở cột parser chọn mà parser không bóc, cũng không ghi lý do bỏ
+        accounted = set(item_rows) | self.skipped_rows
+        unacc = [r for r in sorted(chosen["rows"]) if r not in accounted]
+        if len(unacc) >= self.UNACCOUNTED_MIN and len(unacc) >= self.UNACCOUNTED_RATE * max(chosen["n"], 1):
+            warns.append(f"{len(unacc)}/{chosen['n']} dòng có tên + SL>0 ở cột {chosen['letter']} nhưng parser không bóc "
+                         f"(cũng không ghi lý do bỏ): " + ", ".join(f"R{r}" for r in unacc[:10]))
+
+        return {
+            "qty_col": chosen["letter"] if qty_c else None,
+            "qty_col_label": chosen["label"],
+            "raw_qty_rows": chosen["n"],
+            "raw_qty_sum": round(chosen["sum"], 3),
+            "parsed_rows": len(item_rows),
+            "parsed_qty_sum": round(item_qty_sum, 3),
+            "unaccounted_rows": unacc,
+            "qty_candidates": {st["letter"]: {"label": st["label"], "rows": st["n"], "sum": round(st["sum"], 3),
+                                              "hidden": st["hidden"], "kind": st["kind"]}
+                               for c, st in sorted(stats.items()) if st["kind"] or c == qty_c},
+            "warnings": warns,
+        }
+
 
 # ---------------------------------------------------------------------------
 # Module 4: Learning Loop
@@ -430,6 +619,7 @@ class Agent00B_InputNormalizer:
         analyses = detector.analyze_all_sheets(sheet_names=self.sheet_names)
 
         warnings = {}
+        verify_warnings = {}
         for sheet_name, analysis in analyses.items():
             fmt = analysis.get("format_type", FormatType.STANDARD_BOQ)
             fmt_str = fmt.value if isinstance(fmt, FormatType) else fmt
@@ -450,6 +640,12 @@ class Agent00B_InputNormalizer:
                 warnings[sheet_name] = list(analysis["issues"])
                 for issue in analysis["issues"]:
                     print(f"     ⚠️  {issue}")
+            ver_warns = (analysis.get("verification") or {}).get("warnings") or []
+            if ver_warns:
+                verify_warnings[sheet_name] = list(ver_warns)
+                warnings.setdefault(sheet_name, []).extend(f"{VERIFY_TAG} {w}" for w in ver_warns)
+                for w in ver_warns:
+                    print(f"     {VERIFY_TAG} {w}")
 
             if fmt_str != FormatType.STANDARD_BOQ.value:
                 self.learning_db.record({
@@ -462,6 +658,9 @@ class Agent00B_InputNormalizer:
                     "success": True,
                 })
 
+        if verify_warnings:
+            print(f"  -> {VERIFY_TAG} Cột/dòng parser chọn lệch so với đếm thô trên file gốc ở {len(verify_warnings)} sheet — "
+                  "kiểm tra lại trước khi chốt (dùng --override nếu cần).")
         if warnings:
             print("  -> ⚠️  BOQ có cấu trúc lạ ở các sheet trên — đọc trực tiếp file gốc (không chuẩn hóa/viết lại), "
                   "đối chiếu mục [Full-BOQ Coverage Audit].")
@@ -479,6 +678,8 @@ class Agent00B_InputNormalizer:
                 "data_rows": v.get("data_row_count"),
                 "qty_rate": v.get("qty_nonzero_rate"),
             } for k, v in analyses.items()},
+            "verification": {k: v.get("verification") or {} for k, v in analyses.items()},
+            "verify_warnings": verify_warnings,
             "warnings": warnings,
         }
         return self.filepath, self.report

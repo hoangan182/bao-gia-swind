@@ -1,0 +1,2603 @@
+{
+ "_mo_ta": "Bảng rule nhận diện CỬA GIÓ (CUA_GIO) — nguồn dữ liệu duy nhất của src/diffuser_classifier.py (thay chuỗi if/elif cũ trong Agent01._resolve_diffuser_spec). Sửa rule: theo AGENTS.md mục 7 (git log -S tìm nguồn → rẽ nhánh giữ case cũ → ghi nguon/ly_do → thêm vi_du_dung/vi_du_sai → chạy tests/test_swind_diffuser_rules.py + self-test + E2E 2 chế độ). Cú pháp điều kiện: xem 'cu_phap'.",
+ "phien_ban": "2026-11-03",
+ "cu_phap": {
+  "co": "Chuỗi 'ten_co' = cờ đúng; '!ten_co' = cờ sai. true/false = hằng.",
+  "tat_ca / mot_trong / khong": "AND / OR / NOT các điều kiện con.",
+  "tu_khoa": "Có ít nhất 1 từ khóa (so khớp chuỗi con) trong biến văn bản 'trong'. Phần tử '@nhom' = nhóm trong 'nhom_tu_khoa'. 'tru' = bỏ các từ khóa này.",
+  "regex": "re.search(regex, <biến 'trong'>), 'ignorecase' tùy chọn; 'regex_cau_hinh' = lấy regex từ subtype_rules.COMBO_AND_DETECTION_RULES nếu có.",
+  "so_sanh": "[a, toán tử, b]; a/b là số, tên biến số (w, h, d, max_wh, min_wh, n_slots) hoặc [biến, '*', hệ số].",
+  "thuoc": "[biến số, [giá trị...]] — so int(biến).",
+  "bien_van_ban_dau_vao": {
+   "combined_search": "(raw_search + full_search).lower() — Tên + Model + Ghi chú + Title cha + aux",
+   "primary_diff_search": "(raw_name + name + model).lower() — Cột Tên (không Ghi chú)",
+   "note_boq_low": "Ghi chú / Spec BOQ (lower)",
+   "note_model_low": "Ghi chú / Spec + cột Model của chính dòng (lower, không gồm Title cha)",
+   "raw_name_low": "Tên gốc của chính dòng (lower, không gồm Title cha)",
+   "raw_search": "(raw_name + model + Ghi chú).lower()",
+   "raw_name": "Tên gốc dòng BOQ",
+   "unaccent_search": "combined_search bỏ dấu, gộp khoảng trắng"
+  },
+  "co_dau_vao": {
+   "spec_note": "--spec-priority note",
+   "has_embedded_image": "dòng BOQ có ảnh nhúng (nhận diện Linear SLB)",
+   "include_box": "--include-box",
+   "neck_size_override": "--neck-size",
+   "is_ktc_applied": "đã cộng KTC→KTM ở lần giải mã trước"
+  }
+ },
+ "nhom_tu_khoa": {
+  "mesh_kws": {
+   "tu_cau_hinh": "mesh_keywords",
+   "mac_dinh": [
+    "lưới",
+    "chắn côn trùng",
+    "côn trùng",
+    "lcct",
+    "+n",
+    "+ n",
+    "+is",
+    "+ is",
+    "i.s",
+    "insect screen",
+    "c/w is",
+    "c/w i.s",
+    "is"
+   ],
+   "them": [
+    "lccct",
+    "c/w ls",
+    "c/w l.s",
+    "chắn chim",
+    "against bird",
+    "bird screen"
+   ]
+  },
+  "filter_kws": {
+   "tu_cau_hinh": "filter_keywords",
+   "mac_dinh": [
+    "phin lọc",
+    "lọc bụi",
+    "lọc sơ cấp",
+    "lưới lọc",
+    "+f",
+    "g4"
+   ],
+   "them": [
+    "filter",
+    "lọc thô",
+    "lọc sơ cấp",
+    "lưới lọc"
+   ]
+  },
+  "louver_kws": {
+   "tu_cau_hinh": "louver_z_keywords",
+   "mac_dinh": [
+    "nan z",
+    "louver",
+    "luover",
+    "louvre",
+    "chớp",
+    "fal",
+    "oal",
+    "eal",
+    "wl"
+   ],
+   "them": [
+    "cửa chớp",
+    "chớp nhôm"
+   ]
+  },
+  "ten_nan_thang": [
+   "nan thẳng",
+   "gió thẳng",
+   "miệng thẳng",
+   "cửa thẳng",
+   "bầu dục",
+   "nan bd",
+   "lớp nan",
+   "nan đơn",
+   "nan đôi",
+   "air grille"
+  ],
+  "ten_sot_trung": [
+   "sọt trứng",
+   "sọt trưng",
+   "dạng lưới",
+   "kiểu lưới",
+   "eggcrate",
+   "egg crate",
+   "ecg",
+   "seeg"
+  ],
+  "ten_louver": [
+   "nan z",
+   "louver",
+   "luover",
+   "louvre",
+   "cửa chớp",
+   "chớp nhôm"
+  ],
+  "ten_slot": [
+   "slot",
+   "sld",
+   "lsd",
+   "dls",
+   "khe hẹp",
+   "kiểu khe"
+  ],
+  "ten_linear": [
+   "linear",
+   "slb",
+   "nan t ",
+   "nan t-",
+   "khe dài",
+   "tuyến tính"
+  ],
+  "ten_khuech_tan": [
+   "khuếch tán",
+   "scd",
+   "sad"
+  ],
+  "nan_bat_ky_ghi_chu": [
+   "nan thẳng",
+   "bầu dục",
+   "nan bd",
+   "nan z",
+   "louver",
+   "sọt trứng",
+   "sọt trưng",
+   "eggcrate",
+   "khuếch tán",
+   "slot",
+   "linear"
+  ],
+  "ma_cua_nan_thang": [
+   "fag",
+   "sag",
+   "rag",
+   "oag",
+   "mag",
+   "pag",
+   "seg",
+   "spg",
+   "eag",
+   "kag",
+   "seag",
+   "sdg"
+  ],
+  "dau_hieu_cua": [
+   "cửa",
+   "miệng",
+   "mặt gió",
+   "sag",
+   "fag",
+   "rag",
+   "oag",
+   "mag",
+   "pag",
+   "seg",
+   "spg",
+   "eag",
+   "kag",
+   "seag",
+   "sdg",
+   "grille",
+   "grilles",
+   "diffuser",
+   "cover",
+   "nan "
+  ],
+  "cap_khi_bu": [
+   "cấp khí bù",
+   "bù khí",
+   "cấp gió bù",
+   "bù gió"
+  ],
+  "nan_thang_sot_trung": [
+   "nan thẳng",
+   "gió thẳng",
+   "miệng thẳng",
+   "cửa thẳng",
+   "bầu dục",
+   "nan bd",
+   "sọt trứng",
+   "sọt trưng"
+  ]
+ },
+ "buoc_nhan_dien": [
+  {
+   "co": "has_obd",
+   "mo_ta": "Kèm van OBD (+O, c/w OBD, van điều chỉnh lưu lượng)",
+   "dieu_kien": {
+    "mot_trong": [
+     {
+      "tu_khoa": [
+       "obd"
+      ],
+      "trong": "combined_search"
+     },
+     {
+      "regex": "\\+\\s*o\\b|(?:c/w|\\+|kèm|gắn|with)\\s*obd\\b|van\\s+điều\\s*ch[ỉi]nh\\s*lưu\\s*lượng|van\\s+ch[ỉi]nh\\s*lưu\\s*lượng",
+      "trong": "combined_search"
+     }
+    ]
+   }
+  },
+  {
+   "co": "has_explicit_straight",
+   "mo_ta": "Cột Tên ghi rõ nan thẳng / bầu dục",
+   "dieu_kien": {
+    "tu_khoa": [
+     "@ten_nan_thang"
+    ],
+    "trong": "primary_diff_search"
+   }
+  },
+  {
+   "co": "has_explicit_egg",
+   "mo_ta": "Cột Tên ghi rõ sọt trứng / dạng lưới",
+   "dieu_kien": {
+    "tu_khoa": [
+     "@ten_sot_trung"
+    ],
+    "trong": "primary_diff_search"
+   }
+  },
+  {
+   "co": "has_explicit_louver",
+   "mo_ta": "Cột Tên ghi rõ louver / nan Z",
+   "dieu_kien": {
+    "tu_khoa": [
+     "@ten_louver"
+    ],
+    "trong": "primary_diff_search"
+   }
+  },
+  {
+   "co": "has_explicit_slot",
+   "dieu_kien": {
+    "tu_khoa": [
+     "@ten_slot"
+    ],
+    "trong": "primary_diff_search"
+   }
+  },
+  {
+   "co": "has_explicit_linear",
+   "dieu_kien": {
+    "tu_khoa": [
+     "@ten_linear"
+    ],
+    "trong": "primary_diff_search"
+   }
+  },
+  {
+   "co": "has_explicit_sq_diff",
+   "dieu_kien": {
+    "tu_khoa": [
+     "@ten_khuech_tan"
+    ],
+    "trong": "primary_diff_search"
+   }
+  },
+  {
+   "co": "has_any_explicit_blade",
+   "mo_ta": "Cột Tên ghi rõ một kiểu nan",
+   "dieu_kien": {
+    "mot_trong": [
+     "has_explicit_straight",
+     "has_explicit_egg",
+     "has_explicit_louver",
+     "has_explicit_slot",
+     "has_explicit_linear",
+     "has_explicit_sq_diff"
+    ]
+   }
+  },
+  {
+   "co": "note_blade_conflict",
+   "mo_ta": "Kiểu nan Cột Tên mâu thuẫn Ghi chú (khi --spec-priority name) → khóa theo Cột Tên",
+   "nguon": "dde7498 2026-10-28",
+   "dieu_kien": {
+    "tat_ca": [
+     "!spec_note",
+     {
+      "mot_trong": [
+       {
+        "tat_ca": [
+         "has_explicit_straight",
+         {
+          "tu_khoa": [
+           "nan z",
+           "louver",
+           "sọt trứng",
+           "sọt trưng",
+           "eggcrate",
+           "khuếch tán",
+           "slot",
+           "linear"
+          ],
+          "trong": "note_boq_low"
+         }
+        ]
+       },
+       {
+        "tat_ca": [
+         "has_explicit_louver",
+         {
+          "tu_khoa": [
+           "nan thẳng",
+           "bầu dục",
+           "nan bd",
+           "sọt trứng",
+           "sọt trưng",
+           "eggcrate",
+           "khuếch tán",
+           "slot",
+           "linear"
+          ],
+          "trong": "note_boq_low"
+         }
+        ]
+       },
+       {
+        "tat_ca": [
+         "has_explicit_egg",
+         {
+          "tu_khoa": [
+           "nan thẳng",
+           "bầu dục",
+           "nan bd",
+           "nan z",
+           "louver",
+           "khuếch tán",
+           "slot",
+           "linear"
+          ],
+          "trong": "note_boq_low"
+         }
+        ]
+       },
+       {
+        "tat_ca": [
+         "has_explicit_sq_diff",
+         {
+          "tu_khoa": [
+           "nan thẳng",
+           "bầu dục",
+           "nan bd",
+           "nan z",
+           "louver",
+           "sọt trứng",
+           "sọt trưng",
+           "eggcrate",
+           "slot",
+           "linear"
+          ],
+          "trong": "note_boq_low"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "co": "note_has_any_blade",
+   "dieu_kien": {
+    "tu_khoa": [
+     "@nan_bat_ky_ghi_chu"
+    ],
+    "trong": "note_boq_low"
+   }
+  },
+  {
+   "van_ban": "blade_search",
+   "mo_ta": "Văn bản xét KIỂU NAN: Ghi chú (--spec-priority note) > Cột Tên (nếu Tên ghi kiểu nan) > toàn bộ",
+   "nguon": "ff05449 2026-10-29",
+   "chon": [
+    {
+     "khi": {
+      "tat_ca": [
+       "spec_note",
+       "note_has_any_blade"
+      ]
+     },
+     "lay": "note_boq_low"
+    },
+    {
+     "khi": "has_any_explicit_blade",
+     "lay": "primary_diff_search"
+    },
+    {
+     "lay": "combined_search"
+    }
+   ]
+  },
+  {
+   "van_ban": "filter_search",
+   "tu": "combined_search",
+   "xoa_regex": "không\\s+kèm\\s+lọc[^\\.,\\n]*"
+  },
+  {
+   "van_ban": "mesh_base",
+   "chon": [
+    {
+     "khi": "note_blade_conflict",
+     "lay": "primary_diff_search"
+    },
+    {
+     "lay": "combined_search"
+    }
+   ]
+  },
+  {
+   "van_ban": "mesh_search",
+   "mo_ta": "Bỏ 'dạng/kiểu lưới' (= sọt trứng) và 'lưới lọc / lưới gió' trước khi dò LCCT",
+   "tu": "mesh_base",
+   "xoa_regex": "(?:(?:dạng|kiểu)\\s+lưới|lưới\\s+(?:lọc|gió))"
+  },
+  {
+   "co": "has_mesh",
+   "mo_ta": "Kèm lưới chắn côn trùng / chắn chim (LCCT, +N, I.S)",
+   "dieu_kien": {
+    "mot_trong": [
+     {
+      "tu_khoa": [
+       "@mesh_kws"
+      ],
+      "trong": "mesh_search",
+      "tru": [
+       "is"
+      ]
+     },
+     {
+      "regex": "\\b(?:i\\.s\\.?|l\\.s\\.?|lc+[tc])\\b|(?:c/w|\\+|kèm|with)\\s*(?:is|ls)\\b",
+      "trong": "mesh_search"
+     }
+    ]
+   }
+  },
+  {
+   "co": "has_filter",
+   "mo_ta": "Kèm lọc bụi thô G4 (+F)",
+   "dieu_kien": {
+    "tu_khoa": [
+     "@filter_kws"
+    ],
+    "trong": "filter_search"
+   }
+  },
+  {
+   "co": "is_double_layer",
+   "dieu_kien": {
+    "tu_khoa": [
+     "2 lớp",
+     "hai lớp"
+    ],
+    "trong": "combined_search"
+   }
+  },
+  {
+   "co": "is_black_2nd_layer",
+   "dieu_kien": {
+    "tu_khoa": [
+     "2nd layer",
+     "black paint",
+     "sơn đen"
+    ],
+    "trong": "combined_search"
+   }
+  },
+  {
+   "co": "is_removable_by_text",
+   "mo_ta": "Chữ tháo lắp / 2 khung (so trên chuỗi không dấu, bắt sai dấu & đảo chữ)",
+   "nguon": "7cdc069 2026-11-02 — Kỹ thuật chốt (REMOVABLE_TWO_FRAME_FACTOR_RULE)",
+   "dieu_kien": {
+    "regex": "\\bth(?:ao|oa)\\s*[-/]?\\s*lap\\b|\\blap\\s*[-/]?\\s*th(?:ao|oa)\\b|\\b(?:2|hai)\\s*khung\\b|\\bremovable\\b",
+    "trong": "unaccent_search"
+   }
+  },
+  {
+   "co": "is_removable",
+   "dieu_kien": "is_removable_by_text"
+  },
+  {
+   "van_ban": "box_clean_search",
+   "mo_ta": "Bỏ 'không kèm hộp', 'thép hộp', 'hộp kỹ thuật/điện...' trước khi dò hộp gió",
+   "tu": "combined_search",
+   "xoa_regex": "không\\s+(?:kèm|có|gồm|tính)\\s*(?:hộp|box)[^\\.,\\n]*|\\bthép\\s+hộp\\b|\\bhộp\\s+(?:kỹ\\s*thuật|đấu\\s*dây|điện|công\\s*tắc|cứu\\s*hỏa|chữa\\s*cháy|quạt)\\b"
+  },
+  {
+   "co": "has_box_kw",
+   "mo_ta": "Cửa gió kèm hộp gió",
+   "dieu_kien": {
+    "mot_trong": [
+     {
+      "tu_khoa": [
+       "hộp gió",
+       "hộp cửa gió",
+       "hộp miệng gió",
+       "kèm hộp",
+       "kèm box",
+       "có hộp",
+       "có box",
+       "gắn hộp",
+       "gắn box",
+       "+ hộp",
+       "+hộp",
+       "+ box",
+       "+box",
+       "và hộp",
+       "hộp và cửa",
+       "hộp kèm cửa",
+       "hộp + cửa",
+       "box gió",
+       "box miệng",
+       "box cửa",
+       "plenum box",
+       "with box",
+       "c/w box",
+       "including box",
+       "including plenum"
+      ],
+      "trong": "box_clean_search"
+     },
+     {
+      "regex": "\\bhộp\\s*[hHlL=]?\\s*\\d{2,4}\\b|\\bbox\\b",
+      "trong": "box_clean_search"
+     }
+    ]
+   }
+  },
+  {
+   "van_ban": "box_note",
+   "mo_ta": "Ghi chú hộp gió khi không bật --include-box",
+   "chon": [
+    {
+     "khi": {
+      "tat_ca": [
+       "has_box_kw",
+       "!include_box"
+      ]
+     },
+     "chuoi": ". Không tính box do nhà thầu tự thi công"
+    },
+    {
+     "chuoi": ""
+    }
+   ]
+  },
+  {
+   "co": "is_press_or_smoke",
+   "mo_ta": "Cửa tăng áp / hút khói / cấp bù",
+   "dieu_kien": {
+    "tu_khoa": [
+     "tăng áp",
+     "tạo áp",
+     "hút khói",
+     "thải khói",
+     "cấp bù",
+     "pag",
+     "seg",
+     "spg",
+     "seag",
+     "smoke"
+    ],
+    "trong": "combined_search"
+   }
+  },
+  {
+   "co": "dong_ghi_kieu_nan_khac",
+   "mo_ta": "Tên không ghi kiểu nan, nhưng Ghi chú / cột Model của CHÍNH DÒNG ghi louver / nan Z / khuếch tán (loại hàng của dòng thắng loại kế thừa từ Title)",
+   "nguon": "2026-11-03 — User duyệt (Báo giá Cổ bi / Q.26.0036 Penta R146, R170: Ghi chú 'Cửa nan Z kèm LCCT', Model 'WL', Title 'HÚT KHÓI ...')",
+   "dieu_kien": {
+    "tat_ca": [
+     "!has_any_explicit_blade",
+     {
+      "mot_trong": [
+       {
+        "tu_khoa": [
+         "nan z",
+         "louver",
+         "luover",
+         "louvre",
+         "chớp",
+         "khuếch tán",
+         "diffuser"
+        ],
+        "trong": "note_model_low"
+       },
+       {
+        "regex": "\\b(?:s?wl)\\b",
+        "trong": "note_model_low"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "co": "chuc_nang_hoi_tai_ten",
+   "mo_ta": "Tên ghi rõ cửa / miệng HỒI, còn chữ tăng áp / hút khói chỉ có ở Title cha (không ở Tên / Ghi chú / Model)",
+   "nguon": "2026-11-03 — User duyệt (Báo giá Cổ bi / Q.26.0036 Penta R201: 'Cửa gió hồi KT 250x250 + ODB' dưới Title 'Tủ điện tăng áp hút khói')",
+   "dieu_kien": {
+    "tat_ca": [
+     {
+      "tu_khoa": [
+       "cửa hồi",
+       "miệng hồi",
+       "hút hồi",
+       "hồi gió",
+       "gió hồi",
+       "hồi lạnh",
+       "cửa gió hồi",
+       "cửa gió hôi",
+       "return air",
+       "return grille"
+      ],
+      "trong": "raw_name_low"
+     },
+     {
+      "khong": {
+       "tu_khoa": [
+        "tăng áp",
+        "tạo áp",
+        "hút khói",
+        "thải khói",
+        "cấp bù",
+        "pag",
+        "seg",
+        "spg",
+        "seag",
+        "smoke"
+       ],
+       "trong": "raw_search"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "co": "is_eggcrate",
+   "mo_ta": "Cửa nan sọt trứng (dạng/kiểu lưới = sọt trứng)",
+   "nguon": "78741b5 2026-10-26; 'kiểu lưới' 7cdc069 2026-11-02",
+   "dieu_kien": {
+    "tu_khoa": [
+     "sọt trứng",
+     "sọt trưng",
+     "dạng lưới",
+     "kiểu lưới",
+     "eggcrate",
+     "egg crate",
+     "ecg",
+     "seeg"
+    ],
+    "trong": "blade_search"
+   }
+  },
+  {
+   "co": "is_louver_z",
+   "mo_ta": "Louver nan Z: (a) Tên/kiểu nan louver; (b) cấp khí bù không ghi mã cửa nan thẳng; (c) cạnh >= 3000mm không OBD/2 lớp/sọt trứng/nan thẳng; (d) chỉ ghi kèm lưới (không OBD/lọc/mã cửa)",
+   "nguon": "bd1d662 2026-10-20 (khởi tạo); (c) LARGE_SINGLE_LAYER_GRILLE_LOUVER_WL",
+   "dieu_kien": {
+    "mot_trong": [
+     {
+      "tu_khoa": [
+       "@louver_kws"
+      ],
+      "trong": "blade_search"
+     },
+     {
+      "tat_ca": [
+       {
+        "tu_khoa": [
+         "@cap_khi_bu"
+        ],
+        "trong": "raw_search"
+       },
+       {
+        "khong": {
+         "tu_khoa": [
+          "fag",
+          "sag",
+          "rag",
+          "oag",
+          "mag",
+          "pag",
+          "seg",
+          "spg",
+          "eag",
+          "sdg",
+          "nan thẳng",
+          "bầu dục",
+          "nan bd"
+         ],
+         "trong": "raw_search"
+        }
+       }
+      ]
+     },
+     {
+      "tat_ca": [
+       {
+        "so_sanh": [
+         "max_wh",
+         ">=",
+         3000.0
+        ]
+       },
+       "!has_obd",
+       "!is_double_layer",
+       "!is_eggcrate",
+       {
+        "khong": {
+         "tu_khoa": [
+          "nan thẳng",
+          "bầu dục",
+          "nan bd",
+          "linear",
+          "sọt trứng",
+          "sọt trưng",
+          "khuếch tán"
+         ],
+         "trong": "blade_search"
+        }
+       }
+      ]
+     },
+     {
+      "tat_ca": [
+       "has_mesh",
+       "!has_obd",
+       "!has_filter",
+       "!is_double_layer",
+       "!is_eggcrate",
+       {
+        "khong": {
+         "tu_khoa": [
+          "cover",
+          "nan thẳng",
+          "bầu dục",
+          "nan bd",
+          "linear",
+          "sọt trứng",
+          "sọt trưng",
+          "khuếch tán",
+          "fag",
+          "sag",
+          "rag",
+          "oag",
+          "mag",
+          "pag",
+          "seg",
+          "spg",
+          "eag",
+          "kag",
+          "seag",
+          "sdg",
+          "grille",
+          "grilles",
+          "diffuser",
+          "return",
+          "supply",
+          "insect screen",
+          "i.s",
+          "lcct"
+         ],
+         "trong": "blade_search"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "van_ban": "raw_name_clean",
+   "tu": "raw_name",
+   "xoa_regex": "\\b(?:mm|kt|w|h|l|d|dn|phi)\\b",
+   "ignorecase": true
+  },
+  {
+   "van_ban": "standalone_chk_text",
+   "mo_ta": "Tên có chữ → xét Tên + Ghi chú; Tên chỉ có kích thước → xét cả Title cha",
+   "nguon": "1e5672d 2026-10-29",
+   "chon": [
+    {
+     "khi": {
+      "regex": "[a-zA-ZÀ-ỹ]{2,}",
+      "trong": "raw_name_clean"
+     },
+     "lay": "raw_search"
+    },
+    {
+     "lay": "combined_search"
+    }
+   ]
+  },
+  {
+   "co": "is_standalone_lcct",
+   "mo_ta": "Lưới chắn côn trùng rời (không có dấu hiệu cửa/miệng gió)",
+   "dieu_kien": {
+    "tat_ca": [
+     "has_mesh",
+     {
+      "khong": {
+       "tu_khoa": [
+        "@louver_kws",
+        "@dau_hieu_cua"
+       ],
+       "trong": "standalone_chk_text"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "co": "is_standalone_filter",
+   "mo_ta": "Lọc G4 rời",
+   "dieu_kien": {
+    "tat_ca": [
+     "has_filter",
+     "!has_mesh",
+     "!has_obd",
+     {
+      "khong": {
+       "tu_khoa": [
+        "@louver_kws",
+        "@dau_hieu_cua"
+       ],
+       "trong": "standalone_chk_text"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "co": "is_slot_sld",
+   "mo_ta": "Cửa slot khe hẹp",
+   "nguon": "3062d31 2026-10-27",
+   "dieu_kien": {
+    "mot_trong": [
+     {
+      "tu_khoa": [
+       "slot",
+       "sld",
+       "lsd",
+       "dls",
+       "khe hẹp",
+       "kiểu khe"
+      ],
+      "trong": "blade_search"
+     },
+     {
+      "regex": "\\b(?:lb\\s*\\d{2,3}|sl\\s*\\d|ls\\s*\\d|\\d{3,4}\\s*mm\\s*[,;-]?\\s*[dD]\\d{2,3})\\b",
+      "trong": "blade_search"
+     }
+    ]
+   }
+  },
+  {
+   "co": "is_slot_sld",
+   "dat_true_khi": {
+    "tat_ca": [
+     "!is_slot_sld",
+     {
+      "so_sanh": [
+       "w",
+       ">",
+       0
+      ]
+     },
+     {
+      "so_sanh": [
+       "h",
+       ">",
+       0
+      ]
+     },
+     {
+      "so_sanh": [
+       "max_wh",
+       ">=",
+       [
+        "min_wh",
+        "*",
+        4.0
+       ]
+      ]
+     },
+     {
+      "tu_khoa": [
+       "khuếch tán",
+       "diffuser"
+      ],
+      "trong": "blade_search"
+     },
+     {
+      "khong": {
+       "tu_khoa": [
+        "tròn",
+        "round",
+        "linear",
+        "slb",
+        "nan t ",
+        "nan t-",
+        "khe dài",
+        "tuyến tính"
+       ],
+       "trong": "blade_search"
+      }
+     }
+    ]
+   },
+   "mo_ta": "Khuếch tán dạng dài (cạnh dài >= 4 lần cạnh ngắn, VD 1000x150) → slot SLD",
+   "nguon": "7cdc069 2026-11-02 — Kỹ thuật chốt (DIFFUSER_LONG_SLOT_AND_GRID_EGGCRATE_RULE)"
+  },
+  {
+   "co": "is_return_grille",
+   "mo_ta": "Cửa / miệng gió hồi",
+   "dieu_kien": {
+    "tu_khoa": [
+     "cửa hồi",
+     "miệng hồi",
+     "hút hồi",
+     "rag",
+     "hồi gió",
+     "gió hồi",
+     "hồi lạnh",
+     "cửa gió hồi",
+     "cửa gió hôi",
+     "return air",
+     "return grille"
+    ],
+    "trong": "combined_search"
+   }
+  },
+  {
+   "co": "has_filter",
+   "dat_true_khi": {
+    "tat_ca": [
+     "is_return_grille",
+     "!has_mesh",
+     "!has_obd",
+     "!is_eggcrate",
+     "!is_slot_sld"
+    ]
+   },
+   "mo_ta": "Cửa hồi mặc định kèm lọc bụi thô — trừ khi khách đã ghi kèm OBD / LCCT",
+   "nguon": "bd1d662 2026-10-20; 78741b5 2026-10-26 (đã kèm OBD thì không báo thêm lưới)"
+  },
+  {
+   "co": "has_img_slb",
+   "mo_ta": "Cửa Linear nan T (ảnh nhúng hoặc chữ linear/slb)",
+   "dieu_kien": {
+    "tat_ca": [
+     "!is_slot_sld",
+     {
+      "mot_trong": [
+       "has_embedded_image",
+       {
+        "tu_khoa": [
+         "linear",
+         "slb",
+         "nan t ",
+         "nan t-",
+         "khe dài",
+         "tuyến tính"
+        ],
+        "trong": "blade_search"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "tinh": "dem_khe",
+   "khi": "is_slot_sld",
+   "mo_ta": "Số khe slot: ghi rõ (SL2, 3 slot, 2 khe) hoặc theo cạnh ngắn",
+   "regex": "(?:\\b(?:sl|ls|sld[-_]?a?)\\s*(\\d)\\s*s?\\b|(\\d)\\s*(?:slot|khe)\\b)",
+   "trong": "combined_search"
+  },
+  {
+   "co": "is_sq_ac_diffuser",
+   "mo_ta": "Cửa vuông 600/450/300 hệ điều hòa → khuếch tán vuông SD (AIR_CONDITIONING_SQUARE_DIFFUSER_SD_RULE)",
+   "nguon": "1805d82 2026-10-20",
+   "dieu_kien": {
+    "tat_ca": [
+     "!is_slot_sld",
+     "!is_standalone_lcct",
+     "!is_standalone_filter",
+     {
+      "so_sanh": [
+       "w",
+       ">",
+       0
+      ]
+     },
+     {
+      "so_sanh": [
+       "w",
+       "==",
+       "h"
+      ]
+     },
+     {
+      "thuoc": [
+       "w",
+       [
+        600,
+        450,
+        300
+       ]
+      ]
+     },
+     "!is_return_grille",
+     "!is_louver_z",
+     "!is_press_or_smoke",
+     "!is_eggcrate",
+     {
+      "mot_trong": [
+       "!has_obd",
+       {
+        "tu_khoa": [
+         "cấp",
+         "lạnh",
+         "điều hòa",
+         "sag",
+         "sad",
+         "scd",
+         "khuếch tán",
+         "450",
+         "150"
+        ],
+        "trong": "combined_search"
+       }
+      ]
+     },
+     {
+      "khong": {
+       "tu_khoa": [
+        "nan thẳng",
+        "gió thẳng",
+        "miệng thẳng",
+        "cửa thẳng",
+        "bầu dục",
+        "nan bd",
+        "lớp nan",
+        "nan đơn",
+        "nan đôi",
+        "air grille",
+        "sọt trứng",
+        "sọt trưng",
+        "eggcrate",
+        "ecg",
+        "linear",
+        "nan t",
+        "dạng nan",
+        "格栅",
+        "kiểm tra",
+        "检查",
+        "access door",
+        "cửa công tác",
+        "cửa thăm",
+        "tháo lắp",
+        "inspection",
+        "oag",
+        "eag",
+        "mag",
+        "fag",
+        "ngoài trời",
+        "gió thải"
+       ],
+       "trong": "blade_search"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "co": "is_diffuser_sq",
+   "mo_ta": "Cửa khuếch tán (vuông/tròn)",
+   "dieu_kien": {
+    "tat_ca": [
+     "!is_slot_sld",
+     "!is_standalone_lcct",
+     "!is_standalone_filter",
+     {
+      "mot_trong": [
+       {
+        "tu_khoa": [
+         "khuếch tán",
+         "scd",
+         "sad",
+         "diffuser"
+        ],
+        "trong": "blade_search"
+       },
+       "is_sq_ac_diffuser",
+       {
+        "tat_ca": [
+         {
+          "so_sanh": [
+           "w",
+           "==",
+           600
+          ]
+         },
+         {
+          "so_sanh": [
+           "h",
+           "==",
+           600
+          ]
+         },
+         {
+          "tu_khoa": [
+           "sag"
+          ],
+          "trong": "blade_search"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "co": "is_makeup_air_z",
+   "mo_ta": "Cửa bù khí nan Z (cộng KTC→KTM)",
+   "nguon": "4e14743 2026-10-22",
+   "dieu_kien": {
+    "tat_ca": [
+     {
+      "tu_khoa": [
+       "@cap_khi_bu"
+      ],
+      "trong": "raw_search"
+     },
+     {
+      "khong": {
+       "tu_khoa": [
+        "fag",
+        "sag",
+        "rag",
+        "oag",
+        "pag",
+        "seg",
+        "eag",
+        "sdg",
+        "obd",
+        "nan thẳng",
+        "bầu dục"
+       ],
+       "trong": "raw_search"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "co": "is_area_inferred",
+   "mo_ta": "Kích thước suy từ diện tích m² (không cộng KTC)",
+   "nguon": "82d245a 2026-10-26",
+   "dieu_kien": {
+    "tat_ca": [
+     {
+      "regex": "\\d+(?:\\.\\d+)?\\s*(?:m2|m²)\\b",
+      "trong": "raw_search"
+     },
+     {
+      "khong": {
+       "regex": "\\d+\\s*[xX*×]\\s*\\d+",
+       "trong": "raw_search"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "co": "is_ktc",
+   "mo_ta": "BOQ ghi kích thước cổ (KTC), --neck-size hoặc cửa bù khí nan Z",
+   "dieu_kien": {
+    "mot_trong": [
+     {
+      "regex": "\\bktc\\b|kích\\s*thước\\s*cổ",
+      "regex_cau_hinh": "ktc_regex",
+      "trong": "combined_search",
+      "ignorecase": true
+     },
+     "is_makeup_air_z",
+     "neck_size_override"
+    ]
+   }
+  },
+  {
+   "tinh": "ap_dung_ktc",
+   "mo_ta": "Rule 1 KTC→KTM: cộng viền 50mm (khuếch tán vuông cổ >= 150: 150mm) ra kích thước mặt",
+   "nguon": "bd1d662 2026-10-20; độ lệch 150 cho khuếch tán 82d245a 2026-10-26",
+   "khi": {
+    "tat_ca": [
+     "!is_ktc_applied",
+     "is_ktc",
+     "!is_standalone_lcct",
+     "!is_standalone_filter",
+     "!is_area_inferred"
+    ]
+   },
+   "do_lech": [
+    {
+     "khi": {
+      "tat_ca": [
+       "is_diffuser_sq",
+       {
+        "mot_trong": [
+         {
+          "tat_ca": [
+           {
+            "so_sanh": [
+             "w",
+             ">=",
+             150.0
+            ]
+           },
+           {
+            "so_sanh": [
+             "h",
+             ">=",
+             150.0
+            ]
+           }
+          ]
+         },
+         {
+          "so_sanh": [
+           "d",
+           ">=",
+           150.0
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "gia_tri": 150.0
+    },
+    {
+     "gia_tri": 50.0
+    }
+   ]
+  },
+  {
+   "co": "is_inspection_door",
+   "mo_ta": "Cửa kiểm tra / cửa thăm (检查风门)",
+   "dieu_kien": {
+    "tu_khoa": [
+     "kiểm tra",
+     "检查",
+     "检查风门",
+     "inspection",
+     "access door",
+     "cửa công tác",
+     "cửa thăm",
+     "sdgk"
+    ],
+    "trong": "combined_search"
+   }
+  },
+  {
+   "co": "is_box_combo",
+   "dieu_kien": {
+    "tat_ca": [
+     "has_box_kw",
+     "!is_standalone_lcct",
+     "!is_standalone_filter",
+     "!is_inspection_door"
+    ]
+   }
+  },
+  {
+   "co": "is_round_diff",
+   "dieu_kien": {
+    "tu_khoa": [
+     "round",
+     "tròn",
+     "srd"
+    ],
+    "trong": "combined_search"
+   }
+  }
+ ],
+ "thu_tu_uu_tien": [
+  {
+   "id": "CG-01_CUA_KIEM_TRA_SDGK",
+   "ten": "Cửa kiểm tra / cửa thăm → SDGK nan bầu dục tháo lắp (bỏ OBD/LCCT/lọc)",
+   "dieu_kien": "is_inspection_door",
+   "gan": [
+    {
+     "co": "is_removable",
+     "gia_tri": true
+    },
+    {
+     "co": "has_mesh",
+     "gia_tri": false
+    },
+    {
+     "co": "has_obd",
+     "gia_tri": false
+    },
+    {
+     "co": "has_filter",
+     "gia_tri": false
+    }
+   ],
+   "profile": "BD",
+   "model": [
+    {
+     "co_dinh": "SDGK"
+    }
+   ],
+   "b": [
+    {
+     "kieu": "tru",
+     "tru": [
+      50,
+      50
+     ],
+     "toi_thieu": [
+      50,
+      50
+     ]
+    }
+   ],
+   "ghi_chu": [
+    "Cửa kiểm tra nan bầu dục tháo lắp (bản lề + chốt)",
+    {
+     "bien": "box_note"
+    }
+   ],
+   "nguon": "b5bf9c1 2026-10-26",
+   "ly_do": "Cửa kiểm tra luôn là nan bầu dục có bản lề + chốt, không kèm phụ kiện.",
+   "vi_du_dung": [
+    {
+     "ten": "Cửa kiểm tra 600x600",
+     "kt": [
+      600,
+      600
+     ],
+     "model": "SDGK",
+     "b": [
+      550,
+      550
+     ],
+     "nguon_boq": "mẫu tự dựng (input/ chưa có dòng cửa kiểm tra)"
+    }
+   ]
+  },
+  {
+   "id": "CG-02_LCCT_RIENG",
+   "ten": "Lưới chắn côn trùng rời → LCCT / LCCT+F",
+   "dieu_kien": "is_standalone_lcct",
+   "profile": "LCCT",
+   "model": [
+    {
+     "goc": "LCCT",
+     "hau_to": [
+      "F"
+     ]
+    }
+   ],
+   "b": [
+    {
+     "kieu": "khong"
+    }
+   ],
+   "ghi_chu": [
+    {
+     "chon": [
+      {
+       "khi": "has_filter",
+       "chuoi": "Lưới chắn côn trùng Inox 304 kèm lọc bụi thô"
+      },
+      {
+       "chuoi": "Lưới chắn côn trùng"
+      }
+     ]
+    }
+   ],
+   "nguon": "bd1d662 2026-10-20",
+   "ly_do": "Dòng chỉ ghi lưới (không có chữ cửa/miệng/mã cửa) là LCCT bán rời.",
+   "vi_du_dung": [
+    {
+     "ten": "Lưới chắn côn trùng 500x500",
+     "kt": [
+      500,
+      500
+     ],
+     "model": "LCCT",
+     "nguon_boq": "mẫu tự dựng"
+    },
+    {
+     "ten": "Lưới chắn côn trùng kèm lọc bụi G4 500x500",
+     "kt": [
+      500,
+      500
+     ],
+     "model": "LCCT+F",
+     "nguon_boq": "mẫu tự dựng"
+    }
+   ]
+  },
+  {
+   "id": "CG-03_LOC_G4_RIENG",
+   "ten": "Lọc bụi G4 rời → G4 (FILTER_G4)",
+   "dieu_kien": "is_standalone_filter",
+   "profile": "FILTER_G4",
+   "model": [
+    {
+     "co_dinh": "G4"
+    }
+   ],
+   "b": [
+    {
+     "kieu": "khong"
+    }
+   ],
+   "ghi_chu": [
+    "Lọc thô G4 kèm khung nhôm"
+   ],
+   "nguon": "b5bf9c1 2026-10-26 (AGENTS.md quy tắc 5)",
+   "ly_do": "Lọc thô G4 đứng riêng báo như hàng Swind sản xuất.",
+   "vi_du_dung": [
+    {
+     "ten": "Lọc bụi G4 kích thước 200x200",
+     "title": "SẢN PHẨM",
+     "kt": [
+      200,
+      200
+     ],
+     "model": "G4",
+     "nguon_boq": "input/260910_MKS_BoQ goi thau (BP05a)"
+    }
+   ]
+  },
+  {
+   "id": "CG-04_SOT_TRUNG_ECG",
+   "ten": "Cửa nan sọt trứng / dạng lưới / kiểu lưới → ECG(+O+F+N)",
+   "dieu_kien": "is_eggcrate",
+   "profile": "ECG",
+   "model": [
+    {
+     "goc": "ECG",
+     "hau_to": [
+      "O",
+      "F",
+      "N"
+     ]
+    }
+   ],
+   "b": [
+    {
+     "kieu": "tru",
+     "tru": [
+      50,
+      50
+     ],
+     "toi_thieu": [
+      50,
+      50
+     ]
+    }
+   ],
+   "ghi_chu": [
+    "Cửa nan sọt trứng",
+    {
+     "khi": "is_removable",
+     "chuoi": " lõi tháo lắp"
+    },
+    {
+     "khi": "has_obd",
+     "chuoi": " kèm van OBD"
+    },
+    {
+     "khi": "has_mesh",
+     "chuoi": " kèm LCCT"
+    },
+    {
+     "khi": "has_filter",
+     "chuoi": " kèm lưới lọc bụi thô"
+    },
+    {
+     "bien": "box_note"
+    }
+   ],
+   "nguon": "78741b5 2026-10-26; 'kiểu lưới' 7cdc069 2026-11-02",
+   "ly_do": "'Dạng lưới' / 'kiểu lưới' là kiểu nan sọt trứng, không phải lưới chắn côn trùng.",
+   "vi_du_dung": [
+    {
+     "ten": "Cửa gió thải dạng sọt trưng lõi tháo lắp được, kích thước mặt 200x200 kèm van OBD",
+     "title": "SẢN PHẨM",
+     "kt": [
+      200,
+      200
+     ],
+     "model": "ECG+O",
+     "b": [
+      150,
+      150
+     ],
+     "he_so_thao_lap": 1.15,
+     "nguon_boq": "input/260910_MKS_BoQ goi thau (BP05a)"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Cửa gió hồi kiểu lưới 600x600",
+     "kt": [
+      600,
+      600
+     ],
+     "model": "ECG",
+     "nguon_boq": "mẫu tự dựng",
+     "loi_cu": "Trước 02/11 'kiểu lưới' bị hiểu là lưới chắn côn trùng (LCCT)"
+    }
+   ]
+  },
+  {
+   "id": "CG-05_TANG_AP_HUT_KHOI_OBD",
+   "ten": "Cửa tăng áp / hút khói / cấp bù kèm OBD → SDG+O(+N) — chỉ khi Tên KHÔNG ghi louver / nan Z",
+   "dieu_kien": {
+    "tat_ca": [
+     "is_press_or_smoke",
+     "has_obd",
+     "!has_img_slb",
+     "!is_slot_sld",
+     "!has_explicit_louver",
+     "!dong_ghi_kieu_nan_khac",
+     "!chuc_nang_hoi_tai_ten"
+    ]
+   },
+   "gan": [
+    {
+     "co": "has_obd",
+     "gia_tri": true
+    }
+   ],
+   "profile": "BD",
+   "model": [
+    {
+     "goc": "SDG",
+     "hau_to": [
+      "O",
+      "N"
+     ]
+    }
+   ],
+   "b": [
+    {
+     "kieu": "tru",
+     "tru": [
+      50,
+      50
+     ],
+     "toi_thieu": [
+      50,
+      50
+     ]
+    }
+   ],
+   "ghi_chu": [
+    "Cửa nan thẳng bầu dục kèm van OBD (tăng áp / hút khói)",
+    {
+     "khi": "has_mesh",
+     "chuoi": " kèm LCCT"
+    },
+    {
+     "bien": "box_note"
+    }
+   ],
+   "nguon": "bd1d662 2026-10-20; giới hạn Tên louver 7cdc069 2026-11-02 — User chốt (PRESSURE_SMOKE_MAKEUP_OBD_EXPLICIT_BLADE_RULE); giới hạn loại hàng của chính dòng 2026-11-03 — User duyệt",
+   "ly_do": "Cửa tăng áp / hút khói kèm OBD mặc định nan thẳng bầu dục; chức năng tăng áp được KẾ THỪA từ Title cha (VD 'Cửa SAG+OBD' dưới 'HỆ TĂNG ÁP'). Nhường rule khác khi chính dòng ghi loại khác: Tên ghi louver / nan Z; Tên không ghi kiểu nan mà Ghi chú / Model ghi louver / nan Z / khuếch tán; Tên ghi cửa hồi mà tăng áp chỉ có ở Title.",
+   "vi_du_dung": [
+    {
+     "ten": "Miệng gió PAG + OBD 600x600",
+     "ghi_chu": "Cửa gió nan thẳng 1 lớp",
+     "title": "SẢN PHẨM",
+     "kt": [
+      600,
+      600
+     ],
+     "model": "SDG+O",
+     "b": [
+      550,
+      550
+     ],
+     "nguon_boq": "input/26BDCC09-3.VGCG-Lan 1.xlsx"
+    },
+    {
+     "ten": "Cửa gió cấp bù kèm van OBD 800x400",
+     "kt": [
+      800,
+      400
+     ],
+     "model": "SDG+O",
+     "nguon_boq": "mẫu tự dựng"
+    },
+    {
+     "ten": "Cửa SAG+OBD KT 400x400",
+     "title": "HỆ TĂNG ÁP",
+     "kt": [
+      400,
+      400
+     ],
+     "model": "SDG+O",
+     "nguon_boq": "input/Q.26.0035.Penta- SWIND R68 (tăng áp kế thừa từ Title cha — phải giữ)"
+    },
+    {
+     "ten": "Cửa gió kèm van OBD KT:600x400",
+     "ghi_chu": "Cửa bầu dục 1 lớp nan 1 khung cố định + Obd",
+     "model_cot": "SDG",
+     "title": "TĂNG ÁP THANG BỘ, THANG MÁY",
+     "kt": [
+      600,
+      400
+     ],
+     "model": "SDG+O",
+     "nguon_boq": "input/Báo giá Cổ bi.xlsx R105"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Cửa thổi gió kiểu nan Z, kích thước mặt 950x950 kèm OBD và hộp gió (CỬA GIÓ CẤP BÙ)",
+     "title": "SẢN PHẨM",
+     "kt": [
+      950,
+      950
+     ],
+     "model": "WL+O",
+     "b": [
+      900,
+      900
+     ],
+     "rule": "CG-06_LOUVER_NAN_Z",
+     "nguon_boq": "input/BDKSCT-3.VGCG-26-09-11-Lan 1 - Copy.xlsx",
+     "loi_cu": "Trước 02/11 ra SDG+O (rule cấp bù xét trước nhánh louver) — lỗi #4 kế hoạch"
+    },
+    {
+     "ten": "Cửa gió kèm van OBD + LCCT KT:600x600",
+     "ghi_chu": "Cửa nan Z kèm lưới chắn côn trùng",
+     "model_cot": "WL",
+     "title": "HÚT KHÓI HÀNH LANG",
+     "kt": [
+      600,
+      600
+     ],
+     "model": "WL+O+N",
+     "rule": "CG-06_LOUVER_NAN_Z",
+     "nguon_boq": "input/Báo giá Cổ bi.xlsx R146 (cùng Q.26.0036 Penta R146, R170)",
+     "loi_cu": "Trước 03/11 ra SDG+O+N: hút khói kế thừa từ Title thắng Ghi chú 'nan Z' + Model 'WL' của chính dòng"
+    },
+    {
+     "ten": "Cửa gió hồi KT 250x250 + ODB",
+     "ghi_chu": "Cửa bầu dục 1 lớp nan 1 khung cố định + Obd",
+     "model_cot": "SDG",
+     "title": "Tủ điện tăng áp hút khói",
+     "kt": [
+      250,
+      250
+     ],
+     "model": "SDG+O",
+     "rule": "CG-07_CUA_HOI_SDG_F",
+     "ghi_chu_bg_chua": "Cửa hồi",
+     "nguon_boq": "input/Báo giá Cổ bi.xlsx R201 (cùng Q.26.0036 Penta R201)",
+     "loi_cu": "Trước 03/11 ghi chú '(tăng áp / hút khói)' do Title cha; Tên ghi rõ cửa hồi"
+    }
+   ]
+  },
+  {
+   "id": "CG-06_LOUVER_NAN_Z",
+   "ten": "Louver nan Z → WL(+O+N+F)",
+   "dieu_kien": {
+    "tat_ca": [
+     "is_louver_z",
+     "!is_slot_sld"
+    ]
+   },
+   "profile": "Z",
+   "gan": [
+    {
+     "co": "has_mesh",
+     "dieu_kien": {
+      "mot_trong": [
+       "has_mesh",
+       {
+        "tu_khoa": [
+         "lưới",
+         "côn trùng",
+         "chắn chim",
+         "against bird",
+         "bird screen",
+         "lcct",
+         "i.s",
+         "insect screen"
+        ],
+        "trong": "mesh_search"
+       }
+      ]
+     }
+    }
+   ],
+   "model": [
+    {
+     "goc": "WL",
+     "hau_to": [
+      "O",
+      "N",
+      "F"
+     ]
+    }
+   ],
+   "b": [
+    {
+     "kieu": "tru",
+     "tru": [
+      50,
+      50
+     ],
+     "toi_thieu": [
+      50,
+      50
+     ]
+    }
+   ],
+   "ghi_chu": [
+    {
+     "chon": [
+      {
+       "khi": "has_mesh",
+       "chuoi": "Louver nan Z ngoài trời kèm lưới chắn côn trùng Inox 304"
+      },
+      {
+       "chuoi": "Louver nan Z ngoài trời"
+      }
+     ]
+    },
+    {
+     "khi": "has_obd",
+     "chuoi": " kèm van OBD"
+    },
+    {
+     "khi": "has_filter",
+     "chuoi": " kèm lưới lọc bụi thô"
+    },
+    {
+     "bien": "box_note"
+    }
+   ],
+   "nguon": "bd1d662 2026-10-20",
+   "ly_do": "Louver / cửa chớp / nan Z / cấp khí bù ngoài trời / cửa 1 lớp khổ >= 3000mm.",
+   "vi_du_dung": [
+    {
+     "ten": "Louver lấy gió 2500x500",
+     "title": "SẢN PHẨM",
+     "kt": [
+      2500,
+      500
+     ],
+     "model": "WL",
+     "b": [
+      2450,
+      450
+     ],
+     "nguon_boq": "input/260910_MKS_BoQ goi thau (BP05a)"
+    },
+    {
+     "ten": "Cửa gió Louver KT: 4300x500, dạng nan chớp, Free area min 55% + Lưới chắn côn trùng inox 304( mắt lưới 4-6mm)",
+     "title": "Ống thông gió và các phụ kiện",
+     "kt": [
+      4300,
+      500
+     ],
+     "model": "WL+N",
+     "nguon_boq": "input/14. Ống thông gió và pk - Minh Triết"
+    },
+    {
+     "ten": "Cửa chớp louver EL",
+     "ghi_chu": "800x350mm",
+     "title": "SẢN PHẨM",
+     "kt": [
+      800,
+      350
+     ],
+     "model": "WL",
+     "nguon_boq": "input/A4_BOQ_Van gió.xlsx"
+    },
+    {
+     "ten": "Cửa gió nan 1 lớp 5000x700",
+     "kt": [
+      5000,
+      700
+     ],
+     "model": "WL",
+     "nguon_boq": "mẫu tự dựng (LARGE_SINGLE_LAYER_GRILLE_LOUVER_WL)"
+    }
+   ]
+  },
+  {
+   "id": "CG-07_CUA_HOI_SDG_F",
+   "ten": "Cửa hồi → nan thẳng bầu dục kèm lọc thô SDG+F (đã ghi OBD/LCCT thì không thêm lọc)",
+   "dieu_kien": {
+    "tat_ca": [
+     "is_return_grille",
+     "!has_img_slb",
+     "!is_slot_sld"
+    ]
+   },
+   "profile": "BD",
+   "gan": [
+    {
+     "co": "has_filter",
+     "dieu_kien": {
+      "mot_trong": [
+       "has_filter",
+       {
+        "tat_ca": [
+         "!has_mesh",
+         "!has_obd"
+        ]
+       }
+      ]
+     }
+    }
+   ],
+   "model": [
+    {
+     "goc": "SDG",
+     "hau_to": [
+      "O",
+      "F",
+      "N"
+     ]
+    }
+   ],
+   "b": [
+    {
+     "kieu": "tru",
+     "tru": [
+      50,
+      50
+     ],
+     "toi_thieu": [
+      50,
+      50
+     ]
+    }
+   ],
+   "ghi_chu": [
+    "Cửa hồi nan thẳng bầu dục",
+    {
+     "khi": "is_removable",
+     "chuoi": " khung tháo lắp"
+    },
+    " ",
+    {
+     "chon": [
+      {
+       "khi": {
+        "tat_ca": [
+         "has_filter",
+         "has_mesh"
+        ]
+       },
+       "chuoi": "kèm lưới lọc bụi thô và LCCT Inox 304"
+      },
+      {
+       "khi": "has_mesh",
+       "chuoi": "kèm lưới chắn côn trùng Inox 304"
+      },
+      {
+       "khi": "has_filter",
+       "chuoi": "kèm lưới lọc bụi thô"
+      },
+      {
+       "khi": "has_obd",
+       "chuoi": "kèm van OBD"
+      },
+      {
+       "chuoi": ""
+      }
+     ]
+    },
+    {
+     "khi": {
+      "tat_ca": [
+       "has_obd",
+       {
+        "mot_trong": [
+         "has_mesh",
+         "has_filter"
+        ]
+       }
+      ]
+     },
+     "chuoi": " và van OBD"
+    },
+    {
+     "cat_khoang_trang": true
+    },
+    {
+     "bien": "box_note"
+    }
+   ],
+   "nguon": "bd1d662 2026-10-20; 78741b5 2026-10-26",
+   "ly_do": "Cửa hồi mặc định nan thẳng bầu dục kèm lọc bụi thô.",
+   "vi_du_dung": [
+    {
+     "ten": "Miệng gió hồi",
+     "ghi_chu": "KT: 450x450 mm",
+     "title": "Hệ thống hồi lạnh",
+     "kt": [
+      450,
+      450
+     ],
+     "model": "SDG+F",
+     "b": [
+      400,
+      400
+     ],
+     "nguon_boq": "input/BG DT C08-  Ago.xlsx"
+    },
+    {
+     "ten": "Cửa hồi gió kiểu nan bầu dục 1 lớp, kích thước mặt 250x250 kèm OBD và hộp gió",
+     "title": "SẢN PHẨM",
+     "kt": [
+      250,
+      250
+     ],
+     "model": "SDG+O",
+     "nguon_boq": "input/260910_MKS_BoQ goi thau (BP05a)"
+    },
+    {
+     "ten": "Cửa hồi gió kiểu nan bầu dục 1 lớp, khung tháo lắp, kích thước mặt 600x600 kèm lưới lọc bụi thô, van OBD và hộp gió cách nhiệt dán ngoài dày 19mm",
+     "title": "SẢN PHẨM",
+     "kt": [
+      600,
+      600
+     ],
+     "model": "SDG+O+F",
+     "he_so_thao_lap": 1.15,
+     "nguon_boq": "input/260910_MKS_BoQ goi thau (BP05a)"
+    }
+   ]
+  },
+  {
+   "id": "CG-08A_KHUECH_TAN_TRON_SRD",
+   "ten": "Cửa khuếch tán tròn → SRD(+O+N), cổ = D - 150",
+   "dieu_kien": {
+    "tat_ca": [
+     "is_diffuser_sq",
+     "is_round_diff"
+    ]
+   },
+   "profile": "T",
+   "model": [
+    {
+     "goc": "SRD",
+     "hau_to": [
+      "O",
+      "N"
+     ]
+    }
+   ],
+   "b": [
+    {
+     "kieu": "tron",
+     "tru": 150,
+     "toi_thieu": 50
+    }
+   ],
+   "ghi_chu": [
+    "Cửa khuếch tán tròn",
+    {
+     "khi": "has_obd",
+     "chuoi": " kèm van OBD"
+    },
+    {
+     "khi": "has_mesh",
+     "chuoi": " kèm LCCT"
+    },
+    {
+     "bien": "box_note"
+    }
+   ],
+   "nguon": "b5bf9c1 2026-10-26",
+   "ly_do": "Khuếch tán tròn.",
+   "vi_du_dung": [
+    {
+     "ten": "Cửa khuếch tán tròn D300",
+     "d": 300,
+     "model": "SRD",
+     "b": [
+      "Ø",
+      150
+     ],
+     "nguon_boq": "mẫu tự dựng (input/ chưa có dòng khuếch tán tròn)"
+    }
+   ]
+  },
+  {
+   "id": "CG-08B_KHUECH_TAN_VUONG_SD",
+   "ten": "Cửa khuếch tán vuông 4 hướng → SD(+O+N), cổ = mặt - 150 (mặt >= 300)",
+   "dieu_kien": "is_diffuser_sq",
+   "profile": "T",
+   "model": [
+    {
+     "goc": "SD",
+     "hau_to": [
+      "O",
+      "N"
+     ]
+    }
+   ],
+   "b": [
+    {
+     "khi": {
+      "tat_ca": [
+       {
+        "so_sanh": [
+         "w",
+         ">=",
+         300
+        ]
+       },
+       {
+        "so_sanh": [
+         "h",
+         ">=",
+         300
+        ]
+       }
+      ]
+     },
+     "kieu": "tru",
+     "tru": [
+      150,
+      150
+     ],
+     "toi_thieu": [
+      50,
+      50
+     ]
+    },
+    {
+     "kieu": "tru",
+     "tru": [
+      50,
+      50
+     ],
+     "toi_thieu": [
+      50,
+      50
+     ]
+    }
+   ],
+   "ghi_chu": [
+    "Cửa khuếch tán vuông 4 hướng",
+    {
+     "khi": "has_obd",
+     "chuoi": " kèm van OBD"
+    },
+    {
+     "khi": "has_mesh",
+     "chuoi": " kèm LCCT"
+    },
+    {
+     "bien": "box_note"
+    }
+   ],
+   "nguon": "bd1d662 2026-10-20; 600/450/300 1805d82; 'cửa thổi khuếch tán' 7cdc069 2026-11-02 — Kỹ thuật chốt",
+   "ly_do": "Cửa khuếch tán / cửa vuông 600-450-300 hệ điều hòa (AIR_CONDITIONING_SQUARE_DIFFUSER_SD_RULE).",
+   "vi_du_dung": [
+    {
+     "ten": "Kiểu khuếch tán-600x600, kèm hộp gió H=300mm",
+     "ghi_chu": "Diffuser type - 600x600 mm, including plenum box H=300 mm",
+     "title": "Cửa gió cấp khí lạnh, nhôm sơn tĩnh điện kèm van OBD (SAG+OBD)",
+     "kt": [
+      600,
+      600
+     ],
+     "model": "SD+O",
+     "b": [
+      450,
+      450
+     ],
+     "nguon_boq": "input/2 KL ĐH TG.xlsx"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Cửa thổi khuếch tán, kích thước mặt 450x450 kèm OBD và hộp gió cách nhiệt dán ngoài dày 19mm",
+     "ghi_chu": "hộp gió cách nhiệt dán ngoài, có lớp nhôm:  0.61 m2",
+     "title": "SẢN PHẨM",
+     "kt": [
+      450,
+      450
+     ],
+     "model": "SD+O",
+     "b": [
+      300,
+      300
+     ],
+     "nguon_boq": "input/260910_MKS_BoQ goi thau (BP05a)",
+     "loi_cu": "26/10 (MKS BP05a) ép 'cửa thổi khuếch tán' sang SDG cổ 400x400 — lỗi #3 kế hoạch, Kỹ thuật sửa 02/11"
+    }
+   ]
+  },
+  {
+   "id": "CG-09_DU_PHONG",
+   "ten": "Còn lại: chọn kiểu nan theo slot → linear → mã cửa nan thẳng → bảng subtype_rules.json CUA_GIO (mặc định BD)",
+   "dieu_kien": true,
+   "chon_profile": [
+    {
+     "khi": {
+      "tat_ca": [
+       "is_slot_sld",
+       {
+        "khong": {
+         "tu_khoa": [
+          "@nan_thang_sot_trung"
+         ],
+         "trong": "blade_search"
+        }
+       }
+      ]
+     },
+     "profile": "SLD"
+    },
+    {
+     "khi": {
+      "tat_ca": [
+       "has_img_slb",
+       {
+        "khong": {
+         "tu_khoa": [
+          "@nan_thang_sot_trung"
+         ],
+         "trong": "blade_search"
+        }
+       }
+      ]
+     },
+     "profile": "SLB"
+    },
+    {
+     "khi": {
+      "tu_khoa": [
+       "nan thẳng",
+       "gió thẳng",
+       "miệng thẳng",
+       "cửa thẳng",
+       "bầu dục",
+       "nan bd",
+       "fag",
+       "sag",
+       "rag",
+       "oag",
+       "mag",
+       "pag",
+       "seg",
+       "spg",
+       "seag",
+       "sdg"
+      ],
+      "trong": "combined_search"
+     },
+     "profile": "BD"
+    },
+    {
+     "profile": "@subtype_rules"
+    }
+   ],
+   "theo_profile": {
+    "Z": {
+     "model": [
+      {
+       "goc": "WL",
+       "hau_to": [
+        "N"
+       ]
+      }
+     ],
+     "b": [
+      {
+       "kieu": "tru",
+       "tru": [
+        50,
+        50
+       ],
+       "toi_thieu": [
+        50,
+        50
+       ]
+      }
+     ],
+     "ghi_chu": [
+      "Louver nan Z ngoài trời",
+      {
+       "khi": "has_mesh",
+       "chuoi": " kèm lưới chắn côn trùng"
+      }
+     ]
+    },
+    "ECG": {
+     "model": [
+      {
+       "goc": "ECG",
+       "hau_to": [
+        "O"
+       ]
+      }
+     ],
+     "b": [
+      {
+       "kieu": "tru",
+       "tru": [
+        50,
+        50
+       ],
+       "toi_thieu": [
+        50,
+        50
+       ]
+      }
+     ],
+     "ghi_chu": [
+      "Cửa nan sọt trứng",
+      {
+       "khi": "is_removable",
+       "chuoi": " lõi tháo lắp"
+      },
+      {
+       "khi": "has_obd",
+       "chuoi": " kèm van OBD"
+      },
+      {
+       "bien": "box_note"
+      }
+     ]
+    },
+    "SLD": {
+     "truoc": [
+      {
+       "tinh": "so_khe_theo_canh",
+       "khi": {
+        "so_sanh": [
+         "n_slots",
+         "<=",
+         0
+        ]
+       }
+      }
+     ],
+     "model": [
+      {
+       "goc_chon": [
+        {
+         "khi": {
+          "tu_khoa": [
+           "dls"
+          ],
+          "trong": "combined_search"
+         },
+         "goc": "DLS"
+        },
+        {
+         "goc": "SLD"
+        }
+       ],
+       "hau_to": [
+        "O",
+        "F",
+        "N"
+       ]
+      }
+     ],
+     "b": [
+      {
+       "kieu": "tru",
+       "tru": [
+        50,
+        50
+       ],
+       "toi_thieu": [
+        50,
+        30
+       ]
+      }
+     ],
+     "ghi_chu": [
+      "Cửa gió kiểu khe hẹp",
+      {
+       "khi": "has_obd",
+       "chuoi": " kèm van OBD"
+      },
+      {
+       "khi": "has_mesh",
+       "chuoi": " kèm LCCT"
+      },
+      {
+       "khi": "has_filter",
+       "chuoi": " kèm lưới lọc bụi thô"
+      },
+      {
+       "mau": " - {n_slots} slot"
+      },
+      {
+       "bien": "box_note"
+      }
+     ]
+    },
+    "SLB": {
+     "model": [
+      {
+       "goc": "SLB",
+       "hau_to": [
+        "O",
+        "F"
+       ]
+      }
+     ],
+     "b": [
+      {
+       "khi": "is_black_2nd_layer",
+       "kieu": "giu"
+      },
+      {
+       "kieu": "tru",
+       "tru": [
+        50,
+        50
+       ],
+       "toi_thieu": [
+        50,
+        50
+       ]
+      }
+     ],
+     "ghi_chu": [
+      "Cửa gió Linear nan T",
+      {
+       "khi": "is_black_2nd_layer",
+       "chuoi": " sơn đen lớp 2"
+      },
+      {
+       "khi": "has_obd",
+       "chuoi": " kèm van OBD"
+      },
+      {
+       "khi": "has_mesh",
+       "chuoi": " kèm LCCT"
+      },
+      {
+       "khi": "has_filter",
+       "chuoi": " kèm lưới lọc bụi thô"
+      },
+      {
+       "bien": "box_note"
+      }
+     ]
+    },
+    "T": {
+     "model": [
+      {
+       "goc": "SD",
+       "hau_to": [
+        "O",
+        "N"
+       ]
+      }
+     ],
+     "b": [
+      {
+       "khi": {
+        "tat_ca": [
+         {
+          "so_sanh": [
+           "w",
+           ">=",
+           300
+          ]
+         },
+         {
+          "so_sanh": [
+           "h",
+           ">=",
+           300
+          ]
+         }
+        ]
+       },
+       "kieu": "tru",
+       "tru": [
+        150,
+        150
+       ],
+       "toi_thieu": [
+        50,
+        50
+       ]
+      },
+      {
+       "kieu": "tru",
+       "tru": [
+        50,
+        50
+       ],
+       "toi_thieu": [
+        50,
+        50
+       ]
+      }
+     ],
+     "ghi_chu": [
+      "Cửa khuếch tán vuông",
+      {
+       "khi": "has_obd",
+       "chuoi": " kèm van OBD"
+      },
+      {
+       "khi": "has_mesh",
+       "chuoi": " kèm LCCT"
+      },
+      {
+       "bien": "box_note"
+      }
+     ]
+    },
+    "*": {
+     "model": [
+      {
+       "khi": {
+        "tat_ca": [
+         "is_removable",
+         "!has_obd",
+         "!has_filter",
+         "!has_mesh"
+        ]
+       },
+       "co_dinh": "SDGK"
+      },
+      {
+       "goc": "SDG",
+       "hau_to": [
+        "O",
+        "F",
+        "N"
+       ]
+      }
+     ],
+     "b": [
+      {
+       "kieu": "tru",
+       "tru": [
+        50,
+        50
+       ],
+       "toi_thieu": [
+        50,
+        50
+       ]
+      }
+     ],
+     "ghi_chu": [
+      "Cửa nan bầu dục ",
+      {
+       "chon": [
+        {
+         "khi": "is_double_layer",
+         "chuoi": "2 lớp"
+        },
+        {
+         "chuoi": "1 lớp"
+        }
+       ]
+      },
+      {
+       "khi": "is_removable",
+       "chuoi": " khung tháo lắp"
+      },
+      {
+       "khi": "has_obd",
+       "chuoi": " kèm van OBD"
+      },
+      {
+       "khi": "has_mesh",
+       "chuoi": " kèm LCCT"
+      },
+      {
+       "khi": "has_filter",
+       "chuoi": " kèm lưới lọc bụi thô"
+      },
+      {
+       "bien": "box_note"
+      }
+     ]
+    }
+   },
+   "nguon": "bd1d662 2026-10-20; slot 3062d31 2026-10-27; kiểu nan theo blade_search 7cdc069 2026-11-02",
+   "ly_do": "Mặc định cửa nan thẳng bầu dục SDG; profile 'SRD' từ subtype_rules rơi vào nhánh '*' (giữ nguyên hành vi cũ).",
+   "vi_du_dung": [
+    {
+     "ten": "Kiểu nan T-1000x400",
+     "ghi_chu": "Linear grille type - 1000x400 mm",
+     "title": "Cửa gió hút khí, nhôm sơn tĩnh điện kèm van OBD (EAG+OBD)",
+     "kt": [
+      1000,
+      400
+     ],
+     "model": "SLB+O",
+     "b": [
+      950,
+      350
+     ],
+     "nguon_boq": "input/2 KL ĐH TG.xlsx"
+    },
+    {
+     "ten": "Cửa gió nan bầu dục 1 lớp 800x400",
+     "kt": [
+      800,
+      400
+     ],
+     "model": "SDG",
+     "b": [
+      750,
+      350
+     ],
+     "nguon_boq": "mẫu tự dựng"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Cửa thổi khuếch tán, kích thước mặt 1000x150 kèm hộp gió cách nhiệt dán ngoài dày 19mm",
+     "ghi_chu": "hộp gió cách nhiệt dán ngoài, có lớp nhôm:  1.09 m2",
+     "title": "SẢN PHẨM",
+     "kt": [
+      1000,
+      150
+     ],
+     "model": "SLD",
+     "b": [
+      950,
+      100
+     ],
+     "ghi_chu_bg_chua": "2 slot",
+     "nguon_boq": "input/260910_MKS_BoQ goi thau (BP05a)",
+     "loi_cu": "26/10 ép sang nan bầu dục SDG; Kỹ thuật chốt 02/11: khuếch tán dạng dài -> slot SLD (1000x150 = 2 khe)"
+    }
+   ]
+  }
+ ],
+ "thao_lap": {
+  "mo_ta": "Chữ tháo lắp / 2 khung: phần cửa x cua.he_so_thao_lap (OBD/LCCT/lọc không nhân); thêm '(tháo lắp)' vào ghi chú",
+  "nguon": "7cdc069 2026-11-02 — Kỹ thuật chốt",
+  "khi": "is_removable_by_text",
+  "bo_qua_profile": [
+   "LCCT",
+   "FILTER_G4"
+  ],
+  "hang_so": "cua.he_so_thao_lap",
+  "mac_dinh": 1.15
+ },
+ "co_explicit": {
+  "mo_ta": "Kích thước cổ ghi rõ (w_neck/h_neck) ghi đè B1/B2, trừ các profile",
+  "bo_qua_profile": [
+   "LCCT",
+   "FILTER_G4"
+  ]
+ }
+}

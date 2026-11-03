@@ -6,6 +6,8 @@ import unicodedata
 from swind_utils import detect_boq_header, get_subtype_rules, extract_duct_fitting_geometry
 
 FILTER_PREFIXES = ("lọc bụi", "lọc thô", "lọc sơ cấp", "lọc g4", "phin lọc", "lưới lọc", "tấm lọc", "bộ lọc", "khung lọc", "filter g4", "g4 filter", "pre filter", "pre-filter")
+# Dòng cửa gió mà BOQ ghi rõ chỉ lấy phần hộp gió, không lấy cửa (BG DT C08: 'Chỉ gồm hộp, không gồm cửa gió')
+BOX_ONLY_RX = re.compile(r'chỉ\s+(?:gồm|có|tính|lấy|báo)\s+(?:phần\s+)?(?:hộp|box)|không\s+(?:bao\s+)?(?:gồm|kèm|tính|lấy)\s+(?:phần\s+)?(?:cửa|miệng)\s*gió', re.IGNORECASE)
 FINE_FILTER_RX = re.compile(r'\b(?:f[5-9]|m[5-6]|e1[0-2]|h1[0-4]|hepa|ulpa)\b|than hoạt tính|tĩnh điện|túi|carbon|bag')
 
 
@@ -358,7 +360,9 @@ class SwindBOQParser:
                 if category == "KHAC" and name_lower.startswith(("cửa gió", "miệng gió", "cửa cấp", "cửa hồi", "cửa hút", "cửa thải", "cửa lấy", "cửa xả", "cửa tươi", "cửa sọt", "cửa nan", "cửa khuếch tán", "cửa bầu dục", "cửa louver", "cửa chớp", "louver ")):
                     category = "CUA_GIO"
                 if category == "KHAC" and any(k in sec_lower for k in ("cửa gió", "miệng gió", "cửa chớp", "chớp nhôm", "lưới chắn chim", "louver", "luover", "louvre", "grille", "griller", "diffuser", "insect screen", "i.s", "lcct", "lưới chắn côn trùng", "fag", "sag", "rag", "eag", "seag", "kag", "mag", "fal", "eal", "oal")):
-                    if not name_lower.startswith(("van ", "damper", "volume control", "fire damper", "motorized damper", "non-return", "ống ", "cút ", "côn ", "tê ", "chân rẽ", "hộp ", "chụp hút", "chụp thông")) and not any(k in sec_lower for k in ("chụp hút", "chụp thông")) and not any(k in name_lower for k in ("volume control damper", "fire damper", "motorized damper", "non-return damper")):
+                    # Tên tự ghi loại hàng khác thì không kế thừa 'cửa gió' từ Title (AGENTS.md quy tắc 1a). 'tole/tôn/box ' thêm 2026-11-03:
+                    # Haus_Dalat DHKK 'Tole 0.75mm ... (m2)', 'Box gió cấp và box gió hồi ... kW' dưới Title '... box miệng gió' / 'MIỆNG GIÓ'.
+                    if not name_lower.startswith(("van ", "damper", "volume control", "fire damper", "motorized damper", "non-return", "ống ", "cút ", "côn ", "tê ", "chân rẽ", "hộp ", "box ", "tole", "tôn ", "chụp hút", "chụp thông")) and not any(k in sec_lower for k in ("chụp hút", "chụp thông")) and not any(k in name_lower for k in ("volume control damper", "fire damper", "motorized damper", "non-return damper")):
                         category = "CUA_GIO"
 
                 # 2c. Kiểm tra Hàng Sản Xuất có độ đặc thù cao (Canvas, Chụp thông hơi, Tiêu âm, Cửa, Van, Ống mềm)
@@ -375,7 +379,8 @@ class SwindBOQParser:
                                 if any(match_keyword(kw, note_lower_cat) for kw in mfg.get("keywords", [])):
                                     category = mfg.get("mapping_category")
                                     break
-                    if category == "KHAC" and full_name_lower != name_lower:
+                    # Tên tự ghi là tôn / tole (vật tư ống gió theo m²) -> không lấy loại Cửa/Van từ Title cha (AGENTS.md quy tắc 1a, 2026-11-03)
+                    if category == "KHAC" and full_name_lower != name_lower and not name_lower.startswith(("tole", "tôn ")):
                         for mfg in self.manufacturable_catalog:
                             if mfg.get("mapping_category") not in ("ONG_GIO", "PHU_KIEN_ONG", "KHAC"):
                                 if any(match_keyword(kw, full_name_lower) for kw in mfg.get("keywords", [])):
@@ -592,6 +597,10 @@ class SwindBOQParser:
                 category = "THUONG_MAI"
             elif category == "CUA_GIO" and d_val > 0 and any(k in full_name_lower for k in ("ead",)):
                 category = "THUONG_MAI"
+            elif category == "CUA_GIO" and BOX_ONLY_RX.search(f"{raw_name_str} {model_str} {note_boq}"):
+                # BOQ ghi rõ chỉ lấy hộp ('Miệng gió cấp kèm hộp gió' / Ghi chú 'Chỉ gồm hộp, không gồm cửa gió') -> hàng hộp gió:
+                # mặc định không báo (như ống gió) + hỏi lại User; --include-duct báo phần hộp. User duyệt 2026-11-03 (BG DT C08 R18-22).
+                category = "ONG_GIO"
             if category == "ONG_GIO" and w == 0 and h == 0 and d_val == 0 and ("kẹp bích" in name_lower or (name_lower.startswith(("box ", "hộp ", "hôp ")) and str(unit_val).strip().lower() not in ("m2", "m²"))):
                 category = "THUONG_MAI"
             if any(k in name_lower for k in ("măng xông", "mang xong", "măng sông", "mang song")):

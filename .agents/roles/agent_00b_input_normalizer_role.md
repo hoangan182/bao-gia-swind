@@ -20,10 +20,22 @@
 3. **Không bịa dữ liệu.** Độ dày ống không có trong BOQ → để trống; Agent 04 tra `get_standard_thickness` theo cạnh lớn (không gán cứng 0.58).
 4. Thiếu ngữ cảnh mà parser không tự nhận ra được → **in cảnh báo cho User**, không sửa file. Nếu sau này cần bổ sung ngữ cảnh (VD dòng ống gió không có Title), truyền tham số cho parser (VD `duct_context=True`), không chèn chữ vào BOQ.
 
+## 2B. BỘ KIỂM CHỨNG ĐỘC LẬP TẦNG ĐỌC CẤU TRÚC (`StructureVerifier`, 2026-11-03)
+Reader core là điểm đọc duy nhất → chọn nhầm cột/dòng là mọi dự án sai theo. `StructureVerifier` **không phải bộ đọc thứ 2 và không sửa kết quả**: đếm thô trên file gốc (mọi cột có số > 0 ở dòng hiển thị có tên hàng: số dòng, tổng, tiêu đề, ẩn/hiện) rồi so với cột/dòng parser đã chọn. In `⚠️ [KIỂM CHỨNG ĐỌC BOQ]` khi:
+1. Parser đọc cột vai trò (Tên/SL/ĐVT/Spec/KT/Ghi chú...) đang **bị ẩn** (trừ cột SL ép theo khu `_forced_qty_col`), hoặc bóc dòng đang bị ẩn.
+   - (1b, 2026-11-03) Cột kích thước W/H/L hoặc SL **trùng cột STT** — bắt lỗi BG01_SLAND / Haus_Dalat `DHKK`: mã hạng mục `A1 | HỆ THỐNG ...` bị Reader core hiểu là cột kích thước A1 (đã sửa trong `detect_boq_header`: dòng con có chữ dài ở cột Tên mà không có từ khóa tiêu đề thì dừng dò tiêu đề phụ; không nhận cột STT làm cột kích thước).
+2. Có cột tiêu đề SL/KL/Khối lượng/Q'ty/Tổng **hiển thị** khác có số ở **≥ 2 lần và hơn ≥ 5 dòng** so với cột parser chọn (bỏ qua phiếu đặt hàng `Lần N` / `Tổng KL`).
+3. Có cột tiêu đề KL/SL **rõ ràng** mang giá trị **khác** cột parser chọn ở ≥ 50% (tối thiểu 2) dòng đã bóc — bắt lỗi CC17 `DG-CAN HO` chọn `TỔNG` (77) thay `KL ECB` (313). Cột chỉ ghi `Tổng` (cộng nhóm) không dùng làm chuẩn so.
+4. ≥ 5 dòng (và ≥ 20%) có tên + SL > 0 ở cột parser chọn mà parser không bóc, cũng không ghi lý do bỏ.
+- Bỏ khỏi nhãn cột: số thứ tự cột `(13)`, tiêu đề bảng trải ngang (`BẢNG ...`, `BIỂU ...`), cột STT. Loại cột tiền/tiến độ/hệ số/hao hụt/m²/tồn kho/kỳ trước/1 tầng.
+- Ngưỡng nằm ở hằng số lớp `StructureVerifier` (`MORE_ROWS_*`, `CONFLICT_*`, `UNACCOUNTED_*`). Đo lúc tạo: **0 cảnh báo trên 52 file `input/`**; giả lập lỗi cũ (CC17 chọn `TỔNG`/`CODE`, MKS chọn cột khu ẩn `AP`/`AQ`, BDCC09 chọn cột ẩn `T`) đều bị bắt. Test: `StructureVerifierTest` trong `tests/test_swind_core.py`.
+- Kết quả trong report: `report["verification"][sheet]` (cột SL, nhãn, số dòng/tổng thô, số dòng/tổng đã bóc, các cột ứng viên) và `report["verify_warnings"]`.
+
 ## 3. ĐẦU RA
 - `(đường_dẫn_file_gốc, report)`; `report["action"] = "analysis-only"`, `report["warnings"]` liệt kê cảnh báo theo sheet.
 - Có cảnh báo → runner ghi `output/<Project>/internal_estimation/INPUT_NORMALIZATION_REPORT.json`.
 
 ## 4. LỊCH SỬ
 - 2026-10-26 (`b5bf9c1`): tạo Agent 00B kèm bộ chuẩn hóa `StructureNormalizer` (viết lại sheet sang mẫu Swind, chèn section header) và `ValidationGate`.
+- 2026-11-03: thêm `StructureVerifier` (mục 2B, việc A bàn giao tách agent).
 - 2026-11-03: gỡ phần viết lại (xem Quy tắc 1), bỏ bộ dò header riêng `_scan_header_area` → dùng Reader core. Code cũ tra lại bằng `git show b5bf9c1:src/agent_00b_input_normalizer.py`.

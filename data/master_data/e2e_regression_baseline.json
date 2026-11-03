@@ -85,11 +85,11 @@
   "BG DT C08-  Ago.xlsx": {
     "sheets": {
       "Minh Triết BG": {
-        "count": 96,
-        "sub_total": 2215961200
+        "count": 91,
+        "sub_total": 1902837200
       }
     },
-    "total": 2215961200
+    "total": 1902837200
   },
   "BG ĐHKK-TAHK 12.10 (DT).xlsx": {
     "sheets": {
@@ -103,11 +103,11 @@
   "BG01_SLAND_TBCONS_HAUSDALAT_MIENG GIO VAN GIO_07102026.xlsx": {
     "sheets": {
       "DHKK": {
-        "count": 185,
-        "sub_total": 2049743000
+        "count": 182,
+        "sub_total": 3320486800
       }
     },
-    "total": 2049743000
+    "total": 3320486800
   },
   "BGĐP - Hoàng Quân - D4, D5 - Ống gió - 20260401.xlsx": {
     "sheets": {
@@ -175,11 +175,11 @@
   "Haus_Dalat_BOQ_MEP (NCC).xlsx": {
     "sheets": {
       "DHKK": {
-        "count": 222,
-        "sub_total": 11323795262
+        "count": 191,
+        "sub_total": 11391841201
       }
     },
-    "total": 11323795262
+    "total": 11391841201
   },
   "Hỏi giá Van gió phát sinh H1.xlsx": {
     "sheets": {
@@ -450,10 +450,10 @@
     "sheets": {
       "Eusteel BG": {
         "count": 44,
-        "sub_total": 1435851200
+        "sub_total": 1443081200
       }
     },
-    "total": 1435851200
+    "total": 1443081200
   },
   "DNBG VGCG.xlsx": {
     "sheets": {
@@ -549,9 +549,9 @@
     "sheets": {
       "BG": {
         "count": 44,
-        "sub_total": 1435851200
+        "sub_total": 1443081200
       }
     },
-    "total": 1435851200
+    "total": 1443081200
   }
 }

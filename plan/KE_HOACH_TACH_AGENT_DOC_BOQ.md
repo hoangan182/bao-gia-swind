@@ -41,4 +41,18 @@ Ngày lập: 2026-11-02. Nguồn: phản hồi Kỹ thuật về 3 dự án BDKS
 - Rule mới (User chốt 2026-11-03): Ghi chú liệt kê ≥ 2 hộp (`BOX CẤP ... / BOX HỒI ...`) trên 1 dòng → đơn giá = tổng các hộp, ghi chú nêu đủ, không thêm dòng (`Agent04._calc_multi_plenum_boxes`).
 - Baseline `e2e_baseline_include_duct.json` đã lệch 32 file từ trước đợt này (chưa cập nhật sau các đợt sửa rule trước) — chưa lưu lại, chờ User rà.
 
-**Còn lại:** bước 3 (bảng rule cửa gió JSON) & 4 — mỗi bước một hội thoại riêng.
+**2026-11-03 — Xong việc A (bộ kiểm chứng độc lập tầng đọc cấu trúc):**
+- `StructureVerifier` trong `src/agent_00b_input_normalizer.py`: đếm thô file gốc, so với cột SL/dòng parser chọn, in `⚠️ [KIỂM CHỨNG ĐỌC BOQ]` (cột/dòng ẩn; cột SL khác nhiều dòng hơn hẳn; cột KL rõ ràng lệch giá trị; dòng có KL không được bóc). Chỉ cảnh báo, không sửa kết quả. Chi tiết: mục 2B file vai trò Agent 00B.
+- 0 cảnh báo trên 52 file `input/`; giả lập lỗi cũ CC17 (`TỔNG`/`CODE`), MKS (cột khu ẩn `AP`/`AQ`), BDCC09 (cột ẩn `T`) đều bị bắt. Test `StructureVerifierTest` (5 test).
+- E2E mặc định PASS; `--include-duct` PASS so với ảnh chụp code trước khi sửa (baseline `--include-duct` chính chưa đụng tới).
+- Chưa đưa vào `[KIỂM SOÁT CUỐI]` — chờ User chọn chỉ cảnh báo hay chặn.
+
+**2026-11-03 — Xong bước 3 (việc B: bảng rule cửa gió):**
+- Phần phân loại của `Agent01._resolve_diffuser_spec` (~370 dòng `if/elif`) chuyển sang bảng `data/master_data/diffuser_rules.json` (nhóm từ khóa, bước nhận diện, 9 rule ưu tiên `CG-01..CG-09` có `nguon`/`ly_do`/`vi_du_dung`/`vi_du_sai`) + bộ chạy `src/diffuser_classifier.py`. Combo Cửa+Van và hộp gió vẫn ở Agent 01. Vai trò: `.agents/roles/diffuser_classifier_role.md`; kiểm kê cho User duyệt: `plan/BANG_RULE_CUA_GIO.md`.
+- Tương đương 100%: phát lại 3.850 lần gọi ghi từ 52 BOQ (mặc định & `--include-duct --include-box`) + 45.000 ca ngẫu nhiên so code cũ (worktree HEAD) → 0 lệch (Model, ghi chú, B1/B2, cờ, trường ghi lại vào item). Self-test 53/53, unit 26/26 (thêm `tests/test_swind_diffuser_rules.py`: 22 ví dụ, 15 từ BOQ thật), E2E 2 chế độ không lệch so với ảnh chụp trước khi sửa.
+- Bước 4 (3 lỗi đã biết #3 #4 #5): đã sửa từ commit `7cdc069` (02/11) → nay khóa bằng `vi_du_sai`. Phát hiện mới khi kiểm kê (chưa sửa, chờ User): `plan/BANG_RULE_CUA_GIO.md` mục 3.
+
+**2026-11-03 — Sửa 4 lỗi phát hiện khi kiểm kê (User duyệt):** chi tiết + giải trình E2E ở `plan/BANG_RULE_CUA_GIO.md` mục 3. Chốt nguyên tắc Title cha (AGENTS.md quy tắc 1a): thông số / phụ kiện kế thừa, loại hàng dòng tự ghi thắng Title. E2E lệch đúng 5 file đã giải trình (C08, BG01_SLAND, Cổ bi, Q.26.0036 Penta, Haus_Dalat) — User duyệt, **đã lưu baseline mặc định**.
+- Rule mới (User chốt 2026-11-03): dòng Cửa/Van **không có kích thước → không báo giá**, giữ đơn giá đối tác nếu BOQ có, chỉ `⚠️ [THÔNG BÁO USER]` (không còn `⛔` chặn / mã thoát 2). AGENTS.md cổng kiểm soát 1b.
+
+**Còn lại:** bước 4 (van, ống, phạm vi — việc C).

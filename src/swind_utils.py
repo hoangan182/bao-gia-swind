@@ -143,6 +143,10 @@ def detect_boq_header(ws):
     PRICE_KEYWORDS = tuple(aliases.get("price_keywords", ("đơn giá", "price")))
     TOTAL_KEYWORDS = tuple(aliases.get("total_keywords", ("thành tiền", "total")))
     REMARKS_KEYWORDS = tuple(aliases.get("remarks_keywords", ("ghi chú", "remarks")))
+    # Từ khóa nhận ra 1 dòng là dòng tiêu đề (bỏ từ khóa ngắn như 'sl', 'kl', 'tt' dễ trùng chữ thường)
+    HEADER_LABEL_KWS = tuple(k for k in (NAME_KEYWORDS + NAME_CAND_KEYWORDS + QTY_KEYWORDS + SPEC_KEYWORDS + MODEL_KEYWORDS + BRAND_KEYWORDS
+                                         + SIZE_KEYWORDS + THK_KEYWORDS + UNIT_KEYWORDS + PRICE_KEYWORDS + TOTAL_KEYWORDS + REMARKS_KEYWORDS
+                                         + ("description", "đơn vị", "kích thước")) if len(k) >= 4)
 
     forced_qty_col = getattr(ws, "_forced_qty_col", None)
     if forced_qty_col:
@@ -258,6 +262,15 @@ def detect_boq_header(ws):
             for sub_r in range(r + 1, min(r + 4, ws.max_row + 1)):
                 if sub_r in hidden_rows:
                     continue
+                # Dòng có chữ dài ở cột Tên là dòng Title / dữ liệu, không phải tiêu đề cột con -> dừng dò.
+                # Lý do (2026-11-03, BG01_SLAND / Haus_Dalat sheet DHKK): mã hạng mục 'A1 | HỆ THỐNG HÚT KHÓI...' bị hiểu là
+                # cột kích thước A1 -> lấy cột STT làm cạnh W cho cả sheet và đẩy header xuống, mất Title cha nhóm đầu.
+                # Dòng tiêu đề thật (VD 'Description / Mô tả công việc', 'Thông số KT/Mã hiệu') có từ khóa tiêu đề -> vẫn dò tiếp.
+                sub_txt = " ".join(unicodedata.normalize('NFC', str(ws.cell(sub_r, cc).value or "")).lower()
+                                   for cc in range(1, max_scan_col + 1) if get_column_letter(cc) not in hidden_cols)
+                if (any(len(unicodedata.normalize('NFC', str(ws.cell(sub_r, nc).value or "")).strip()) > 15 for nc in name_cols)
+                        and not any(k in sub_txt for k in HEADER_LABEL_KWS)):
+                    break
                 row_has_col_idx = False
                 row_has_sub_dim = False
                 sub_has_w = False
@@ -273,6 +286,8 @@ def detect_boq_header(ws):
                         row_has_col_idx = True
                         continue
                     v_clean = re.sub(r'\s*\([^)]*\)', '', v_sub).strip()
+                    if c_sub == col_map.get("stt"):
+                        continue  # cột STT chứa mã hạng mục (A1, B2...), không phải cột kích thước
                     if v_clean in ("w", "a1", "rộng"):
                         col_map["w"] = c_sub
                         sub_has_w = True

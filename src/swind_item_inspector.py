@@ -721,8 +721,10 @@ def locate_requirement_target(topic):
         {
             "tags": ["cua", "mieng gio", "louver", "linear", "slot", "sld", "slb", "khuech tan", "sot trung", "nan z", "bau duc", "nhom"],
             "title": "Công thức định mức nhôm, sơn, nhân công & phụ kiện Cửa gió (Agent 06)",
-            "json_targets": ["data/master_data/master_bom_rules.json -> 'diffuser_rules'"],
-            "py_targets": [("src/agent_06_bom_diffuser.py", None), ("src/agent_01_boq_extractor.py", "_resolve_diffuser_spec")]
+            "json_targets": ["data/master_data/master_bom_rules.json -> 'diffuser_rules'",
+                             "data/master_data/diffuser_rules.json -> 'thu_tu_uu_tien' (bảng rule nhận diện cửa gió)"],
+            "py_targets": [("src/agent_06_bom_diffuser.py", None), ("src/diffuser_classifier.py", "classify"),
+                           ("src/agent_01_boq_extractor.py", "_resolve_diffuser_spec")]
         },
         {
             "tags": ["gia", "price", "vat tu", "markup", "loi nhuan", "nhan cong", "lam tron"],

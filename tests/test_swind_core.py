@@ -57,11 +57,19 @@ class ValueAuditTest(unittest.TestCase):
 
 
 class GateTest(unittest.TestCase):
-    def test_missing_dims_block(self):
+    def test_missing_dims_notify_not_block(self):
+        """User chốt 2026-11-03: không có kích thước -> không báo giá, chỉ thông báo (không chặn)."""
         cov = {"S": {"missing_dims": ["Dòng 5"], "skipped_in_scope": [], "suspect_unparsed": []}}
         gate = evaluate_quotation_gate(cov, {}, {}, [])
-        self.assertTrue(gate["blocking"])
-        self.assertEqual(gate["unpriced_rows"], 1)
+        self.assertEqual(gate["blocking"], [])
+        self.assertEqual(gate["unpriced_rows"], 0)
+        self.assertTrue(any("THÔNG BÁO USER" in c and "không ghi kích thước" in c for c in gate["confirm"]))
+
+    def test_missing_dims_partner_price_notified(self):
+        it = {"source_row": 7, "raw_name": "Van xả áp", "qty": 6, "is_missing_dims": True, "ref_price": 1500000}
+        gate = evaluate_quotation_gate({}, {}, {}, [], all_items=[it])
+        self.assertEqual(gate["blocking"], [])
+        self.assertTrue(any("đơn giá đối tác" in c and "R7" in c for c in gate["confirm"]))
 
     def test_parse_error_blocks(self):
         gate = evaluate_quotation_gate({}, {}, {}, [], parse_errors={"Sheet A": "RuntimeError: x"})
@@ -190,6 +198,120 @@ class ReaderCoreTest(unittest.TestCase):
             self.assertEqual(sorted(os.listdir(td)), sorted(f for f in ["boq.xlsx", "fmt.json"] if os.path.exists(os.path.join(td, f))))
             names = [c.value for c in openpyxl.load_workbook(p)["OG"]["B"] if c.value]
             self.assertFalse(any("0.58" in str(n) for n in names))  # không chèn tiêu đề giả 'Ống gió tôn dày 0.58mm'
+
+
+class StructureVerifierTest(unittest.TestCase):
+    """Bộ kiểm chứng độc lập tầng đọc cấu trúc (Agent 00B, việc A — plan/BAN_GIAO_TACH_AGENT_DOC_BOQ.md)."""
+
+    ROWS = [("Van chặn lửa FD 400x400", "cái"), ("Van chặn lửa FD 600x400", "cái"),
+            ("Cửa gió nan thẳng 600x300", "cái"), ("Van VCD 500x300", "cái")]
+
+    def _cc17_like(self, path):
+        """(b) 'KL CĐT' ẩn + 'KL ECB' hiển thị, (c) cột 'TỔNG' nhóm căn hộ ngay sau 'KL ECB' như CC17 'DG-CAN HO'."""
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "DG"
+        ws.append(["BẢNG DIỄN GIẢI CHI TIẾT KHỐI LƯỢNG CĂN HỘ"])
+        ws.append([None, None, None, None, None, "CĂN HỘ ST - B2"])
+        ws.append(["STT", "Danh mục công việc", "Đơn vị", "KL CĐT", "KL ECB", "TỔNG", "MB"])
+        for i, (n, u) in enumerate(self.ROWS, 1):
+            ws.append([i, n, u, 300, 313, 77, 1])
+        ws.column_dimensions["D"].hidden = True
+        wb.save(path)
+
+    def _verify(self, path, sheet, patch=None):
+        from swind_utils import detect_boq_header
+        from swind_boq_parser import SwindBOQParser
+        from agent_00b_input_normalizer import StructureVerifier
+        wb = openpyxl.load_workbook(path, data_only=True)
+        ws = wb[sheet]
+        hr, col_map, _, _, _ = detect_boq_header(ws)
+        col_map = dict(col_map, **(patch or {}))
+        parser = SwindBOQParser(path, wb=wb)
+        items = parser.parse_sheet(sheet, _override_col_map=col_map, _override_header_row=hr)
+        return col_map, StructureVerifier(ws, hr, col_map, items, parser.skipped_rows.get(sheet)).verify()
+
+    def test_section_code_a1_not_dimension_column(self):
+        """BG01_SLAND / Haus_Dalat 'DHKK': mã hạng mục 'A1 | HỆ THỐNG ...' dưới header không phải cột kích thước A1."""
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "dhkk.xlsx")
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = "DHKK"
+            ws.append(["BILL: HỆ THỐNG ĐHKK & THÔNG GIÓ"])
+            ws.append([])
+            ws.append(["STT", "MÔ TẢ CÔNG TÁC", "MÃ HIỆU", "NHÃN HIỆU", "Đơn vị", "Khối lượng"])
+            ws.append([None, None, None, None, None, None, "VẬT TƯ"])
+            ws.append(["A", "HỆ THỐNG THÔNG GIÓ"])
+            ws.append(["A1", "HỆ THỐNG HÚT KHÓI HẦM XE, HÚT KHÓI SỰ CỐ"])
+            ws.append([1, "Van 1 chiều NRD 1250x1250 (EI60)", "NRD", "Swind", "Cái", 6])
+            ws.append([2, "Miệng gió MAG 850x850+OBD", None, "Swind", "Cái", 1])
+            wb.save(p)
+            col_map, ver = self._verify(p, "DHKK")
+            self.assertNotIn("w", col_map)
+            self.assertEqual(ver["warnings"], [])
+            _, ver = self._verify(p, "DHKK", {"w": 1})  # lỗi cũ: cột STT làm cạnh W
+            self.assertTrue(any("trùng cột STT" in w for w in ver["warnings"]), ver["warnings"])
+            from swind_boq_parser import SwindBOQParser
+            items = SwindBOQParser(p).parse_sheet("DHKK")
+            self.assertEqual([(it["w"], it["h"]) for it in items], [(1250, 1250), (850, 850)])
+            self.assertIn("HÚT KHÓI HẦM XE", items[0]["section"])
+
+    def test_cc17_kl_ecb_chosen_no_warning(self):
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "cc17.xlsx")
+            self._cc17_like(p)
+            col_map, ver = self._verify(p, "DG")
+            self.assertEqual(col_map["qty"], 5)  # KL ECB, không lấy KL CĐT ẩn hay TỔNG
+            self.assertEqual(ver["warnings"], [])
+            self.assertEqual(ver["raw_qty_sum"], 313 * len(self.ROWS))
+
+    def test_total_column_instead_of_kl_ecb_is_flagged(self):
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "cc17.xlsx")
+            self._cc17_like(p)
+            _, ver = self._verify(p, "DG", {"qty": 6})  # lỗi cũ: chọn cột 'TỔNG' (77) thay 'KL ECB' (313)
+            self.assertTrue(any("lệch cột E ('kl ecb')" in w for w in ver["warnings"]), ver["warnings"])
+
+    def test_hidden_qty_column_is_flagged(self):
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "cc17.xlsx")
+            self._cc17_like(p)
+            _, ver = self._verify(p, "DG", {"qty": 4})  # cột 'KL CĐT' đang ẩn
+            self.assertTrue(any("cột D" in w and "BỊ ẨN" in w for w in ver["warnings"]), ver["warnings"])
+
+    def test_hidden_range_with_zone_qty(self):
+        """(a) Dải cột ẩn chứa SL từng khu (như MKS BP05a 'AP:AS'), cột TOTAL hiển thị nhiều dòng hơn."""
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "mks.xlsx")
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = "BOQ"
+            ws.append(["STT", "Tên vật tư", "Đơn vị", "KL Basement", "KL Tower", "SL toàn dự án"])
+            for i in range(1, 13):
+                ws.append([i, f"Van VCD {300 + 50 * i}x300", "nos", 2 if i <= 3 else None, 5, 7 if i <= 3 else 5])
+            ws.column_dimensions.group("D", "E", hidden=True)
+            wb.save(p)
+            col_map, ver = self._verify(p, "BOQ")
+            self.assertEqual(col_map["qty"], 6)
+            self.assertEqual(ver["warnings"], [])
+            _, ver_bad = self._verify(p, "BOQ", {"qty": 4})
+            self.assertTrue(any("BỊ ẨN" in w for w in ver_bad["warnings"]))
+            self.assertTrue(any("chỉ có số ở 3 dòng" in w for w in ver_bad["warnings"]), ver_bad["warnings"])
+
+    def test_agent00b_report_carries_verification(self):
+        import agent_00b_input_normalizer as a00b
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "cc17.xlsx")
+            self._cc17_like(p)
+            orig_db = a00b.FormatLearningDB.DB_PATH
+            a00b.FormatLearningDB.DB_PATH = os.path.join(td, "fmt.json")
+            try:
+                _, report = a00b.Agent00B_InputNormalizer(p, interactive=False).normalize()
+            finally:
+                a00b.FormatLearningDB.DB_PATH = orig_db
+            self.assertEqual(report["verification"]["DG"]["qty_col"], "E")
+            self.assertEqual(report["verify_warnings"], {})
 
 
 class MultiBoxNoteTest(unittest.TestCase):
