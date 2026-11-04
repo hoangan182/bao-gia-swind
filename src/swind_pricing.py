@@ -152,3 +152,42 @@ def filter_g4_price(w_mm, h_mm):
     """Giá bán lọc thô G4 kèm khung nhôm theo diện tích (pricing_constants.json -> cua.loc_g4_m2), làm tròn nghìn."""
     from swind_utils import K
     return excel_round((float(w_mm) / 1000.0) * (float(h_mm) / 1000.0) * K("cua.loc_g4_m2", 200000.0), -3)
+
+
+# ---------------------------------------------------------------- Từ chi phí vật tư -> giá bán (runner & swind_item_inspector)
+_COMM_DEFAULT = ["THUONG_MAI", "ONG_MEM", "KHAC"]
+_MFG_DEFAULT = ["ONG_GIO", "CUA_GIO", "VAN_GIO", "CANVAS", "TIEU_AM"]
+
+
+def financial_rates(category, fin_policy):
+    """(nhân công, quản lý, lợi nhuận) theo nhóm hàng — financial_policy.json. Nhóm lạ -> như hàng thương mại."""
+    fin_policy = fin_policy or {}
+    if category in (fin_policy.get("MANUFACTURING", {}).get("categories", _MFG_DEFAULT)) and \
+            category not in (fin_policy.get("COMMERCIAL", {}).get("categories", _COMM_DEFAULT)):
+        cfg = fin_policy.get("MANUFACTURING", {})
+        return cfg.get("labor_rate", 0.25), cfg.get("overhead_rate", 0.10), cfg.get("margin", 0.18)
+    cfg = fin_policy.get("COMMERCIAL", {})
+    return cfg.get("labor_rate", 0.0), cfg.get("overhead_rate", 0.02), cfg.get("margin", 0.10)
+
+
+def sell_price(components, price_map, category, fin_policy):
+    """Giá bán 1 đơn vị từ BOM: chi phí vật tư (giá Master Data, thiếu -> ref_price) + nhân công & quản lý trên phần
+    không phải động cơ, nhân (1 + lợi nhuận); động cơ cộng nguyên giá. Đơn giá làm tròn lên bội 100đ.
+    Trả {m_cost, mot_cost, l_cost, o_cost, margin, sell_unit_raw, sell_unit, sell_mat, sell_lab}."""
+    m_cost = mot_cost = 0.0
+    for c in components:
+        cost = c["calc_qty"] * (price_map.get(c["mat_id"], 0.0) or c.get("ref_price", 0.0))
+        m_cost += cost
+        if c.get("category") == "ĐỘNG_CƠ_VÀ_CẢM_BIẾN":
+            mot_cost += cost
+    l_rate, o_rate, mg = financial_rates(category, fin_policy)
+    l_cost = (m_cost - mot_cost) * l_rate
+    o_cost = (m_cost - mot_cost) * o_rate
+    raw = math.floor(((m_cost + l_cost + o_cost - mot_cost) * (1 + mg) + mot_cost) + 0.5)
+    return {
+        "m_cost": m_cost, "mot_cost": mot_cost, "l_cost": l_cost, "o_cost": o_cost, "margin": mg,
+        "sell_unit_raw": raw,
+        "sell_unit": int(math.ceil(raw / 100.0) * 100) if raw > 0 else 0,
+        "sell_mat": math.floor(((m_cost + o_cost - mot_cost) * (1 + mg) + mot_cost) + 0.5),
+        "sell_lab": math.floor(l_cost * (1 + mg) + 0.5),
+    }

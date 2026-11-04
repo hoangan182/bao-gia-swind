@@ -280,18 +280,9 @@ def process_single_sheet_estimation(
         )
 
     def get_financial_rates(category):
-        comm_cats = fin_policy.get("COMMERCIAL", {}).get("categories", ["THUONG_MAI", "ONG_MEM", "KHAC"])
-        mfg_cats = fin_policy.get("MANUFACTURING", {}).get("categories", ["ONG_GIO", "CUA_GIO", "VAN_GIO", "CANVAS", "TIEU_AM"])
-
-        if category in comm_cats:
-            cfg = fin_policy.get("COMMERCIAL", {})
-            return cfg.get("labor_rate", 0.0), cfg.get("overhead_rate", 0.02), cfg.get("margin", 0.10)
-        elif category in mfg_cats:
-            cfg = fin_policy.get("MANUFACTURING", {})
-            return cfg.get("labor_rate", 0.25), cfg.get("overhead_rate", 0.10), cfg.get("margin", 0.18)
-        else:
-            cfg = fin_policy.get("COMMERCIAL", {})
-            return cfg.get("labor_rate", 0.0), cfg.get("overhead_rate", 0.02), cfg.get("margin", 0.10)
+        # Tỷ lệ nhân công / quản lý / lợi nhuận: dùng chung swind_pricing (gom giá 2026-11-03)
+        from swind_pricing import financial_rates
+        return financial_rates(category, fin_policy)
 
     price_map = {item["MAT_ID"]: float(item.get("Price") or 0) for item in price_records}
     orig_add_comp = builder.add_subsheet_component
@@ -650,34 +641,22 @@ def process_single_sheet_estimation(
                             note="Phụ kiện bóc tách động (Rule-based)"
                         )
         # Ghi nhận giá trị dự toán tính toán trực tiếp trên item phục vụ Bảng chào giá thống nhất
-        comps = item_comps.get(item_id, [])
-        m_cost = 0.0
-        mot_cost = 0.0
-        for c in comps:
-            m_id = c["mat_id"]
-            p = price_map.get(m_id, 0.0) or c.get("ref_price", 0.0)
-            cost = c["calc_qty"] * p
-            m_cost += cost
-            if c.get("category") == "ĐỘNG_CƠ_VÀ_CẢM_BIẾN":
-                mot_cost += cost
-
-        l_rate, o_rate, mg_rate = get_financial_rates(cat)
-        l_cost = (m_cost - mot_cost) * l_rate
-        o_cost = (m_cost - mot_cost) * o_rate
-        raw_sell_unit = math.floor(((m_cost + l_cost + o_cost - mot_cost) * (1 + mg_rate) + mot_cost) + 0.5)
-        diff_sell_unit = int(math.ceil(raw_sell_unit / 100.0) * 100) if raw_sell_unit > 0 else 0
+        # Chi phí BOM -> giá bán: dùng chung swind_pricing.sell_price (cùng công thức với swind_item_inspector)
+        from swind_pricing import sell_price
+        sp = sell_price(item_comps.get(item_id, []), price_map, cat, fin_policy)
+        diff_sell_unit = sp["sell_unit"]
         item["calc_sell_diffuser_unit"] = diff_sell_unit
         if override_price > 0:
             item["calc_sell_unit"] = int(override_price)
             item["calc_sell_mat"] = int(override_price)
             item["calc_sell_lab"] = 0
         elif box_combo_add_price > 0:
-            item["calc_sell_mat"] = math.floor(((m_cost + o_cost - mot_cost) * (1 + mg_rate) + mot_cost) + 0.5) + int(box_combo_add_price)
-            item["calc_sell_lab"] = math.floor(l_cost * (1 + mg_rate) + 0.5)
+            item["calc_sell_mat"] = sp["sell_mat"] + int(box_combo_add_price)
+            item["calc_sell_lab"] = sp["sell_lab"]
             item["calc_sell_unit"] = int(box_combo_add_price + diff_sell_unit)
         else:
-            item["calc_sell_mat"] = math.floor(((m_cost + o_cost - mot_cost) * (1 + mg_rate) + mot_cost) + 0.5)
-            item["calc_sell_lab"] = math.floor(l_cost * (1 + mg_rate) + 0.5)
+            item["calc_sell_mat"] = sp["sell_mat"]
+            item["calc_sell_lab"] = sp["sell_lab"]
             item["calc_sell_unit"] = diff_sell_unit
         item["calc_note"] = note_str
         item["calc_brand"] = "SWIND"

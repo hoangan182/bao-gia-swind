@@ -9,7 +9,7 @@ import unittest
 SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")
 sys.path.insert(0, SRC)
 
-from swind_pricing import excel_round, mfg_markup, mat_price, select_actuator, ACTUATOR_IDS, calc_obd, mesh_price, filter_g4_price  # noqa: E402
+from swind_pricing import excel_round, mfg_markup, mat_price, select_actuator, ACTUATOR_IDS, calc_obd, mesh_price, filter_g4_price, financial_rates, sell_price  # noqa: E402
 
 
 class ExcelRound(unittest.TestCase):
@@ -126,6 +126,39 @@ class Mesh(unittest.TestCase):
     def test_unknown_type(self):
         with self.assertRaises(ValueError):
             mesh_price(100, 100, "chim")
+
+
+POLICY = {"COMMERCIAL": {"categories": ["THUONG_MAI", "ONG_MEM", "KHAC"], "labor_rate": 0.0, "overhead_rate": 0.02, "margin": 0.10},
+          "MANUFACTURING": {"categories": ["ONG_GIO", "CUA_GIO", "VAN_GIO", "CANVAS", "TIEU_AM"], "labor_rate": 0.25, "overhead_rate": 0.10, "margin": 0.18}}
+
+
+class SellPrice(unittest.TestCase):
+    def test_financial_rates(self):
+        self.assertEqual(financial_rates("VAN_GIO", POLICY), (0.25, 0.10, 0.18))
+        self.assertEqual(financial_rates("THUONG_MAI", POLICY), (0.0, 0.02, 0.10))
+        self.assertEqual(financial_rates("LA_LUNG", POLICY), (0.0, 0.02, 0.10))   # nhóm lạ -> thương mại
+        self.assertEqual(financial_rates("VAN_GIO", {}), (0.25, 0.10, 0.18))       # policy rỗng -> mặc định
+
+    def test_sell_price_with_motor(self):
+        # vật tư 200.000 + động cơ 500.000: NC 50.000, QL 20.000; (270.000 x 1,18) + 500.000 = 818.600
+        comps = [{"mat_id": "A", "calc_qty": 2, "category": "NHÔM"}, {"mat_id": "M", "calc_qty": 1, "category": "ĐỘNG_CƠ_VÀ_CẢM_BIẾN"}]
+        r = sell_price(comps, {"A": 100000.0, "M": 500000.0}, "VAN_GIO", POLICY)
+        self.assertEqual((r["m_cost"], r["mot_cost"]), (700000.0, 500000.0))
+        self.assertEqual(r["sell_unit"], 818600)
+        self.assertEqual(r["sell_mat"], 759600)     # (220.000 x 1,18) + 500.000
+        self.assertEqual(r["sell_lab"], 59000)      # 50.000 x 1,18
+
+    def test_sell_unit_rounds_up_to_hundred(self):
+        r = sell_price([{"mat_id": "A", "calc_qty": 1, "category": "NHÔM"}], {"A": 100001.0}, "VAN_GIO", POLICY)
+        self.assertEqual(r["sell_unit"] % 100, 0)
+        self.assertGreaterEqual(r["sell_unit"], r["sell_unit_raw"])
+
+    def test_ref_price_used_when_master_missing(self):
+        r = sell_price([{"mat_id": "X", "calc_qty": 1, "category": "TM", "ref_price": 1000.0}], {}, "THUONG_MAI", POLICY)
+        self.assertEqual(r["m_cost"], 1000.0)
+
+    def test_zero_cost_gives_zero(self):
+        self.assertEqual(sell_price([], {}, "VAN_GIO", POLICY)["sell_unit"], 0)
 
 
 if __name__ == "__main__":

@@ -142,16 +142,9 @@ DIFFUSER_METHOD_MAP = {
 
 
 def _get_fin_rates(category, fin_policy):
-    comm_cats = fin_policy.get("COMMERCIAL", {}).get("categories", ["THUONG_MAI", "ONG_MEM", "KHAC"])
-    mfg_cats = fin_policy.get("MANUFACTURING", {}).get("categories", ["ONG_GIO", "CUA_GIO", "VAN_GIO", "CANVAS", "TIEU_AM"])
-    if category in comm_cats:
-        cfg = fin_policy.get("COMMERCIAL", {})
-        return cfg.get("labor_rate", 0.0), cfg.get("overhead_rate", 0.02), cfg.get("margin", 0.10)
-    elif category in mfg_cats:
-        cfg = fin_policy.get("MANUFACTURING", {})
-        return cfg.get("labor_rate", 0.25), cfg.get("overhead_rate", 0.10), cfg.get("margin", 0.18)
-    cfg = fin_policy.get("COMMERCIAL", {})
-    return cfg.get("labor_rate", 0.0), cfg.get("overhead_rate", 0.02), cfg.get("margin", 0.10)
+    """Dùng chung swind_pricing.financial_rates (gom giá 2026-11-03)."""
+    from swind_pricing import financial_rates
+    return financial_rates(category, fin_policy)
 
 
 def inspect_single_item(raw_text, unit="cái", note="", motor_brand=None, mfd_model=None, formula_mode=None, include_box=False):
@@ -433,31 +426,20 @@ def _evaluate_parsed_item_in_ram(
         formula_trace = (item.get("duct_calc") or {}).get("trace", "Hàng thương mại / Ống mềm")
         code_location = f"src/agent_04_bom_duct.py & src/swind_master_runner.py (cat={cat})"
 
-    # Tính giá bán cuối cùng giống hệt swind_master_runner.py
-    m_cost = 0.0
-    mot_cost = 0.0
+    # Tính giá bán cuối cùng: cùng hàm swind_pricing.sell_price với swind_master_runner.py (gom giá 2026-11-03)
+    from swind_pricing import sell_price
     comp_details = []
     for c in components:
-        m_id = c["mat_id"]
-        p = price_map.get(m_id, 0.0) or c.get("ref_price", 0.0)
-        cost = c["calc_qty"] * p
-        m_cost += cost
-        if c.get("category") == "ĐỘNG_CƠ_VÀ_CẢM_BIẾN":
-            mot_cost += cost
+        p = price_map.get(c["mat_id"], 0.0) or c.get("ref_price", 0.0)
         comp_details.append({
-            "mat_id": m_id,
+            "mat_id": c["mat_id"],
             "name": c["name"],
             "unit": c["unit"],
             "calc_qty": round(c["calc_qty"], 6),
             "mat_price": p,
-            "raw_cost": round(cost, 2)
+            "raw_cost": round(c["calc_qty"] * p, 2)
         })
-
-    l_rate, o_rate, mg_rate = _get_fin_rates(cat, fin_policy)
-    l_cost = (m_cost - mot_cost) * l_rate
-    o_cost = (m_cost - mot_cost) * o_rate
-    raw_sell_unit = math.floor(((m_cost + l_cost + o_cost - mot_cost) * (1 + mg_rate) + mot_cost) + 0.5)
-    sell_unit = int(math.ceil(raw_sell_unit / 100.0) * 100) if raw_sell_unit > 0 else 0
+    sell_unit = sell_price(components, price_map, cat, fin_policy)["sell_unit"]
 
     raw_name_s = item.get("raw_name") or item.get("name") or ""
     is_box_combo = spec.get("is_box_combo") or item.get("is_box_combo") or (
