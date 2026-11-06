@@ -82,7 +82,7 @@ def family_of(text):
     t = norm(text)
     if "XA AP" in t:
         return "PRD_MOTOR" if ("DIEN" in t or "DONG CO" in t) else "PRD"
-    if re.search(r"\bM-?F(S)?D\b|MFSD", t) or (("CHAN LUA" in t or "NGAN CHAY" in t) and ("DONG CO" in t or "MO TO" in t)):
+    if re.search(r"\bM-?F(S)?D\b|MSFD|MFSD", t) or (("CHAN LUA" in t or "NGAN CHAY" in t) and ("DONG CO" in t or "MO TO" in t)):
         return "MFD"
     if re.search(r"\bFD\b|\bFSD\b|\bFSS\b", t) or "CHAN LUA" in t or "NGAN CHAY" in t:
         return "FD"
@@ -105,7 +105,7 @@ def model_family(model):
     t = norm(model)
     if not t:
         return None
-    if "MFD" in t or "MFSD" in t:
+    if "MFD" in t or "MSFD" in t or "MFSD" in t:
         return "MFD"
     if re.search(r"E-FD|\bFD\b|FSD|FSS", t):
         return "FD"

@@ -139,7 +139,7 @@ def classify(item, subtype_rules, raw_search, full_search, w, h, d, ei_rating, a
     h_use = h if h > 0 else (d if d > 0 else 300.0)
     req_motor = str(item.get("motor_brand_override") or "").strip().upper()
     req_mfd_model = str(item.get("mfd_model_override") or "").strip()
-    eff_req_code = model_code or (req_mfd_model if eff_type in ("MFD", "MFSD") else "")
+    eff_req_code = model_code or (req_mfd_model if eff_type in ("MFD", "MSFD", "MFSD") else "")
 
     # VG-06: --spec-priority note → EI theo Ghi chú
     note_prio_low = str(item.get("note_boq") or "").lower() if item.get("spec_priority") == "note" else ""
@@ -181,7 +181,7 @@ def classify(item, subtype_rules, raw_search, full_search, w, h, d, ei_rating, a
     # VG-10: mã MFD
     r10 = R["VG-10"]
     belimo_mfd_def = r10["mac_dinh_belimo"]
-    if note_prio_low and eff_type in ("MFD", "MFSD") and motor_brand == "BELIMO":
+    if note_prio_low and eff_type in ("MFD", "MSFD", "MFSD") and motor_brand == "BELIMO":
         if _any(r10["tu_khoa_1_05"], note_prio_low):
             belimo_mfd_def = "1.05"
         elif ei_rating >= r10["ei_1_01_tu"] or _any(r10["tu_khoa_1_01"], note_prio_low):
@@ -190,7 +190,7 @@ def classify(item, subtype_rules, raw_search, full_search, w, h, d, ei_rating, a
         eff_model_code = eff_req_code or ("2.01" if is_fd_ei else "FD")
     else:
         eff_model_code = eff_req_code or ("1.03" if is_klb_req else ("1.04" if is_honeywell_req else belimo_mfd_def))
-    if eff_type in ("MFD", "MFSD"):
+    if eff_type in ("MFD", "MSFD", "MFSD"):
         trail.append("VG-10")
 
     return {
@@ -238,7 +238,7 @@ def build_model_note(res, mod_cnt, is_clamped, w_mod, h_mod, is_single_blade, ru
         "canh": bien["canh_1"] if is_single_blade else bien["canh_nhieu"],
     }
 
-    if eff_type in ("MFD", "MFSD"):
+    if eff_type in ("MFD", "MSFD", "MFSD"):
         tpl = t["mfd"].get(code) or t["mfd"]["*"]
         model_fslf = t["model_mfd_louver"] if (is_louver and tpl.get("louver_doi_model", True)) else tpl["model"]
         note_fslf = tpl["ghi_chu"].format(**v)

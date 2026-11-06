@@ -63,6 +63,9 @@ class TypoRuleTableTest(unittest.TestCase):
             ("ag_aag-obd", "ten", "ag aag-obd"),
             ("ag_aag-obd", "title", "ag_aag-obd"),
             ("miệng gio_kèm", "ten", "miệng gio kèm"),
+            ("van mfsd 1000x200", "ten", "van msfd 1000x200"),
+            ("mfsd 1000x200", "combo", "msfd 1000x200"),
+            ("msfd 1000x200", "ten", "msfd 1000x200"),
         ]
         for vao, scope, ra in cases:
             with self.subTest(vao=vao, scope=scope):

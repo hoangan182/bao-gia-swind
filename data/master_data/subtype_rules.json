@@ -1,7 +1,7 @@
 {
     "VAN_GIO": [
         {"keywords": ["cấp bù gió khi có cháy", "cửa sổ cấp bù gió"], "subtype": "MFD"},
-        {"keywords": ["mfsd", "motorized fire smoke"], "subtype": "MFSD"},
+        {"keywords": ["msfd", "mfsd", "motorized fire smoke"], "subtype": "MSFD"},
         {"keywords": ["mfd", "ngăn cháy có động cơ", "chặn lửa có động cơ", "chặn lửa bằng động cơ", "chặn lửa kèm động cơ", "chặn lửa đóng mở bằng mo tơ", "chặn lửa đóng mở bằng mô tơ", "chặn lửa đóng mở bằng motor", "chặn lửa đóng mở bằng động cơ"], "subtype": "MFD"},
         {"keywords": ["md", "động cơ", "điện", "mô tơ", "môtơ", "mo tơ", "motor", "van on/off", "van on-off"], "subtype": "MD"},
         {"keywords": ["prd", "xả áp", "giảm áp", "tràn áp", "cân bằng áp"], "subtype": "PRD"},
@@ -66,7 +66,7 @@
             "VCD": " + VCD"
         },
         "combo_note_suffix": {
-            "MD": " kèm van động cơ ON-OFF BELIMO (đóng mở 150s), xuất xứ Thụy Sỹ",
+            "MD": " kèm van động cơ ON-OFF BELIMO, xuất xứ Thụy Sỹ",
             "FD": " + Van chặn lửa cầu chì EI120 (BCTN 4761/VLXD-TBMT)",
             "VCD": " + Van điều chỉnh lưu lượng tay gạt tôn mạ kẽm"
         },

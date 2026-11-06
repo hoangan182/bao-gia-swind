@@ -78,6 +78,11 @@ class ScopeRuleTableTest(unittest.TestCase):
             with self.subTest(ten=ex["ten"]):
                 self.assertEqual(sf.is_louver_code(ex["ten"].lower()), ex["ket_qua"])
 
+    def test_pv15_glued_damper_code(self):
+        for ex in self.R["PV-15"]["vi_du"]:
+            with self.subTest(ten=ex["ten"]):
+                self.assertEqual(sf.is_glued_damper_code(ex["ten"].lower()), ex["ket_qua"])
+
     def test_pv13_read_check_only_for_quoted_sheets(self):
         warns = {"DG": ["cột SL 'TỔNG' ít dòng hơn 'KL ECB'"], "Bia": ["cột ẩn"]}
         out = sf.read_check_confirms(warns, {"DG"})

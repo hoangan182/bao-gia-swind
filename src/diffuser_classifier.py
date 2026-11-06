@@ -277,6 +277,8 @@ def classify(item, subtype_rules, raw_name, name, raw_search, full_search, w, h,
         _run_step(ctx, step, item, dims)
 
     rule = next(r for r in rules["thu_tu_uu_tien"] if ctx.ok(r["dieu_kien"]))
+    if rule.get("canh_bao_user"):
+        item["rule_alert"] = {"id": rule["id"], "text": rule["canh_bao_user"]}
     for g in rule.get("gan", []):
         ctx.flags[g["co"]] = g["gia_tri"] if "gia_tri" in g else ctx.ok(g["dieu_kien"])
     if "chon_profile" in rule:

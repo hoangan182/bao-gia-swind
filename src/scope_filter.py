@@ -82,6 +82,11 @@ def is_louver_code(name_lower, rules=None):
     return bool(re.search((rules or load_rules())["PV-14"]["regex"], name_lower))
 
 
+def is_glued_damper_code(name_lower, rules=None):
+    """PV-15: mã van viết liền kích thước ở đầu Tên (FD550x350, MFD350x150) → van gió (2026-11-06, 261031 NOXH hầm)."""
+    return bool(re.search((rules or load_rules())["PV-15"]["regex"], name_lower))
+
+
 def is_non_swind_omission(row_txt, rules=None):
     """PV-11 (User duyệt 2026-11-03): dòng ống gas / PVC / PPR / uPVC, bảo ôn, URL -> không phải hàng Swind, không cảnh báo SÓT DÒNG.
     LCCT không thuộc danh sách này (mặt hàng có báo giá)."""

@@ -1,6 +1,6 @@
 {
  "_mo_ta": "Bảng rule PHẠM VI BÁO GIÁ (scope_filter) — nguồn dữ liệu của src/scope_filter.py: dòng nào Swind báo / không báo / giữ giá đối tác / hỏi lại User. Thay các danh sách từ khóa rải rác trong SwindBOQParser.parse_sheet và swind_master_runner (bỏ ống / canvas theo cờ, dòng ống kèm LCCT, Full-BOQ Coverage Audit). Mã rule PV-xx; sửa rule theo AGENTS.md mục 7 → chạy tests/test_swind_scope_rules.py + self-test + E2E 2 chế độ.",
- "phien_ban": "2026-11-03",
+ "phien_ban": "2026-11-06",
  "quy_tac": [
   {
    "id": "PV-01_ONG_NUOC_PCCC_DIEN",
@@ -735,6 +735,43 @@
     },
     {
      "ten": "Van MFD AL 600x300",
+     "ket_qua": false
+    }
+   ]
+  },
+  {
+   "id": "PV-15_MA_VAN_DINH_KICH_THUOC",
+   "ten": "Tên bắt đầu bằng mã van gió viết LIỀN kích thước (FD550x350, MFD350x150, NRD600x400) → Van gió (VAN_GIO)",
+   "nguon": "2026-11-06, dự án 261031_Van gió thân + hầm NOXH sheet 'KLG-Van TAHK -HẦM' R10/R13/R20: 'FD550x350', 'FD1100x200', 'MFD350x150' bị lọc KHAC (Title 'Van ống gió' có KL tổng ở cột SL nên không được nhận là Title cha; từ khóa 'fd' so theo ranh giới từ không bắt được 'fd550')",
+   "ly_do": "Mã van đứng ĐẦU Tên và ngay sau là chữ số kích thước (không cách) — bắt trường hợp gõ dính mã + kích thước. Trường hợp có cách / gạch ('FD 550x350', 'FD-550x350') đã được từ khóa thường bắt, không đi qua rule này. Loại van cụ thể vẫn do damper_classifier quyết định.",
+   "regex": "^\\s*(?:fd|mfd|msfd|mfsd|smfd|vcd|nrd|md|prd|mprd)\\d{2,4}\\s*[x×*]\\s*\\d{2,4}",
+   "vi_du": [
+    {
+     "ten": "FD550x350",
+     "ket_qua": true
+    },
+    {
+     "ten": "FD1100x200",
+     "ket_qua": true
+    },
+    {
+     "ten": "MFD350x150",
+     "ket_qua": true
+    },
+    {
+     "ten": "NRD600x400",
+     "ket_qua": true
+    },
+    {
+     "ten": "FD 550x350",
+     "ket_qua": false
+    },
+    {
+     "ten": "Cửa gió FD550x350",
+     "ket_qua": false
+    },
+    {
+     "ten": "FDA 600x300",
      "ket_qua": false
     }
    ]

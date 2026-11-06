@@ -111,7 +111,7 @@ class SwindBOQParser:
         if _override_header_row is not None:
             header_row = _override_header_row
         combo_cfg = get_subtype_rules().get("COMBO_AND_DETECTION_RULES", {})
-        cv_kws = tuple(combo_cfg.get("missing_qty_cv_keywords", ("louver", "luover", "louvre", "miệng gió", "cửa gió", "cửa nan", "van ", "vcd", "mfd", "mfsd", "nrd", "prd"))) + ("cửa chớp", "chớp nhôm")
+        cv_kws = tuple(combo_cfg.get("missing_qty_cv_keywords", ("louver", "luover", "louvre", "miệng gió", "cửa gió", "cửa nan", "van ", "vcd", "mfd", "msfd", "mfsd", "nrd", "prd"))) + ("cửa chớp", "chớp nhôm")
         cv_rx = combo_cfg.get("missing_qty_cv_regex", r'\b(fd|md|sag|rag|eag|oag|pag|seg|eal|oal|fal)\b')
 
         image_rows = set()
@@ -334,7 +334,7 @@ class SwindBOQParser:
                 else:
                     for comm in self.commercial_catalog:
                         if comm.get("product_code") in ("VALVE_WATER", "PIPE_COPPER"):
-                            if comm.get("product_code") == "VALVE_WATER" and (is_hvac_prd or any(k in name_lower for k in ("lửa", "khói", "cháy", "mfd", "mfsd", "fd", "vcd", "nrd", "prd", "md", "xả áp"))):
+                            if comm.get("product_code") == "VALVE_WATER" and (is_hvac_prd or any(k in name_lower for k in ("lửa", "khói", "cháy", "mfd", "msfd", "mfsd", "fd", "vcd", "nrd", "prd", "md", "xả áp"))):
                                 continue
                             if comm.get("product_code") == "PIPE_COPPER" and any(k in name_lower for k in ("louver", "louvre", "cửa gió", "miệng gió")):
                                 continue
@@ -372,6 +372,9 @@ class SwindBOQParser:
                 # PV-14: mã 'AL' đứng riêng kèm kích thước = Louver nan Z (User chốt 2026-11-03)
                 if category == "KHAC" and scope_filter.is_louver_code(name_lower):
                     category = "CUA_GIO"
+                # PV-15: mã van viết liền kích thước (FD550x350, MFD350x150) = van gió (2026-11-06, 261031 NOXH hầm R10/R13/R20)
+                if category == "KHAC" and scope_filter.is_glued_damper_code(name_lower):
+                    category = "VAN_GIO"
                 # 2c. Kiểm tra Hàng Sản Xuất có độ đặc thù cao (Canvas, Chụp thông hơi, Tiêu âm, Cửa, Van, Ống mềm)
                 if category == "KHAC":
                     for mfg in self.manufacturable_catalog:
@@ -576,7 +579,7 @@ class SwindBOQParser:
                         pass
                 elif d_val == 0:
                     no_ei_text = re.sub(r'(?<![a-zA-Z])EI\s*[-:]?\s*\d{2,3}\b', ' ', dim_clean_text, flags=re.IGNORECASE)
-                    single_d_rx = combo_cfg.get("single_dim_damper_regex", r'\b(?:vcd|fd|nrd|prd|md|obd|mfd|mfsd)\s+(\d{2,4})\b')
+                    single_d_rx = combo_cfg.get("single_dim_damper_regex", r'\b(?:vcd|fd|nrd|prd|md|obd|mfd|msfd|mfsd)\s+(\d{2,4})\b')
                     single_d_match = re.search(single_d_rx, no_ei_text, re.IGNORECASE)
                     if single_d_match:
                         parsed_sd = float(single_d_match.group(1))
@@ -667,7 +670,7 @@ class SwindBOQParser:
             # Lỗi gõ nhầm phổ biến 'van MDF' = van MFD (User xác nhận 2026-11-02) — typo_rules.json TY-01
             search_combo_txt = typo_normalizer.normalize_for_match(search_combo_txt, "combo", typo_events)
             diff_rx = combo_cfg.get("combo_diffuser_regex", r'\bmiệng\s*gió\b|\bcửa\s*gió\b|\bcửa\s*nan\b|\blouver\s*|\bluover\b|\blouvre\b|\bgrille\b|\bgriller\b|\bdiffuser\b|cửa\s*(?:chớp|nan|thẳng|gió|hút|cấp|hồi|thải|lấy|xả|tăng\s*áp|tạo\s*áp|\+)')
-            damp_rx = combo_cfg.get("combo_damper_regex", r'\b(mfd|mfsd|md|fd|prd|nrd|vcd)\b|van\s+(?:on/off|on-off|chống\s*cháy|chặn\s*lửa|ngăn\s*cháy|động\s*cơ|một\s*chiều|1\s*chiều|xả\s*áp)')
+            damp_rx = combo_cfg.get("combo_damper_regex", r'\b(mfd|msfd|mfsd|md|fd|prd|nrd|vcd)\b|van\s+(?:on/off|on-off|chống\s*cháy|chặn\s*lửa|ngăn\s*cháy|động\s*cơ|một\s*chiều|1\s*chiều|xả\s*áp)')
             is_access_door_item = any(k in search_combo_txt for k in ("access door", "cửa công tác", "cửa thăm", "cửa kiểm tra"))
             has_diffuser = bool(re.search(diff_rx, search_combo_txt)) and not is_access_door_item
             # AGENTS quy tắc 1a — dòng tự ghi loại hàng thắng Title (User duyệt 2026-11-03, đợt kiểm bất biến E2E):
@@ -730,7 +733,7 @@ class SwindBOQParser:
 
             elif category == "VAN_GIO" and not has_diffuser:
                 if len(detected_dampers) > 1:
-                    # Sắp xếp theo thứ bậc ưu tiên để chọn van chính (MFSD > MFD > FD > MD > PRD > NRD > VCD)
+                    # Sắp xếp theo thứ bậc ưu tiên để chọn van chính (MSFD > MFD > FD > MD > PRD > NRD > VCD)
                     sorted_dampers = damper_classifier.sort_by_priority(detected_dampers)
                     primary_type = sorted_dampers[0]
                     secondary_dampers = sorted_dampers[1:]
@@ -872,7 +875,7 @@ class SwindBOQParser:
                     if not isinstance(v_nm, str):
                         continue
                     v_s = unicodedata.normalize('NFC', v_nm).strip()
-                    if re.search(r'(\d{2,4}\s*[xX×*]\s*\d{2,4}|\b[dDØ]\d{2,4}\b)', v_s) and re.search(r'\b(van|mfd|mfsd|fd|vcd|md|nrd|prd|obd|cửa|miệng|louver|ống|cút|côn|tê)\b', v_s, re.IGNORECASE):
+                    if re.search(r'(\d{2,4}\s*[xX×*]\s*\d{2,4}|\b[dDØ]\d{2,4}\b)', v_s) and re.search(r'\b(van|mfd|msfd|mfsd|fd|vcd|md|nrd|prd|obd|cửa|miệng|louver|ống|cút|côn|tê)\b', v_s, re.IGNORECASE):
                         for c_q in range(c_scan + 1, min(c_scan + 4, max_scan_col + 1)):
                             vq = ws.cell(rr, c_q).value
                             if isinstance(vq, (int, float)) and vq > 0:

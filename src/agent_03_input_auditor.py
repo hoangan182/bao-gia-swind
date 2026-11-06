@@ -115,7 +115,7 @@ class Agent03_InputAuditor:
 
             # 4. Trục 4: Thẩm tra Phụ kiện & PCCC (Spec Check)
             name_low = str(name).lower()
-            is_fd = std_id == "VAN_GIO" and (re.search(r'\b(fd|mfd|sfd|mfsd)\b', name_low) or "chặn lửa" in name_low or "ngăn cháy" in name_low)
+            is_fd = std_id == "VAN_GIO" and (re.search(r'\b(fd|mfd|sfd|msfd|mfsd)\b', name_low) or "chặn lửa" in name_low or "ngăn cháy" in name_low)
             if is_fd:
                 if not spec.get("fire_rating"):
                     audit_report["warnings"].append({

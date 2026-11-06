@@ -1747,6 +1747,15 @@ def evaluate_quotation_gate(coverage, qa_reports, input_audit, unresolved_items,
     if box_conf:
         confirm.append(f"[HỎI LẠI USER] {len(box_conf)} dòng hộp gió có kích thước trong Ghi chú KHÁC Tên (rule OG-21) — đang tính theo Ghi chú, xác nhận lại: "
                        + "; ".join(f"R{it.get('source_row')} '{it.get('raw_name')}': {it['box_note_conflict']}" for it in box_conf[:10]))
+    # Rule mới có cờ canh_bao_user (VD CG-04B SAG/SEAG): nhắc User xác nhận cho tới khi rule qua nhiều dự án
+    alerts = {}
+    for it in (all_items or []):
+        a = it.get("rule_alert")
+        if a and float(it.get("qty") or 0) > 0:
+            alerts.setdefault((a["id"], a["text"]), []).append(it)
+    for (rid, txt), its in alerts.items():
+        confirm.append(f"[HỎI LẠI USER] {len(its)} dòng áp {txt}: "
+                       + "; ".join(f"R{it.get('source_row')} '{it.get('raw_name')}'" for it in its[:10]))
     partner_nodim = [it for it in (all_items or []) if it.get("is_missing_dims") and float(it.get("qty") or 0) > 0
                      and isinstance(it.get("ref_price"), (int, float)) and it["ref_price"] > 0]
     if partner_nodim:
@@ -1859,7 +1868,7 @@ def print_quotation_summary_table(target_sheets, all_items, customer_files=None)
                             f"[Van gió - Tên vs Ghi chú] BOQ R{it.get('source_row')} ({sp.get('a1')}x{sp.get('a2')}, SL={qty:.0f}): "
                             f"Tên='{name_disp}' vs Ghi chú='{it.get('note_boq')}' -> Đang áp Model='{mod_s}' (ĐG={unit_price:,.0f}đ)"
                         )
-                elif it.get("category") == "VAN_GIO" and nb_l and sub_s in ("MFD", "MFSD") and "van fd" in nb_l and not any(k in nb_l for k in ("mfd", "động cơ", "on/off", "on-off")):
+                elif it.get("category") == "VAN_GIO" and nb_l and sub_s in ("MFD", "MSFD", "MFSD") and "van fd" in nb_l and not any(k in nb_l for k in ("mfd", "động cơ", "on/off", "on-off")):
                     sec_s = str(it.get("section") or "").strip()
                     raw_s = str(it.get("raw_name") or "").strip()
                     name_disp = f"{sec_s} -> {raw_s}" if (sec_s and sec_s != "SẢN PHẨM" and sec_s.lower() not in raw_s.lower()) else raw_s

@@ -149,7 +149,7 @@ class Agent01_BOQExtractor:
         model_fslf, model_bfn, note_fslf, note_bfn = damper_classifier.build_model_note(
             cls_res, mod_cnt, is_clamped, w_mod, h_mod, bom_multi["is_single_blade"])
 
-        if eff_type in ("MFD", "MFSD"):
+        if eff_type in ("MFD", "MSFD", "MFSD"):
             if not (w_eff <= 150.0 and h_eff <= 150.0) and price_map:
                 bom_single = Agent05_DamperBOM.calculate_damper_bom(
                     parent_id=f"QS-{idx}",

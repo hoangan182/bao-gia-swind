@@ -53,6 +53,19 @@
       "combo"
      ],
      "nguon": "User chốt 2026-11-03, BOQ_ANH_KHACH_01 R37 ('AG_AAG-OBD')"
+    },
+    {
+     "mau": "\\bmfsd\\b",
+     "thay": "msfd",
+     "pham_vi": [
+      "ten",
+      "title",
+      "full",
+      "combo",
+      "van",
+      "agent01"
+     ],
+     "nguon": "User chốt 2026-11-06 (dự án 261031 NOXH): tên đúng là MSFD (Motorized Smoke/Fire Damper), MFSD là gõ sai"
     }
    ],
    "vi_du_dung": [
@@ -75,6 +88,11 @@
      "vao": "ag_aag-obd",
      "pham_vi": "ten",
      "ra": "ag aag-obd"
+    },
+    {
+     "vao": "van mfsd 1000x200",
+     "pham_vi": "ten",
+     "ra": "van msfd 1000x200"
     }
    ],
    "vi_du_sai": [
@@ -313,18 +331,18 @@
      "chay": true,
      "dong_co": true
     },
-    "mfsd": {
-     "nhom": [
-      "VAN_GIO"
-     ],
-     "chay": true,
-     "dong_co": true
-    },
     "mprd": {
      "nhom": [
       "VAN_GIO"
      ],
      "chay": false,
+     "dong_co": true
+    },
+    "msfd": {
+     "nhom": [
+      "VAN_GIO"
+     ],
+     "chay": true,
      "dong_co": true
     }
    },

@@ -183,7 +183,7 @@ def detect_boq_header(ws):
         def is_qty_label(v_txt, col_idx=0):
             if any(bad_t in v_txt for bad_t in ("ngày", "thời gian", "tiến độ", "đơn giá", "thành tiền")):
                 return False
-            if v_txt in ("tổng", "tổng số", "tổng cộng", "total qty", "total q'ty") and col_idx < first_price_col:
+            if (v_txt in ("tổng", "tổng số", "tổng cộng", "total qty", "total q'ty") or v_txt.startswith("tổng cộng")) and col_idx < first_price_col:
                 return True
             return any(k in v_txt for k in QTY_KEYWORDS) or any(k in v_txt for k in ("cần về", "đặt hàng", "kl đặt", "sl đặt", "cung cấp đợt này", "yêu cầu cấp")) or bool(re.match(r'^lần\s*\d+$', v_txt))
 
@@ -392,7 +392,7 @@ def detect_boq_header(ws):
                 ]
                 total_qty = [
                     c for c in valid_qty
-                    if any(tk in qty_labels.get(c, "") for tk in ("tổng kl", "tổng khối lượng", "tổng số lượng", "tổng sl", "lũy kế đến hết kỳ này"))
+                    if any(tk in qty_labels.get(c, "") for tk in ("tổng kl", "tổng khối lượng", "tổng số lượng", "tổng sl", "tổng cộng", "lũy kế đến hết kỳ này"))
                     and _count_pos_qty(c) > 0
                 ]
                 std_qty = [
@@ -474,6 +474,24 @@ def detect_boq_header(ws):
                 if score > best_qty_score:
                     best_qty_score = score
                     qty_col = c
+            # Ưu tiên cột "Tổng Cộng" / "Tổng cộng(cái)" hơn cột "Tổng" đơn (BOQ multi-zone có nhiều cột Tổng phụ)
+            # Nguồn: User chốt 2026-11-06, dự án 261031_Van gió thân + hầm NOXH — sheet THÂN có 4 cột "Tổng" (P21/P22) + 1 cột "Tổng Cộng(cái)"
+            grand_total_col = None
+            for c_gt in range(name_col + 1, max_scan_col + 1):
+                if c_gt == u_col or get_column_letter(c_gt) in hidden_cols:
+                    continue
+                for scan_hdr_r in range(max(1, first_data_row - 3), first_data_row):
+                    hv_gt = re.sub(r'\s+', ' ', unicodedata.normalize('NFC', str(ws.cell(scan_hdr_r, c_gt).value or "")).lower()).strip()
+                    if hv_gt.startswith("tổng cộng") and "m2" not in hv_gt and "m²" not in hv_gt:
+                        gt_score = sum(1 for rr in range(first_data_row, min(ws.max_row + 1, first_data_row + 20))
+                                       if isinstance(ws.cell(rr, c_gt).value, (int, float)) and ws.cell(rr, c_gt).value > 0)
+                        if gt_score > 0:
+                            grand_total_col = c_gt
+                            break
+                if grand_total_col:
+                    break
+            if grand_total_col:
+                qty_col = grand_total_col
             header_row = first_data_row - 1
             while header_row > 1:
                 u_v = ws.cell(header_row, u_col).value
@@ -542,7 +560,7 @@ def detect_boq_header(ws):
                         "stt": 1 if name_col > 1 else 0,
                         "name": name_col,
                     }
-                    model_rx = re.compile(r'^(?:seg|sdg|eag|pag|sag|rag|fag|oag|mag|spg|wl|fal|oal|eal|sd|scd|sad|slb|ecg|vcd|obd|fd|mfd|mfsd|md|nrd|prd)(?:\s*\+\s*[a-z0-9]+)*$', re.IGNORECASE)
+                    model_rx = re.compile(r'^(?:seg|sdg|eag|pag|sag|rag|fag|oag|mag|spg|wl|fal|oal|eal|sd|scd|sad|slb|ecg|vcd|obd|fd|mfd|msfd|mfsd|md|nrd|prd)(?:\s*\+\s*[a-z0-9]+)*$', re.IGNORECASE)
                     for c in range(name_col + 1, max_scan_col + 1):
                         if get_column_letter(c) in hidden_cols:
                             continue

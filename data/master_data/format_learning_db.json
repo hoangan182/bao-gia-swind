@@ -12,21 +12,6 @@
       "remarks": 4
     },
     "success": false,
-    "timestamp": "2026-10-26T15:35:09.623593"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
     "timestamp": "2026-10-26T15:35:09.623949"
   },
   {
@@ -1687,5 +1672,24 @@
     },
     "success": true,
     "timestamp": "2026-11-03T08:05:13.415112"
+  },
+  {
+    "file_hash": "65ebe1026c4e",
+    "filename": "BG - Sland - CO LOA_HH3_PCCC_TAHK.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 5,
+    "col_map": {
+      "stt": 1,
+      "spec": 3,
+      "model": 4,
+      "brand": 5,
+      "unit": 7,
+      "name": 2,
+      "qty": 8,
+      "qty_alt": 9
+    },
+    "success": true,
+    "timestamp": "2026-11-04T18:55:06.984720"
   }
 ]

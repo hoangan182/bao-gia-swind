@@ -33,9 +33,10 @@
      ]
     },
     {
-     "loai": "MFSD",
+     "loai": "MSFD",
      "chua": [
       "1.01",
+      "MSFD",
       "MFSD"
      ]
     },
@@ -611,7 +612,7 @@
     },
     "1.04": {
      "model": "SWIND-1.04-MFD-EI60",
-     "ghi_chu": "- Van động cơ MFD - Tiêu chuẩn EI 60\n- 2 đầu bích TDC - HoneyWell, 9Nm, 230V, Type đóng mở nhanh: 15s - Model: MS4609F1010/B\n- Sản xuất theo BCTN số 1515/VLXD-TBMT{mod_hw_txt}{clamp_txt}{lv_txt}"
+     "ghi_chu": "- Van động cơ MFD - Tiêu chuẩn EI 60\n- 2 đầu bích TDC - HoneyWell, 9Nm, 230V - Model: MS4609F1010/B\n- Sản xuất theo BCTN số 1515/VLXD-TBMT{mod_hw_txt}{clamp_txt}{lv_txt}"
     },
     "1.01": {
      "model": "SWIND-1.01-MFD-EI120",
@@ -623,7 +624,7 @@
     },
     "*": {
      "model": "SWIND-1.02-MFD-EI90",
-     "ghi_chu": "- Van chống cháy động cơ - Tiêu chuẩn EI 90\n- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 3.5Nm, 24V (Type: đóng mở nhanh) BELIMO - Model: FSLF US\n- Sản xuất theo BCTN số 4752/VLXD-TBMT{mod_txt}{clamp_txt}{lv_txt}"
+     "ghi_chu": "- Van chống cháy động cơ - Tiêu chuẩn EI 90\n- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 3.5Nm, 24V BELIMO - Model: FSLF US\n- Sản xuất theo BCTN số 4752/VLXD-TBMT{mod_txt}{clamp_txt}{lv_txt}"
     },
     "_phuong_an_da_canh": {
      "model": "SWIND-1.05-MFD-EI120",
@@ -642,8 +643,8 @@
     "model": "MD",
     "KLB_1_modul": "Van MD, động cơ KLB/VIWECO 24V - 10Nm ON/OFF",
     "KLB_nhieu_modul": "Van MD chia {mod_cnt} modul,  {mod_cnt} động cơ KLB/VIWECO 24V - 10Nm ON/OFF",
-    "HONEYWELL": "Van động cơ ON-OFF HoneyWell {nm}, 230V, đóng mở 90s-150s (Model: {model_hw}/tđ){mod_dmp_txt}",
-    "BELIMO": "Van động cơ ON-OFF BELIMO {nm} (đóng mở 150s), điện áp 230V, xuất xứ Thụy Sỹ{mod_dmp_txt}",
+    "HONEYWELL": "Van động cơ ON-OFF HoneyWell {nm}, 230V (Model: {model_hw}/tđ){mod_dmp_txt}",
+    "BELIMO": "Van động cơ ON-OFF BELIMO {nm}, điện áp 230V, xuất xứ Thụy Sỹ{mod_dmp_txt}",
     "hau_to_co_ei": ". ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm",
     "truc_cho_1_modul": "Van MD tôn mạ kẽm, trục chờ lắp động cơ (không gồm động cơ)",
     "truc_cho_nhieu_modul": "Van MD tôn mạ kẽm chia {mod_cnt} modul, {mod_cnt} trục chờ lắp động cơ (không gồm động cơ)"
@@ -700,7 +701,7 @@
    "ly_do": "Tên 'Van chặn lửa MFD' + Mã SP 'FD - EI' = 1 van MFD, không phải combo MFD + FD. Chữ 'kèm động cơ / cầu chì' không tách thành van riêng.",
    "sua_go_nham_chuyen_sang": "typo_rules.json TY-01 (2026-11-03 — bộ chuẩn hóa lỗi chính tả dùng chung)",
    "thu_bac": [
-    "MFSD",
+    "MSFD",
     "MFD",
     "FD",
     "MD",
@@ -709,12 +710,12 @@
     "VCD"
    ],
    "regex_tach": "\\s*(?:\\+|(?:\\bkèm\\b|\\bvà\\b|\\bgắn\\b|\\btích\\s*hợp\\b|\\bkết\\s*hợp\\b|\\bc/w\\.?\\b|\\bwith\\b)(?!\\s*(?:động\\s*cơ|mô\\s*tơ|môtơ|mo\\s*tơ|motor|cầu\\s*chì)))\\s*",
-   "regex_ma_van": "\\b(mfsd|mfd|vcd|vd|nrd|prd|md|fd)\\b",
+   "regex_ma_van": "\\b(msfd|mfsd|mfd|vcd|vd|nrd|prd|md|fd)\\b",
    "regex_phan_van": "\\bvan\\b.*",
    "nhan_dien": [
     [
-     "MFSD",
-     "\\bmfsd\\b"
+     "MSFD",
+     "\\b(?:msfd|mfsd)\\b"
     ],
     [
      "MFD",

@@ -134,7 +134,7 @@ def run_diagnostic(boq_filepath):
                     total_issues += 1
 
                 # --- CHECK 4: FD/MFD không ghi EI hoặc không rõ động cơ, hoặc van khác có yêu cầu EI ---
-                if cat == "VAN_GIO" and ei > 0 and subtype not in ("FD", "MFD", "MFSD", "MFD_LOUVER"):
+                if cat == "VAN_GIO" and ei > 0 and subtype not in ("FD", "MFD", "MSFD", "MFSD", "MFD_LOUVER"):
                     report["fd_mfd_no_ei_or_motor"].append({
                         "sheet": sheet_name, "row": row,
                         "name": raw_name, "model": model,
@@ -143,7 +143,7 @@ def run_diagnostic(boq_filepath):
                     })
                     total_issues += 1
 
-                if cat == "VAN_GIO" and subtype in ("FD", "MFD", "MFSD", "MFD_LOUVER"):
+                if cat == "VAN_GIO" and subtype in ("FD", "MFD", "MSFD", "MFSD", "MFD_LOUVER"):
                     if subtype == "FD" and ei == 0:
                         report["fd_mfd_no_ei_or_motor"].append({
                             "sheet": sheet_name, "row": row,
@@ -153,7 +153,7 @@ def run_diagnostic(boq_filepath):
                         })
                         total_issues += 1
 
-                    if subtype in ("MFD", "MFSD", "MFD_LOUVER"):
+                    if subtype in ("MFD", "MSFD", "MFSD", "MFD_LOUVER"):
                         motor_hint = ""
                         search_txt = (name_lower + " " + str(item.get("model", "")).lower() + " " + str(item.get("note_boq", "")).lower())
                         if any(k in search_txt for k in ("klb", "viweco", "v6006", "1.03")):
