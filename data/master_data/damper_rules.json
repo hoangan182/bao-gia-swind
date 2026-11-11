@@ -652,6 +652,8 @@
    "mprd": {
     "model": "M-PRD",
     "dong_co_belimo": "Động cơ tuyến tính 230V Belimo On/Off {nm}",
+    "dong_co_belimo_onoff": "Động cơ van gió Belimo ON/OFF {nm}, 230V",
+    "_dong_co_belimo_onoff_nguon": "Cờ --mprd-onoff (User yêu cầu 2026-11-11, dự án KL TB+VT CT2): van xả áp dùng động cơ ON/OFF thường như van MD, mô-men theo VG-11",
     "dong_co_khac": "Động cơ {hang} On/Off {nm}",
     "ten_hang": {
      "HONEYWELL": "HoneyWell"

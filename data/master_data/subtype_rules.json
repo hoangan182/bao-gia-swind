@@ -40,8 +40,9 @@
         {"keywords": ["ống gió", "ống bù", "ống vuông", "ống tôn", "tole", "tôn"], "subtype": "DUCT_RECT"}
     ],
     "HEADER_ALIASES": {
-        "name_keywords": ["sản phẩm", "hạng mục", "quy cách", "công tác", "công việc", "nội dung", "diễn giải", "mô tả", "tên vật tư", "tên vật liệu", "vật tư yêu cầu", "danh mục", "tên hàng", "kích thước van", "tên van", "loại van", "kích thước cửa", "tên cửa", "kích thước ống"],
-        "name_cand_keywords": ["sản phẩm", "hạng mục", "danh mục", "công tác", "công việc", "nội dung", "diễn giải", "mô tả", "tên vật tư", "tên vật liệu", "vật tư yêu cầu", "tên hàng", "kích thước van", "tên van", "loại van", "kích thước cửa", "tên cửa", "kích thước ống"],
+        "_nguon_ten_thiet_bi": "Thêm \"tên thiết bị\" vào name_keywords/name_cand_keywords — header \"Tên thiết bị vật tư\" không khớp \"tên vật tư\" nên rơi về mẫu cứng dòng 11 (cột KL sai). Nguồn: dự án 1.TKKL TAHK PHAN HAM BVT, User duyệt 2026-11-10.",
+        "name_keywords": ["sản phẩm", "hạng mục", "quy cách", "công tác", "công việc", "nội dung", "diễn giải", "mô tả", "tên vật tư", "tên vật liệu", "tên thiết bị", "vật tư yêu cầu", "danh mục", "tên hàng", "kích thước van", "tên van", "loại van", "kích thước cửa", "tên cửa", "kích thước ống"],
+        "name_cand_keywords": ["sản phẩm", "hạng mục", "danh mục", "công tác", "công việc", "nội dung", "diễn giải", "mô tả", "tên vật tư", "tên vật liệu", "tên thiết bị", "vật tư yêu cầu", "tên hàng", "kích thước van", "tên van", "loại van", "kích thước cửa", "tên cửa", "kích thước ống"],
         "qty_keywords": ["số lượng", "q'ty", "q.ty", "qty", "khối lượng", "tổng kl", "lũy kế đến hết kỳ này", "sl", "kl", "quantity", "quanttiy"],
         "stt_keywords": ["stt", "tt", "no", "no.", "khu vực", "vị trí"],
         "spec_keywords": ["thông số", "quy cách", "chi tiết", "đặc tính", "kỹ thuật"],
@@ -81,7 +82,9 @@
             "hut khoi", "hút khói", "hut_khoi", "tang ap", "tăng áp", "tang áp", "tăng ap",
             "tang_ap", "duct", "lanh", "lạnh", "ventilation", "m.4 duct", "ống gió", "ong gio",
             "ôg", "og", "gió", "gio-", "rop", "báo giá", "bao gia", "boq",
-            "basement", "a tower", "b tower", "landscape"
-        ]
+            "basement", "a tower", "b tower", "landscape",
+            "dieu hoa", "điều hòa", "điều hoà", "ahu"
+        ],
+        "_nguon_hvac_sheet_dieu_hoa": "Thêm 'dieu hoa'/'điều hòa'/'điều hoà'/'ahu' — sheet 'DIEU HOA AHU, CỤC BỘ' có cửa gió 600x600, VCD D300/D250, FD nhưng bị bỏ cả sheet vì tên không khớp. Nguồn: dự án 2.TKKL HVAC PHAN HAM BVT, 2026-11-10 (chỉ file này đổi sheet chọn trong input/)."
     }
 }

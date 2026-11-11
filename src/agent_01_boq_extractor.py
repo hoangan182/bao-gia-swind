@@ -383,6 +383,7 @@ class Agent01_BOQExtractor:
             # Đã nhân hệ số tháo lắp thì Agent 06 tính phần cửa theo công thức thường (tránh nhân 2 lần)
             "is_removable": is_removable and removable_factor == 1.0,
             "removable_factor": removable_factor,
+            "round_factor": float(cls_res.get("round_factor") or 1.0),
             "is_box_combo": is_box_combo,
             "box_spec": box_spec,
             "n_slots": n_slots,
@@ -527,6 +528,7 @@ class Agent01_BOQExtractor:
         is_black_2nd_layer = False
         is_removable = False
         removable_factor = 1.0
+        round_factor = 1.0
         is_fire_canvas = False
         is_box_combo = False
         box_spec = None
@@ -559,6 +561,7 @@ class Agent01_BOQExtractor:
             has_obd, has_mesh, has_filter = dif_res["has_obd"], dif_res["has_mesh"], dif_res["has_filter"]
             is_double_layer, is_black_2nd_layer, is_removable = dif_res["is_double_layer"], dif_res["is_black_2nd_layer"], dif_res["is_removable"]
             removable_factor = float(dif_res.get("removable_factor") or 1.0)
+            round_factor = float(dif_res.get("round_factor") or 1.0)
             is_box_combo = dif_res["is_box_combo"]
             box_spec = dif_res.get("box_spec")
             n_slots = int(dif_res.get("n_slots") or 0)
@@ -601,6 +604,7 @@ class Agent01_BOQExtractor:
             "has_filter": has_filter,
             "is_double_layer": is_double_layer,
             "removable_factor": removable_factor,
+            "round_factor": round_factor,
             "is_black_2nd_layer": is_black_2nd_layer,
             "is_removable": is_removable,
             "is_fire_canvas": is_fire_canvas,

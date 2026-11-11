@@ -118,9 +118,20 @@ def adjust_category_after_dims(category, w, h, d, name_lower, full_name_lower, r
     R = rules or load_rules()
     is_missing_dims = False
     no_dim = (w == 0 and h == 0 and d == 0)
+    r5 = R["PV-05"]
+    # PV-05 mở rộng (User chốt 2026-11-11, KL TB+VT CT3): Cửa / Van THIẾU 1 CẠNH, hoặc hàng chỉ có dạng chữ nhật
+    # (Louver...) mà BOQ chỉ ghi đường kính D -> không đủ kích thước: không báo giá, chỉ ghi chú (thay giả định 300)
+    nhom_du_kt = tuple(r5.get("nhom_thieu_1_canh", ()))
+    one_side = (d == 0 and (w == 0) != (h == 0))
+    if one_side:
+        # Tên ghi D<n> trùng cạnh đã có (VD Fezix 'BG SWIND' R110 'VCD kích thước: D100', cột W=100, H trống) = hàng TRÒN đủ KT
+        side = int(w or h)
+        if re.search(rf'(?<![a-z0-9])(?:d|ø|phi\s*){side}(?!\d)', full_name_lower):
+            one_side = False
+    rect_only_round = (d > 0 and any(k in full_name_lower for k in r5.get("tu_khoa_chi_chu_nhat", ())))
     if is_user_skip:
         category = "THUONG_MAI"
-    elif category in R["PV-05"]["nhom"] and no_dim:
+    elif category in r5["nhom"] and (no_dim or (category in nhom_du_kt and (one_side or rect_only_round))):
         is_missing_dims = True
         category = "THUONG_MAI"
     elif category == "CUA_GIO" and d > 0 and any(k in full_name_lower for k in R["PV-06"]["tu_khoa"]):

@@ -94,6 +94,27 @@ class DiffuserRuleTableTest(unittest.TestCase):
         spec, _ = _run_example({"ten": "Cửa khuếch tán KTC 300x300", "kt": [300, 300]})
         self.assertEqual((spec["a1"], spec["a2"], spec["b1"], spec["b2"]), (450, 450, 300, 300))
 
+    def test_round_louver_three_times_square(self):
+        """Louver tròn D503 (User chốt 2026-11-11): phần louver = 3 x Louver vuông 503x503, LCCT giữ nguyên."""
+        from agent_06_bom_diffuser import Agent06_DiffuserBOM
+        spec, _ = _run_example({"ten": "Louver kèm lưới chắn côn trùng D503", "kt": [503, 503], "d": 503})
+        self.assertEqual(spec["model_fslf"], "WL+N")
+        self.assertAlmostEqual(spec["round_factor"], 3.0)
+        self.assertIn("Cửa Louver tròn D503", spec["note_fslf"])
+        sq, _ = _run_example({"ten": "Louver kèm lưới chắn côn trùng 503x503", "kt": [503, 503]})
+        self.assertAlmostEqual(sq.get("round_factor", 1.0), 1.0)
+
+        def qty(rf, mesh):
+            bom = Agent06_DiffuserBOM.calculate_diffuser_bom("T", "DIFFUSER", 503, 503, profile_type="Z", has_mesh=mesh, round_factor=rf)
+            return {c["sub_key"]: c["calc_qty"] for c in bom["components"]}
+        louver_only, with_mesh_x3 = qty(1.0, False), qty(3.0, True)
+        for k, v in louver_only.items():
+            self.assertAlmostEqual(with_mesh_x3[k], 3 * v, msg=k)  # phần louver x3
+        mesh_keys = set(with_mesh_x3) - set(louver_only)
+        self.assertTrue(mesh_keys)
+        for k in mesh_keys:
+            self.assertAlmostEqual(with_mesh_x3[k], qty(1.0, True)[k], msg=k)  # LCCT giữ nguyên
+
 
 if __name__ == "__main__":
     unittest.main()

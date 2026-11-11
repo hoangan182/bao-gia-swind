@@ -276,7 +276,27 @@ def detect_boq_header(ws):
                 sub_has_w = False
                 sub_has_h = False
                 sub_has_w2 = False
+                # Cột con kích thước ghi bằng chữ cái 'A | B | C | D' ngay dưới ô 'KÍCH THƯỚC' (A, B = W, H; C, D = W2, H2).
+                # Chỉ nhận khi chữ 'a' nằm đúng cột KÍCH THƯỚC và 'b' ở cột kề phải (tránh bắt nhầm mã hạng mục A/B ở cột STT).
+                # Nguồn: 2026-11-11, KL TB+VT TA,HK-CT1 / DHTG-CT1 sheet Ducting — không map cột B nên mất cạnh H.
+                size_c = col_map.get("w")
+                letter_dims = {}
+                if size_c and not sub_has_w:
+                    def _sub_letter(cc):
+                        return re.sub(r'\s*\([^)]*\)', '', unicodedata.normalize('NFC', str(ws.cell(sub_r, cc).value or "")).strip().lower()).strip()
+                    if _sub_letter(size_c) == "a" and _sub_letter(size_c + 1) == "b":
+                        for off, key in enumerate(("w", "h", "w2", "h2")):
+                            if _sub_letter(size_c + off) == "abcd"[off] and get_column_letter(size_c + off) not in hidden_cols:
+                                letter_dims[size_c + off] = key
+                for c_l, key_l in letter_dims.items():
+                    col_map[key_l] = c_l
+                    row_has_sub_dim = True
+                    sub_has_w = sub_has_w or key_l == "w"
+                    sub_has_h = sub_has_h or key_l == "h"
+                    sub_has_w2 = sub_has_w2 or key_l == "w2"
                 for c_sub in range(1, max_scan_col + 1):
+                    if c_sub in letter_dims:
+                        continue
                     if get_column_letter(c_sub) in hidden_cols:
                         continue
                     v_sub = unicodedata.normalize('NFC', str(ws.cell(sub_r, c_sub).value or "")).strip().lower()

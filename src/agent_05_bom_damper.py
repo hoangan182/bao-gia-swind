@@ -26,7 +26,7 @@ class Agent05_DamperBOM:
     """
 
     @staticmethod
-    def calculate_damper_bom(parent_id, damper_type, w, h, brand="PN", ei_rating=0, mfd_mode="multi_bfn24", model_code=None, motor_brand="BELIMO", d=0, raw_name="", allow_ei=None, ei_damper_mode=None, split_module=None, md_shaft_only=False):
+    def calculate_damper_bom(parent_id, damper_type, w, h, brand="PN", ei_rating=0, mfd_mode="multi_bfn24", model_code=None, motor_brand="BELIMO", d=0, raw_name="", allow_ei=None, ei_damper_mode=None, split_module=None, md_shaft_only=False, mprd_onoff=False):
         """
         Bóc tách Van Gió (VCD, MD, NRD, PRD, OBD, FD, MFD) theo chuẩn Swind:
         - Điều phối qua các hàm con độc lập để dễ dàng tra cứu & kiểm tra từng công thức.
@@ -84,7 +84,7 @@ class Agent05_DamperBOM:
             parent_id, w_mod, h_mod, modules_count, mod_note,
             is_md, is_fd, is_mfd, is_nrd, is_prd, is_single_blade,
             mfd_mode, model_code, motor_brand, components, is_mprd=is_mprd,
-            md_shaft_only=md_shaft_only
+            md_shaft_only=md_shaft_only, mprd_onoff=mprd_onoff
         )
 
         z_total_m2 = ((w_eff + h_eff) * 2.0 * 300.0 + w_eff * h_eff) / 1_000_000.0
@@ -347,7 +347,7 @@ class Agent05_DamperBOM:
         return l_body, thickness_body, is_single_blade, blade_factor_per_mod, mod_note, components
 
     @staticmethod
-    def _append_actuator_or_mechanism(parent_id, w_mod, h_mod, modules_count, mod_note, is_md, is_fd, is_mfd, is_nrd, is_prd, is_single_blade, mfd_mode, model_code, motor_brand, components, is_mprd=False, md_shaft_only=False):
+    def _append_actuator_or_mechanism(parent_id, w_mod, h_mod, modules_count, mod_note, is_md, is_fd, is_mfd, is_nrd, is_prd, is_single_blade, mfd_mode, model_code, motor_brand, components, is_mprd=False, md_shaft_only=False, mprd_onoff=False):
         """Chọn động cơ van (Belimo / KLB / Honeywell), cầu chì FD, đối trọng PRD/NRD hoặc tay gạt VCD."""
         cross_section_mod_m2 = (w_mod * h_mod) / 1_000_000.0
         if is_md and md_shaft_only and not is_mprd:
@@ -355,7 +355,7 @@ class Agent05_DamperBOM:
             return
         if is_md:
             # Chọn động cơ MD / MPRD: dùng chung swind_pricing.select_actuator (mô-men theo damper_rules.json VG-11) — gom giá 2026-11-03
-            act_id, act_name, _ = select_actuator("MPRD" if is_mprd else "MD", motor_brand, w_mod, h_mod)
+            act_id, act_name, _ = select_actuator("MPRD" if is_mprd else "MD", motor_brand, w_mod, h_mod, mprd_onoff=mprd_onoff)
 
             components.append({
                 "sub_key": f"{parent_id}-ACTUATOR",

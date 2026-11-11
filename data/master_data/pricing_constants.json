@@ -129,6 +129,7 @@
     "phu_kien_bo": 15000.0,
     "loi_tieu_am_m2": 750000.0,
     "he_so_thao_lap": 1.15,
+    "he_so_louver_tron": 3.0,
     "slb": {
       "phu_kien": 5000.0
     },

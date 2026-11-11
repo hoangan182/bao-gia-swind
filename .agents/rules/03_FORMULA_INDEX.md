@@ -125,16 +125,16 @@ File `src/agent_06_bom_diffuser.py` đã được chia nhỏ thành **8 hàm ri�
 
 | Mã hệ (`profile_type`) | Tên hàm trong `Agent06_DiffuserBOM` | Dòng (`StartLine..EndLine`) | Nội dung công thức chính |
 | :--- | :--- | :---: | :--- |
-| **Điều phối tổng** | `calculate_diffuser_bom` | `21..94` | Chuẩn hóa kích thước cổ -> mặt (`W_face = W_neck + 50`), điều phối sang hàm hệ nhôm và cộng phụ kiện |
-| **Lưới chắn côn trùng rời (`LCCT`)** | `_calc_profile_lcct` | `97..112` | Lưới Inox 304 rời tính theo diện tích `S = W * H / 1,000,000`, giá mục tiêu `max(120000, round(S * 200000, -3))` |
-| **Lọc bụi G4 rời (`FILTER_G4`)** | `_calc_profile_filter_g4` | `115..130` | Khung lọc bụi G4 rời `max(150000, round((S*150000 + P*60000)*1.3, -3))` |
-| **Cửa Louver nan Z (`Z` / `WL`)** | `_calc_profile_louver_z` | `133..206` | Khung Z (`0.55 kg/m`), nan Z (`0.33 kg/m`), bước nan `40mm`, thanh liên kết, sơn `20,000`, công thức giá bán `WL` / `WL+N` (`* 1.2`) |
-| **Cửa sọt trứng (`ECG`)** | `_calc_profile_eggcrate` | `209..271` | Khung bầu dục (`0.50` hoặc tháo lắp `0.93 kg/m`), lõi sọt trứng `125,000 đ/m2`, bản lề + chốt nếu tháo lắp |
-| **Cửa Linear nan T (`SLB`)** | `_calc_profile_linear_slb` | `274..338` | Khung SLB (`0.42 kg/m`), nan T (`0.23 kg/m`, bước `20mm`), tăng cứng, sơn đen lớp 2 (`+15%`) |
-| **Cửa gió kiểu khe hẹp Slot (`SLD` / `DLS`)** | `_calc_profile_slot_sld` | `341..416` | 4 hệ nhôm Slot (`SH8061 0.30`, `SH8060 0.25`, `SH8083 0.15`, `SH8057B 0.22 kg/m`), chia `1 slot` (`<150`), `2 slot` (`150..<200`), `3 slot` (`>=200`), phụ kiện `5,000 + 10,000*N`, hệ số `1.25` |
-| **Cửa khuếch tán vuông/tròn (`T` / `SD` / `SRD`)** | `_calc_profile_diffuser_t` | `419..476` | Cửa khuếch tán vuông 4 hướng `SD` (khung KT `0.63 kg/m`, bước nan `37.5mm`) & khuếch tán tròn `SRD` |
-| **Cửa nan bầu dục 1 lớp / 2 lớp / cửa thăm (`BD` / `SDG` / `SDGK`)** | `_calc_profile_oval_bd` | `479..556` | Cửa cấp/hồi nan bầu dục 1 lớp, 2 lớp (`is_double_layer`), cửa kiểm tra tháo lắp (`is_removable` -> `SDGK`) |
-| **Phụ kiện cửa gió (`+O`, `+N`, `+F`)** | `_append_diffuser_accessories` | `559..625` | Cộng thêm Van OBD gắn kèm (`+O`), Lưới chắn côn trùng Inox 304 (`+N`), Lưới lọc bụi G4 (`+F`) và quy đổi `target_sell` |
+| **Điều phối tổng** | `calculate_diffuser_bom` | `21..104` | Chuẩn hóa kích thước cổ -> mặt (`W_face = W_neck + 50`), điều phối sang hàm hệ nhôm và cộng phụ kiện |
+| **Lưới chắn côn trùng rời (`LCCT`)** | `_calc_profile_lcct` | `107..122` | Lưới Inox 304 rời tính theo diện tích `S = W * H / 1,000,000`, giá mục tiêu `max(120000, round(S * 200000, -3))` |
+| **Lọc bụi G4 rời (`FILTER_G4`)** | `_calc_profile_filter_g4` | `125..140` | Khung lọc bụi G4 rời `max(150000, round((S*150000 + P*60000)*1.3, -3))` |
+| **Cửa Louver nan Z (`Z` / `WL`)** | `_calc_profile_louver_z` | `143..216` | Khung Z (`0.55 kg/m`), nan Z (`0.33 kg/m`), bước nan `40mm`, thanh liên kết, sơn `20,000`, công thức giá bán `WL` / `WL+N` (`* 1.2`) |
+| **Cửa sọt trứng (`ECG`)** | `_calc_profile_eggcrate` | `219..281` | Khung bầu dục (`0.50` hoặc tháo lắp `0.93 kg/m`), lõi sọt trứng `125,000 đ/m2`, bản lề + chốt nếu tháo lắp |
+| **Cửa Linear nan T (`SLB`)** | `_calc_profile_linear_slb` | `284..348` | Khung SLB (`0.42 kg/m`), nan T (`0.23 kg/m`, bước `20mm`), tăng cứng, sơn đen lớp 2 (`+15%`) |
+| **Cửa gió kiểu khe hẹp Slot (`SLD` / `DLS`)** | `_calc_profile_slot_sld` | `351..426` | 4 hệ nhôm Slot (`SH8061 0.30`, `SH8060 0.25`, `SH8083 0.15`, `SH8057B 0.22 kg/m`), chia `1 slot` (`<150`), `2 slot` (`150..<200`), `3 slot` (`>=200`), phụ kiện `5,000 + 10,000*N`, hệ số `1.25` |
+| **Cửa khuếch tán vuông/tròn (`T` / `SD` / `SRD`)** | `_calc_profile_diffuser_t` | `429..486` | Cửa khuếch tán vuông 4 hướng `SD` (khung KT `0.63 kg/m`, bước nan `37.5mm`) & khuếch tán tròn `SRD` |
+| **Cửa nan bầu dục 1 lớp / 2 lớp / cửa thăm (`BD` / `SDG` / `SDGK`)** | `_calc_profile_oval_bd` | `489..566` | Cửa cấp/hồi nan bầu dục 1 lớp, 2 lớp (`is_double_layer`), cửa kiểm tra tháo lắp (`is_removable` -> `SDGK`) |
+| **Phụ kiện cửa gió (`+O`, `+N`, `+F`)** | `_append_diffuser_accessories` | `569..635` | Cộng thêm Van OBD gắn kèm (`+O`), Lưới chắn côn trùng Inox 304 (`+N`), Lưới lọc bụi G4 (`+F`) và quy đổi `target_sell` |
 
 ---
 
@@ -143,11 +143,11 @@ File `src/agent_06_bom_diffuser.py` đã được chia nhỏ thành **8 hàm ri�
 | File | Hàm / Khu vực | Dòng (`StartLine..EndLine`) | Chức năng cần tra cứu |
 | :--- | :--- | :---: | :--- |
 | `src/agent_01_boq_extractor.py` | `_resolve_damper_spec` | `104..215` | Giải mã Model & Ghi chú kỹ thuật nhóm `VAN_GIO` (`SWIND-1.01..1.05`, `SWIND-2.01`, `MD`, `VCD`, `NRD`, `PRD`, `OBD`, Combo Van+Van) |
-| `src/agent_01_boq_extractor.py` | `_resolve_diffuser_spec` | `218..391` | Gọi `diffuser_classifier.classify` (bảng rule `data/master_data/diffuser_rules.json`: KTC->KTM, thứ tự ưu tiên `CG-01..CG-09` SDGK/LCCT/G4/ECG/SDG+O/WL/SDG+F/SRD/SD/SLD/SLB/SDG) rồi ghép Combo Cửa+Van & Hộp gió. **Sửa rule nhận diện trong JSON, không trong hàm này** |
-| `src/agent_01_boq_extractor.py` | `_resolve_duct_spec` | `394..482` | Giải mã Model & Ghi chú kỹ thuật nhóm `ONG_GIO`, `CANVAS`, `TIEU_AM`, `ONG_MEM` |
-| `src/agent_01_boq_extractor.py` | `resolve_item_spec` | `485..627` | Hàm điều phối tổng giải mã `resolved_spec` cho từng dòng BOQ |
-| `src/swind_utils.py` | `detect_boq_header` | `113..570` | Tự động tìm dòng Header BOQ và ánh xạ cột (`name`, `w`, `h`, `l`, `unit`, `qty`, `remarks`, phiếu đặt hàng `Lần N`) |
-| `src/swind_utils.py` | `extract_duct_fitting_geometry` | `573..757` | Bóc tách hình học phụ kiện ống gió phức tạp từ chuỗi văn bản (`W1xH1`, `W2xH2`, `D`, `L`, `R`, `offset`, góc độ, kiểu bích) |
+| `src/agent_01_boq_extractor.py` | `_resolve_diffuser_spec` | `218..392` | Gọi `diffuser_classifier.classify` (bảng rule `data/master_data/diffuser_rules.json`: KTC->KTM, thứ tự ưu tiên `CG-01..CG-09` SDGK/LCCT/G4/ECG/SDG+O/WL/SDG+F/SRD/SD/SLD/SLB/SDG) rồi ghép Combo Cửa+Van & Hộp gió. **Sửa rule nhận diện trong JSON, không trong hàm này** |
+| `src/agent_01_boq_extractor.py` | `_resolve_duct_spec` | `395..483` | Giải mã Model & Ghi chú kỹ thuật nhóm `ONG_GIO`, `CANVAS`, `TIEU_AM`, `ONG_MEM` |
+| `src/agent_01_boq_extractor.py` | `resolve_item_spec` | `486..631` | Hàm điều phối tổng giải mã `resolved_spec` cho từng dòng BOQ |
+| `src/swind_utils.py` | `detect_boq_header` | `113..608` | Tự động tìm dòng Header BOQ và ánh xạ cột (`name`, `w`, `h`, `l`, `unit`, `qty`, `remarks`, phiếu đặt hàng `Lần N`) |
+| `src/swind_utils.py` | `extract_duct_fitting_geometry` | `611..795` | Bóc tách hình học phụ kiện ống gió phức tạp từ chuỗi văn bản (`W1xH1`, `W2xH2`, `D`, `L`, `R`, `offset`, góc độ, kiểu bích) |
 | `src/swind_boq_parser.py` | `parse_sheet` (Phân loại Category) | `213..344` | Phân loại dòng BOQ vào `ONG_GIO`, `VAN_GIO`, `CUA_GIO`, `TIEU_AM`, `CANVAS`, `ONG_MEM`, `THUONG_MAI` |
 | `src/swind_boq_parser.py` | `parse_sheet` (Bóc kích thước & EI) | `345..509` | Bóc tách `W, H, D, L`, độ dày `thickness`, chỉ số `ei_rating`, quy tắc `KTC +50mm` |
 | `src/swind_boq_parser.py` | `parse_sheet` (Combo Cửa+Van / Van+Van) | `510..641` | Nhận diện và tách cấu trúc Combo Cửa kèm Van (`SDG + MFD`) hoặc Van kèm Van (`FD + VCD`) |

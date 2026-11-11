@@ -354,7 +354,8 @@ def _evaluate_parsed_item_in_ram(
             is_black_2nd_layer=spec["is_black_2nd_layer"],
             is_removable=bool(spec.get("is_removable")),
             n_slots=int(spec.get("n_slots") or 0),
-            removable_factor=float(spec.get("removable_factor") or 1.0)
+            removable_factor=float(spec.get("removable_factor") or 1.0),
+            round_factor=float(spec.get("round_factor") or 1.0)
         )
         components.extend(bom["components"])
         combo_dmps = item.get("combo_dampers") or ([item["combo_damper"]] if item.get("combo_damper") else [])

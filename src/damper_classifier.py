@@ -201,6 +201,8 @@ def classify(item, subtype_rules, raw_search, full_search, w, h, d, ei_rating, a
         "trail": trail,
         # Cờ dự án --md-shaft-only (User yêu cầu 2026-11-03, dự án 150-YCVT LUXQV): van MD báo trục chờ, không gồm động cơ
         "md_shaft_only": bool(item.get("md_shaft_only")),
+        # Cờ dự án --mprd-onoff (User yêu cầu 2026-11-11, KL TB+VT CT2): van xả áp dùng động cơ ON/OFF thường
+        "mprd_onoff": bool(item.get("mprd_onoff")),
     }
 
 
@@ -270,9 +272,9 @@ def build_model_note(res, mod_cnt, is_clamped, w_mod, h_mod, is_single_blade, ru
         # Mô-men ghi chú = mô-men của động cơ đã tính giá (swind_pricing.select_actuator) — gom giá 2026-11-03:
         # MPRD hãng KLB tính giá VIWECO 10Nm, trước đây ghi chú lại theo diện tích (5/10/20Nm)
         from swind_pricing import select_actuator
-        nm = select_actuator("MPRD", motor_brand, w_mod, h_mod)[2]
+        nm = select_actuator("MPRD", motor_brand, w_mod, h_mod, mprd_onoff=bool(res.get("mprd_onoff")))[2]
         if motor_brand == "BELIMO":
-            act_txt = tm["dong_co_belimo"].format(nm=nm)
+            act_txt = tm["dong_co_belimo_onoff" if res.get("mprd_onoff") else "dong_co_belimo"].format(nm=nm)
         else:
             act_txt = tm["dong_co_khac"].format(hang=tm["ten_hang"].get(motor_brand, motor_brand), nm=nm)
         note = (tm["co_ei"] if res["ei_rating"] > 0 else tm["khong_ei"]).format(act_txt=act_txt)
@@ -312,6 +314,9 @@ def detect_dampers(scan_base, model_str, m_damper_text, diff_rx, rules=None):
     for src in (scan_base, model_str):
         if found or not src:
             continue
+        # Sửa chính tả (TY-01, phạm vi 'van') TRƯỚC khi tách: 'kèm dộng cơ' phải nhận như 'kèm động cơ' (= MFD),
+        # không cắt thành 'chặn lửa' (FD) + 'động cơ' (MD). Nguồn: 2026-11-11, KL TB+VT TA,HK-HAM R36
+        src = fix_typos(src)
         for tk in re.split(split_rx, src, flags=re.IGNORECASE):
             dt = detect_damper_type(tk, diff_rx, R) if tk.strip() else None
             if dt and dt not in found:

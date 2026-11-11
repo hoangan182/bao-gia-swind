@@ -62,6 +62,15 @@ class ScopeRuleTableTest(unittest.TestCase):
         self.assertEqual(sf.adjust_category_after_dims("CUA_GIO", 450, 450, 0, row.lower(), row.lower(), row, "cái", False), ("ONG_GIO", False))
         self.assertEqual(sf.adjust_category_after_dims("ONG_GIO", 0, 0, 0, "kẹp bích", "kẹp bích", "", "cái", False), ("THUONG_MAI", False))
         self.assertEqual(sf.adjust_category_after_dims("CUA_GIO", 600, 300, 0, "cửa", "cửa", "", "cái", True), ("THUONG_MAI", False))
+        # PV-05 mở rộng (User chốt 2026-11-11): thiếu 1 cạnh / Louver chỉ ghi D -> không báo, chỉ ghi chú; van tròn D vẫn báo
+        self.assertEqual(sf.adjust_category_after_dims("CUA_GIO", 600, 0, 0, "cửa gió 600", "cửa gió 600", "", "cái", False), ("THUONG_MAI", True))
+        lv = "louver kèm lưới chắn côn trùng d503"
+        # Louver tròn D503 có cách báo riêng (diffuser_rules louver_tron = 3 x Louver vuông) -> không coi là thiếu KT
+        self.assertEqual(sf.adjust_category_after_dims("CUA_GIO", 503, 503, 503, lv, lv, "", "cái", False), ("CUA_GIO", False))
+        self.assertEqual(sf.adjust_category_after_dims("VAN_GIO", 200, 200, 200, "van chặn lửa d200", "van chặn lửa d200", "", "cái", False), ("VAN_GIO", False))
+        self.assertEqual(sf.adjust_category_after_dims("ONG_GIO", 500, 0, 0, "ống gió", "ống gió", "", "cái", False), ("ONG_GIO", False))
+        vcd = "van điều chỉnh lưu lượng gió vcd kích thước: d100"  # Fezix 'BG SWIND' R110: W=100, H trống, tên D100 = van tròn
+        self.assertEqual(sf.adjust_category_after_dims("VAN_GIO", 100, 0, 0, vcd, vcd, "", "cái", False), ("VAN_GIO", False))
 
     def test_pv12_insect_screen_code(self):
         for ex in self.R["PV-12"]["vi_du"]:

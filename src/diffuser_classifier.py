@@ -305,6 +305,16 @@ def classify(item, subtype_rules, raw_name, name, raw_search, full_search, w, h,
             door_note = note[:-len(box_note)] if (box_note and note.endswith(box_note)) else note
             note = f"{door_note} (tháo lắp){box_note if door_note != note else ''}"
 
+    # Louver tròn (chỉ ghi D): giá phần louver = 3 x Louver vuông DxD, phụ kiện giữ nguyên (User chốt 2026-11-11)
+    lt = rules.get("louver_tron") or {}
+    round_factor = 1.0
+    d_num = float(ctx.num["d"] or 0)
+    if lt and profile in lt.get("profile", []) and d_num > 0 and float(ctx.num["w"] or 0) in (0.0, d_num) and float(ctx.num["h"] or 0) in (0.0, d_num):
+        round_factor = float(K(lt["hang_so"], lt["mac_dinh"]))
+        ctx.num["w"] = ctx.num["h"] = d_num
+        note = note.replace("Louver nan Z", f"Cửa Louver tròn D{int(d_num)} nan Z", 1) if "Louver nan Z" in note else f"Cửa Louver tròn D{int(d_num)} - {note}"
+        note += f" (giá phần louver = {round_factor:g} x Louver vuông {int(d_num)}x{int(d_num)}, phụ kiện giữ nguyên)"
+
     w_neck = float(item.get("w_neck") or 0)
     h_neck = float(item.get("h_neck") or 0)
     if w_neck > 0 and h_neck > 0 and profile not in rules["co_explicit"]["bo_qua_profile"]:
@@ -322,7 +332,7 @@ def classify(item, subtype_rules, raw_name, name, raw_search, full_search, w, h,
         "w_pre_ktc": w_pre_ktc, "h_pre_ktc": h_pre_ktc,
         "has_obd": f["has_obd"], "has_mesh": f["has_mesh"], "has_filter": f["has_filter"],
         "is_double_layer": f["is_double_layer"], "is_black_2nd_layer": f["is_black_2nd_layer"],
-        "is_removable": f["is_removable"], "removable_factor": removable_factor,
+        "is_removable": f["is_removable"], "removable_factor": removable_factor, "round_factor": round_factor,
         "is_box_combo": f["is_box_combo"], "n_slots": ctx.num["n_slots"],
         "combined_search": combined_search,
     }

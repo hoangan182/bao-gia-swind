@@ -72,7 +72,7 @@ ACTUATOR_IDS = {
 _MPRD_IDS = {"5Nm": "MAT-ACTUATOR-BELIMO-MPRD-5NM", "10Nm": "MAT-ACTUATOR-BELIMO-MPRD", "20Nm": "MAT-ACTUATOR-BELIMO-MPRD-20NM"}
 
 
-def select_actuator(kind, brand, w_mod, h_mod, *, is_single_blade=False, mfd_model=None, mfd_mode=None):
+def select_actuator(kind, brand, w_mod, h_mod, *, is_single_blade=False, mfd_model=None, mfd_mode=None, mprd_onoff=False):
     """Chọn động cơ van -> (mat_id, tên hiển thị, mô-men '5Nm'/'10Nm'/'20Nm' hoặc None với MFD).
     kind: 'MD' | 'MPRD' | 'MFD'. Mô-men MD/MPRD theo damper_rules.json VG-11 (damper_classifier.actuator_torque).
     Thứ tự giữ như agent_05 cũ: hãng KLB / Honeywell xét TRƯỚC MPRD (MPRD + KLB -> VIWECO)."""
@@ -97,7 +97,8 @@ def select_actuator(kind, brand, w_mod, h_mod, *, is_single_blade=False, mfd_mod
         nm, model_hw = damper_classifier.actuator_torque("HONEYWELL", w_mod, h_mod)
         return f"MAT-ACTUATOR-HONEYWELL-{nm.upper()}", f"Động cơ van gió HoneyWell ON/OFF {nm} (Model: {model_hw})", nm
     nm, _ = damper_classifier.actuator_torque("BELIMO", w_mod, h_mod)
-    if kind == "MPRD":
+    if kind == "MPRD" and not mprd_onoff:
+        # mprd_onoff (cờ --mprd-onoff, User yêu cầu 2026-11-11): van xả áp dùng động cơ ON/OFF thường như van MD
         return _MPRD_IDS[nm], f"Động cơ tuyến tính 230V Belimo On/Off {nm}", nm
     return f"MAT-ACTUATOR-BELIMO-{nm.upper()}", f"Động cơ van gió Belimo ON/OFF {nm}", nm
 

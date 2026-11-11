@@ -18,7 +18,7 @@ class Agent06_DiffuserBOM:
     """
 
     @staticmethod
-    def calculate_diffuser_bom(parent_id, diffuser_type, w, h, profile_type="BD", has_obd=False, has_mesh=False, has_filter=False, is_double_layer=False, is_black_2nd_layer=False, is_removable=False, n_slots=0, removable_factor=1.0):
+    def calculate_diffuser_bom(parent_id, diffuser_type, w, h, profile_type="BD", has_obd=False, has_mesh=False, has_filter=False, is_double_layer=False, is_black_2nd_layer=False, is_removable=False, n_slots=0, removable_factor=1.0, round_factor=1.0):
         from swind_utils import get_master_price_map, get_master_bom_rules
         mat_price_map = get_master_price_map()
         diffuser_rules = get_master_bom_rules().get("diffuser_rules", {})
@@ -81,6 +81,16 @@ class Agent06_DiffuserBOM:
                 comp["calc_qty"] = comp["calc_qty"] * float(removable_factor)
                 comp["note"] = f"{comp.get('note', '')} (tháo lắp x{float(removable_factor):g})".strip()
             total_alu_kg *= float(removable_factor)
+
+        # Louver tròn (chỉ ghi D): CHỈ phần louver x cua.he_so_louver_tron; LCCT / lọc / OBD gắn sau giữ giá theo DxD
+        # (User chốt 2026-11-11, KL TB+VT CT3 R186 — sửa lại bản đầu nhân cả dòng)
+        if round_factor and float(round_factor) != 1.0:
+            for comp in components:
+                if str(comp.get("sub_key", "")).endswith(("-MESH", "-FILTER")):
+                    continue  # lưới LCCT / lọc tính ngay trong hàm louver Z -> phụ kiện, giữ nguyên
+                comp["calc_qty"] = comp["calc_qty"] * float(round_factor)
+                comp["note"] = f"{comp.get('note', '')} (Louver tròn x{float(round_factor):g})".strip()
+            total_alu_kg *= float(round_factor)
 
         total_alu_kg = Agent06_DiffuserBOM._append_diffuser_accessories(
             parent_id, profile_type, w_val, D, E, has_mesh, has_filter, has_obd, is_black_2nd_layer,

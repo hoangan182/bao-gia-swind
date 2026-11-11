@@ -274,6 +274,13 @@
     "CUA_GIO",
     "CANVAS"
    ],
+   "nhom_thieu_1_canh": [
+    "VAN_GIO",
+    "CUA_GIO"
+   ],
+   "tu_khoa_chi_chu_nhat": [],
+   "_tu_khoa_chi_chu_nhat_ghi_chu": "2026-11-11 (KL TB+VT CT4): Louver tròn D<n> đã có cách báo (diffuser_rules.json louver_tron = 3 x Louver vuông) -> bỏ louver / cửa chớp khỏi danh sách; thêm vào đây hàng chữ nhật nào khác chỉ ghi D mà chưa có cách báo",
+   "_mo_rong_nguon": "User chốt 2026-11-11 (KL TB+VT CT3 R186 'Louver kèm LCCT D503'): Cửa / Van thiếu 1 cạnh (VD 'Van 400' ghi W, trống H) hoặc hàng chỉ có dạng chữ nhật (tu_khoa_chi_chu_nhat) mà chỉ ghi D → không đủ kích thước = không báo giá, chỉ ghi chú (trước đây tự giả định cạnh 300). Cửa / Van tròn có D vẫn báo.",
    "vi_du": [
     {
      "nhom": "VAN_GIO",
@@ -282,6 +289,21 @@
       0
      ],
      "ket_qua": "MISSING_DIMS"
+    },
+    {
+     "nhom": "CUA_GIO",
+     "ten": "Cửa gió 600",
+     "kt": [
+      600,
+      0
+     ],
+     "ket_qua": "MISSING_DIMS"
+    },
+    {
+     "nhom": "VAN_GIO",
+     "ten": "Van chặn lửa D200",
+     "d": 200,
+     "ket_qua": "bao_gia"
     }
    ]
   },

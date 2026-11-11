@@ -2775,6 +2775,22 @@
     "hang_so": "cua.he_so_thao_lap",
     "mac_dinh": 1.15
   },
+  "louver_tron": {
+    "mo_ta": "Louver (profile Z) BOQ chỉ ghi đường kính D<n> = cửa Louver tròn -> giá PHẦN LOUVER = cua.he_so_louver_tron (3) x Louver vuông DxD; phụ kiện (LCCT / lọc / OBD) giữ nguyên giá theo DxD (User sửa 2026-11-11: không nhân phụ kiện)",
+    "nguon": "User chốt 2026-11-11 (KL TB+VT CT4, R186 'Louver kèm lưới chắn côn trùng D503')",
+    "profile": [
+      "Z"
+    ],
+    "hang_so": "cua.he_so_louver_tron",
+    "mac_dinh": 3.0,
+    "vi_du_dung": [
+      {
+        "ten": "Louver kèm lưới chắn côn trùng D503",
+        "d": 503,
+        "ket_qua": "Louver tròn: phần louver 503x503 x 3 + LCCT 503x503 x 1"
+      }
+    ]
+  },
   "co_explicit": {
     "mo_ta": "Kích thước cổ ghi rõ (w_neck/h_neck) ghi đè B1/B2, trừ các profile",
     "bo_qua_profile": [

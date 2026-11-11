@@ -26,6 +26,7 @@ import subprocess
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASELINE_PATH = os.path.join(BASE_DIR, "data", "master_data", "e2e_regression_baseline.json")
+DEFAULT_LIMIT = 50  # E2E mặc định chỉ chạy 50 BOQ mới nhất (User chốt 2026-11-11)
 # Dự án cũ có baseline sai (lưu trước đợt cải tiến 02-03/11/2026) -> bỏ qua, không check / không lưu lại (User chốt 2026-11-03)
 EXCLUDED_PATH = os.path.join(BASE_DIR, "data", "master_data", "e2e_excluded_files.json")
 
@@ -256,6 +257,30 @@ def run_one(boq_path, timeout=300, extra_args=()):
     }
 
 
+_OUTPUT_DIRS = None
+
+
+def _recent_quote_time(fp):
+    """Mốc 'báo giá gần nhất' của 1 BOQ = max(thời gian file input, thời gian báo giá trong output/).
+    Thư mục output khớp khi trùng tên file, hoặc mọi từ của tên thư mục (>= 2 từ, >= 8 ký tự) đều nằm trong tên file
+    (báo giá gộp nhiều BOQ, VD output 'KL TB+VT CT2' <- input 'KL TB+VT DHTG-CT2' + 'KL TB+VT TA,HK-CT2')."""
+    global _OUTPUT_DIRS
+    out_root = os.path.join(BASE_DIR, "output")
+    if _OUTPUT_DIRS is None:
+        _OUTPUT_DIRS = [d for d in (os.listdir(out_root) if os.path.isdir(out_root) else [])
+                        if not d.startswith((".", "_")) and os.path.isdir(os.path.join(out_root, d))]
+    stem = unicodedata.normalize("NFC", os.path.splitext(os.path.basename(fp))[0].strip()).lower()
+    t = os.path.getmtime(fp)
+    for d in _OUTPUT_DIRS:
+        dn = unicodedata.normalize("NFC", d.strip()).lower()
+        toks = dn.split()
+        if dn == stem or (len(toks) >= 2 and len(dn) >= 8 and all(tk in stem for tk in toks)):
+            proj = os.path.join(out_root, d)
+            quotes = [os.path.join(proj, f) for f in os.listdir(proj) if f.lower().endswith(".xlsx") and not f.startswith("~$")]
+            t = max([t, os.path.getmtime(proj)] + [os.path.getmtime(q) for q in quotes])
+    return t
+
+
 def main():
     ap = argparse.ArgumentParser(description="Swind E2E regression trên toàn bộ BOQ input/")
     ap.add_argument("--save-baseline", action="store_true")
@@ -265,6 +290,8 @@ def main():
     ap.add_argument("--line-snapshot", default=None, help="Ghi giá từng dòng Sheet BG của mọi file vào JSON này")
     ap.add_argument("--line-diff", nargs=2, metavar=("TRUOC", "SAU"), default=None, help="So 2 snapshot giá từng dòng (không chạy runner)")
     ap.add_argument("--report", default=None, help="File Markdown báo cáo cho --line-diff")
+    ap.add_argument("--limit", type=int, default=DEFAULT_LIMIT,
+                    help=f"Chỉ chạy N BOQ có báo giá gần nhất (theo file báo giá trong output/, chưa báo thì theo file input; mặc định {DEFAULT_LIMIT}; 0 = toàn bộ)")
     args = ap.parse_args()
     if args.line_diff:
         sys.exit(run_line_diff(args.line_diff[0], args.line_diff[1], args.report))
@@ -276,6 +303,12 @@ def main():
     if args.filter:
         flt = unicodedata.normalize("NFC", args.filter).lower()
         files = [f for f in files if flt in unicodedata.normalize("NFC", os.path.basename(f)).lower()]
+    # Giới hạn N báo giá gần nhất (User chốt 2026-11-11: chạy toàn bộ input/ quá lâu) — xếp theo lần báo giá gần nhất
+    # (file báo giá trong output/<tên file>/), chưa từng báo thì theo thời gian file input; chạy theo thứ tự tên
+    if args.limit and args.limit > 0 and len(files) > args.limit:
+        n_all = len(files)
+        files = sorted(sorted(files, key=_recent_quote_time, reverse=True)[:args.limit])
+        print(f"ℹ️  E2E chỉ chạy {len(files)}/{n_all} BOQ có báo giá gần nhất (--limit {args.limit}; --limit 0 để chạy toàn bộ)")
 
     baseline = {}
     if os.path.exists(baseline_path):

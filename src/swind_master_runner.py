@@ -465,7 +465,8 @@ def process_single_sheet_estimation(
                 model_code=m_code,
                 motor_brand=motor_brand,
                 d=d,
-                md_shaft_only=bool(item.get("md_shaft_only"))
+                md_shaft_only=bool(item.get("md_shaft_only")),
+                mprd_onoff=bool(item.get("mprd_onoff"))
             )
             _add_bom_components(builder, "VAN", item_id, bom)
             # Van+Van Combo: Tính thêm BOM cho tất cả các van phụ (secondary_dampers) và cộng dồn vào cùng parent_id
@@ -481,7 +482,8 @@ def process_single_sheet_estimation(
                     model_code=None,
                     motor_brand=motor_brand,
                     d=d,
-                    md_shaft_only=bool(item.get("md_shaft_only"))
+                    md_shaft_only=bool(item.get("md_shaft_only")),
+                mprd_onoff=bool(item.get("mprd_onoff"))
                 )
                 _add_bom_components(builder, "VAN", item_id, sec_bom, name=lambda comp: f"Van {sec_dmp} kèm combo - {comp['name']}", note=lambda comp: f"Van phụ {sec_dmp} trong combo {damper_type}+{sec_dmp}")
             if damper_type == "MFD_LOUVER":
@@ -559,7 +561,8 @@ def process_single_sheet_estimation(
                 is_black_2nd_layer=spec["is_black_2nd_layer"],
                 is_removable=bool(spec.get("is_removable")),
                 n_slots=int(spec.get("n_slots") or 0),
-                removable_factor=float(spec.get("removable_factor") or 1.0)
+                removable_factor=float(spec.get("removable_factor") or 1.0),
+                round_factor=float(spec.get("round_factor") or 1.0)
             )
             _add_bom_components(builder, "CUA", item_id, bom)
             combo_dmps = item.get("combo_dampers") or ([item["combo_damper"]] if item.get("combo_damper") else [])
@@ -578,7 +581,8 @@ def process_single_sheet_estimation(
                         model_code=spec.get("model_code") if d_idx == 0 else None,
                         motor_brand=spec.get("motor_brand", "BELIMO"),
                         d=d_dmp,
-                        md_shaft_only=bool(item.get("md_shaft_only"))
+                        md_shaft_only=bool(item.get("md_shaft_only")),
+                mprd_onoff=bool(item.get("mprd_onoff"))
                     )
                     _add_bom_components(builder, "VAN", item_id, dmp_bom, name=lambda comp: f"Van {c_dmp} kèm cửa gió - {comp['name']}")
             if include_box and spec.get("is_box_combo") and spec.get("box_spec"):
@@ -1208,7 +1212,10 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
             is_non_product = any(_main_noun(info.get("name")).startswith(p) for p in SWIND_NON_SCOPE_PREFIXES)
             is_lump_sum = str(info.get("unit") or "").strip().lower() in LUMP_SUM_UNITS
             # Rule User: LCCT thiếu kích thước -> bỏ qua; phụ kiện ống gió thiếu kích thước khi không báo ống gió -> bỏ qua
-            is_skip_rule = ("lcct" in nm_l or "lưới chắn côn trùng" in nm_l) or (not include_duct and is_duct_like_name(nm_l)) or (not include_canvas and is_canvas_like_name(nm_l))
+            # LCCT thiếu KT chỉ bỏ qua khi LCCT là hàng chính; 'Louver / cửa / van kèm LCCT' thiếu KT -> vẫn ghi chú THÔNG BÁO USER
+            # (User chốt 2026-11-11, KL TB+VT CT3 R186 'Louver kèm lưới chắn côn trùng D503')
+            is_main_cv = any(k in nm_l for k in ("louver", "luover", "louvre", "cửa chớp", "cửa gió", "miệng gió", "van "))
+            is_skip_rule = (("lcct" in nm_l or "lưới chắn côn trùng" in nm_l) and not is_main_cv) or (not include_duct and is_duct_like_name(nm_l)) or (not include_canvas and is_canvas_like_name(nm_l))
             if info.get("reason") == "USER_SKIP" or (info.get("reason") == "MISSING_DIMS" and is_skip_rule):
                 skipped_other_cnt += 1
                 continue
@@ -1219,7 +1226,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
                 flag_rows[r] = "⚠️ CHƯA BÁO GIÁ: Chữ Z chưa ghi độ lệch E (chênh cao độ) — Kỹ thuật kiểm tra & bổ sung"
             elif info.get("reason") == "MISSING_DIMS" and not is_non_product and not is_lump_sum:
                 missing_dims.append(desc)
-                flag_rows[r] = "⚠️ KHÔNG BÁO GIÁ: BOQ không ghi kích thước (mã ký hiệu S2/R3... gửi bảng tra để báo)"
+                flag_rows[r] = "⚠️ KHÔNG BÁO GIÁ: BOQ không ghi đủ kích thước (thiếu cạnh / chỉ ghi D cho hàng chữ nhật / mã ký hiệu S2, R3... — gửi kích thước để báo)"
             elif not is_non_product and is_swind_product_name(nm_l, scope_kws) and not any(k in nm_l for k in SWIND_NON_SCOPE_KWS):
                 skipped_in_scope.append(f"{desc} | Lý do lọc={info.get('reason')}")
                 flag_rows[r] = f"⚠️ CHƯA BÁO GIÁ: dòng thuộc phạm vi Swind bị lọc ({info.get('reason')}) — cần xác nhận"
@@ -1297,7 +1304,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
     return coverage
 
 
-def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None, neck_size=False, motor_price=None, mprd_motor_price=None, include_flex_duct=False, spec_priority="name", include_box=False, strict=False, include_duct=False, include_canvas=False, md_shaft_only=False):
+def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None, neck_size=False, motor_price=None, mprd_motor_price=None, include_flex_duct=False, spec_priority="name", include_box=False, strict=False, include_duct=False, include_canvas=False, md_shaft_only=False, mprd_onoff=False):
     """
     Hàm điều phối Quy trình B: Nhận file BOQ khách hàng -> Phân tích & Áp giá từ Master Data có sẵn (Agent 01 -> Agent 08).
     """
@@ -1397,6 +1404,8 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
             it["motor_brand_override"] = str(motor_brand).strip().upper()
         if md_shaft_only:
             it["md_shaft_only"] = True
+        if mprd_onoff:
+            it["mprd_onoff"] = True
         if mfd_model:
             it["mfd_model_override"] = str(mfd_model).strip()
         if neck_size:
@@ -1947,6 +1956,7 @@ def main():
     parser.add_argument("--merge-sheets", action="store_true", help="Gộp tất cả các sheet vào 1 file duy nhất (Mặc định: Tách riêng từng sheet)")
     parser.add_argument("--only-cua-van", action="store_true", help="Chỉ báo giá Cửa gió & Van gió (loại bỏ Ống gió và Hàng thương mại mua ngoài)")
     parser.add_argument("--motor-brand", default=None, help="Hãng động cơ van chỉ định theo yêu cầu (BELIMO, KLB, HONEYWELL)")
+    parser.add_argument("--mprd-onoff", action="store_true", help="Van xả áp MPRD dùng động cơ Belimo ON/OFF thường (như van MD, mô-men 5/10/20Nm) thay động cơ tuyến tính, cho dự án đang chạy")
     parser.add_argument("--md-shaft-only", action="store_true", help="Van MD báo trục chờ (không gồm động cơ) cho dự án đang chạy")
     parser.add_argument("--mfd-model", default=None, help="Mã đốt van MFD chỉ định theo yêu cầu (1.01, 1.02, 1.03, 1.04, 1.05)")
     parser.add_argument("--allow-ei", action="store_true", help=argparse.SUPPRESS)
@@ -2051,7 +2061,8 @@ def main():
         strict=args.strict,
         include_duct=args.include_duct or args.duct_formula != "mpq",
         include_canvas=args.include_canvas,
-        md_shaft_only=args.md_shaft_only
+        md_shaft_only=args.md_shaft_only,
+        mprd_onoff=args.mprd_onoff
     )
     if args.duct_formula != "mpq" and not args.include_duct:
         print(f"  [Lưu ý] --duct-formula {args.duct_formula} -> tự động bật --include-duct (báo giá ống gió).")

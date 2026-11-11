@@ -171,7 +171,20 @@ class SwindBOQParser:
             col1_str = unicodedata.normalize('NFC', str(col1_val).strip()) if isinstance(col1_val, str) and len(str(col1_val).strip()) > 2 and not re.match(r'^(?:[\dIVXLC]+(?:[\.\-]\d+)*\.?|CT\d+)$', str(col1_val).strip(), re.IGNORECASE) else ""
             if not name_val and col1_str and qty_val is None and unit_val is None:
                 name_val = col1_str
-            
+            # Dòng con chỉ ghi kích thước ở cột tách W/H (cột Tên trống) + SL > 0 -> kế thừa Title cha qua nhánh
+            # is_pure_dim bên dưới (chuỗi so khớp 'WxH' / 'D<n>' dựng từ chính ô kích thước, không ghi lại BOQ).
+            # Nguồn: 2026-11-11, KL TB+VT TA,HK-CT1 sheet Ducting — Tên chỉ ở dòng Title, dòng con bị bỏ cả sheet.
+            name_from_dim_cells = False
+            if (not name_val and isinstance(qty_val, (int, float)) and qty_val > 0 and "w" in col_map and "h" in col_map
+                    and current_section and current_section.upper() != "SẢN PHẨM"):
+                w_cell = ws.cell(r, col_map["w"]).value
+                h_cell = ws.cell(r, col_map["h"]).value
+                if isinstance(w_cell, (int, float)) and isinstance(h_cell, (int, float)) and w_cell > 0 and h_cell > 0:
+                    name_val = f"{int(w_cell) if float(w_cell).is_integer() else w_cell}x{int(h_cell) if float(h_cell).is_integer() else h_cell}"
+                elif str(w_cell or "").strip().lower() == "d" and isinstance(h_cell, (int, float)) and h_cell > 0:
+                    name_val = f"D{int(h_cell) if float(h_cell).is_integer() else h_cell}"
+                name_from_dim_cells = bool(name_val)
+
             if not name_val:
                 if qty_val is None and unit_val is None:
                     empty_streak += 1
@@ -198,6 +211,9 @@ class SwindBOQParser:
                 lcct_per_m2 = True
             if is_pure_dim and current_section and current_section.upper() != "SẢN PHẨM":
                 name_str = f"{current_section.strip()} {name_str}"
+                if name_from_dim_cells:
+                    # Ô Tên trống: dòng không có chữ riêng -> Title cha là tên của chính dòng (loại cút / LCCT / van...)
+                    raw_name_str = name_str
             
             # Kiểm tra xem có phải dòng tiêu đề phân nhóm không (giữ lại dòng Cửa/Van có quy cách kích thước dù chưa điền khối lượng)
             if qty_val is None or not isinstance(qty_val, (int, float)) or qty_val <= 0:
@@ -232,6 +248,10 @@ class SwindBOQParser:
             # Đọc kích thước (Chỉ đọc từ cột tương ứng nếu header thực sự có cột đó)
             w_val = ws.cell(r, col_map["w"]).value if "w" in col_map else None
             h_val = ws.cell(r, col_map["h"]).value if "h" in col_map else None
+            if name_from_dim_cells and str(w_val or "").strip().lower() == "d":
+                # Cột A ghi 'D', cột B ghi số = ĐƯỜNG KÍNH (tên dựng 'D<n>' -> d_match bên dưới), không phải cạnh H
+                # Nguồn: 2026-11-11, KL TB+VT TA,HK-CT3 R186 'Louver ... | D | 503' bị hiểu W=0, H=503 -> giả định 300x503
+                h_val = None
             w2_val = ws.cell(r, col_map["w2"]).value if "w2" in col_map else None
             h2_val = ws.cell(r, col_map["h2"]).value if "h2" in col_map else None
             l_val = ws.cell(r, col_map["l"]).value if "l" in col_map else None

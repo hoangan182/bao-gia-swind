@@ -63,6 +63,12 @@ class Actuator(unittest.TestCase):
         self.assertEqual(select_actuator("MPRD", "BELIMO", 1000, 500)[1], "Động cơ tuyến tính 230V Belimo On/Off 10Nm")
         self.assertEqual(select_actuator("MD", "KLB", 400, 400)[1], "Động cơ van gió KLB/VIWECO 24V - 10Nm ON/OFF")
 
+    def test_mprd_onoff_uses_md_actuator(self):
+        # Cờ --mprd-onoff (User yêu cầu 2026-11-11): MPRD dùng động cơ Belimo ON/OFF thường, mô-men theo VG-11
+        self.assertEqual(select_actuator("MPRD", "BELIMO", 800, 600, mprd_onoff=True)[:3:2], ("MAT-ACTUATOR-BELIMO-5NM", "5Nm"))
+        self.assertEqual(select_actuator("MPRD", "BELIMO", 1000, 500, mprd_onoff=True)[0], "MAT-ACTUATOR-BELIMO-10NM")
+        self.assertEqual(select_actuator("MPRD", "BELIMO", 800, 600)[0], "MAT-ACTUATOR-BELIMO-MPRD-5NM")
+
     def test_mfd_models(self):
         self.assertEqual(select_actuator("MFD", "BELIMO", 600, 400, is_single_blade=True)[0], "MAT-ACTUATOR-BELIMO-FSLF24")
         self.assertEqual(select_actuator("MFD", "BELIMO", 600, 400, mfd_model="1.01")[0], "MAT-ACTUATOR-BELIMO-BFN24")

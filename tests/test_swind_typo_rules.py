@@ -66,6 +66,10 @@ class TypoRuleTableTest(unittest.TestCase):
             ("van mfsd 1000x200", "ten", "van msfd 1000x200"),
             ("mfsd 1000x200", "combo", "msfd 1000x200"),
             ("msfd 1000x200", "ten", "msfd 1000x200"),
+            ("van chặn lửa kèm dộng cơ", "van", "van chặn lửa kèm động cơ"),
+            ("van chặn lửa kèm đông cơ", "agent01", "van chặn lửa kèm động cơ"),
+            ("van xả áp tự dộng", "ten", "van xả áp tự động"),
+            ("cửa gió phía đông", "full", "cửa gió phía đông"),
         ]
         for vao, scope, ra in cases:
             with self.subTest(vao=vao, scope=scope):

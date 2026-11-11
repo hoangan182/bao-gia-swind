@@ -66,6 +66,32 @@
       "agent01"
      ],
      "nguon": "User chốt 2026-11-06 (dự án 261031 NOXH): tên đúng là MSFD (Motorized Smoke/Fire Damper), MFSD là gõ sai"
+    },
+    {
+     "mau": "\\bdộng\\b",
+     "thay": "động",
+     "pham_vi": [
+      "ten",
+      "title",
+      "full",
+      "combo",
+      "van",
+      "agent01"
+     ],
+     "nguon": "2026-11-11 (KL TB+VT TA,HK-HAM: Title \"Van chặn lửa kèm dộng cơ / kèm đông cơ\", \"Van xả áp tự dộng\") — lỗi dấu chữ \"động\", van MFD bị báo thành FD cầu chì"
+    },
+    {
+     "mau": "(kèm|có|bằng|gắn)\\s+đông\\s+cơ\\b",
+     "thay": "\\1 động cơ",
+     "pham_vi": [
+      "ten",
+      "title",
+      "full",
+      "combo",
+      "van",
+      "agent01"
+     ],
+     "nguon": "2026-11-11 (KL TB+VT TA,HK-HAM: Title \"Van chặn lửa kèm dộng cơ / kèm đông cơ\", \"Van xả áp tự dộng\") — lỗi dấu chữ \"động\", van MFD bị báo thành FD cầu chì — chỉ sửa \"đông cơ\" sau kèm/có/bằng/gắn (tránh chữ \"đông\" thật)"
     }
    ],
    "vi_du_dung": [
@@ -93,6 +119,16 @@
      "vao": "van mfsd 1000x200",
      "pham_vi": "ten",
      "ra": "van msfd 1000x200"
+    },
+    {
+     "vao": "van chặn lửa kèm dộng cơ 1400x500",
+     "pham_vi": "van",
+     "ra": "van chặn lửa kèm động cơ 1400x500"
+    },
+    {
+     "vao": "van chặn lửa kèm đông cơ 1400x400",
+     "pham_vi": "full",
+     "ra": "van chặn lửa kèm động cơ 1400x400"
     }
    ],
    "vi_du_sai": [
