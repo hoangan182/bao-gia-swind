@@ -6,6 +6,53 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+def is_odd_edge(v):
+    """Cạnh 100..199mm không chia hết cho 50 → nghi BOQ gõ thiếu số 0 (110x350 thay vì 1100x350).
+    Cạnh < 100mm (khe cửa gió 60/80mm) là bình thường."""
+    try:
+        v = float(v or 0)
+    except (TypeError, ValueError):
+        return False
+    return 100 <= v < 200 and v % 50 != 0
+
+
+_CONFIRMED_SIZES = None
+
+
+def is_confirmed_size(w, h):
+    """Kích thước lẻ User đã xác nhận đúng (data/master_data/odd_size_confirmed.json), so cả 2 chiều."""
+    global _CONFIRMED_SIZES
+    if _CONFIRMED_SIZES is None:
+        _CONFIRMED_SIZES = set()
+        try:
+            with open(BASE_DIR / "data" / "master_data" / "odd_size_confirmed.json", encoding="utf-8") as f:
+                for e in json.load(f).get("kich_thuoc_da_xac_nhan", []):
+                    a, b = (int(float(x)) for x in str(e["kt"]).lower().split("x"))
+                    _CONFIRMED_SIZES.add((min(a, b), max(a, b)))
+        except (OSError, ValueError, KeyError):
+            pass
+    try:
+        a, b = int(float(w or 0)), int(float(h or 0))
+    except (TypeError, ValueError):
+        return False
+    return (min(a, b), max(a, b)) in _CONFIRMED_SIZES
+
+
+def odd_size_flag(w, h, d=0):
+    """Ghi chú tô màu trên Sheet BG cho dòng kích thước lẻ — vẫn báo giá theo kích thước BOQ
+    (User chốt 2026-11-13, GMS TASEOC VGCG R57/R58 'Cửa gió nan thẳng 1000x135').
+    Hàng tròn (d > 0, VD Ventcap D110 / D160) không xét — đường kính lẻ là bình thường."""
+    try:
+        w, h, d = float(w or 0), float(h or 0), float(d or 0)
+    except (TypeError, ValueError):
+        return ""
+    if d > 0:
+        return ""
+    if w > 0 and h > 0 and (is_odd_edge(w) or is_odd_edge(h)) and not is_confirmed_size(w, h):
+        return f"⚠️ KÍCH THƯỚC LẺ {int(w)}x{int(h)}: nghi BOQ gõ thiếu số 0 — đang báo theo kích thước BOQ, xin xác nhận"
+    return ""
+
+
 class Agent03_InputAuditor:
     """
     Agent 03 - Input Auditor (Kiểm toán viên Đầu vào Đa Mô hình 4 Trục)
@@ -83,9 +130,7 @@ class Agent03_InputAuditor:
 
                 # Cảnh báo nghi ngờ gõ thiếu số 0 ở kích thước lẻ (ví dụ 110x350 thay vì 1100x350).
                 # Chỉ xét cạnh 100..199mm không chia hết cho 50 (cạnh < 100mm như khe cửa gió 60/80mm là bình thường).
-                def _odd(v):
-                    return 100 <= v < 200 and v % 50 != 0
-                if w > 0 and h > 0 and (_odd(w) or _odd(h)):
+                if w > 0 and h > 0 and (is_odd_edge(w) or is_odd_edge(h)) and not is_confirmed_size(w, h):
                     audit_report["warnings"].append({
                         "row": row_idx,
                         "item": name,

@@ -1573,11 +1573,11 @@
     },
     {
       "id": "CG-04B_SAG_SEAG_BAU_DUC",
-      "ten": "Cửa cấp mã SAG / SEAG (Tên của chính dòng) → nan bầu dục SDG(+O+N+F), thắng chữ 'Louver' ở Title cha",
+      "ten": "Cửa cấp / thải mã SAG / SEAG / EAG / SEG (Tên của chính dòng) → nan bầu dục SDG(+O+N+F), thắng chữ 'Louver' ở Title cha",
       "dieu_kien": {
         "tat_ca": [
           {
-            "regex": "(?<![a-z])(?:sag|seag)(?![a-z])",
+            "regex": "(?<![a-z])(?:sag|seag|eag|seg)(?![a-z])",
             "trong": "raw_name_low"
           },
           {
@@ -1666,8 +1666,8 @@
           "bien": "box_note"
         }
       ],
-      "canh_bao_user": "Rule mới CG-04B: SAG / SEAG (cửa cấp) báo nan BẦU DỤC SDG, không theo chữ 'Louver' ở Title cha — Kỹ thuật chốt 2026-11-06, chưa qua nhiều dự án, xác nhận lại",
-      "nguon": "Kỹ thuật chốt 2026-11-06 (dự án 261031_Van gió thân + hầm NOXH): 'SAG và SEAG là cửa cấp, thường báo nan thẳng → báo nan bầu dục'. Trước đó bị ra WL+O (Louver nan Z) vì Title cha 'Phần cửa gió, Louver, bộ lọc mùi' khớp từ khóa louver trong is_louver_z.",
+      "canh_bao_user": "Rule mới CG-04B: SAG / SEAG / EAG / SEG báo nan BẦU DỤC SDG, không theo chữ 'Louver' ở Title cha — Kỹ thuật chốt 2026-11-06, chưa qua nhiều dự án, xác nhận lại",
+      "nguon": "Kỹ thuật chốt 2026-11-06 (dự án 261031_Van gió thân + hầm NOXH): 'SAG và SEAG là cửa cấp, thường báo nan thẳng → báo nan bầu dục'. Trước đó bị ra WL+O (Louver nan Z) vì Title cha 'Phần cửa gió, Louver, bộ lọc mùi' khớp từ khóa louver trong is_louver_z. | Mở rộng EAG (cửa thải) → bầu dục: User/Kỹ thuật chốt 2026-11-12, dự án 'BOQ Ống gió' R280-R282 'EAG+OBD 1000X350' dưới Title 'LOUVER, AIR GRILL, AIR VALVE (CONT'D)' bị ra WL+O (nan Z). | Mở rộng SEG → bầu dục: User chốt 2026-11-12, dự án 'BOQ Ống gió' R299 'SEG+OBD 1100X750' bị ra WL+O. | User xác nhận lại đúng nan bầu dục 2026-11-13, dự án 'Van cửa gió - CC07 CC09 HÀ NAM' (13 dòng SAG/EAG/SEG+OBD/MD dưới Title 'Cửa gió, Louver'). | User xác nhận bầu dục 2026-11-13, dự án 'NBT-BG DA luxora-Đầm vạc-Vĩnh Yên' R1849-R1852 'Cửa hút gió EAG ... + OBD' dù Title cha ghi '(dạng nan thẳng)'.",
       "ly_do": "Mã SAG / SEAG đứng trong Tên của chính dòng = cửa gió cấp nan bầu dục. Rẽ nhánh giữ case cũ: khuếch tán vuông 600/450/300 điều hòa (CG-08B) giữ nguyên SD; Tên/Ghi chú/Model của dòng ghi louver, sọt trứng, slot, linear → nhường rule khác. Dòng hiển thị cảnh báo 'Rule mới' ở Kiểm soát cuối. Chỉ xét Tên của CHÍNH dòng (raw_name_low), không xét Title cha — vì has_explicit_louver gộp cả Title nên 'Louver' ở Title làm rule không kích hoạt.",
       "vi_du_dung": [
         {
@@ -1697,6 +1697,34 @@
             250
           ],
           "nguon_boq": "input/261031_Van gió thân + hầm NOXH.xls (sheet HẦM R31)"
+        },
+        {
+          "ten": "EAG+OBD 1000X350",
+          "title": "LOUVER, AIR GRILL, AIR VALVE (CONT'D)",
+          "kt": [
+            1000,
+            350
+          ],
+          "model": "SDG+O",
+          "b": [
+            950,
+            300
+          ],
+          "nguon_boq": "input/BOQ Ống gió.xlsx (sheet ACMV R280)"
+        },
+        {
+          "ten": "SEG+OBD 1100X750",
+          "title": "PHẦN PHÁT SINH CỬA LOUVER, MIỆNG GIÓ, VAN GIÓ",
+          "kt": [
+            1100,
+            750
+          ],
+          "model": "SDG+O",
+          "b": [
+            1050,
+            700
+          ],
+          "nguon_boq": "input/BOQ Ống gió.xlsx (sheet ACMV R299)"
         }
       ],
       "vi_du_sai": [

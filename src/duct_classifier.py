@@ -110,12 +110,24 @@ def note_box_conflict(raw_name, note_text, rules=None):
     return f"Tên ghi {int(nw)}x{int(nh)}, Ghi chú ghi hộp {int(bw)}x{int(bh)}xL{int(bl)} — đang tính theo Ghi chú"
 
 
+def is_ventcap_name(name, rules=None):
+    """OG-01: Tên có từ khóa chụp thông hơi / ventcap (kể cả 'Cửa gió Ventcap, Inox 304 D110' — User chốt 2026-11-13, GMS TASEOC VGCG)."""
+    R = rules or load_rules()
+    r = next(x for x in R["thu_tu_nhan_dien"] if x["id"].startswith("OG-01"))
+    t = unicodedata.normalize("NFC", str(name or "")).lower()
+    return any(k in t for k in r["tu_khoa"])
+
+
 # ---------------------------------------------------------------- Phụ kiện kèm theo (OG-22..OG-24)
 
-def elbow_mesh_filter(raw_name, rules=None):
-    """OG-22: (có LCCT, có lọc G4) ghi ở Tên dòng cút."""
+def elbow_mesh_filter(raw_name, note="", rules=None):
+    """OG-22: (có LCCT, có lọc G4) ghi ở Tên hoặc Ghi chú dòng cút.
+    Ghi chú phủ định ('không gồm LCCT') không tính (User chốt 2026-11-13, GMS TASEOC OGIO R142 'Kèm LCCT')."""
     r = (rules or load_rules())["_extra"]["OG-22"]
-    low = str(raw_name or "").lower()
+    note_low = str(note or "").lower()
+    if note_low and re.search(r.get("regex_phu_dinh_ghi_chu", r"$^"), note_low):
+        note_low = ""
+    low = f"{str(raw_name or '').lower()} {note_low}"
     return any(k in low for k in r["tu_khoa_luoi"]), any(k in low for k in r["tu_khoa_loc"])
 
 

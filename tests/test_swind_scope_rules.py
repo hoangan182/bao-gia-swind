@@ -54,6 +54,15 @@ class ScopeRuleTableTest(unittest.TestCase):
         self.assertTrue(sf.should_skip_row("ONG_MEM", 0, 0, 200, "ống mềm", None, False, False))
         self.assertFalse(sf.should_skip_row("ONG_MEM", 0, 0, 200, "ống mềm", None, True, False))
 
+    def test_pv04_m2_duct_not_skipped(self):
+        # User chốt 2026-11-13 (Luxora): ống / PK ống ghi tổng m² không KT → giữ cho Agent 04 tính đơn giá m² (OG-15/17)
+        self.assertFalse(sf.should_skip_row("ONG_GIO", 0, 0, 0, "ống gió tôn tráng kẽm dày 0.58mm", None, False, False, unit="m2"))
+        self.assertFalse(sf.should_skip_row("ONG_GIO", 0, 0, 0, "phụ kiện ống gió dày 0.75mm", None, False, False, unit="m²"))
+        # ĐVT khác m² (cái / m) không KT → vẫn bỏ như cũ; tiêu âm / canvas không đổi
+        self.assertTrue(sf.should_skip_row("ONG_GIO", 0, 0, 0, "cút 90", None, False, False, unit="cái"))
+        self.assertTrue(sf.should_skip_row("ONG_GIO", 0, 0, 0, "ống gió", None, False, False))
+        self.assertTrue(sf.should_skip_row("TIEU_AM", 0, 0, 0, "tiêu âm", None, False, False, unit="m2"))
+
     def test_pv05_to_pv08_after_dims(self):
         self.assertEqual(sf.adjust_category_after_dims("VAN_GIO", 0, 0, 0, "van fd", "van fd", "", "cái", False), ("THUONG_MAI", True))
         self.assertEqual(sf.adjust_category_after_dims("CUA_GIO", 0, 0, 200, "ead d200", "ead d200", "", "cái", False), ("THUONG_MAI", False))

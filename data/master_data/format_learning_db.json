@@ -3,21 +3,6 @@
     "file_hash": "08b3696997d9",
     "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
     "company": null,
-    "format_type": "SEMI_STANDARD",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:35:09.623949"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
     "format_type": "CUSTOM_FORMAT",
     "header_row": 6,
     "col_map": {
@@ -1691,5 +1676,21 @@
     },
     "success": true,
     "timestamp": "2026-11-04T18:55:06.984720"
+  },
+  {
+    "file_hash": "cf9cc5fb9319",
+    "filename": "BG 14 - Sland- Xtech 10.11.26 .TKKL HVAC PHAN HAM BVT (1).xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 5,
+    "col_map": {
+      "stt": 1,
+      "unit": 3,
+      "remarks": 22,
+      "name": 2,
+      "qty": 4
+    },
+    "success": true,
+    "timestamp": "2026-11-12T15:50:28.660388"
   }
 ]

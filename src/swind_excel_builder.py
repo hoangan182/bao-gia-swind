@@ -3,6 +3,7 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from swind_utils import detect_boq_header, get_quotation_profile, vat_label
 import typo_normalizer
+from agent_03_input_auditor import odd_size_flag
 
 class SwindExcelBuilder:
     """
@@ -471,8 +472,10 @@ class SwindExcelBuilder:
                             row_style_cache[s_key] = _copy_style(cell._style)
 
         def _write_quoted_row(r_num, item, row_std, row_fslf, row_bfn):
-            """Dòng đã báo giá; dòng có lỗi gõ mã đã đoán / chưa rõ (typo_normalizer) → thêm ghi chú + tô vàng (User chốt 2026-11-03)."""
-            flag = typo_normalizer.bg_flag(item.get("typo_events"))
+            """Dòng đã báo giá; dòng có lỗi gõ mã đã đoán / chưa rõ (typo_normalizer) → thêm ghi chú + tô vàng (User chốt 2026-11-03).
+            Dòng kích thước lẻ (Agent 03, cạnh 100..199 lẻ) → vẫn báo giá theo KT BOQ, ghi chú + tô vàng (User chốt 2026-11-13)."""
+            flag = " | ".join(f for f in (typo_normalizer.bg_flag(item.get("typo_events")),
+                                          odd_size_flag(item.get("w"), item.get("h"), item.get("d"))) if f)
             if flag:
                 for row in (row_std, row_fslf, row_bfn):
                     row[15] = f"{row[15]} | {flag}" if row[15] else flag

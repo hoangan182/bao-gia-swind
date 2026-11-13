@@ -144,8 +144,8 @@ File `src/agent_06_bom_diffuser.py` đã được chia nhỏ thành **8 hàm ri�
 | :--- | :--- | :---: | :--- |
 | `src/agent_01_boq_extractor.py` | `_resolve_damper_spec` | `104..215` | Giải mã Model & Ghi chú kỹ thuật nhóm `VAN_GIO` (`SWIND-1.01..1.05`, `SWIND-2.01`, `MD`, `VCD`, `NRD`, `PRD`, `OBD`, Combo Van+Van) |
 | `src/agent_01_boq_extractor.py` | `_resolve_diffuser_spec` | `218..392` | Gọi `diffuser_classifier.classify` (bảng rule `data/master_data/diffuser_rules.json`: KTC->KTM, thứ tự ưu tiên `CG-01..CG-09` SDGK/LCCT/G4/ECG/SDG+O/WL/SDG+F/SRD/SD/SLD/SLB/SDG) rồi ghép Combo Cửa+Van & Hộp gió. **Sửa rule nhận diện trong JSON, không trong hàm này** |
-| `src/agent_01_boq_extractor.py` | `_resolve_duct_spec` | `395..483` | Giải mã Model & Ghi chú kỹ thuật nhóm `ONG_GIO`, `CANVAS`, `TIEU_AM`, `ONG_MEM` |
-| `src/agent_01_boq_extractor.py` | `resolve_item_spec` | `486..631` | Hàm điều phối tổng giải mã `resolved_spec` cho từng dòng BOQ |
+| `src/agent_01_boq_extractor.py` | `_resolve_duct_spec` | `395..484` | Giải mã Model & Ghi chú kỹ thuật nhóm `ONG_GIO`, `CANVAS`, `TIEU_AM`, `ONG_MEM` |
+| `src/agent_01_boq_extractor.py` | `resolve_item_spec` | `487..632` | Hàm điều phối tổng giải mã `resolved_spec` cho từng dòng BOQ |
 | `src/swind_utils.py` | `detect_boq_header` | `113..608` | Tự động tìm dòng Header BOQ và ánh xạ cột (`name`, `w`, `h`, `l`, `unit`, `qty`, `remarks`, phiếu đặt hàng `Lần N`) |
 | `src/swind_utils.py` | `extract_duct_fitting_geometry` | `611..795` | Bóc tách hình học phụ kiện ống gió phức tạp từ chuỗi văn bản (`W1xH1`, `W2xH2`, `D`, `L`, `R`, `offset`, góc độ, kiểu bích) |
 | `src/swind_boq_parser.py` | `parse_sheet` (Phân loại Category) | `213..344` | Phân loại dòng BOQ vào `ONG_GIO`, `VAN_GIO`, `CUA_GIO`, `TIEU_AM`, `CANVAS`, `ONG_MEM`, `THUONG_MAI` |

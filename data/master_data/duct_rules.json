@@ -45,7 +45,7 @@
     "chụp thông gió",
     "chup thong gio"
    ],
-   "nguon": "bd1d662 20/10; 'chụp thông gió' User chốt 2026-11-03 (việc C2, CAND 'DHKK A3' R272)",
+   "nguon": "bd1d662 20/10; 'chụp thông gió' User chốt 2026-11-03 (việc C2, CAND 'DHKK A3' R272); Tên 'Cửa gió Ventcap ...' (parser xếp CUA_GIO) → CANVAS, mặc định không báo — User chốt 2026-11-13 (GMS TASEOC DBTSCO-3.VGCG)",
    "ly_do": "Chụp thông hơi / ventcap / chụp thông gió: Swind mặc định KHÔNG báo giá (nhóm CANVAS → bỏ cùng canvas, User chốt 2026-11-03); phân loại đúng để khi bật --include-canvas tính theo bảng giá chụp, không thành ống xoắn.",
    "vi_du_dung": [
     {
@@ -662,8 +662,9 @@
   },
   {
    "id": "OG-22_LCCT_LOC_TRONG_CUT",
-   "ten": "Cút (ELBOW_*) mà Tên ghi kèm LCCT / lọc G4 → Model + LCCT / + G4, ghi chú nêu phần lưới / lọc",
-   "nguon": "7cdc069 02/11 (User chốt — dòng ống kèm LCCT/G4 vẫn báo phần LCCT/lọc)",
+   "ten": "Cút (ELBOW_*) mà Tên hoặc Ghi chú ghi kèm LCCT / lọc G4 → Model + LCCT / + G4, ghi chú nêu phần lưới / lọc",
+   "nguon": "7cdc069 02/11 (User chốt — dòng ống kèm LCCT/G4 vẫn báo phần LCCT/lọc). Mở rộng đọc cột Ghi chú: User chốt 2026-11-13 (GMS TASEOC DBTSCO-1.OGIO R142/R188/R192 'Co 45 ... D1000' + Ghi chú 'Kèm LCCT'). Ghi chú phủ định (regex_phu_dinh_ghi_chu) không tính.",
+   "regex_phu_dinh_ghi_chu": "không\\s+(?:bao\\s+)?(?:gồm|kèm|có)\\s+(?:lọc|lưới|lcct|g4|bộ\\s+lọc)",
    "ly_do": "AGENTS.md quy tắc 4: không bỏ cả dòng ống — báo phần LCCT / lọc.",
    "tu_khoa_luoi": [
     "lcct",
@@ -683,6 +684,23 @@
      ],
      "loai": "ELBOW_SQ",
      "model_chua": "+ LCCT + G4"
+    },
+    {
+     "ten": "Co 45 ống gió tôn tráng kẽm dày 0.75mm. Kích thước: 900x400",
+     "ghi_chu": "Kèm LCCT",
+     "kt": [
+      900,
+      400
+     ],
+     "loai": "ELBOW_SQ",
+     "model_chua": "+ LCCT"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Co 45 ống gió tôn tráng kẽm dày 0.75mm. Kích thước: 900x400",
+     "ghi_chu": "Không gồm LCCT",
+     "ket_qua": "không có LCCT"
     }
    ]
   },

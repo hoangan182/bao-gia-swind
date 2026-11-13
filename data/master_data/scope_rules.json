@@ -5,7 +5,7 @@
   {
    "id": "PV-01_ONG_NUOC_PCCC_DIEN",
    "ten": "Hệ ống nước / chữa cháy / ống đồng / cáp điện / bộ nguồn van / van nước DN → THUONG_MAI (không báo)",
-   "nguon": "bd1d662 20/10; cáp điện + van nước DN 1e5672d 29/10; bộ nguồn van 7cdc069 02/11 (User chốt, AGENTS.md 3c)",
+   "nguon": "bd1d662 20/10; cáp điện + van nước DN 1e5672d 29/10; bộ nguồn van 7cdc069 02/11 (User chốt, AGENTS.md 3c); thoát sàn / phễu thu 2026-11-13 (dự án NBT-BG DA luxora-Đầm vạc-Vĩnh Yên R2532 'Thoát sàn FD-DN100' bị nhận nhầm van FD EI120)",
    "ly_do": "Không thuộc sản phẩm Swind. Van giảm áp / xả áp có kích thước AxB hoặc chữ tôn / EI / động cơ là van gió (không phải van nước).",
    "tu_khoa_ong_nuoc": [
     "thép hàn",
@@ -53,7 +53,9 @@
     "van tiểu",
     "van phao",
     "van điện từ",
-    "van cửa thân gang"
+    "van cửa thân gang",
+    "thoát sàn",
+    "phễu thu"
    ],
    "tu_khoa_van_gio": [
     "vcd",
@@ -153,13 +155,17 @@
     {
      "ten": "Van cổng DN100",
      "ket_qua": true
+    },
+    {
+     "ten": "Thoát sàn FD-DN100",
+     "ket_qua": true
     }
    ]
   },
   {
    "id": "PV-02_THUONG_MAI_THEO_TEN",
    "ten": "Tên bắt đầu bằng thiết bị / phụ trợ (quạt, máy lạnh, tủ điện, cảm biến, giá đỡ...) → THUONG_MAI",
-   "nguon": "bd1d662 20/10; dde7498 28/10; giá đỡ / quang treo kể cả tiền tố 'lắp đặt' User chốt 2026-11-03 (việc C2, TAHK R66)",
+   "nguon": "bd1d662 20/10; dde7498 28/10; giá đỡ / quang treo kể cả tiền tố 'lắp đặt' User chốt 2026-11-03 (việc C2, TAHK R66); thang cáp / máng cáp / vỏ tủ / hộp kiểm tra tiếp địa-điện trở 2026-11-13 (NBT-BG DA luxora: hàng điện có KT + chữ tôn bị nhận thành ống gió khi --include-duct)",
    "ly_do": "Loại hàng chính dòng tự ghi thắng Title cha (AGENTS.md 1a).",
    "regex_gia_do": "^(?:lắp\\s*đặt\\s+|gia\\s*công\\s+)?(?:giá\\s*đỡ|giá\\s*treo|quang\\s*treo|ty\\s*treo)\\b",
    "bat_dau": [
@@ -190,6 +196,11 @@
     "lò xo giảm chấn",
     "cao su giảm chấn",
     "chụp hút bếp",
+    "thang cáp",
+    "máng cáp",
+    "vỏ tủ",
+    "hộp kiểm tra tiếp địa",
+    "hộp kiểm tra điện trở",
     "điều hòa cục bộ",
     "+ điều hòa cục bộ"
    ],
@@ -200,6 +211,10 @@
     },
     {
      "ten": "Lắp đặt giá đỡ ống gió kích thước ≤400 bằng thép góc L25x25x3mm",
+     "ket_qua": true
+    },
+    {
+     "ten": "Máng cáp 300x50mm dày 1.2mm, tôn Zam",
      "ket_qua": true
     },
     {
@@ -246,6 +261,14 @@
     "TIEU_AM",
     "CANVAS"
    ],
+   "nhom_m2_khong_can_kich_thuoc": [
+    "ONG_GIO"
+   ],
+   "don_vi_m2": [
+    "m2",
+    "m²"
+   ],
+   "nguon_m2": "User chốt 2026-11-13 (NBT-BG DA luxora-Đầm vạc-Vĩnh Yên): ống / phụ kiện ống ghi tổng m² theo độ dày không bị bỏ ở parser — tính theo duct_rules OG-15 / OG-17; chỉ báo khi --include-duct",
    "giu_dong_khong_gia": [
     "chống cháy ei",
     "lưới bảo vệ"

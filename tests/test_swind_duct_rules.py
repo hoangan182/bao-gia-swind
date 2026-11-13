@@ -108,6 +108,41 @@ class DuctParserCategoryTest(unittest.TestCase):
         vc = next(it for it in items if it["raw_name"].startswith("Chụp"))
         self.assertEqual(dcl.detect_subtype(vc["raw_name"], d1=float(vc.get("d") or 0)), "VENTCAP")
 
+    def test_ventcap_named_cua_gio(self):
+        """OG-01 (User chốt 2026-11-13, GMS TASEOC DBTSCO-3.VGCG): 'Cửa gió Ventcap, Inox 304, kích thước: D110' → CANVAS/VENTCAP
+        (mặc định không báo), không phải cửa SDG. Cửa gió thường giữ CUA_GIO."""
+        from swind_boq_parser import SwindBOQParser
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "boq.xlsx")
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = "BOQ"
+            ws.append(["STT", "Danh mục vật tư", "ĐVT", "Khối lượng"])
+            ws.append([1, "Cửa gió Ventcap, Inox 304, kích thước: D110", "cái", 12])
+            ws.append([2, "Cửa gió nan thẳng 1 lớp, sơn tĩnh điện, kích thước: 1000x150", "cái", 3])
+            wb.save(p)
+            items = SwindBOQParser(p).parse_sheet("BOQ")
+        got = {it["raw_name"].split(",")[0]: it for it in items}
+        self.assertEqual(got["Cửa gió Ventcap"]["category"], "CANVAS")
+        vc = got["Cửa gió Ventcap"]
+        self.assertEqual(dcl.detect_subtype(vc["raw_name"], d1=float(vc.get("d") or 0)), "VENTCAP")
+        self.assertEqual(got["Cửa gió nan thẳng 1 lớp"]["category"], "CUA_GIO")
+
+    def test_og22_lcct_in_note(self):
+        """OG-22 mở rộng (User chốt 2026-11-13, GMS TASEOC OGIO R142): Ghi chú 'Kèm LCCT' trên dòng cút → có LCCT;
+        Ghi chú phủ định 'Không gồm LCCT' → không có."""
+        r = dcl.load_rules()["_extra"]["OG-22"]
+        for ex in r["vi_du_dung"]:
+            with self.subTest(ten=ex["ten"], ghi_chu=ex.get("ghi_chu", "")):
+                spec, _ = _resolve(ex)
+                self.assertTrue(spec["has_mesh"])
+        for ex in r["vi_du_sai"]:
+            with self.subTest(ten=ex["ten"], ghi_chu=ex.get("ghi_chu", "")):
+                spec, _ = _resolve({**ex, "kt": [900, 400]})
+                self.assertFalse(spec["has_mesh"])
+        self.assertEqual(dcl.elbow_mesh_filter("Co 45 D1000", note="Kèm LCCT"), (True, False))
+        self.assertEqual(dcl.elbow_mesh_filter("Co 45 D1000", note="không kèm lọc G4"), (False, False))
+
 
 if __name__ == "__main__":
     unittest.main()

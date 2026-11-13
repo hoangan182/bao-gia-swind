@@ -155,12 +155,17 @@ def non_quotable_categories(include_flex_duct, rules=None):
     return tuple(r["nhom_khong_bao_khi_bao_ong_mem"] if include_flex_duct else r["nhom_khong_bao"])
 
 
-def should_skip_row(category, w, h, d, name_lower, ref_price, include_flex_duct, is_missing_z_offset, rules=None):
-    """PV-04: dòng không báo (nhóm ngoài phạm vi / ống không kích thước / Zét thiếu E) và BOQ không có đơn giá đối tác → bỏ."""
+def should_skip_row(category, w, h, d, name_lower, ref_price, include_flex_duct, is_missing_z_offset, rules=None, unit=None):
+    """PV-04: dòng không báo (nhóm ngoài phạm vi / ống không kích thước / Zét thiếu E) và BOQ không có đơn giá đối tác → bỏ.
+    Ngoại lệ: ống / phụ kiện ống ghi tổng m² (ĐVT m2, không kích thước) KHÔNG bỏ ở parser — Agent 04 tính đơn giá m² theo
+    độ dày (duct_rules OG-15 / OG-17); runner vẫn bỏ nhóm ONG_GIO khi không có --include-duct (User chốt 2026-11-13,
+    dự án NBT-BG DA luxora-Đầm vạc-Vĩnh Yên: 'Ống gió tôn tráng kẽm dày 0.58mm' m2 bị lọc NO_DIMS dù chạy --include-duct)."""
     R = rules or load_rules()
     r = R["PV-04"]
+    is_m2_duct = (category in r.get("nhom_m2_khong_can_kich_thuoc", [])
+                  and str(unit or "").strip().lower() in r.get("don_vi_m2", []))
     not_quoted = (is_missing_z_offset or category in non_quotable_categories(include_flex_duct, R)
-                  or (w == 0 and h == 0 and d == 0 and category in r["nhom_can_kich_thuoc"]))
+                  or (w == 0 and h == 0 and d == 0 and category in r["nhom_can_kich_thuoc"] and not is_m2_duct))
     if not not_quoted:
         return False
     has_partner_price = isinstance(ref_price, (int, float)) and ref_price > 0

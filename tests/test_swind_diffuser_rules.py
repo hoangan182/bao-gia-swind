@@ -101,6 +101,7 @@ class DiffuserRuleTableTest(unittest.TestCase):
         self.assertEqual(spec["model_fslf"], "WL+N")
         self.assertAlmostEqual(spec["round_factor"], 3.0)
         self.assertIn("Cửa Louver tròn D503", spec["note_fslf"])
+        self.assertNotIn("giá", spec["note_fslf"].lower())  # cách tính giá là nội bộ, không ghi chú gửi khách
         sq, _ = _run_example({"ten": "Louver kèm lưới chắn côn trùng 503x503", "kt": [503, 503]})
         self.assertAlmostEqual(sq.get("round_factor", 1.0), 1.0)
 

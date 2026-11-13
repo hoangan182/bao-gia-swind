@@ -313,7 +313,8 @@ def classify(item, subtype_rules, raw_name, name, raw_search, full_search, w, h,
         round_factor = float(K(lt["hang_so"], lt["mac_dinh"]))
         ctx.num["w"] = ctx.num["h"] = d_num
         note = note.replace("Louver nan Z", f"Cửa Louver tròn D{int(d_num)} nan Z", 1) if "Louver nan Z" in note else f"Cửa Louver tròn D{int(d_num)} - {note}"
-        note += f" (giá phần louver = {round_factor:g} x Louver vuông {int(d_num)}x{int(d_num)}, phụ kiện giữ nguyên)"
+        # Cách tính giá (x3 phần louver) là thông tin NỘI BỘ: chỉ ghi ở BOM dự toán (Agent 06), không đưa vào
+        # ghi chú BG gửi khách (User chốt 2026-11-12)
 
     w_neck = float(item.get("w_neck") or 0)
     h_neck = float(item.get("h_neck") or 0)

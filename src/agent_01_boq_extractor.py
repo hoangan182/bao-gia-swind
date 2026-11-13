@@ -453,9 +453,10 @@ class Agent01_BOQExtractor:
             model_fslf = model_bfn = calc_duct.get("model_std") or subtype
         note_fslf = note_bfn = calc_duct.get("spec_note", "")
         if subtype in ("ELBOW_SQ", "ELBOW_45", "ELBOW_90", "ELBOW_RT"):
-            has_mesh, has_filter = duct_classifier.elbow_mesh_filter(raw_name)  # OG-22
+            has_mesh, has_filter = duct_classifier.elbow_mesh_filter(raw_name, item.get("note_boq"))  # OG-22 (Tên + Ghi chú)
             if has_mesh or has_filter:
-                model_fslf = model_bfn = model_fslf + (" + LCCT" if has_mesh else "") + (" + G4" if has_filter else "")
+                model_fslf = model_bfn = (model_fslf + (" + LCCT" if has_mesh and "LCCT" not in model_fslf else "")
+                                          + (" + G4" if has_filter and "G4" not in model_fslf else ""))
                 note_fslf = note_bfn = (
                     note_fslf
                     + (" kèm lưới chắn côn trùng Inox 304 (LCCT)" if has_mesh else "")

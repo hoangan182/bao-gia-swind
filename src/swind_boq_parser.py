@@ -5,6 +5,7 @@ import os
 import unicodedata
 from swind_utils import detect_boq_header, get_subtype_rules, extract_duct_fitting_geometry
 import damper_classifier
+import duct_classifier
 import scope_filter
 import typo_normalizer
 
@@ -356,7 +357,7 @@ class SwindBOQParser:
                         if comm.get("product_code") in ("VALVE_WATER", "PIPE_COPPER"):
                             if comm.get("product_code") == "VALVE_WATER" and (is_hvac_prd or any(k in name_lower for k in ("lửa", "khói", "cháy", "mfd", "msfd", "mfsd", "fd", "vcd", "nrd", "prd", "md", "xả áp"))):
                                 continue
-                            if comm.get("product_code") == "PIPE_COPPER" and any(k in name_lower for k in ("louver", "louvre", "cửa gió", "miệng gió")):
+                            if comm.get("product_code") == "PIPE_COPPER" and any(k in name_lower for k in ("louver", "louvre", "cửa gió", "miệng gió", "ống gió")):
                                 continue
                             if any(match_keyword(kw, name_lower) for kw in comm.get("keywords", [])):
                                 category = "THUONG_MAI"
@@ -383,7 +384,10 @@ class SwindBOQParser:
                 if category == "KHAC" and any(k in sec_lower for k in ("cửa gió", "miệng gió", "cửa chớp", "chớp nhôm", "lưới chắn chim", "louver", "luover", "louvre", "grille", "griller", "diffuser", "insect screen", "i.s", "lcct", "lưới chắn côn trùng", "fag", "sag", "rag", "eag", "seag", "kag", "mag", "fal", "eal", "oal")):
                     # Tên tự ghi loại hàng khác thì không kế thừa 'cửa gió' từ Title (AGENTS.md quy tắc 1a). 'tole/tôn/box ' thêm 2026-11-03:
                     # Haus_Dalat DHKK 'Tole 0.75mm ... (m2)', 'Box gió cấp và box gió hồi ... kW' dưới Title '... box miệng gió' / 'MIỆNG GIÓ'.
-                    if not name_lower.startswith(("van ", "damper", "volume control", "fire damper", "motorized damper", "non-return", "ống ", "cút ", "côn ", "tê ", "chân rẽ", "hộp ", "box ", "tole", "tôn ", "chụp hút", "chụp thông")) and not any(k in sec_lower for k in ("chụp hút", "chụp thông")) and not any(k in name_lower for k in ("volume control damper", "fire damper", "motorized damper", "non-return damper")):
+                    # Tên bắt đầu bằng MÃ van ('MFD 900x250', 'PRD 1000x600', 'VCD 2200x500') cũng không kế thừa — User chốt 2026-11-12,
+                    # dự án 'BOQ Ống gió' (Title 'LOUVER, AIR GRILL, AIR VALVE'): chỉ báo van, combo cửa+van chỉ khi chính dòng ghi cả hai.
+                    is_own_damper_code = bool(re.match(r'^\s*(?:mfd|msfd|mfsd|md|fd|prd|nrd|vcd)\s*[-:]?\s*\d', name_lower))
+                    if not is_own_damper_code and not name_lower.startswith(("van ", "damper", "volume control", "fire damper", "motorized damper", "non-return", "ống ", "cút ", "côn ", "tê ", "chân rẽ", "hộp ", "box ", "tole", "tôn ", "chụp hút", "chụp thông")) and not any(k in sec_lower for k in ("chụp hút", "chụp thông")) and not any(k in name_lower for k in ("volume control damper", "fire damper", "motorized damper", "non-return damper")):
                         category = "CUA_GIO"
 
                 # PV-12: mã 'IS' đứng riêng kèm kích thước = lưới chắn côn trùng (User chốt 2026-11-03, BOQ_ANH_KHACH_01)
@@ -425,13 +429,20 @@ class SwindBOQParser:
                                     break
     
                 # 3. Nếu chưa khớp, kiểm tra toàn bộ Hàng Thương Mại còn lại
+                # Tên dòng ghi 'ống gió' → không xếp PIPE_COPPER qua từ khóa chung 'phụ kiện' (Tên hoặc Title 'Ống gió và phụ kiện ...')
+                # (User chốt 2026-11-13, NBT-BG DA luxora R1810 'Phụ kiện Ống gió tôn tráng kẽm dày 0.75mm' m2 bị xếp THUONG_MAI)
+                own_air_duct = "ống gió" in name_lower
                 if category == "KHAC":
                     for comm in self.commercial_catalog:
+                        if own_air_duct and comm.get("product_code") == "PIPE_COPPER":
+                            continue
                         if any(match_keyword(kw, name_lower) for kw in comm.get("keywords", [])):
                             category = "THUONG_MAI"
                             break
                     if category == "KHAC" and full_name_lower != name_lower:
                         for comm in self.commercial_catalog:
+                            if own_air_duct and comm.get("product_code") == "PIPE_COPPER":
+                                continue
                             if any(match_keyword(kw, full_name_lower) for kw in comm.get("keywords", [])):
                                 category = "THUONG_MAI"
                                 break
@@ -453,6 +464,10 @@ class SwindBOQParser:
             if category == "PHU_KIEN_ONG":
                 category = "ONG_GIO"
             elif category in ("KHOP_NOI_MEM", "CHUP_THONG_HOI"):
+                category = "CANVAS"
+            # OG-01: Tên ghi 'Cửa gió Ventcap ...' là chụp thông hơi, không phải cửa SDG → CANVAS (mặc định không báo)
+            # (User chốt 2026-11-13, GMS TASEOC DBTSCO-3.VGCG 'Cửa gió Ventcap, Inox 304, kích thước: D110 / D160')
+            if category == "CUA_GIO" and duct_classifier.is_ventcap_name(name_lower):
                 category = "CANVAS"
 
             # 5. Fallback heuristics có kiểm soát chặt chẽ
@@ -700,6 +715,11 @@ class SwindBOQParser:
             own_txt = typo_normalizer.normalize_for_match(f"{raw_name_str} {raw_full_name_str} {model_str} {note_boq}".lower().replace("\n", " "), "combo", typo_events)
             if has_diffuser and re.match(r'^\s*(?:van\b|damper\b)', raw_full_name_str.lower()) and not re.search(diff_rx, own_txt):
                 has_diffuser = False
+            # Mở rộng 1a (User chốt 2026-11-12, dự án 'BOQ Ống gió' R292-R319): dòng chỉ ghi MÃ van ('MFD 900x250',
+            # 'PRD 1000x600', 'VCD 2200x500') dưới Title 'LOUVER, AIR GRILL, AIR VALVE' -> chỉ báo van, không ghép
+            # Louver từ Title (trước đây ra 'WL + MFD'). Combo Cửa+Van chỉ khi chính dòng ghi cả cửa và van.
+            elif has_diffuser and re.search(damp_rx, own_txt) and not re.search(diff_rx, own_txt):
+                has_diffuser = False
             m_damper = re.search(damp_rx, search_combo_txt) if not is_access_door_item else None
 
             # Tách các van trong dòng + thứ bậc van chính: damper_rules.json VG-13 (src/damper_classifier.py)
@@ -817,7 +837,7 @@ class SwindBOQParser:
             else:
                 # PV-04: không báo theo nhóm / ống không KT / Zét thiếu E; BOQ có đơn giá đối tác thì giữ dòng (giữ giá)
                 ref_p = ws.cell(r, col_map["price"]).value if "price" in col_map else None
-                if scope_filter.should_skip_row(category, w, h, d_val, name_lower, ref_p, self.include_flex_duct, is_missing_z_offset):
+                if scope_filter.should_skip_row(category, w, h, d_val, name_lower, ref_p, self.include_flex_duct, is_missing_z_offset, unit=unit_val):
                     self.skipped_rows[sheet_name].add(r)
                     raw_spec_cell = ws.cell(r, col_map["spec"]).value if "spec" in col_map else None
                     raw_spec_disp = raw_spec_cell if raw_spec_cell not in (None, "") else (spec_str or None)
