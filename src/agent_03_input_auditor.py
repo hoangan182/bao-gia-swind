@@ -38,6 +38,19 @@ def is_confirmed_size(w, h):
     return (min(a, b), max(a, b)) in _CONFIRMED_SIZES
 
 
+def boq_size(item):
+    """Kích thước như BOQ ghi (trước khi cộng viền KTC → mặt). Parser cộng viền ngay khi đọc và giữ
+    kích thước cổ ở w_neck/h_neck (dòng thường) hoặc w_damper/h_damper (dòng combo cửa + van)
+    — VD Ghi chú 'KT cổ' 1000x135 → mặt 1050x185, kiểm kích thước lẻ vẫn xét 1000x135 (User chốt 2026-11-13, GMS TASEOC)."""
+    w, h = item.get("w") or 0, item.get("h") or 0
+    if item.get("is_ktc_applied"):
+        if item.get("w_neck") or item.get("h_neck"):
+            return item.get("w_neck") or 0, item.get("h_neck") or 0
+        if item.get("w_damper") or item.get("h_damper"):
+            return item.get("w_damper") or 0, item.get("h_damper") or 0
+    return w, h
+
+
 def odd_size_flag(w, h, d=0):
     """Ghi chú tô màu trên Sheet BG cho dòng kích thước lẻ — vẫn báo giá theo kích thước BOQ
     (User chốt 2026-11-13, GMS TASEOC VGCG R57/R58 'Cửa gió nan thẳng 1000x135').
@@ -166,7 +179,7 @@ class Agent03_InputAuditor:
                     audit_report["warnings"].append({
                         "row": row_idx,
                         "item": name,
-                        "issue": "Van chặn lửa chưa ghi tiêu chuẩn PCCC (EI bao nhiêu phút). Mặc định báo giá EI120 (SWIND-2.01- E-FD-EI120)."
+                        "issue": "Van chặn lửa chưa ghi tiêu chuẩn PCCC (EI bao nhiêu phút). FD không ghi EI → báo FD thường không bọc (User chốt 2026-11-13); MFD theo mã mặc định."
                     })
 
             if not std_id:
@@ -201,8 +214,7 @@ class Agent03_InputAuditor:
     def audit_parsed_boq_items(self, all_items):
         extracted_items = []
         for item in all_items:
-            w = item.get("w", 0)
-            h = item.get("h", 0)
+            w, h = boq_size(item)
             d = item.get("d", 0)
             dims = {}
             if d > 0:

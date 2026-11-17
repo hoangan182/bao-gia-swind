@@ -31,6 +31,8 @@ def _run_example(ex):
         "spec_priority": ex.get("spec_priority", "name"),
         "motor_brand_override": ex.get("hang_dong_co", ""),  # = cờ --motor-brand
     }
+    if dmc.is_linear_motor_text(item):  # runner đặt cờ này theo từng dòng (Kỹ thuật chốt 2026-11-17)
+        item["motor_linear"] = True
     spec = Agent01_BOQExtractor.resolve_item_spec(item, get_subtype_rules(), price_map={}, idx=1)
     return spec, item
 
@@ -93,7 +95,7 @@ class DamperParserRowsTest(unittest.TestCase):
 
     def test_rows(self):
         from swind_boq_parser import SwindBOQParser
-        rows = [("Van FD và NRD KT: 300x200", "VAN_GIO", "SWIND-2.01- E-FD-EI120 + NRD"),   # Minh Triết R240
+        rows = [("Van FD và NRD KT: 300x200", "VAN_GIO", "FD + NRD"),   # Minh Triết R240 (FD không ghi EI → FD thường, User chốt 2026-11-13)
                 ("Miệng gio kèm OBD 400x300", "CUA_GIO", "SDG+O"),                      # BOQ_ANH_KHACH_01 R13
                 ("AG_AAG-OBD-400x400-OB", "CUA_GIO", "SDG+O")]                          # BOQ_ANH_KHACH_01 R37
         with tempfile.TemporaryDirectory() as td:

@@ -491,6 +491,9 @@ class Agent01_BOQExtractor:
         """
         if price_map is None:
             price_map = {}
+        # Động cơ tuyến tính chỉ khi nội dung dòng ghi rõ "tuyến tính" (Kỹ thuật chốt 2026-11-17); không ghi → ON/OFF thường
+        if damper_classifier.is_linear_motor_text(item):
+            item["motor_linear"] = True
 
         cat = item.get("category", "KHAC")
         raw_name = item.get("raw_name") or item.get("name", "")

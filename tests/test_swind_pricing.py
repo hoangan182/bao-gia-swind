@@ -54,20 +54,22 @@ class Actuator(unittest.TestCase):
             ("MPRD", "HONEYWELL", 400, 400, "MAT-ACTUATOR-HONEYWELL-5NM", "5Nm"),
         ]
         for kind, brand, w, h, mat, nm in cases:
-            got = select_actuator(kind, brand, w, h)
+            got = select_actuator(kind, brand, w, h, linear=(kind == "MPRD" and brand == "BELIMO"))  # MPRD Belimo ở đây = động cơ tuyến tính
             self.assertEqual((got[0], got[2]), (mat, nm), (kind, brand, w, h))
 
     def test_display_names_unchanged(self):
         self.assertEqual(select_actuator("MD", "BELIMO", 400, 400)[1], "Động cơ van gió Belimo ON/OFF 5Nm")
         self.assertEqual(select_actuator("MD", "HONEYWELL", 400, 400)[1], "Động cơ van gió HoneyWell ON/OFF 5Nm (Model: CN4605A)")
-        self.assertEqual(select_actuator("MPRD", "BELIMO", 1000, 500)[1], "Động cơ tuyến tính 230V Belimo On/Off 10Nm")
+        self.assertEqual(select_actuator("MPRD", "BELIMO", 1000, 500, linear=True)[1], "Động cơ tuyến tính 230V Belimo On/Off 10Nm")
         self.assertEqual(select_actuator("MD", "KLB", 400, 400)[1], "Động cơ van gió KLB/VIWECO 24V - 10Nm ON/OFF")
 
-    def test_mprd_onoff_uses_md_actuator(self):
-        # Cờ --mprd-onoff (User yêu cầu 2026-11-11): MPRD dùng động cơ Belimo ON/OFF thường, mô-men theo VG-11
-        self.assertEqual(select_actuator("MPRD", "BELIMO", 800, 600, mprd_onoff=True)[:3:2], ("MAT-ACTUATOR-BELIMO-5NM", "5Nm"))
-        self.assertEqual(select_actuator("MPRD", "BELIMO", 1000, 500, mprd_onoff=True)[0], "MAT-ACTUATOR-BELIMO-10NM")
-        self.assertEqual(select_actuator("MPRD", "BELIMO", 800, 600)[0], "MAT-ACTUATOR-BELIMO-MPRD-5NM")
+    def test_motor_default_onoff_linear_only_when_stated(self):
+        # Kỹ thuật chốt 2026-11-17: không ghi "tuyến tính" → ON/OFF thường (cả MD và MPRD); ghi rõ → động cơ tuyến tính (mã MPRD)
+        self.assertEqual(select_actuator("MPRD", "BELIMO", 800, 600)[:3:2], ("MAT-ACTUATOR-BELIMO-5NM", "5Nm"))
+        self.assertEqual(select_actuator("MPRD", "BELIMO", 1000, 500)[0], "MAT-ACTUATOR-BELIMO-10NM")
+        self.assertEqual(select_actuator("MD", "BELIMO", 1000, 500, linear=True)[:3:2], ("MAT-ACTUATOR-BELIMO-MPRD", "10Nm"))
+        self.assertIn("tuyến tính", select_actuator("MD", "BELIMO", 1000, 500, linear=True)[1])
+        self.assertEqual(select_actuator("MPRD", "BELIMO", 800, 600, linear=True)[0], "MAT-ACTUATOR-BELIMO-MPRD-5NM")
 
     def test_mfd_models(self):
         self.assertEqual(select_actuator("MFD", "BELIMO", 600, 400, is_single_blade=True)[0], "MAT-ACTUATOR-BELIMO-FSLF24")

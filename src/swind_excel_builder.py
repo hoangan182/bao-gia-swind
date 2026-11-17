@@ -3,7 +3,7 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from swind_utils import detect_boq_header, get_quotation_profile, vat_label
 import typo_normalizer
-from agent_03_input_auditor import odd_size_flag
+from agent_03_input_auditor import odd_size_flag, boq_size
 
 class SwindExcelBuilder:
     """
@@ -473,9 +473,11 @@ class SwindExcelBuilder:
 
         def _write_quoted_row(r_num, item, row_std, row_fslf, row_bfn):
             """Dòng đã báo giá; dòng có lỗi gõ mã đã đoán / chưa rõ (typo_normalizer) → thêm ghi chú + tô vàng (User chốt 2026-11-03).
-            Dòng kích thước lẻ (Agent 03, cạnh 100..199 lẻ) → vẫn báo giá theo KT BOQ, ghi chú + tô vàng (User chốt 2026-11-13)."""
+            Dòng kích thước lẻ (Agent 03, cạnh 100..199 lẻ) → vẫn báo giá theo KT BOQ, ghi chú + tô vàng (User chốt 2026-11-13).
+            Xét kích thước BOQ trước khi cộng viền KTC (boq_size) — VD 'KT cổ 1000x135' không thành 1050x185."""
             flag = " | ".join(f for f in (typo_normalizer.bg_flag(item.get("typo_events")),
-                                          odd_size_flag(item.get("w"), item.get("h"), item.get("d"))) if f)
+                                          odd_size_flag(*boq_size(item), item.get("d")),
+                                          item.get("size_limit_flag")) if f)
             if flag:
                 for row in (row_std, row_fslf, row_bfn):
                     row[15] = f"{row[15]} | {flag}" if row[15] else flag
@@ -522,7 +524,7 @@ class SwindExcelBuilder:
                 else:
                     empty_streak_chk = 0
             while end_boq_row >= start_boq_row:
-                if end_boq_row not in hidden_rows and any(get_column_letter(c) not in hidden_cols and ws_orig.cell(end_boq_row, c).value is not None and str(ws_orig.cell(end_boq_row, c).value).strip() != "" for c in range(1, max(7, name_col + 1, qty_col + 1))):
+                if any(get_column_letter(c) not in hidden_cols and ws_orig.cell(end_boq_row, c).value is not None and str(ws_orig.cell(end_boq_row, c).value).strip() != "" for c in range(1, max(7, name_col + 1, qty_col + 1))):
                     break
                 end_boq_row -= 1
 
@@ -561,8 +563,10 @@ class SwindExcelBuilder:
                     _write_row_cells(curr_row, [None, first_main_sec] + [None] * 14, is_section=True)
                     curr_row += 1
             for r in range(start_boq_row, end_boq_row + 1):
-                if r in hidden_rows:
-                    continue
+                # DÒNG ẨN của khách (User chốt 2026-11-17, dự án 261111-BOQ C09 MEP): KHÔNG báo giá, giữ nguyên — chỉ copy sang BG
+                # (STT, Tên, ĐVT, SL, không giá / không ghi chú) và GIỮ TRẠNG THÁI ẨN trên Sheet BG. Parser bỏ dòng ẩn nên r không có trong row_to_items.
+                is_hidden_row = r in hidden_rows
+                hidden_start_row = curr_row
                 orig_stt = ws_orig.cell(r, stt_col).value if not stt_hidden else (r if header_row == 0 and not stt_col else None)
                 if orig_stt in (0, "0"):
                     orig_stt = None
@@ -643,11 +647,12 @@ class SwindExcelBuilder:
                         curr_row += 1
                     else:
                         flag_msg = (flag_rows or {}).get(r)
+                        # Dòng ẩn của khách: không báo giá, không hỏi lại — chỉ ghi chú bên cạnh (User chốt 2026-11-17)
                         row_unquoted = [
                             orig_stt, orig_name_str, None, None,
                             None, None, None, None,
                             None, None, None, orig_u_val, orig_q_val,
-                            None, None, flag_msg
+                            None, None, flag_msg or ("Dòng ẩn trong BOQ — không báo giá" if is_hidden_row else None)
                         ]
                         _write_row_cells(curr_row, row_unquoted, is_section=False)
                         if flag_msg:
@@ -657,6 +662,10 @@ class SwindExcelBuilder:
                                     ws_f.cell(curr_row, c_i).fill = flag_fill
                             self.flagged_bg_rows.append((curr_row, r, orig_name_str, orig_q_val, flag_msg))
                         curr_row += 1
+                if is_hidden_row:
+                    for hr_ in range(hidden_start_row, curr_row):
+                        for ws_h, _m in worksheets:
+                            ws_h.row_dimensions[hr_].hidden = True
             if side_table_items:
                 side_sec_curr = None
                 for idx, item in side_table_items:

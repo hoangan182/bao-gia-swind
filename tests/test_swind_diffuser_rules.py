@@ -94,6 +94,50 @@ class DiffuserRuleTableTest(unittest.TestCase):
         spec, _ = _run_example({"ten": "Cửa khuếch tán KTC 300x300", "kt": [300, 300]})
         self.assertEqual((spec["a1"], spec["a2"], spec["b1"], spec["b2"]), (450, 450, 300, 300))
 
+    def test_kt_co_note_is_neck_size(self):
+        """Ghi chú 'KT cổ' = kích thước cổ → cộng viền ra mặt; 'Cửa gió nan T' = nan thẳng bầu dục SDG
+        (User chốt 2026-11-13, GMS TASEOC DBTSCO-3.VGCG R48/R49 'Cửa gió nan T\\nKT cổ')."""
+        spec, _ = _run_example({"ten": "Cửa gió nan thẳng 1 lớp, sơn tĩnh điện, kích thước: 1500x200",
+                                "ghi_chu": "Cửa gió nan T\nKT cổ", "kt": [1500, 200]})
+        self.assertEqual((spec["model_fslf"], spec["a1"], spec["a2"], spec["b1"], spec["b2"]), ("SDG", 1550, 250, 1500, 200))
+        spec, _ = _run_example({"ten": "Cửa gió nan thẳng 1 lớp, sơn tĩnh điện, kích thước: 1500x200",
+                                "ghi_chu": "Cửa gió nan T\nCó thể tháo lắp\nKèm lọc bụi\nKT cổ", "kt": [1500, 200]})
+        self.assertEqual((spec["model_fslf"], spec["a1"], spec["b1"]), ("SDG+F", 1550, 1500))
+        spec, _ = _run_example({"ten": "Cửa gió nan thẳng 1 lớp, sơn tĩnh điện kèm van OBD, kích thước: 600x600",
+                                "ghi_chu": "Cửa gió nan bầu dục\nKT cổ", "kt": [600, 600]})
+        self.assertEqual((spec["model_fslf"], spec["a1"], spec["b1"]), ("SDG+O", 650, 600))
+        # Không ghi KT cổ → giữ nguyên là kích thước mặt
+        spec, _ = _run_example({"ten": "Cửa gió nan thẳng 1 lớp 1500x200", "ghi_chu": "Cửa gió nan T", "kt": [1500, 200]})
+        self.assertEqual((spec["model_fslf"], spec["a1"], spec["b1"]), ("SDG", 1500, 1450))
+
+    def test_ktm_name_beats_ktc_in_spec(self):
+        """Tên ghi KTM (kích thước mặt) thắng chữ 'KTC' ở cột Thông số — User chốt 2026-11-13, KL Swind 1."""
+        note = "Cửa gió nan bầu dục; TPL: Miệng gió 1 lớp lá KTC, nhôm 1.0mm"
+        spec, _ = _run_example({"ten": "KTM 595x595+OBD", "ghi_chu": note, "kt": [595, 595]})
+        self.assertEqual((spec["model_fslf"], spec["a1"], spec["a2"], spec["b1"], spec["b2"]), ("SDG+O", 595, 595, 545, 545))
+        # Khuếch tán + 'lá KTC' → nan thẳng SDG (User chốt 2026-11-13, KL Swind 1 R20/R21); không 'lá KTC' → khuếch tán SD
+        spec, _ = _run_example({"ten": "KTM 595x595 + OBD", "ghi_chu": "Cửa gió khuếch tán; " + note, "kt": [595, 595]})
+        self.assertEqual((spec["model_fslf"], spec["a1"], spec["b1"]), ("SDG+O", 595, 545))
+        spec, _ = _run_example({"ten": "KTM 595x595 + OBD", "ghi_chu": "Cửa gió khuếch tán", "kt": [595, 595]})
+        self.assertEqual((spec["model_fslf"], spec["a1"], spec["b1"]), ("SD+O", 595, 445))
+        # 'lá KTC' là kiểu lá (nan thẳng), không phải kích thước cổ → không cộng viền dù Tên không ghi KTM
+        spec, _ = _run_example({"ten": "Cửa gió 400x200", "ghi_chu": note, "kt": [400, 200]})
+        self.assertEqual((spec["a1"], spec["b1"]), (400, 350))
+        # Ghi KTC thật (không phải 'lá KTC') vẫn cộng viền như cũ
+        spec, _ = _run_example({"ten": "Cửa gió 400x200", "ghi_chu": "Cửa gió nan bầu dục, KTC", "kt": [400, 200]})
+        self.assertEqual((spec["a1"], spec["b1"]), (450, 400))
+
+    def test_diffuser_max_size_flag(self):
+        """CG-KT-01: khuếch tán SD > 600x600 → cờ hỏi lại (vẫn báo giá); SDG / SD trong giới hạn không cờ."""
+        R = dc.load_rules()
+        for g in R["gioi_han_kich_thuoc"]:
+            for ex in g["vi_du_dung"] + g["vi_du_sai"]:
+                self.assertEqual(bool(dc.size_limit_flag(ex["model"], *ex["kt"], R)), ex["canh_bao"], msg=ex)
+        item = {"category": "CUA_GIO", "raw_name": "KTM 595x1195 + OBD", "name": "KTM 595x1195 + OBD",
+                "note_boq": "Cửa gió khuếch tán", "section": "", "model": "", "w": 595, "h": 1195, "d": 0}
+        Agent01_BOQExtractor.resolve_item_spec(item, get_subtype_rules(), price_map={}, idx=1)
+        self.assertIn("600x600", item.get("size_limit_flag", ""))
+
     def test_round_louver_three_times_square(self):
         """Louver tròn D503 (User chốt 2026-11-11): phần louver = 3 x Louver vuông 503x503, LCCT giữ nguyên."""
         from agent_06_bom_diffuser import Agent06_DiffuserBOM

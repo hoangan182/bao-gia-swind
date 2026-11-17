@@ -87,6 +87,11 @@ def is_glued_damper_code(name_lower, rules=None):
     return bool(re.search((rules or load_rules())["PV-15"]["regex"], name_lower))
 
 
+def is_fan_connection_transition(name_lower, rules=None):
+    """PV-16: Tên chỉ '<W>x<H>/Quạt' (chuyển tiết diện nối miệng quạt, thiếu đường kính) → không báo (User chốt 2026-11-17)."""
+    return bool(re.search((rules or load_rules())["PV-16"]["regex"], name_lower))
+
+
 def is_non_swind_omission(row_txt, rules=None):
     """PV-11 (User duyệt 2026-11-03): dòng ống gas / PVC / PPR / uPVC, bảo ôn, URL -> không phải hàng Swind, không cảnh báo SÓT DÒNG.
     LCCT không thuộc danh sách này (mặt hàng có báo giá)."""

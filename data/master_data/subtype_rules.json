@@ -71,7 +71,7 @@
             "FD": " + Van chặn lửa cầu chì EI120 (BCTN 4761/VLXD-TBMT)",
             "VCD": " + Van điều chỉnh lưu lượng tay gạt tôn mạ kẽm"
         },
-        "ktc_regex": "\\bktc\\b|kích\\s*thước\\s*cổ",
+        "ktc_regex": "(?<!lá )\\bktc\\b|kích\\s*thước\\s*cổ|\\bk\\.?t\\.?\\s*cổ\\b",
         "single_dim_damper_regex": "\\b(?:vcd|fd|nrd|prd|md|obd|mfd|mfsd)\\s+(\\d{2,4})\\b",
         "louver_z_keywords": ["nan z", "louver", "luover", "louvre", "chớp", "fal", "oal", "eal", "wl", "swl"],
         "mesh_keywords": ["lưới", "chắn côn trùng", "côn trùng", "lcct", "+n", "+ n", "+is", "+ is", "i.s", "insect screen", "c/w is", "c/w i.s", "is"],

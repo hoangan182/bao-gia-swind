@@ -1107,9 +1107,15 @@
     },
     {
       "co": "is_diffuser_sq",
-      "mo_ta": "Cửa khuếch tán (vuông/tròn)",
+      "mo_ta": "Cửa khuếch tán (vuông/tròn). Thông số ghi 'lá KTC' (TPL: Miệng gió 1 lớp lá KTC) = cửa NAN THẲNG, thắng chữ 'khuếch tán' (User chốt 2026-11-13, KL Swind 1 R20/R21 'KTM 595x595 / 595x1195 + OBD' — Spec 'Cửa gió khuếch tán ... lá KTC' → SDG+O)",
       "dieu_kien": {
         "tat_ca": [
+          {
+            "khong": {
+              "regex": "lá\\s*ktc\\b",
+              "trong": "combined_search"
+            }
+          },
           "!is_slot_sld",
           "!is_standalone_lcct",
           "!is_standalone_filter",
@@ -1208,14 +1214,24 @@
     },
     {
       "co": "is_ktc",
-      "mo_ta": "BOQ ghi kích thước cổ (KTC), --neck-size hoặc cửa bù khí nan Z",
+      "mo_ta": "BOQ ghi kích thước cổ (KTC / 'kích thước cổ' / 'KT cổ' — 'KT cổ' ở Ghi chú: User chốt 2026-11-13, GMS TASEOC DBTSCO-3.VGCG), --neck-size hoặc cửa bù khí nan Z. Tên dòng ghi KTM (kích thước mặt) thắng chữ KTC ở cột Thông số (User chốt 2026-11-13, KL Swind 1: Tên 'KTM 595x595 + OBD', Spec 'TPL: Miệng gió 1 lớp lá KTC' → 595 là MẶT, không cộng viền)",
       "dieu_kien": {
         "mot_trong": [
           {
-            "regex": "\\bktc\\b|kích\\s*thước\\s*cổ",
-            "regex_cau_hinh": "ktc_regex",
-            "trong": "combined_search",
-            "ignorecase": true
+            "tat_ca": [
+              {
+                "regex": "(?<!lá )\\bktc\\b|kích\\s*thước\\s*cổ|\\bk\\.?t\\.?\\s*cổ\\b",
+                "regex_cau_hinh": "ktc_regex",
+                "trong": "combined_search",
+                "ignorecase": true
+              },
+              {
+                "khong": {
+                  "regex": "\\bktm\\b|kích\\s*thước\\s*mặt",
+                  "trong": "raw_name_low"
+                }
+              }
+            ]
           },
           "is_makeup_air_z",
           "neck_size_override"
@@ -1573,12 +1589,39 @@
     },
     {
       "id": "CG-04B_SAG_SEAG_BAU_DUC",
-      "ten": "Cửa cấp / thải mã SAG / SEAG / EAG / SEG (Tên của chính dòng) → nan bầu dục SDG(+O+N+F), thắng chữ 'Louver' ở Title cha",
+      "ten": "Cửa mã AG nan thẳng SAG / SEAG / EAG / SEG / PAG / SPG / FAG / RAG (Tên của chính dòng) → nan bầu dục SDG(+O+N+F), thắng chữ 'Louver' ở Title cha",
       "dieu_kien": {
         "tat_ca": [
           {
-            "regex": "(?<![a-z])(?:sag|seag|eag|seg)(?![a-z])",
-            "trong": "raw_name_low"
+            "mot_trong": [
+              {
+                "regex": "(?<![a-z])(?:sag|seag|eag|seg)(?![a-z])",
+                "trong": "raw_name_low"
+              },
+              {
+                "tat_ca": [
+                  {
+                    "regex": "(?<![a-z])(?:pag|spg|fag|rag)(?![a-z])",
+                    "trong": "raw_name_low"
+                  },
+                  "is_louver_z",
+                  {
+                    "khong": {
+                      "tat_ca": [
+                        {
+                          "so_sanh": [
+                            "max_wh",
+                            ">=",
+                            3000.0
+                          ]
+                        },
+                        "!has_obd"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
             "khong": {
@@ -1666,10 +1709,23 @@
           "bien": "box_note"
         }
       ],
-      "canh_bao_user": "Rule mới CG-04B: SAG / SEAG / EAG / SEG báo nan BẦU DỤC SDG, không theo chữ 'Louver' ở Title cha — Kỹ thuật chốt 2026-11-06, chưa qua nhiều dự án, xác nhận lại",
-      "nguon": "Kỹ thuật chốt 2026-11-06 (dự án 261031_Van gió thân + hầm NOXH): 'SAG và SEAG là cửa cấp, thường báo nan thẳng → báo nan bầu dục'. Trước đó bị ra WL+O (Louver nan Z) vì Title cha 'Phần cửa gió, Louver, bộ lọc mùi' khớp từ khóa louver trong is_louver_z. | Mở rộng EAG (cửa thải) → bầu dục: User/Kỹ thuật chốt 2026-11-12, dự án 'BOQ Ống gió' R280-R282 'EAG+OBD 1000X350' dưới Title 'LOUVER, AIR GRILL, AIR VALVE (CONT'D)' bị ra WL+O (nan Z). | Mở rộng SEG → bầu dục: User chốt 2026-11-12, dự án 'BOQ Ống gió' R299 'SEG+OBD 1100X750' bị ra WL+O. | User xác nhận lại đúng nan bầu dục 2026-11-13, dự án 'Van cửa gió - CC07 CC09 HÀ NAM' (13 dòng SAG/EAG/SEG+OBD/MD dưới Title 'Cửa gió, Louver'). | User xác nhận bầu dục 2026-11-13, dự án 'NBT-BG DA luxora-Đầm vạc-Vĩnh Yên' R1849-R1852 'Cửa hút gió EAG ... + OBD' dù Title cha ghi '(dạng nan thẳng)'.",
-      "ly_do": "Mã SAG / SEAG đứng trong Tên của chính dòng = cửa gió cấp nan bầu dục. Rẽ nhánh giữ case cũ: khuếch tán vuông 600/450/300 điều hòa (CG-08B) giữ nguyên SD; Tên/Ghi chú/Model của dòng ghi louver, sọt trứng, slot, linear → nhường rule khác. Dòng hiển thị cảnh báo 'Rule mới' ở Kiểm soát cuối. Chỉ xét Tên của CHÍNH dòng (raw_name_low), không xét Title cha — vì has_explicit_louver gộp cả Title nên 'Louver' ở Title làm rule không kích hoạt.",
+      "nguon": "Kỹ thuật chốt 2026-11-06 (dự án 261031_Van gió thân + hầm NOXH): 'SAG và SEAG là cửa cấp, thường báo nan thẳng → báo nan bầu dục'. Trước đó bị ra WL+O (Louver nan Z) vì Title cha 'Phần cửa gió, Louver, bộ lọc mùi' khớp từ khóa louver trong is_louver_z. | Mở rộng EAG (cửa thải) → bầu dục: User/Kỹ thuật chốt 2026-11-12, dự án 'BOQ Ống gió' R280-R282 'EAG+OBD 1000X350' dưới Title 'LOUVER, AIR GRILL, AIR VALVE (CONT'D)' bị ra WL+O (nan Z). | Mở rộng SEG → bầu dục: User chốt 2026-11-12, dự án 'BOQ Ống gió' R299 'SEG+OBD 1100X750' bị ra WL+O. | User xác nhận lại đúng nan bầu dục 2026-11-13, dự án 'Van cửa gió - CC07 CC09 HÀ NAM' (13 dòng SAG/EAG/SEG+OBD/MD dưới Title 'Cửa gió, Louver'). | Mở rộng PAG / SPG / FAG / RAG → bầu dục: User yêu cầu xử lý triệt để 2026-11-17; Kỹ thuật xác nhận 2026-11-17: FAG, RAG → bầu dục, PAG = cửa tăng áp; OAG (cửa gió ngoài trời) và MAG (cửa bù khí) KHÔNG thuộc rule này → giữ Louver nan Z; chưa gặp KAG (không đưa vào, chờ dự án thực tế). Dòng KHÔNG ghi mã mà Title là Louver → báo Louver nan Z (Kỹ thuật xác nhận 2026-11-17). Dự án dự án '261111-BOQ C09 MEP' sheet TAHK R76/R77/R117/R118 'Miệng gió PAG + OBD 600x600' / 'PAG + MD 700x1200' dưới Title 'Cửa gió, Louver' bị ra WL+O / WL (đúng là cửa tăng áp nan thẳng). | User xác nhận 4 dòng cũ (R20 EAG, R21 SAG+MD, R55 / R96 SEG) và PAG đúng 2026-11-17 → GỠ cảnh báo 'Rule mới' (canh_bao_user). | User xác nhận bầu dục 2026-11-13, dự án 'NBT-BG DA luxora-Đầm vạc-Vĩnh Yên' R1849-R1852 'Cửa hút gió EAG ... + OBD' dù Title cha ghi '(dạng nan thẳng)'.",
+      "ly_do": "Mã SAG / SEAG đứng trong Tên của chính dòng = cửa gió cấp nan bầu dục. Nhóm mã PAG / SPG / FAG / RAG (thêm 2026-11-17) chỉ kích hoạt khi dòng đang bị kéo sang Louver (is_louver_z, VD do Title cha) — cạnh >= 3000mm không OBD giữ Louver WL (rule is_louver_z (c), dự án CAND 'Miệng gió cấp khí bù FAG 3500x700'); không có Title Louver thì giữ đường cũ (CG-05 tăng áp / CG-07 hồi...) để không đổi rule + không hiện cảnh báo 'Rule mới' ở dự án cũ. Rẽ nhánh giữ case cũ: khuếch tán vuông 600/450/300 điều hòa (CG-08B) giữ nguyên SD; Tên/Ghi chú/Model của dòng ghi louver, sọt trứng, slot, linear → nhường rule khác. Dòng hiển thị cảnh báo 'Rule mới' ở Kiểm soát cuối. Chỉ xét Tên của CHÍNH dòng (raw_name_low), không xét Title cha — vì has_explicit_louver gộp cả Title nên 'Louver' ở Title làm rule không kích hoạt.",
       "vi_du_dung": [
+        {
+          "ten": "Miệng gió PAG + OBD 600x600",
+          "title": "Cửa gió, Louver",
+          "kt": [
+            600,
+            600
+          ],
+          "model": "SDG+O",
+          "b": [
+            550,
+            550
+          ],
+          "nguon_boq": "input/261111-BOQ C09 MEP.xlsx (sheet TAHK R76)"
+        },
         {
           "ten": "SAG 400x400 + OBD",
           "title": "Phần cửa gió, Louver, bộ lọc mùi",
@@ -2403,7 +2459,8 @@
               "seg",
               "spg",
               "seag",
-              "sdg"
+              "sdg",
+              "lá ktc"
             ],
             "trong": "combined_search"
           },
@@ -2819,6 +2876,19 @@
       }
     ]
   },
+  "gioi_han_kich_thuoc": [
+    {
+      "id": "CG-KT-01_KHUECH_TAN_TOI_DA_600",
+      "mo_ta": "Cửa khuếch tán vuông (Model SD...) kích thước mặt tối đa 600x600: vượt → VẪN báo giá theo BOQ, ghi chú + tô vàng Sheet BG + HỎI LẠI USER ở Kiểm soát cuối",
+      "nguon": "User chốt 2026-11-13 (KL Swind 1 R21 'KTM 595x1195 + OBD' — Spec 'Cửa gió khuếch tán')",
+      "model_bat_dau": ["SD"],
+      "model_loai_tru_bat_dau": ["SDG"],
+      "toi_da": [600, 600],
+      "canh_bao": "⚠️ CẦN XÁC NHẬN: Cửa khuếch tán kích thước tối đa 600x600 — BOQ ghi {w}x{h}",
+      "vi_du_dung": [{"model": "SD+O", "kt": [595, 1195], "canh_bao": true}],
+      "vi_du_sai": [{"model": "SD+O", "kt": [595, 595], "canh_bao": false}, {"model": "SDG+O", "kt": [595, 1195], "canh_bao": false}]
+    }
+  ],
   "co_explicit": {
     "mo_ta": "Kích thước cổ ghi rõ (w_neck/h_neck) ghi đè B1/B2, trừ các profile",
     "bo_qua_profile": [

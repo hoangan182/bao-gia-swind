@@ -205,7 +205,7 @@
       400
      ],
      "loai": "FD",
-     "model": "SWIND-2.01- E-FD-EI120"
+     "model": "FD"
     },
     {
      "nguon_boq": "260910_MKS BP05a 'Biểu 5. BoQ-DHTG' R185",
@@ -274,7 +274,7 @@
      ],
      "loai": "MPRD",
      "model": "M-PRD",
-     "ghi_chu_chua": "Belimo On/Off 5Nm"
+     "ghi_chu_chua": "Belimo ON/OFF 5Nm"
     },
     {
      "nguon_boq": "26BDCC09-3.VGCG-Lan 1 Sheet1 R64",
@@ -441,9 +441,9 @@
   },
   {
    "id": "VG-09_FD_MAC_DINH_EI120",
-   "ten": "Van FD mặc định EI120 có bọc (SWIND-2.01- E-FD-EI120); chỉ FD thường khi BOQ ghi rõ → HỎI LẠI USER",
-   "nguon": "590365b 30/10 (User chốt); FD tròn → vuông b5bf9c1 26/10",
-   "ly_do": "AGENTS.md 4c. FD tròn Ø D báo như van vuông D x D.",
+   "ten": "Van FD GHI EI (Tên / Title / Ghi chú / Spec) hoặc mã 2.01 → E-FD-EI120 có bọc; FD KHÔNG ghi EI → FD thường tôn mạ kẽm, không bọc. Ghi EI mà kèm chữ loại thường / không bọc → báo EI + HỎI LẠI USER",
+   "nguon": "590365b 30/10 (User chốt: FD mặc định EI120); ĐỔI 2026-11-13 (User chốt, dự án KL Swind 1): không ghi EI không báo bọc, ghi EI mới báo bọc; FD tròn → vuông b5bf9c1 26/10",
+   "ly_do": "AGENTS.md 4c. FD tròn Ø D báo như van vuông D x D (chỉ FD có EI). Tên rule giữ id cũ để không đổi tham chiếu.",
    "tu_khoa_fd_thuong": [
     "fd thường",
     "van chặn lửa thường",
@@ -463,7 +463,7 @@
       400
      ],
      "loai": "FD",
-     "model": "SWIND-2.01- E-FD-EI120"
+     "model": "FD"
     },
     {
      "ten": "Van chặn lửa FD loại thường 500x400",
@@ -472,7 +472,17 @@
       400
      ],
      "loai": "FD",
-     "model": "FD",
+     "model": "FD"
+    },
+    {
+     "ten": "Van chặn lửa FD loại thường EI60 500x400",
+     "ei": 60,
+     "kt": [
+      500,
+      400
+     ],
+     "loai": "FD",
+     "model": "SWIND-2.01- E-FD-EI120",
      "fd_thuong": "loại thường"
     },
     {
@@ -555,6 +565,18 @@
     }
    ],
    "vi_du_dung": [
+    {
+     "nguon_boq": "261111-BOQ C09 MEP sheet TAHK R21 'Miệng gió SAG+MD 1200x600' — Ghi chú 'Van MD tuyến tính' (Kỹ thuật chốt 2026-11-17: ghi rõ tuyến tính mới báo tuyến tính, không ghi → ON/OFF thường)",
+     "ten": "Van MD 1000x400",
+     "ghi_chu": "Van MD tuyến tính",
+     "kt": [
+      1000,
+      400
+     ],
+     "loai": "MD",
+     "model": "MD",
+     "ghi_chu_chua": "động cơ tuyến tính BELIMO 10Nm"
+    },
     {
      "ten": "Van MD 1000x400",
      "kt": [
@@ -645,6 +667,7 @@
     "KLB_nhieu_modul": "Van MD chia {mod_cnt} modul,  {mod_cnt} động cơ KLB/VIWECO 24V - 10Nm ON/OFF",
     "HONEYWELL": "Van động cơ ON-OFF HoneyWell {nm}, 230V (Model: {model_hw}/tđ){mod_dmp_txt}",
     "BELIMO": "Van động cơ ON-OFF BELIMO {nm}, điện áp 230V, xuất xứ Thụy Sỹ{mod_dmp_txt}",
+    "BELIMO_tuyen_tinh": "Van động cơ tuyến tính BELIMO {nm}, điện áp 230V, xuất xứ Thụy Sỹ{mod_dmp_txt}",
     "hau_to_co_ei": ". ĐG bao gồm bọc thêm tấm cách nhiệt KSH dày 10mm",
     "truc_cho_1_modul": "Van MD tôn mạ kẽm, trục chờ lắp động cơ (không gồm động cơ)",
     "truc_cho_nhieu_modul": "Van MD tôn mạ kẽm chia {mod_cnt} modul, {mod_cnt} trục chờ lắp động cơ (không gồm động cơ)"
@@ -653,7 +676,7 @@
     "model": "M-PRD",
     "dong_co_belimo": "Động cơ tuyến tính 230V Belimo On/Off {nm}",
     "dong_co_belimo_onoff": "Động cơ van gió Belimo ON/OFF {nm}, 230V",
-    "_dong_co_belimo_onoff_nguon": "Cờ --mprd-onoff (User yêu cầu 2026-11-11, dự án KL TB+VT CT2): van xả áp dùng động cơ ON/OFF thường như van MD, mô-men theo VG-11",
+    "_dong_co_belimo_onoff_nguon": "Kỹ thuật chốt 2026-11-17 (dự án 261111-BOQ C09 MEP): động cơ tuyến tính CHỈ báo khi BOQ ghi rõ 'tuyến tính' (MD và MPRD); không ghi → ON/OFF thường (trước đó MPRD mặc định tuyến tính, cờ --mprd-onoff đổi sang ON/OFF — User yêu cầu 2026-11-11, KL TB+VT CT2). Mô-men theo VG-11",
     "dong_co_khac": "Động cơ {hang} On/Off {nm}",
     "ten_hang": {
      "HONEYWELL": "HoneyWell"
@@ -801,6 +824,35 @@
       "MFD"
      ],
      "ghi_chu_vi_du": "'và động cơ' không tách thành van riêng → 1 van MFD"
+    }
+   ]
+  },
+  {
+   "id": "VG-14_NRD_PRD_VCD_CO_EI_THI_BOC",
+   "ten": "NRD / PRD / VCD (van 1 chiều, xả áp cơ, điều chỉnh) CÓ ghi EI → bọc tấm cách nhiệt KSH 10mm (ĐG bọc theo m²); KHÔNG ghi EI → không bọc",
+   "nguon": "User chốt 2026-11-17 (dự án 261111-BOQ C09 MEP, rà soát lẫn lộn bọc / không bọc): 'có EI thì báo bọc theo mặc định'. Hành vi có sẵn từ bd1d662 20/10 (agent_05 _append_fire_insulation_components: ei_rating > 0 và cạnh > 150mm); User chốt NRD ghi chú 'chống cháy EI60' → NRD + KSH 2026-11-03. Chỉ ghi lại thành rule, chưa đổi code, chưa chạy lại 50 file E2E (User: test ở các dự án tiếp theo).",
+   "ly_do": "Trước đây chỉ là hành vi ngầm của code nên cùng 1 sheet có dòng bọc, dòng không mà không giải thích được. Chữ EI<số> ở Tên, Ghi chú, Model, Spec của dòng (kể cả 'Tạm tính EI30', 'GHCL EI60') hoặc Title cha → bọc theo EI đó; không ghi EI → không bọc. Ngoại lệ có sẵn trong code: Spec ghi SMD / 'không kiểm định' → bỏ EI (VD 'EI60-SMD60'); cạnh lớn nhất <= 150mm không bọc; Title 'cấp bù gió khi có cháy' tự gán EI120. Van FD / MFD theo VG-09, MD theo VG-08.",
+   "vi_du_dung": [
+    {
+     "nguon_boq": "Báo giá Thanh Liệt gửi NCC, sheet BÁO GIÁ — 'Van NRD KT 1000x500,EI60'",
+     "ten": "Van NRD KT: 1000x500, EI60",
+     "ei": 60,
+     "kt": [
+      1000,
+      500
+     ],
+     "loai": "NRD",
+     "model": "NRD"
+    },
+    {
+     "nguon_boq": "26BDCC09-3.VGCG-Lan 1 Sheet1 — 'NRD 900x400 van 1 chiều' (không ghi EI)",
+     "ten": "NRD 900x400 van 1 chiều",
+     "kt": [
+      900,
+      400
+     ],
+     "loai": "NRD",
+     "model": "NRD"
     }
    ]
   }

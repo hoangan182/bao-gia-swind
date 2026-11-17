@@ -820,6 +820,31 @@
      "ket_qua": false
     }
    ]
+  },
+  {
+   "id": "PV-16_CHUYEN_TIET_DIEN_NOI_QUAT",
+   "ten": "Tên chỉ ghi '<W>x<H>/Quạt' (chuyển tiết diện nối miệng quạt, không ghi đường kính) → THUONG_MAI, không báo giá",
+   "nguon": "2026-11-17, User chốt (dự án 01. Bang thong ke khoi luong, 15 dòng 'Chuyển tiết diện vuông tròn / Chuyển tiết diện' dạng 600X400/Quạt, 1200x700/Quạt...): bỏ không báo",
+   "ly_do": "Thiếu đường kính miệng quạt nên không tính được giá; Swind không báo. Chỉ áp cho dạng '/Quạt' kết thúc Tên. Dạng '<W>x<H>/Dquạt/L<n>' (có Dquạt) KHÔNG thuộc rule này — User đã chốt tạm tính D500 và vẫn báo (côn thu vuông tròn).",
+   "regex": "^\\s*\\d{2,4}\\s*[x×*]\\s*\\d{2,4}\\s*/\\s*quạt\\s*$",
+   "vi_du": [
+    {
+     "ten": "600x400/quạt",
+     "ket_qua": true
+    },
+    {
+     "ten": "1200x700 / quạt",
+     "ket_qua": true
+    },
+    {
+     "ten": "350x200/dquạt/l500",
+     "ket_qua": false
+    },
+    {
+     "ten": "quạt hướng trục 600x400",
+     "ket_qua": false
+    }
+   ]
   }
  ]
 }

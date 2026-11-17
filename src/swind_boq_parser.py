@@ -163,11 +163,27 @@ class SwindBOQParser:
                 
             name_val = ws.cell(r, col_map.get("name", 2)).value
             qty_val = ws.cell(r, col_map["qty"]).value if "qty" in col_map else None
+            _ov_force_blank = False
+            _ov_q = self.row_overrides.get((sheet_name, r)) if self.row_overrides else None
+            if _ov_q and "qty" in _ov_q:
+                # --override "Sheet!Dòng:qty=1": User cấp khối lượng cho dòng KL trống (2026-11-17, dự án 01. Bang thong ke khoi luong)
+                if str(_ov_q["qty"]).strip().lower() in ("blank", "trong", "none"):
+                    # qty=blank: giữ KL trống (không mặc định KL), chỉ áp đơn giá (User chốt 2026-11-17)
+                    _ov_force_blank = True
+                else:
+                    try:
+                        qty_val = float(_ov_q["qty"])
+                    except (TypeError, ValueError):
+                        pass
             # KL ghi dạng CHỮ thuần số ('1', '2,5' — ô Text trong Excel) = số; chỉ đổi kiểu đọc, không sửa BOQ.
             # Nguồn: E2E kiểm bất biến 2026-11-03, 'KL ong gio cap va hut' sheet WC R34-38, R225, R232-233 bị bỏ sót.
             if isinstance(qty_val, str) and re.fullmatch(r'\s*\d+(?:[.,]\d+)?\s*', qty_val):
                 qty_val = float(qty_val.strip().replace(",", "."))
             unit_val = ws.cell(r, col_map["unit"]).value if "unit" in col_map else None
+            if isinstance(unit_val, str) and re.search(r'[㎀-㏿]', unit_val):
+                # Ký hiệu đơn vị CJK 1 ký tự ('㎡' U+33A1, '㎥', '㎜'...) → dạng thường ('m2') để rule ĐVT m² nhận được
+                # (User chốt 2026-11-14, BOQ 安丰皇冠涂布线工程风管清单: ống gió '㎡' bị lọc NO_DIMS_ONG_GIO).
+                unit_val = re.sub(r'[㎀-㏿]+', lambda m_: unicodedata.normalize('NFKC', m_.group(0)), unit_val)
             col1_val = ws.cell(r, 1).value if (col_map.get("name", 2) > 1 and "stt" not in col_map) else None
             col1_str = unicodedata.normalize('NFC', str(col1_val).strip()) if isinstance(col1_val, str) and len(str(col1_val).strip()) > 2 and not re.match(r'^(?:[\dIVXLC]+(?:[\.\-]\d+)*\.?|CT\d+)$', str(col1_val).strip(), re.IGNORECASE) else ""
             if not name_val and col1_str and qty_val is None and unit_val is None:
@@ -225,7 +241,7 @@ class SwindBOQParser:
                 is_zero_qty_with_unit = (not col_map.get("is_order_sheet") and qty_val in (0, 0.0, "0") and unit_val not in (None, "", 0, "0"))
                 has_cv_kw = any(k in nl_chk for k in cv_kws) or bool(re.search(cv_rx, nl_chk))
                 has_cv_dim = bool(re.search(r'([wWaAbB]?\s*\d+\s*[xX*]\s*[hHbBwW]?\s*\d+|\b[dD][nN]?\s*\d{2,4}\b|\b(?:vcd|fd|nrd|prd|md)\s+\d{2,4}\b)', nl_chk))
-                if (is_zero_qty_with_unit or (is_blank_qty and not col_map.get("is_order_sheet") and has_cv_kw and has_cv_dim)) and "tổng cộng" not in nl_chk:
+                if (is_zero_qty_with_unit or _ov_force_blank or (is_blank_qty and not col_map.get("is_order_sheet") and has_cv_kw and has_cv_dim)) and "tổng cộng" not in nl_chk:
                     if "qty" in col_map:
                         is_missing_qty = is_blank_qty
                         qty_val = 0.0
@@ -349,7 +365,7 @@ class SwindBOQParser:
                 elif is_standalone_coarse_filter(name_lower):
                     # Lọc thô G4 đứng riêng (có kích thước) -> Swind sản xuất: báo giá theo công thức FILTER_G4 (Agent 06)
                     category = "CUA_GIO"
-                elif scope_filter.is_commercial_by_name(name_lower):
+                elif scope_filter.is_commercial_by_name(name_lower) or scope_filter.is_fan_connection_transition(str(raw_name_str).lower()):
                     # PV-02: thiết bị / phụ trợ / giá đỡ (kể cả 'Lắp đặt giá đỡ ...') -> thương mại, không kế thừa nhóm từ Title
                     category = "THUONG_MAI"
                 else:
@@ -684,7 +700,10 @@ class SwindBOQParser:
                 any(k in raw_makeup_chk for k in ("cấp khí bù", "bù khí", "cấp gió bù", "bù gió"))
                 and not any(k in raw_makeup_chk for k in ("fag", "sag", "rag", "oag", "pag", "seg", "eag", "sdg", "obd", "nan thẳng", "bầu dục"))
             )
-            is_ktc = (bool(re.search(ktc_rx, dim_search_text, re.IGNORECASE)) or is_makeup_air_z) and not has_explicit_kt_bi
+            # Tên dòng ghi KTM (kích thước mặt) thắng chữ 'KTC' ở cột Thông số (User chốt 2026-11-13, KL Swind 1: Tên 'KTM 595x595 + OBD',
+            # Spec 'TPL: Miệng gió 1 lớp lá KTC' → 595 là MẶT, không cộng viền); cùng điều kiện cờ is_ktc trong diffuser_rules.json
+            own_ktm = bool(re.search(r'\bktm\b|kích\s*thước\s*mặt', raw_name_str.lower()))
+            is_ktc = ((bool(re.search(ktc_rx, dim_search_text, re.IGNORECASE)) and not own_ktm) or is_makeup_air_z) and not has_explicit_kt_bi
             # Cửa khuếch tán vuông: cổ -> mặt +150mm/cạnh (cùng quy tắc Agent01 Rule 1); cửa khác +50mm
             ktc_diff_txt = f"{raw_name_str} {name_str} {model_str} {note_boq}".lower()
             is_ktc_diffuser = (

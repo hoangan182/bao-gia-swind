@@ -157,6 +157,13 @@ class Agent04_DuctworkBOM:
         raw_name = unicodedata.normalize("NFC", str(item.get("raw_name") or item.get("name") or ""))
         note_boq = unicodedata.normalize("NFC", str(item.get("note_boq") or ""))
         unit = unicodedata.normalize("NFC", str(item.get("unit") or "cái")).strip().lower()
+        # Dòng Tên chỉ ghi kích thước (VD '300x150') dưới Title loại phụ kiện ('Cút ống gió 90 độ kích thước :', 'Chân rẽ kích thước :')
+        # -> phân loại theo Title + Tên (item['name']), không coi là ống thẳng. Nguồn: 2026-11-17, dự án 01. Bang thong ke khoi luong
+        # (Cút / Chân rẽ bị báo như ống gió vuông L1110). Chỉ rẽ nhánh khi Tên thuần kích thước và Title có tên phụ kiện.
+        _full_nm = unicodedata.normalize("NFC", str(item.get("name") or ""))
+        if (_full_nm and _full_nm != raw_name and not re.search(r"[A-Za-zÀ-ỹ]{3,}", raw_name)
+                and re.search(r"c[úu]t|chân rẽ|chan re|chạc|chac|\bz\b|zét|chuyển tiết diện|\bcôn\b|\btê\b", _full_nm, re.IGNORECASE)):
+            raw_name = _full_nm
         full_text = f"{raw_name} {note_boq}".strip()
 
         w_in = float(item.get("w") or 0.0)
@@ -221,7 +228,7 @@ class Agent04_DuctworkBOM:
 
         if subtype in ("SPIRAL_DUCT", "ELBOW_RT", "REDUCER_RT", "TEE_RT", "WYE_RT", "TAKEOFF_RT", "COUPLING_RT", "END_CAP_RT"):
             return cls._calc_round_duct_or_fitting_item(
-                subtype, full_text, unit, w1, h1, w2, h2, d1, d2, length, angle, explicit_thk
+                subtype, full_text, unit, w1, h1, w2, h2, d1, d2, length, angle, explicit_thk, ei_rating
             )
 
         return cls._calc_rect_duct_or_fitting_item(
@@ -441,7 +448,7 @@ class Agent04_DuctworkBOM:
         }
 
     @classmethod
-    def _calc_round_duct_or_fitting_item(cls, subtype, full_text, unit, w1, h1, w2, h2, d1, d2, length, angle, explicit_thk):
+    def _calc_round_duct_or_fitting_item(cls, subtype, full_text, unit, w1, h1, w2, h2, d1, d2, length, angle, explicit_thk, ei_rating=0):
         D_main = d1 if d1 > 0 else max(w1, h1, 100.0)
         D_sub = d2 if d2 > 0 else (min(w2, h2) if w2 > 0 else D_main)
         thk = cls.get_standard_thickness(max(D_main, D_sub), is_round=True, explicit_thk=explicit_thk)
@@ -461,6 +468,10 @@ class Agent04_DuctworkBOM:
             else:
                 area_val = 0.3 if s_1m < 0.3 else s_1m
                 unit_price = excel_round(aa_rate * area_val * 1.25, -3)
+            # Ống tròn bọc EI (cờ --duct-ei / BOQ ghi EI — User chốt 2026-11-14, dự án 01. Bang thong ke khoi luong):
+            # cùng cách ống vuông — cộng phụ thu EI (giá trọn gói - giá tôn 0.75) x diện tích tính giá.
+            if ei_rating > 0:
+                unit_price = excel_round(unit_price + area_val * _ei_duct_surcharge(ei_rating, is_fitting=False), -2)
             return {
                 "subtype": "SPIRAL_DUCT",
                 "model_std": f"SR-D{int(D_main)}",
@@ -469,7 +480,7 @@ class Agent04_DuctworkBOM:
                 "b1": None, "b2": None,
                 "area_m2": round(area_val, 3),
                 "unit_price": unit_price,
-                "spec_note": f"Ống gió tròn xoắn D{int(D_main)}, tôn Hoa Sen dày {thk:.2f}mm",
+                "spec_note": f"Ống gió tròn xoắn D{int(D_main)}, tôn Hoa Sen dày {thk:.2f}mm" + (f" bọc chống cháy EI{ei_rating}" if ei_rating > 0 else ""),
                 "trace": f"TINH VT PK TRON (Ống tròn xoắn D{int(D_main)}, tôn {thk}mm): S={area_val:.3f}m2, Giá={unit_price:,.0f} đ"
             }
 
@@ -559,6 +570,9 @@ class Agent04_DuctworkBOM:
             "END_CAP_RT": "Bịt đầu tròn",
         }
         model_out = rt_model_map.get(subtype, subtype)
+        if ei_rating > 0:  # Phụ kiện tròn bọc EI — như phụ kiện vuông (User chốt 2026-11-14)
+            unit_price = excel_round(unit_price + s_area * _ei_duct_surcharge(ei_rating, is_fitting=True), -2)
+            spec_label = f"{spec_label} bọc chống cháy EI{ei_rating}"
         if duct_classifier.has_mesh_on_rect(full_text):  # OG-23
             mesh_surcharge = mesh_price(D_main, D_main, "lcct")  # Gom giá 2026-11-03: LCCT trên ống/cút tính theo luoi_chan_con_trung_m2 (JSON thắng, spec mục 5) — trước: luoi_m2 150k
             unit_price += mesh_surcharge

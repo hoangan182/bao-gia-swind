@@ -163,14 +163,27 @@ def classify(item, subtype_rules, raw_search, full_search, w, h, d, ei_rating, a
 
     # VG-08: MD giữ EI BOQ ghi → bọc KSH (User chốt 2026-11-03; trước đây MD luôn EI = 0)
 
-    # VG-09: FD mặc định EI120 có bọc; FD thường chỉ khi BOQ ghi rõ (→ hỏi lại User ở Kiểm soát cuối)
+    # VG-09: FD GHI EI (Tên / Title / Ghi chú / Spec, ei_rating > 0) hoặc cột Model mã 2.01 → E-FD-EI120 có bọc;
+    # FD KHÔNG ghi EI → FD thường tôn mạ kẽm, không bọc (User chốt 2026-11-13 — đổi rule 590365b 30/10 "FD mặc định EI120").
+    # Dòng vừa ghi EI vừa ghi rõ loại thường / không bọc → mâu thuẫn: báo theo EI (có bọc) và HỎI LẠI USER ở Kiểm soát cuối.
     fd_txt_low = (raw_search + " " + full_search + " " + str(item.get("note_boq") or "")).lower()
     fd_non_ei_kw = next((k for k in R["VG-09"]["tu_khoa_fd_thuong"] if k in fd_txt_low), None) if eff_type == "FD" else None
-    is_fd_explicit_non_ei = bool(fd_non_ei_kw) and ei_rating == 0 and eff_req_code != "2.01"
+    if eff_type == "FD" and ei_rating == 0:
+        # Dòng đến từ đường khác parser (chưa có ei_rating) → đọc EI trực tiếp từ Tên / Title / Ghi chú
+        m_fd_ei = re.search(R["VG-06"]["regex_ei"], fd_txt_low)
+        if m_fd_ei:
+            ei_rating = int(m_fd_ei.group(1))
+        elif int(item.get("force_fd_ei") or 0) > 0:
+            # Cờ runner --duct-ei <N>: điều kiện dự án "toàn bộ ống chống cháy EI<N>" → FD không ghi EI cũng báo có bọc
+            # (User chốt 2026-11-14, dự án 01. Bang thong ke khoi luong). Chỉ áp khi User bật cờ, không đổi rule VG-09 mặc định.
+            ei_rating = int(item["force_fd_ei"])
+            item["ei_rating"] = ei_rating
+            trail.append("VG-09-DUCT-EI")
+    has_fd_ei = ei_rating > 0 or eff_req_code == "2.01"
     if eff_type == "FD":
-        item["fd_non_ei_keyword"] = fd_non_ei_kw if is_fd_explicit_non_ei else None
+        item["fd_non_ei_keyword"] = fd_non_ei_kw if (fd_non_ei_kw and has_fd_ei) else None
         trail.append("VG-09")
-    is_fd_ei = (eff_type == "FD") and not is_fd_explicit_non_ei
+    is_fd_ei = (eff_type == "FD") and has_fd_ei
     if is_fd_ei and d > 0:
         w = h = d
         d = 0.0
@@ -201,12 +214,22 @@ def classify(item, subtype_rules, raw_search, full_search, w, h, d, ei_rating, a
         "trail": trail,
         # Cờ dự án --md-shaft-only (User yêu cầu 2026-11-03, dự án 150-YCVT LUXQV): van MD báo trục chờ, không gồm động cơ
         "md_shaft_only": bool(item.get("md_shaft_only")),
-        # Cờ dự án --mprd-onoff (User yêu cầu 2026-11-11, KL TB+VT CT2): van xả áp dùng động cơ ON/OFF thường
-        "mprd_onoff": bool(item.get("mprd_onoff")),
+        # Động cơ tuyến tính: chỉ khi nội dung dòng ghi rõ "tuyến tính" (cờ theo dòng do runner đặt, xem is_linear_motor_text)
+        "motor_linear": bool(item.get("motor_linear")),
     }
 
 
 # ---------------------------------------------------------------- Mô-men + Model / ghi chú
+
+LINEAR_MOTOR_KEYWORDS = ("tuyến tính", "tuyen tinh", "linear")
+
+
+def is_linear_motor_text(item):
+    """Nội dung dòng (Tên, Title cha, Ghi chú, Model, Spec) ghi rõ động cơ TUYẾN TÍNH → True. Không ghi → động cơ ON/OFF thường
+    (Kỹ thuật chốt 2026-11-17, dự án 261111-BOQ C09 MEP, R21 'SAG+MD' Ghi chú 'Van MD tuyến tính')."""
+    txt = " ".join(str(item.get(k) or "") for k in ("raw_name", "name", "note_boq", "model", "aux_text")).lower()
+    return any(k in txt for k in LINEAR_MOTOR_KEYWORDS)
+
 
 def actuator_torque(brand, w_mod, h_mod, rules=None):
     """VG-11: trả (mô-men, model Honeywell hoặc None) theo kích thước 1 modul."""
@@ -263,7 +286,7 @@ def build_model_note(res, mod_cnt, is_clamped, w_mod, h_mod, is_single_blade, ru
             note = tm["HONEYWELL"].format(nm=nm, model_hw=model_hw, **v)
         else:
             nm, _ = actuator_torque("BELIMO", w_mod, h_mod, R)
-            note = tm["BELIMO"].format(nm=nm, **v)
+            note = tm["BELIMO_tuyen_tinh" if res.get("motor_linear") else "BELIMO"].format(nm=nm, **v)
         if res["ei_rating"] > 0:
             note += tm["hau_to_co_ei"]
         return tm["model"], tm["model"], note, note
@@ -272,9 +295,9 @@ def build_model_note(res, mod_cnt, is_clamped, w_mod, h_mod, is_single_blade, ru
         # Mô-men ghi chú = mô-men của động cơ đã tính giá (swind_pricing.select_actuator) — gom giá 2026-11-03:
         # MPRD hãng KLB tính giá VIWECO 10Nm, trước đây ghi chú lại theo diện tích (5/10/20Nm)
         from swind_pricing import select_actuator
-        nm = select_actuator("MPRD", motor_brand, w_mod, h_mod, mprd_onoff=bool(res.get("mprd_onoff")))[2]
+        nm = select_actuator("MPRD", motor_brand, w_mod, h_mod, linear=bool(res.get("motor_linear")))[2]
         if motor_brand == "BELIMO":
-            act_txt = tm["dong_co_belimo_onoff" if res.get("mprd_onoff") else "dong_co_belimo"].format(nm=nm)
+            act_txt = tm["dong_co_belimo" if res.get("motor_linear") else "dong_co_belimo_onoff"].format(nm=nm)
         else:
             act_txt = tm["dong_co_khac"].format(hang=tm["ten_hang"].get(motor_brand, motor_brand), nm=nm)
         note = (tm["co_ei"] if res["ei_rating"] > 0 else tm["khong_ei"]).format(act_txt=act_txt)

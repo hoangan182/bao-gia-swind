@@ -20,6 +20,7 @@ Bộ chạy: `src/damper_classifier.py` · Vai trò: `.agents/roles/damper_class
 | `VG-11` | Mô-men Belimo: cạnh modul ≥ 1000 → 10Nm (> 1.8 m² → 20Nm), còn lại 5Nm; Honeywell / KLB theo diện tích 0.8 / 1.8 m² | 4e14743 22/10; 7cdc069 02/11 | mẫu `Van MD 1000x400` → 10Nm |
 | `VG-12` | Mẫu Model + ghi chú (MFD theo mã, FD EI / thường, MD theo hãng, MPRD, NRD/PRD/OBD/VCD có / không bọc) | bd1d662; 4e14743; 7cdc069 | — |
 | `VG-13` | Parser tách van theo `+ / kèm / gắn / tích hợp / kết hợp / c/w / with` (không tách *kèm động cơ / cầu chì*); Mã SP chỉ bổ sung khi Tên chưa ghi van; `van MDF` = MFD; van chính MFSD > MFD > FD > MD > PRD > NRD > VCD | 1805d82; 4e14743; 7ebdc48 03/11 | C08 `Van FD+VCD` → FD + VCD; `Van MFD + VD` → MFD + VCD |
+| `VG-14` | NRD / PRD / VCD **có ghi EI** (Tên, Ghi chú, Model, Spec, Title cha — kể cả *Tạm tính EI30*, *GHCL EI60*) → bọc KSH 10mm; **không ghi EI → không bọc** (ngoại lệ code: Spec *SMD / không kiểm định*, cạnh ≤ 150mm, Title *cấp bù gió khi có cháy* → EI120) | User chốt 2026-11-17; hành vi có sẵn từ bd1d662 | TAHK/BVT: NRD `GHCL EI60` bọc, NRD không ghi EI không bọc. Chưa đổi code, chưa chạy lại E2E (test ở dự án sau) |
 
 ## 2. Kiểm chứng tương đương (trước khi đổi bất kỳ rule nào)
 So code cũ (worktree `f31a9d4`) — 0 lệch: 52 BOQ `input/` (9.315 dòng parser, 2.147 van), 46.575 lần gọi `resolve_item_spec` với 5 biến thể cờ, 20.000 ca van ngẫu nhiên, 100.000 ca tách combo ngẫu nhiên. Self-test 53/53, unit 33/33, E2E mặc định & `--include-duct` PASS so ảnh chụp trước khi sửa.

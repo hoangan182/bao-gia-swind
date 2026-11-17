@@ -95,15 +95,21 @@ class FireDamperRuleTest(unittest.TestCase):
         Agent01_BOQExtractor.enrich_all_items([it], get_subtype_rules())
         return it
 
-    def test_fd_without_ei_defaults_to_ei120(self):
-        for nm in ("Van chặn lửa FD 600x400", "Van chặn lửa cầu chì 600x400", "Van FD EI45 600x400"):
+    def test_fd_without_ei_is_plain(self):
+        """User chốt 2026-11-13: FD không ghi EI → FD thường không bọc; ghi EI → E-FD-EI120 có bọc (không hỏi lại)."""
+        for nm in ("Van chặn lửa FD 600x400", "Van chặn lửa cầu chì 600x400", "Van chặn lửa FD thường 600x400"):
             it = self._resolve(nm)
+            self.assertNotIn("2.01", it["resolved_spec"]["model_std"] or it["resolved_spec"]["model_fslf"], nm)
+            self.assertFalse(it.get("fd_non_ei_keyword"), nm)
+        for nm, note in (("Van FD EI45 600x400", ""), ("Van chặn lửa FD 600x400", "EI60")):
+            it = self._resolve(nm, note)
             self.assertIn("2.01", it["resolved_spec"]["model_std"] or it["resolved_spec"]["model_fslf"], nm)
-            self.assertFalse(it.get("fd_non_ei_keyword"))
+            self.assertFalse(it.get("fd_non_ei_keyword"), nm)
 
-    def test_explicit_plain_fd_is_flagged(self):
-        it = self._resolve("Van chặn lửa FD thường 600x400")
-        self.assertNotIn("2.01", it["resolved_spec"]["model_std"] or it["resolved_spec"]["model_fslf"])
+    def test_fd_ei_with_plain_keyword_is_flagged(self):
+        """Ghi EI nhưng kèm chữ 'loại thường / không bọc' → báo theo EI (có bọc) + HỎI LẠI USER."""
+        it = self._resolve("Van chặn lửa FD thường EI60 600x400")
+        self.assertIn("2.01", it["resolved_spec"]["model_std"] or it["resolved_spec"]["model_fslf"])
         self.assertEqual(it.get("fd_non_ei_keyword"), "fd thường")
         gate = evaluate_quotation_gate({}, {}, {}, [], all_items=[dict(it, source_row=7)])
         self.assertTrue(any("HỎI LẠI USER" in c for c in gate["confirm"]))

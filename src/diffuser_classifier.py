@@ -321,6 +321,9 @@ def classify(item, subtype_rules, raw_name, name, raw_search, full_search, w, h,
     if w_neck > 0 and h_neck > 0 and profile not in rules["co_explicit"]["bo_qua_profile"]:
         b1, b2 = int(w_neck), int(h_neck)
 
+    # Giới hạn kích thước theo loại cửa (diffuser_rules.json -> gioi_han_kich_thuoc): vượt → vẫn báo, ghi chú + tô vàng BG + hỏi lại
+    item["size_limit_flag"] = size_limit_flag(model, dims["a1"] or ctx.num["w"], dims["a2"] or ctx.num["h"], rules)
+
     f = ctx.flags
     return {
         "rule_id": rule["id"],
@@ -337,3 +340,21 @@ def classify(item, subtype_rules, raw_name, name, raw_search, full_search, w, h,
         "is_box_combo": f["is_box_combo"], "n_slots": ctx.num["n_slots"],
         "combined_search": combined_search,
     }
+
+
+def size_limit_flag(model, w, h, rules=None):
+    """CG-KT-xx: cửa vượt kích thước tối đa của loại (VD khuếch tán vuông SD tối đa 600x600) → chuỗi cảnh báo, không thì ''.
+    User chốt 2026-11-13 (KL Swind 1 R21 'KTM 595x1195 + OBD' khuếch tán): vẫn báo giá theo BOQ, chỉ ghi chú + hỏi lại."""
+    rules = rules or load_rules()
+    m = str(model or "").upper().replace(" ", "")
+    try:
+        w, h = float(w or 0), float(h or 0)
+    except (TypeError, ValueError):
+        return ""
+    for g in rules.get("gioi_han_kich_thuoc", []):
+        if not m.startswith(tuple(g["model_bat_dau"])) or m.startswith(tuple(g.get("model_loai_tru_bat_dau", []))):
+            continue
+        lim = sorted(g["toi_da"])
+        if w > 0 and h > 0 and (min(w, h) > lim[0] or max(w, h) > lim[1]):
+            return g["canh_bao"].format(w=int(w), h=int(h))
+    return ""
