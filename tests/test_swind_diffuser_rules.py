@@ -136,7 +136,9 @@ class DiffuserRuleTableTest(unittest.TestCase):
         item = {"category": "CUA_GIO", "raw_name": "KTM 595x1195 + OBD", "name": "KTM 595x1195 + OBD",
                 "note_boq": "Cửa gió khuếch tán", "section": "", "model": "", "w": 595, "h": 1195, "d": 0}
         Agent01_BOQExtractor.resolve_item_spec(item, get_subtype_rules(), price_map={}, idx=1)
-        self.assertIn("600x600", item.get("size_limit_flag", ""))
+        # User chốt 2026-11-18: khuếch tán chỉ 600/450/300 — 595x1195 không còn là khuếch tán → SDG, không cờ SD
+        self.assertTrue(item["resolved_spec"]["model_fslf"].startswith("SDG"), item["resolved_spec"])
+        self.assertFalse(item.get("size_limit_flag"))
 
     def test_round_louver_three_times_square(self):
         """Louver tròn D503 (User chốt 2026-11-11): phần louver = 3 x Louver vuông 503x503, LCCT giữ nguyên."""

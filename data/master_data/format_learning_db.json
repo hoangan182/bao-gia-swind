@@ -3,21 +3,6 @@
     "file_hash": "08b3696997d9",
     "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
     "company": null,
-    "format_type": "CUSTOM_FORMAT",
-    "header_row": 6,
-    "col_map": {
-      "name": 1,
-      "qty": 2,
-      "unit": 3,
-      "remarks": 4
-    },
-    "success": false,
-    "timestamp": "2026-10-26T15:35:09.624294"
-  },
-  {
-    "file_hash": "08b3696997d9",
-    "filename": "EZLAND_KL MIỆNG GIÓ.UP.xlsx",
-    "company": null,
     "format_type": "SEMI_STANDARD",
     "header_row": 6,
     "col_map": {
@@ -1692,5 +1677,22 @@
     },
     "success": true,
     "timestamp": "2026-11-12T15:50:28.660388"
+  },
+  {
+    "file_hash": "a9258602ace6",
+    "filename": "261111-BOQ C09 MEP.xlsx",
+    "company": null,
+    "format_type": "CUSTOM_FORMAT",
+    "header_row": 4,
+    "col_map": {
+      "stt": 1,
+      "unit": 3,
+      "spec": 5,
+      "brand": 6,
+      "name": 2,
+      "qty": 4
+    },
+    "success": true,
+    "timestamp": "2026-11-17T15:16:27.150251"
   }
 ]

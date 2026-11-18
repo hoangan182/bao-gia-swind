@@ -1107,7 +1107,7 @@
     },
     {
       "co": "is_diffuser_sq",
-      "mo_ta": "Cửa khuếch tán (vuông/tròn). Thông số ghi 'lá KTC' (TPL: Miệng gió 1 lớp lá KTC) = cửa NAN THẲNG, thắng chữ 'khuếch tán' (User chốt 2026-11-13, KL Swind 1 R20/R21 'KTM 595x595 / 595x1195 + OBD' — Spec 'Cửa gió khuếch tán ... lá KTC' → SDG+O)",
+      "mo_ta": "Cửa khuếch tán (vuông/tròn) — CHỈ 3 cỡ cố định mặt vuông 600x600 / 450x450 / 300x300 (595/445/295 = KTM ghi hụt 5mm) hoặc tròn; cỡ khác KHÔNG báo khuếch tán, rơi về nan thẳng SDG (User chốt 2026-11-18, thay CG-KT-01 'vượt 600 vẫn báo SD'). Thông số ghi 'lá KTC' (TPL: Miệng gió 1 lớp lá KTC) = cửa NAN THẲNG, thắng chữ 'khuếch tán' (User chốt 2026-11-13, KL Swind 1 R20/R21 'KTM 595x595 / 595x1195 + OBD' — Spec 'Cửa gió khuếch tán ... lá KTC' → SDG+O)",
       "dieu_kien": {
         "tat_ca": [
           {
@@ -1119,6 +1119,17 @@
           "!is_slot_sld",
           "!is_standalone_lcct",
           "!is_standalone_filter",
+          {
+            "mot_trong": [
+              {"tu_khoa": ["round", "tròn", "srd"], "trong": "combined_search"},
+              {
+                "tat_ca": [
+                  {"so_sanh": ["w", "==", "h"]},
+                  {"thuoc": ["w", [600, 595, 450, 445, 300, 295]]}
+                ]
+              }
+            ]
+          },
           {
             "mot_trong": [
               {
@@ -2439,7 +2450,7 @@
               }
             ]
           },
-          "profile": "SLB"
+          "profile": "BD"
         },
         {
           "khi": {
@@ -2463,6 +2474,15 @@
               "lá ktc"
             ],
             "trong": "combined_search"
+          },
+          "profile": "BD"
+        },
+        {
+          "khi": {
+            "tat_ca": [
+              {"tu_khoa": ["khuếch tán", "scd", "sad", "diffuser"], "trong": "blade_search"},
+              {"khong": "is_round_diff"}
+            ]
           },
           "profile": "BD"
         },
@@ -2807,7 +2827,7 @@
             1000,
             400
           ],
-          "model": "SLB+O",
+          "model": "SDG+O",
           "b": [
             950,
             350
@@ -2879,7 +2899,7 @@
   "gioi_han_kich_thuoc": [
     {
       "id": "CG-KT-01_KHUECH_TAN_TOI_DA_600",
-      "mo_ta": "Cửa khuếch tán vuông (Model SD...) kích thước mặt tối đa 600x600: vượt → VẪN báo giá theo BOQ, ghi chú + tô vàng Sheet BG + HỎI LẠI USER ở Kiểm soát cuối",
+      "mo_ta": "[ĐÃ THAY 2026-11-18: cỡ ngoài 600/450/300 không còn ra Model SD nên cờ này không còn kích hoạt — giữ làm lưới an toàn] Cửa khuếch tán vuông (Model SD...) kích thước mặt tối đa 600x600: vượt → VẪN báo giá theo BOQ, ghi chú + tô vàng Sheet BG + HỎI LẠI USER ở Kiểm soát cuối",
       "nguon": "User chốt 2026-11-13 (KL Swind 1 R21 'KTM 595x1195 + OBD' — Spec 'Cửa gió khuếch tán')",
       "model_bat_dau": ["SD"],
       "model_loai_tru_bat_dau": ["SDG"],

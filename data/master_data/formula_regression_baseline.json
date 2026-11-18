@@ -803,8 +803,8 @@
     "input_text": "Cửa gió Linear SLB 1000x150",
     "unit": "cái",
     "category": "CUA_GIO",
-    "subtype": "SLB",
-    "model_std": "SLB",
+    "subtype": "BD",
+    "model_std": "SDG",
     "a1": 1000,
     "a2": 150,
     "b1": 950,
@@ -813,7 +813,7 @@
     "l_col": null,
     "thk_col": null,
     "area_m2": 0.0,
-    "sell_unit_price": 187000
+    "sell_unit_price": 152000
   },
   {
     "input_text": "Cửa kiểm tra ống gió 400x300",

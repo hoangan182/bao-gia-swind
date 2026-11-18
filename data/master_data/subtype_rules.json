@@ -22,7 +22,7 @@
         {"keywords": ["khuếch tán", "sad", "ead", "scd", "skd", "4 hướng"], "subtype": "T"},
         {"keywords": ["louver", "luover", "louvre", "fal", "eal", "oal", "wl", "swl", "chớp", "lam", "ngoài trời", "nan z"], "subtype": "Z"},
         {"keywords": ["khe", "slot", "sld", "lsd"], "subtype": "SLD"},
-        {"keywords": ["linear", "slb", "nan t ", "nan t-", "khe dài", "tuyến tính"], "subtype": "SLB"},
+        {"keywords": ["linear", "slb", "nan t ", "nan t-", "khe dài", "tuyến tính"], "subtype": "BD"},
         {"keywords": ["bầu dục", "nan thẳng", "seag", "seg", "oag", "mag", "pag", "sag", "dag", "srg", "sdg", "obd", "eag"], "subtype": "BD"}
     ],
     "ONG_GIO": [
