@@ -105,6 +105,17 @@
       "agent01"
      ],
      "nguon": "2026-11-13 (NBT-BG DA luxora-Đầm vạc-Vĩnh Yên R1886 'Cửa gió dạng khuyếch tán kt 600x600 + OBD' ra SDG+O nan bầu dục thay vì khuếch tán) — 'khuyếch' là biến thể viết sai phổ biến của 'khuếch'"
+    },
+    {
+     "mau": "\\b1\\.115mm\\b",
+     "thay": "1.15mm",
+     "pham_vi": [
+      "ten",
+      "title",
+      "full",
+      "agent01"
+     ],
+     "nguon": "User chốt 2026-11-19, GMS TASEOC DBTSCO-1.OGIO (Côn thu 'dày 1.115mm' = 1.15mm)"
     }
    ],
    "vi_du_dung": [

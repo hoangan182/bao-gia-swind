@@ -205,6 +205,9 @@ def classify(item, subtype_rules, raw_search, full_search, w, h, d, ei_rating, a
         eff_model_code = eff_req_code or ("1.03" if is_klb_req else ("1.04" if is_honeywell_req else belimo_mfd_def))
     if eff_type in ("MFD", "MSFD", "MFSD"):
         trail.append("VG-10")
+        # Honeywell 1.04: ghi chú đang ghi ON-OFF + lò xo phản hồi 20s (User chốt 2026-11-19) nhưng chưa xác nhận hết -> hỏi lại ở Kiểm soát cuối
+        if eff_model_code == "1.04":
+            item["rule_alert"] = {"id": "VG-12-HW", "text": "van MFD Honeywell 1.04: ghi chú ghi động cơ ON-OFF 9Nm, lò xo phản hồi 20s (xác nhận Honeywell là ON/OFF)"}
 
     return {
         "damper_type": damper_type, "eff_type": eff_type, "eff_model_code": eff_model_code,

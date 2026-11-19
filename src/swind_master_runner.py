@@ -1342,7 +1342,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
     return coverage
 
 
-def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None, neck_size=False, motor_price=None, mprd_motor_price=None, include_flex_duct=False, spec_priority="name", include_box=False, strict=False, include_duct=False, include_canvas=False, md_shaft_only=False, mprd_onoff=False, duct_ei=0, fire_duct_only=False, duct_straight_only=False, skip_fire_duct=False):
+def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None, neck_size=False, motor_price=None, mprd_motor_price=None, include_flex_duct=False, spec_priority="name", include_box=False, strict=False, include_duct=False, include_canvas=False, md_shaft_only=False, mprd_onoff=False, duct_ei=0, fire_duct_only=False, duct_straight_only=False, skip_fire_duct=False, duct_uplift=0.0, duct_coating="", duct_ei_note="", duct_only=False):
     """
     Hàm điều phối Quy trình B: Nhận file BOQ khách hàng -> Phân tích & Áp giá từ Master Data có sẵn (Agent 01 -> Agent 08).
     """
@@ -1456,6 +1456,20 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
                 it["ei_rating"] = int(duct_ei)
             elif it.get("category") == "VAN_GIO":
                 it["force_fd_ei"] = int(duct_ei)
+        if it.get("category") == "ONG_GIO" and duct_ei_note:
+            # --duct-ei-note "30=<ghi chú>|45,60=<ghi chú>": ghi chú cấu tạo ống gió theo cấp EI (User chốt 2026-11-19, GMS TASEOC)
+            _notes = {}
+            for _part in str(duct_ei_note).split("|"):
+                if "=" in _part:
+                    _k, _v = _part.split("=", 1)
+                    for _r in _k.split(","):
+                        if _r.strip().isdigit():
+                            _notes[int(_r)] = _v.strip()
+            it["duct_ei_notes"] = _notes
+        if it.get("category") == "ONG_GIO" and (duct_uplift or duct_coating):
+            # --duct-uplift / --duct-coating (User chốt 2026-11-19, GMS TASEOC): cộng % vào đơn giá ống + ghi chú tôn Z18
+            it["duct_uplift_pct"] = float(duct_uplift or 0.0)
+            it["duct_coating"] = str(duct_coating or "")
         r_ov = (row_overrides or {}).get((it.get("source_sheet"), it.get("source_row")))
         if r_ov is None and n_src_sheets <= 1:
             r_ov = (row_overrides or {}).get(it.get("source_row"))
@@ -1500,6 +1514,41 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
             _kept.append(it)
         all_items = _kept
         print(f"\n  -> [--skip-fire-duct] Bỏ {_n_skip} dòng Ống gió & phụ kiện thuộc mục ống CHỐNG CHÁY; giữ ống thường.")
+    if duct_only and not only_cua_van:
+        # --duct-only (User chốt 2026-11-19): chỉ báo Ống gió & phụ kiện ống (ONG_GIO); bỏ cửa / van / tiêu âm / canvas / ống mềm / hàng TM,
+        # và dòng ống kèm LCCT / lọc G4 / sản phẩm Swind khác (không báo cả phần ống lẫn phần LCCT).
+        # Chỉ bỏ dòng ống kèm LCCT / lọc G4. Không bỏ dòng ghi "cửa gió" (VD Hộp gió cho cửa gió) vì đó là phụ kiện ống.
+        _part, _ask = split_duct_rows_with_swind_products(all_items)
+        _drop = {id(x) for x in _part}
+        # Chốt chặn theo LOẠI ống do Agent 04 xác định (không chỉ theo nhóm ONG_GIO): chỉ giữ ống gió & phụ kiện ống.
+        _NON_DUCT_SUBTYPES = {"CANVAS_SQ", "CANVAS_RT", "FLEX_DUCT", "VENTCAP", "SILENCER_SQ", "SILENCER_RT"}
+        _drop_sub = {}
+        for _it in all_items:
+            if _it.get("category") != "ONG_GIO" or id(_it) in _drop:
+                continue
+            try:
+                _sub = str(Agent04_DuctworkBOM._calculate_duct_item_base(_it).get("subtype") or "")
+            except Exception:
+                _sub = ""
+            _it["_duct_only_subtype"] = _sub
+            if _sub in _NON_DUCT_SUBTYPES:
+                _drop.add(id(_it))
+                _drop_sub[_sub] = _drop_sub.get(_sub, 0) + 1
+        if _drop_sub:
+            print("  -> [--duct-only] Bỏ dòng không phải ống gió / phụ kiện ống (theo loại Agent 04): " + ", ".join(f"{k} x{v}" for k, v in _drop_sub.items()))
+        _n_before = len(all_items)
+        all_items = [it for it in all_items if it.get("category") == "ONG_GIO" and id(it) not in _drop]
+        print(f"\n  -> [--duct-only] Chỉ báo Ống gió & phụ kiện: giữ {len(all_items)}/{_n_before} dòng; bỏ {len(_drop)} dòng ống kèm LCCT / lọc G4"
+              + "; bỏ cửa / van / tiêu âm / canvas / ống mềm / hàng thương mại.")
+        _cnt = {}
+        for _it in all_items:
+            _k = _it.get("_duct_only_subtype") or "?"
+            _cnt[_k] = _cnt.get(_k, 0) + 1
+        print("  -> [--duct-only] Loại dòng được báo: " + ", ".join(f"{k} x{v}" for k, v in sorted(_cnt.items())))
+        if not all_items:
+            print("\n⛔ [--duct-only] BOQ không có dòng Ống gió & phụ kiện nào để báo.\n")
+            return {"project_name": project_name, "project_dir": project_dir, "final_file": "",
+                    "gate": {"blocking": ["--duct-only: BOQ không có dòng ống gió & phụ kiện"], "confirm": [], "unpriced_rows": 0}}
     if only_cua_van:
         print("\n" + "=" * 75)
         print("🎯 ÁP DỤNG RULE: CHỈ BÁO GIÁ CỬA GIÓ & VAN GIÓ (KHÔNG BÁO ỐNG GIÓ & HÀNG THƯƠNG MẠI)")
@@ -2061,6 +2110,10 @@ def main():
     parser.add_argument("--fire-duct-only", action="store_true", help="Chỉ báo Ống gió & phụ kiện thuộc mục '+ Đường ống gió ... chống cháy' của BOQ, bỏ ống thường (không cần --include-duct). Kèm --duct-ei N để báo bọc EI<N>")
     parser.add_argument("--skip-fire-duct", action="store_true", help="Dùng với --include-duct: bỏ Ống gió & phụ kiện thuộc mục '+ Đường ống gió ... chống cháy', chỉ báo ống thường")
     parser.add_argument("--duct-straight-only", action="store_true", help="Dùng với --fire-duct-only: chỉ báo ống gió thẳng, bỏ phụ kiện ống (cút, côn, chân rẽ, chạc, Z, hộp...)")
+    parser.add_argument("--duct-uplift", type=float, default=0.0, help="Điều kiện dự án: cộng thêm N%% vào đơn giá Ống gió & phụ kiện ống (VD 7). Dùng kèm --include-duct")
+    parser.add_argument("--duct-only", action="store_true", help="Chỉ báo Ống gió & phụ kiện ống (tự bật --include-duct): bỏ cửa / van / tiêu âm / canvas / ống mềm / hàng thương mại và dòng ống kèm LCCT / lọc G4")
+    parser.add_argument("--duct-ei-note", type=str, default="", help="Ghi chú cấu tạo ống gió theo cấp EI, dạng '30=<ghi chú>|45,60=<ghi chú>' (nối vào ghi chú dòng ống bọc EI tương ứng)")
+    parser.add_argument("--duct-coating", type=str, default="", help="Ghi chú lớp mạ tôn nối vào ghi chú ống gió (VD Z18 -> ', tôn Z18')")
     parser.add_argument("--duct-ei", type=int, default=0, help="Điều kiện dự án: toàn bộ Ống gió & phụ kiện ống bọc chống cháy EI<N> (VD 60) và van FD báo có bọc. Dùng kèm --include-duct")
     parser.add_argument("--strict", action="store_true", help="Không xuất file báo giá nếu còn lỗi chặn (dòng có KL chưa có giá, QA_REJECTED...)")
 
@@ -2150,14 +2203,18 @@ def main():
         spec_priority=args.spec_priority,
         include_box=args.include_box,
         strict=args.strict,
-        include_duct=args.include_duct or args.duct_formula != "mpq",
+        include_duct=args.include_duct or args.duct_formula != "mpq" or args.duct_only,
         include_canvas=args.include_canvas,
         md_shaft_only=args.md_shaft_only,
         mprd_onoff=args.mprd_onoff,
         duct_ei=args.duct_ei,
         fire_duct_only=args.fire_duct_only,
         duct_straight_only=args.duct_straight_only,
-        skip_fire_duct=args.skip_fire_duct
+        skip_fire_duct=args.skip_fire_duct,
+        duct_uplift=args.duct_uplift,
+        duct_coating=args.duct_coating,
+        duct_ei_note=args.duct_ei_note,
+        duct_only=args.duct_only
     )
     if args.duct_formula != "mpq" and not args.include_duct:
         print(f"  [Lưu ý] --duct-formula {args.duct_formula} -> tự động bật --include-duct (báo giá ống gió).")

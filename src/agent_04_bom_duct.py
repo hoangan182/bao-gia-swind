@@ -151,6 +151,36 @@ class Agent04_DuctworkBOM:
     @classmethod
     def calculate_duct_item(cls, item):
         """
+        Điều kiện dự án (User chốt 2026-11-19, GMS TASEOC): item['duct_uplift_pct'] = % cộng thêm vào đơn giá ống gió & phụ kiện
+        (cờ --duct-uplift), item['duct_coating'] = ghi chú lớp mạ (cờ --duct-coating, VD Z18) nối vào ghi chú dòng.
+        """
+        calc = cls._calculate_duct_item_base(item)
+        pct = float(item.get("duct_uplift_pct") or 0.0)
+        coating = str(item.get("duct_coating") or "").strip()
+        if (pct or coating) and isinstance(calc, dict):
+            calc = dict(calc)
+            if pct and float(calc.get("unit_price") or 0.0) > 0:
+                base = float(calc["unit_price"])
+                calc["unit_price"] = excel_round(base * (1.0 + pct / 100.0), -2)
+                calc["trace"] = f"{calc.get('trace', '')} | +{pct:g}% đơn giá ống ({base:,.0f}->{calc['unit_price']:,.0f})".strip(" |")
+            if coating:
+                calc["spec_note"] = f"{calc.get('spec_note', '')}, tôn {coating}".strip(", ")
+        # item['duct_ei_notes'] = {30: 'Cấu tạo ...', 45: ..., 60: ...} (cờ --duct-ei-note): ghi chú cấu tạo theo cấp EI của dòng
+        # Mặc định lấy bảng pricing_constants.json -> ong.ghi_chu_cau_tao_ei (User chốt 2026-11-19); chỉ áp cho dòng ống gió & phụ kiện (không áp tiêu âm / canvas).
+        ei_notes = item.get("duct_ei_notes")
+        if ei_notes is None and item.get("category") in (None, "ONG_GIO"):
+            _cfg = (get_pricing_constants().get("ong") or {}).get("ghi_chu_cau_tao_ei") or {}
+            ei_notes = {int(k): v for k, v in _cfg.items() if str(k).isdigit() and isinstance(v, str)}
+        if ei_notes and isinstance(calc, dict) and not str(calc.get("subtype") or "").startswith(("SILENCER", "CANVAS")):
+            m_ei = re.search(r"EI\s*(\d+)", str(calc.get("spec_note") or ""))
+            if m_ei and int(m_ei.group(1)) in ei_notes:
+                calc = dict(calc)
+                calc["spec_note"] = f"{calc.get('spec_note', '')}. {ei_notes[int(m_ei.group(1))]}"
+        return calc
+
+    @classmethod
+    def _calculate_duct_item_base(cls, item):
+        """
         Tính toán đầy đủ diện tích S (m2), độ dày tôn (mm), đơn giá bán (VNĐ) và giải trình công thức
         cho một hạng mục thuộc nhóm ONG_GIO, TIEU_AM, CANVAS, ONG_MEM.
         """
@@ -463,10 +493,10 @@ class Agent04_DuctworkBOM:
                 unit_price = excel_round(cls.THS_RATES.get(thk, 193294.0), -2)
             elif unit in ("cái", "ống", "đoạn", "bộ", "pcs", "ea") and length > 0:
                 s_raw_sp = s_1m * (length / 1000.0)
-                area_val = 0.3 if s_raw_sp < 0.3 else s_raw_sp
+                area_val = MIN_AREA if s_raw_sp < MIN_AREA else s_raw_sp
                 unit_price = excel_round(aa_rate * area_val * 1.25, -3)
             else:
-                area_val = 0.3 if s_1m < 0.3 else s_1m
+                area_val = MIN_AREA if s_1m < MIN_AREA else s_1m
                 unit_price = excel_round(aa_rate * area_val * 1.25, -3)
             # Ống tròn bọc EI (cờ --duct-ei / BOQ ghi EI — User chốt 2026-11-14, dự án 01. Bang thong ke khoi luong):
             # cùng cách ống vuông — cộng phụ thu EI (giá trọn gói - giá tôn 0.75) x diện tích tính giá.
@@ -485,30 +515,30 @@ class Agent04_DuctworkBOM:
             }
 
         elif subtype == "COUPLING_RT":
-            s_area = max((3.14 * D_main * 0.10) / 1000.0, 0.3) if ((3.14 * D_main * 0.10) / 1000.0) < 0.3 else (3.14 * D_main * 0.10) / 1000.0
+            s_area = max((3.14 * D_main * 0.10) / 1000.0, MIN_AREA) if ((3.14 * D_main * 0.10) / 1000.0) < MIN_AREA else (3.14 * D_main * 0.10) / 1000.0
             unit_price = excel_round(pkths * s_area * 1.4, -3)
             spec_label = f"Măng xông ống tròn D{int(D_main)}"
             l_out = 100
         elif subtype == "ELBOW_RT":
             s_90 = (3.14 * D_main * (1.57 * 1.2 * D_main + 100.0) * 1.3) / 1e6
-            s_90_eff = 0.3 if s_90 < 0.3 else s_90
+            s_90_eff = MIN_AREA if s_90 < MIN_AREA else s_90
             p_90 = excel_round(s_90_eff * pkths * 1.3, -3)
             if angle == 60:
                 s_area = s_90 * (2.0 / 3.0)
-                if s_area < 0.3:
-                    s_area = 0.3
+                if s_area < MIN_AREA:
+                    s_area = MIN_AREA
                     unit_price = excel_round(s_area * pkths * 1.3, -2)
                 else:
                     unit_price = excel_round(p_90 * (2.0 * 1.1 / 3.0), -2)
             elif angle == 45:
                 s_area = (3.14 * D_main * (0.785 * 1.2 * D_main + 100.0) * 1.3) / 1e6
-                if s_area < 0.3:
-                    s_area = 0.3
+                if s_area < MIN_AREA:
+                    s_area = MIN_AREA
                 unit_price = excel_round(s_area * pkths * 1.4, -3)
             elif angle == 30:
                 s_area = s_90 / 3.0
-                if s_area < 0.3:
-                    s_area = 0.3
+                if s_area < MIN_AREA:
+                    s_area = MIN_AREA
                     unit_price = excel_round(s_area * pkths * 1.3, -2)
                 else:
                     unit_price = excel_round(p_90 * (1.1 / 3.0), -2)
@@ -520,8 +550,8 @@ class Agent04_DuctworkBOM:
         elif subtype == "REDUCER_RT":
             L_red = length if length > 0 else 200.0
             s_area = (3.14 * max(D_main, D_sub) * (L_red + 80.0)) / 1e6
-            if s_area < 0.3:
-                s_area = 0.3
+            if s_area < MIN_AREA:
+                s_area = MIN_AREA
             unit_price = excel_round(s_area * pkths * 1.4, -3)
             spec_label = f"Côn thu tròn D{int(D_main)}/D{int(D_sub)}"
             l_out = int(L_red)
@@ -531,8 +561,8 @@ class Agent04_DuctworkBOM:
             s_1 = (3.14 * D_main * L_body * 1.2) / 1e6
             s_2 = (3.14 * D_sub * L_branch * 1.2) / 1e6
             s_area = s_1 + s_2
-            if s_area < 0.3:
-                s_area = 0.3
+            if s_area < MIN_AREA:
+                s_area = MIN_AREA
             unit_price = excel_round(s_area * pkths * 1.35, -3)
             spec_label = f"Tê tròn D{int(D_main)}/D{int(D_sub)}"
             l_out = int(L_body)
@@ -540,22 +570,22 @@ class Agent04_DuctworkBOM:
             s_1 = (3.14 * D_main * (D_main + 200.0) * 1.2) / 1e6
             s_2 = (3.14 * D_sub * 250.0 * 1.5) / 1e6
             s_area = s_1 + s_2
-            if s_area < 0.3:
-                s_area = 0.3
+            if s_area < MIN_AREA:
+                s_area = MIN_AREA
             unit_price = excel_round(s_area * pkths * 1.4, -3)
             spec_label = f"Chạc Y tròn D{int(D_main)}/D{int(D_sub)}"
             l_out = None
         elif subtype == "TAKEOFF_RT":
             s_area = (3.14 * D_main * 200.0) / 1e6
-            if s_area < 0.3:
-                s_area = 0.3
+            if s_area < MIN_AREA:
+                s_area = MIN_AREA
             unit_price = excel_round(s_area * pkths * 1.5, -3)
             spec_label = f"Chân rẽ tròn (Cổ trích) D{int(D_main)}"
             l_out = 200
         else:
             s_area = (3.14 * D_main * 50.0 + 3.14 * ((D_main / 2.0) ** 2)) / 1e6
-            if s_area < 0.3:
-                s_area = 0.3
+            if s_area < MIN_AREA:
+                s_area = MIN_AREA
             unit_price = excel_round(s_area * pkths * 1.3, -3)
             spec_label = f"Bịt đầu ống tròn D{int(D_main)}"
             l_out = 50
@@ -598,7 +628,7 @@ class Agent04_DuctworkBOM:
         L_val = length if length > 0 else default_l
         l_out = int(L_val)
         s_raw = ((w1 + h1) * 2.0 * L_val) / 1e6
-        s_area = 0.3 if (s_raw < 0.3 and unit not in ("m", "md", "mét", "m2", "m²")) else s_raw
+        s_area = MIN_AREA if (s_raw < MIN_AREA and unit not in ("m", "md", "mét", "m2", "m²")) else s_raw
         short_factor = 1.05 if (0.0 < L_val < std_l and unit not in ("m", "md", "mét", "m2", "m²")) else 1.0
         if unit in ("m2", "m²"):
             price_nep_c = excel_round(vhs, -2)
@@ -612,7 +642,7 @@ class Agent04_DuctworkBOM:
             ei_surcharge = _ei_duct_surcharge(ei_rating, is_fitting=False)
             unit_price = excel_round(s_area * ei_surcharge + unit_price, -2)
         spec_label = f"Ống gió vuông {int(w1)}x{int(h1)}xL{int(L_val)}"
-        s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if (s_raw < 0.3 and unit not in ("m", "md", "mét", "m2", "m²")) else f"{s_area:.3f}m2"
+        s_note = f"{s_raw:.3f}->{MIN_AREA:.3f}m2 (quy <{MIN_AREA:g})" if (s_raw < MIN_AREA and unit not in ("m", "md", "mét", "m2", "m²")) else f"{s_area:.3f}m2"
         trace_str = f"BG PKV (Ống vuông {int(w1)}x{int(h1)} L={int(L_val)}, tôn {thk}mm, {flange_type}): S={s_note}, vhs={vhs:,.0f}" + (f" x1.05 (ống ngắn <{int(std_l)})" if short_factor > 1.0 else f" (nguyên khổ L{int(std_l)})")
         return None, None, l_out, s_area, unit_price, spec_label, trace_str
 
@@ -632,7 +662,7 @@ class Agent04_DuctworkBOM:
             s_2 = ((h1 + H2_val + 120.0) * (L_val + 90.0)) / 1e6
             s_raw = s_1 + s_2
             trace_prefix = "BG PKV"
-        s_area = 0.3 if s_raw < 0.3 else s_raw
+        s_area = MIN_AREA if s_raw < MIN_AREA else s_raw
         price_nep_c = excel_round(s_area * pkvhs, -2)
         price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_md", 16000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
@@ -640,7 +670,7 @@ class Agent04_DuctworkBOM:
             ei_surcharge = _ei_duct_surcharge(ei_rating, is_fitting=True)
             unit_price = excel_round(s_area * ei_surcharge + unit_price, -2)
         spec_label = f"Côn vuông {int(w1)}x{int(h1)}/{int(W2_val)}x{int(H2_val)} L={int(L_val)}"
-        s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
+        s_note = f"{s_raw:.3f}->{MIN_AREA:.3f}m2 (quy <{MIN_AREA:g})" if s_raw < MIN_AREA else f"{s_area:.3f}m2"
         trace_str = f"{trace_prefix} (Côn vuông, tôn {thk}mm, {flange_type}): S={s_note}, pkvhs={pkvhs:,.0f}"
         return b1_out, b2_out, l_out, s_area, unit_price, spec_label, trace_str
 
@@ -661,7 +691,7 @@ class Agent04_DuctworkBOM:
             s_2 = ((h1 + H2_val + 120.0) * (L_val + 70.0)) / 1e6
             s_raw = s_1 + s_2
             trace_prefix = "BG PKV"
-        s_area = 0.3 if s_raw < 0.3 else s_raw
+        s_area = MIN_AREA if s_raw < MIN_AREA else s_raw
         price_nep_c = excel_round(s_area * pkvhs, -2)
         price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_md", 16000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
@@ -669,7 +699,7 @@ class Agent04_DuctworkBOM:
             ei_surcharge = _ei_duct_surcharge(ei_rating, is_fitting=True)
             unit_price = excel_round(s_area * ei_surcharge + unit_price, -2)
         spec_label = f"Chân rẽ vuông (SU) {int(w1)}x{int(h1)}/{int(W2_val)}x{int(H2_val)} L={int(L_val)}"
-        s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
+        s_note = f"{s_raw:.3f}->{MIN_AREA:.3f}m2 (quy <{MIN_AREA:g})" if s_raw < MIN_AREA else f"{s_area:.3f}m2"
         trace_str = f"{trace_prefix} (Chân rẽ SU, tôn {thk}mm, {flange_type}): S={s_note}, pkvhs={pkvhs:,.0f}"
         return b1_out, b2_out, l_out, s_area, unit_price, spec_label, trace_str
 
@@ -689,12 +719,12 @@ class Agent04_DuctworkBOM:
             s_2 = ((max(h1, D_val) + 120.0) * (L_val + 95.0)) / 1e6
             s_raw = (s_1 + s_2) * 1.2
             trace_prefix = "BG PKV"
-        s_area = 0.3 if s_raw < 0.3 else s_raw
+        s_area = MIN_AREA if s_raw < MIN_AREA else s_raw
         price_nep_c = excel_round(s_area * pkths, -2)
         price_tdc = price_nep_c + 8000.0
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
         spec_label = f"Côn thu vuông tròn {int(w1)}x{int(h1)}/Ø{int(D_val)} L={int(L_val)}"
-        s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
+        s_note = f"{s_raw:.3f}->{MIN_AREA:.3f}m2 (quy <{MIN_AREA:g})" if s_raw < MIN_AREA else f"{s_area:.3f}m2"
         trace_str = f"{trace_prefix} (Côn thu vuông tròn, tôn {thk}mm, {flange_type}): S={s_note}, pkths={pkths:,.0f}"
         return b1_out, b2_out, l_out, s_area, unit_price, spec_label, trace_str
 
@@ -730,7 +760,7 @@ class Agent04_DuctworkBOM:
             s_90 = s_1 + s_2 + s_3 + s_4
             s_raw = s_90 * factor
             trace_prefix = "BG PKV"
-        s_area = 0.3 if s_raw < 0.3 else s_raw
+        s_area = MIN_AREA if s_raw < MIN_AREA else s_raw
         price_nep_c = excel_round(s_area * pkvhs, -2)
         price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_md", 16000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
@@ -738,7 +768,7 @@ class Agent04_DuctworkBOM:
             ei_surcharge = _ei_duct_surcharge(ei_rating, is_fitting=True)
             unit_price = excel_round(s_area * ei_surcharge + unit_price, -2)
         spec_label = f"Cút vuông {angle}° {int(w1)}x{int(h1)} (R={int(R_val)})"
-        s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
+        s_note = f"{s_raw:.3f}->{MIN_AREA:.3f}m2 (quy <{MIN_AREA:g})" if s_raw < MIN_AREA else f"{s_area:.3f}m2"
         trace_str = f"{trace_prefix} (Cút vuông {angle}°, tôn {thk}mm, {flange_type}): S={s_note}, pkvhs={pkvhs:,.0f}"
         return b1_out, b2_out, l_out, s_area, unit_price, spec_label, trace_str
 
@@ -760,12 +790,12 @@ class Agent04_DuctworkBOM:
             s_2 = (h1 * L_val * 2.0) / 1e6
             s_raw = (s_1 + s_2) * 1.35
             trace_prefix = "BG PKV"
-        s_area = 0.3 if s_raw < 0.3 else s_raw
+        s_area = MIN_AREA if s_raw < MIN_AREA else s_raw
         price_nep_c = excel_round(s_area * pkvhs, -2)
         price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_md", 16000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
         spec_label = f"Zét lượn {int(w1)}x{int(h1)} L={int(L_val)} E={int(H_off)}"
-        s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
+        s_note = f"{s_raw:.3f}->{MIN_AREA:.3f}m2 (quy <{MIN_AREA:g})" if s_raw < MIN_AREA else f"{s_area:.3f}m2"
         trace_str = f"{trace_prefix} (Zét lượn, tôn {thk}mm, {flange_type}): S={s_note}, pkvhs={pkvhs:,.0f}"
         return b1_out, b2_out, l_out, s_area, unit_price, spec_label, trace_str
 
@@ -778,12 +808,12 @@ class Agent04_DuctworkBOM:
         s_2 = (((3.14 * R_val + 90.0) / 4.0) * (h1 + 20.0) * 2.0) / 1e6
         s_3 = (((3.14 * (w1 + R_val) + 90.0) / 4.0) * (h1 + 20.0) * 2.0) / 1e6
         s_raw = s_1 + s_2 + s_3
-        s_area = 0.3 if s_raw < 0.3 else s_raw
+        s_area = MIN_AREA if s_raw < MIN_AREA else s_raw
         price_nep_c = excel_round(s_area * pkvhs, -2)
         price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_lon_md", 24000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
         spec_label = f"Chạc 3 (Y vuông) {int(w1)}x{int(h1)}/{int(W2_val)}x{int(h1)}"
-        s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
+        s_note = f"{s_raw:.3f}->{MIN_AREA:.3f}m2 (quy <{MIN_AREA:g})" if s_raw < MIN_AREA else f"{s_area:.3f}m2"
         trace_str = f"BG PKV (Chạc 3 Y, tôn {thk}mm, {flange_type}): S={s_note}, pkvhs={pkvhs:,.0f}, +24,000 TDC"
         return b1_out, b2_out, l_out, s_area, unit_price, spec_label, trace_str
 
@@ -797,12 +827,12 @@ class Agent04_DuctworkBOM:
         s_1 = (((w1 + h1) * 2.0 + 43.0) * (L1_val + 90.0)) / 1e6
         s_2 = (((W2_val + H2_val) * 2.0 + 43.0) * (L2_val + 45.0)) / 1e6
         s_raw = s_1 + s_2
-        s_area = 0.3 if s_raw < 0.3 else s_raw
+        s_area = MIN_AREA if s_raw < MIN_AREA else s_raw
         price_nep_c = excel_round(s_area * pkvhs, -2)
         price_tdc = price_nep_c + K("ong.phu_thu_bich_tdc_lon_md", 24000.0)
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
         spec_label = f"Tê vuông {int(w1)}x{int(h1)}/{int(W2_val)}x{int(H2_val)}"
-        s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
+        s_note = f"{s_raw:.3f}->{MIN_AREA:.3f}m2 (quy <{MIN_AREA:g})" if s_raw < MIN_AREA else f"{s_area:.3f}m2"
         trace_str = f"BG PKV (Tê vuông, tôn {thk}mm, {flange_type}): S={s_note}, pkvhs={pkvhs:,.0f}, +24,000 TDC"
         return b1_out, b2_out, l_out, s_area, unit_price, spec_label, trace_str
 
@@ -820,12 +850,12 @@ class Agent04_DuctworkBOM:
             s_2 = (w1 * h1) / 1e6
             s_raw = s_1 + s_2
             trace_prefix = "BG PKV"
-        s_area = 0.3 if s_raw < 0.3 else s_raw
+        s_area = MIN_AREA if s_raw < MIN_AREA else s_raw
         price_nep_c = excel_round(s_area * pkvhs, -2)
         price_tdc = price_nep_c + 8000.0
         unit_price = price_nep_c if flange_type == "NEP_C" else price_tdc
         spec_label = f"Bịt đầu ống gió {int(w1)}x{int(h1)}"
-        s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
+        s_note = f"{s_raw:.3f}->{MIN_AREA:.3f}m2 (quy <{MIN_AREA:g})" if s_raw < MIN_AREA else f"{s_area:.3f}m2"
         trace_str = f"{trace_prefix} (Bịt đầu, tôn {thk}mm, {flange_type}): S={s_note}, pkvhs={pkvhs:,.0f}"
         return None, None, l_out, s_area, unit_price, spec_label, trace_str
 
@@ -880,13 +910,13 @@ class Agent04_DuctworkBOM:
         s_body = (((w1 + h1) * 2.0 * (43.0 + L_val)) + (w1 * h1)) / 1e6
         s_neck = (D_neck * 3.14 * 0.07 * n_necks) / 1000.0
         s_raw = s_body + s_neck
-        s_area = 0.3 if s_raw < 0.3 else s_raw
+        s_area = MIN_AREA if s_raw < MIN_AREA else s_raw
         box_rate = cls.PKVHS_RATES.get(thk, 189000.0)
         unit_price = excel_round(box_rate * s_area, -2)
         if is_insulated:
             unit_price = excel_round(unit_price + s_area * K("ong.hop_gio.bao_on_m2", 130000.0), -2)
         spec_label = f"Hộp gió {int(w1)}x{int(h1)}xL{int(L_val)}" + (f" ({n_necks} cổ D{int(D_neck)})" if n_necks > 0 else "")
-        s_note = f"{s_raw:.3f}->0.300m2 (quy <0.3)" if s_raw < 0.3 else f"{s_area:.3f}m2"
+        s_note = f"{s_raw:.3f}->{MIN_AREA:.3f}m2 (quy <{MIN_AREA:g})" if s_raw < MIN_AREA else f"{s_area:.3f}m2"
         trace_str = f"BG PKV (Hộp gió, tôn {thk}mm): S={s_note}, pkvhs={box_rate:,.0f}"
         return b1_out, b2_out, l_out, s_area, unit_price, spec_label, trace_str
 
@@ -1212,5 +1242,8 @@ def _apply_rate_table_overrides():
 
 
 _apply_rate_table_overrides()
+
+# Diện tích tối thiểu tính giá phụ kiện ống (m2): nhỏ hơn quy lên mức này. User chốt 2026-11-19 (đổi 0.3 -> 0.5, dự án GMS TASEOC).
+MIN_AREA = K("ong.dien_tich_toi_thieu", 0.5)
 
 Agent04_DuctBOM = Agent04_DuctworkBOM

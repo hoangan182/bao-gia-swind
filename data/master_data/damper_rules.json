@@ -630,11 +630,11 @@
     "1.03": {
      "model": "SWIND-1.03-MFD-EI90",
      "louver_doi_model": false,
-     "ghi_chu": "- Van ngăn cháy động cơ - Tiêu chuẩn EI 90\n- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 5Nm, Hãng KLB, lò xo phản hồi 15s\n- Sản xuất theo BCTN số 4651/VLXD-TBMT{mod_txt}{clamp_txt}{lv_txt}"
+     "ghi_chu": "- Van ngăn cháy động cơ - Tiêu chuẩn EI 90\n- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 5Nm, Hãng KLB, lò xo phản hồi 20s\n- Sản xuất theo BCTN số 4651/VLXD-TBMT{mod_txt}{clamp_txt}{lv_txt}"
     },
     "1.04": {
      "model": "SWIND-1.04-MFD-EI60",
-     "ghi_chu": "- Van động cơ MFD - Tiêu chuẩn EI 60\n- 2 đầu bích TDC - HoneyWell, 9Nm, 230V - Model: MS4609F1010/B\n- Sản xuất theo BCTN số 1515/VLXD-TBMT{mod_hw_txt}{clamp_txt}{lv_txt}"
+     "ghi_chu": "- Van động cơ MFD - Tiêu chuẩn EI 60\n- 2 đầu bích TDC - HoneyWell, ON-OFF 9Nm, 230V - Model: MS4609F1010/B, lò xo phản hồi 20s\n- Sản xuất theo BCTN số 1515/VLXD-TBMT{mod_hw_txt}{clamp_txt}{lv_txt}"
     },
     "1.01": {
      "model": "SWIND-1.01-MFD-EI120",
@@ -642,7 +642,7 @@
     },
     "1.05": {
      "model": "SWIND-1.05-MFD-EI120",
-     "ghi_chu": "- Van động cơ SWIND-MFD - Tiêu chuẩn EI 120\n- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 9Nm, 24V BELIMO - Model: BFN 24, lò xo phản hồi 15s\n- Sản xuất theo BCTN số 2390/VLXD-TBMT{mod_txt}{clamp_txt}{lv_txt}"
+     "ghi_chu": "- Van động cơ SWIND-MFD - Tiêu chuẩn EI 120\n- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 9Nm, 24V BELIMO - Model: BFN 24, lò xo phản hồi 20s\n- Sản xuất theo BCTN số 2390/VLXD-TBMT{mod_txt}{clamp_txt}{lv_txt}"
     },
     "*": {
      "model": "SWIND-1.02-MFD-EI90",
@@ -650,7 +650,7 @@
     },
     "_phuong_an_da_canh": {
      "model": "SWIND-1.05-MFD-EI120",
-     "ghi_chu": "- Van động cơ SWIND-MFD - Tiêu chuẩn EI 120\n- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 9Nm, 24V BELIMO - Model: BFN 24, lò xo phản hồi 15s\n- Sản xuất theo BCTN số 2390/VLXD-TBMT\n- {canh}{mod_txt}{clamp_txt}{lv_txt}"
+     "ghi_chu": "- Van động cơ SWIND-MFD - Tiêu chuẩn EI 120\n- 2 đầu bích TDC - Gắn kèm động cơ ON-OFF 9Nm, 24V BELIMO - Model: BFN 24, lò xo phản hồi 20s\n- Sản xuất theo BCTN số 2390/VLXD-TBMT\n- {canh}{mod_txt}{clamp_txt}{lv_txt}"
     }
    },
    "fd_ei": {
