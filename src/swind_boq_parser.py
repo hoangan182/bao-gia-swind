@@ -365,7 +365,7 @@ class SwindBOQParser:
                 elif is_standalone_coarse_filter(name_lower):
                     # Lọc thô G4 đứng riêng (có kích thước) -> Swind sản xuất: báo giá theo công thức FILTER_G4 (Agent 06)
                     category = "CUA_GIO"
-                elif scope_filter.is_commercial_by_name(name_lower) or scope_filter.is_fan_connection_transition(str(raw_name_str).lower()):
+                elif scope_filter.is_commercial_by_name(name_lower) or scope_filter.is_fan_connection_transition(str(raw_name_str).lower()) or scope_filter.is_duct_insulation(name_lower):
                     # PV-02: thiết bị / phụ trợ / giá đỡ (kể cả 'Lắp đặt giá đỡ ...') -> thương mại, không kế thừa nhóm từ Title
                     category = "THUONG_MAI"
                 else:
@@ -383,7 +383,9 @@ class SwindBOQParser:
                 if category == "KHAC" and name_lower.startswith(("box ", "hộp ", "hôp ")) and not name_lower.startswith(("hộp và cửa", "hộp + cửa", "hộp kèm cửa", "box và cửa", "box + cửa", "hộp quạt", "hộp điện", "hộp nối", "hộp cứu hỏa", "hộp chữa cháy")) and "tiêu âm" not in name_lower:
                     category = "ONG_GIO"
                 if category == "KHAC" and not is_plumbing_item and "tiêu âm" not in name_lower and name_lower.startswith(("cút ", "co ", "chếch ", "côn ", "tê ", "chạc ", "chân rẽ", "gót giày", "cổ trích", "bịt đầu", "bịt ống", "nắp bịt", "măng xông", "măng sông", "nối ống", "zét ", "ống lượn")):
-                    if re.search(r'\b(?:[dD][nN]?|Ø|phi\s*)\d{2,4}\b|\b\d{2,4}\s*[xX*]\s*\d{2,4}\b', name_str, re.IGNORECASE):
+                    # '(?:\s*mm)?': 'Cút 45º ống gió D450mm, R250 ... Kèm lưới chắn côn trùng' (D450mm không có \b sau số) bị từ khóa LCCT kéo thành
+                    # CUA_GIO/LCCT, mất phần cút — User chốt 2026-11-20, dự án tien luong moi thau V1_18t11 R470 (báo cút tròn kèm lưới)
+                    if re.search(r'\b(?:[dD][nN]?|Ø|phi\s*)\d{2,4}(?:\s*mm)?\b|\b\d{2,4}\s*[xX*]\s*\d{2,4}\b', name_str, re.IGNORECASE):
                         category = "ONG_GIO"
                 # Ống thẳng / Ống bịt / Z đứng-ngang có ký hiệu xen giữa (VD: 'Ống EI60 KT 500x400', 'Ống EAD KT 250x100', 'Ống bịt: 550x300, L100', 'Z đứng EI60 KT 500x1200')
                 # -> ONG_GIO trước khi Title cha (VD: 'Quạt tăng áp ...') kéo sang THUONG_MAI
@@ -495,9 +497,12 @@ class SwindBOQParser:
                     category = "ONG_GIO"
                 
             # Trích xuất kích thước: Ưu tiên tìm trên tên sản phẩm + model trước khi mở rộng sang cột Ghi chú BOQ
-            primary_search_text = f"{raw_name_str} {model_str}".strip().replace('×', 'x').replace('，', ',').replace('：', ':')
+            # '250mm x 250mm' (đơn vị mm sau số thứ nhất): bỏ 'mm' đứng giữa 2 số để regex <W>x<H> đọc được kích thước
+            # (User chốt 2026-11-20, tien luong moi thau V1_18t11 R472/R487 'Miệng gió thải EAG 250mm x 250mm + OBD')
+            _mm_x_rx = r'(\d)\s*mm\s*([xX*])\s*(?=\d)'
+            primary_search_text = re.sub(_mm_x_rx, r'\1 \2 ', f"{raw_name_str} {model_str}".strip().replace('×', 'x').replace('，', ',').replace('：', ':'), flags=re.IGNORECASE)
             primary_clean_text = re.sub(r'\b\d+(?:[.,]\d+)?\s*(?:kW|W|HP|l/s|m3/h|Pa|V|Hz|dB|A)\b', ' ', primary_search_text, flags=re.IGNORECASE)
-            dim_search_text = f"{name_str} {model_str} {note_boq}".strip().replace('×', 'x').replace('，', ',').replace('：', ':')
+            dim_search_text = re.sub(_mm_x_rx, r'\1 \2 ', f"{name_str} {model_str} {note_boq}".strip().replace('×', 'x').replace('，', ',').replace('：', ':'), flags=re.IGNORECASE)
             # Loại bỏ các thông số công suất/lưu lượng/áp suất để tránh bắt nhầm
             dim_clean_text = re.sub(r'\b\d+(?:[.,]\d+)?\s*(?:kW|W|HP|l/s|m3/h|Pa|V|Hz|dB|A)\b', ' ', dim_search_text, flags=re.IGNORECASE)
             d_val = 0.0

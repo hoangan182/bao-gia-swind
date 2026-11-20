@@ -5,7 +5,7 @@
   {
    "id": "PV-01_ONG_NUOC_PCCC_DIEN",
    "ten": "Hệ ống nước / chữa cháy / ống đồng / cáp điện / bộ nguồn van / van nước DN → THUONG_MAI (không báo)",
-   "nguon": "bd1d662 20/10; cáp điện + van nước DN 1e5672d 29/10; bộ nguồn van 7cdc069 02/11 (User chốt, AGENTS.md 3c); thoát sàn / phễu thu 2026-11-13 (dự án NBT-BG DA luxora-Đầm vạc-Vĩnh Yên R2532 'Thoát sàn FD-DN100' bị nhận nhầm van FD EI120)",
+   "nguon": "bd1d662 20/10; cáp điện + van nước DN 1e5672d 29/10; bộ nguồn van 7cdc069 02/11 (User chốt, AGENTS.md 3c); thoát sàn / phễu thu 2026-11-13 (dự án NBT-BG DA luxora-Đầm vạc-Vĩnh Yên R2532 'Thoát sàn FD-DN100' bị nhận nhầm van FD EI120); Co 90 DN<n> (tiền tố 'co ' + DN bất kỳ) 2026-11-20 — User chốt, dự án tien luong moi thau V1_18t11 R343-345 'Co 90 DN150/DN100/DN50' (Hệ thống bù nước tháp giải nhiệt) bị tính thành cút gió tròn; 2026-11-20 User chốt (tien luong moi thau V1_18t11 R361-371 mục 'Van xả đáy' 2.30, con 2.31-2.39: Van bi xả đáy DN25, Đồng hồ áp suất, Đồng hồ đo nước DN150/DN100, Mặt bích DN150/100/80 — Đồng hồ đo nước và Mặt bích bị tính thành VCD): đọc NỘI DUNG dòng (không đọc Title cha, vì Title cha bỏ sót khi dòng con lệch) -> Tên bắt đầu 'đồng hồ' / 'mặt bích' / 'van phao' / 'van ... xả đáy' = hàng ống nước, không báo",
    "ly_do": "Không thuộc sản phẩm Swind. Van giảm áp / xả áp có kích thước AxB hoặc chữ tôn / EI / động cơ là van gió (không phải van nước).",
    "tu_khoa_ong_nuoc": [
     "thép hàn",
@@ -55,7 +55,8 @@
     "van điện từ",
     "van cửa thân gang",
     "thoát sàn",
-    "phễu thu"
+    "phễu thu",
+    "xả đáy"
    ],
    "tu_khoa_van_gio": [
     "vcd",
@@ -127,9 +128,10 @@
     "măng sông",
     "rắc co",
     "bích thép",
-    "nút bịt"
+    "nút bịt",
+    "co "
    ],
-   "regex_phu_kien_ong_nuoc": "\\b(?:[dD][nN]?\\s*(?:15|20|21|25|27|32|34|40|42|48|50|60|65|75|80|90|110|114|140|160|168|219)|PN\\s*\\d+|SCH\\s*\\d+)\\b",
+   "regex_phu_kien_ong_nuoc": "\\b(?:[dD][nN]?\\s*(?:15|20|21|25|27|32|34|40|42|48|50|60|65|75|80|90|110|114|140|160|168|219)|PN\\s*\\d+|SCH\\s*\\d+)\\b|\\bDN\\s*\\d{2,3}\\b",
    "tru_phu_kien_ong_nuoc": [
     "ống gió",
     "tôn",
@@ -159,13 +161,53 @@
     {
      "ten": "Thoát sàn FD-DN100",
      "ket_qua": true
+    },
+    {
+     "ten": "Co 90 DN150",
+     "ket_qua": true
+    },
+    {
+     "ten": "Co 90 ống gió 600x300",
+     "ket_qua": false
+    },
+    {
+     "ten": "Đồng hồ đo nước DN150",
+     "ket_qua": true
+    },
+    {
+     "ten": "Đồng hồ áp suất",
+     "ket_qua": true
+    },
+    {
+     "ten": "Mặt bích DN100",
+     "ket_qua": true
+    },
+    {
+     "ten": "Van bi xả đáy DN25",
+     "ket_qua": true
+    },
+    {
+     "ten": "Mặt bích ống gió TDC 600x400",
+     "ket_qua": false
+    },
+    {
+     "ten": "Van chặn lửa FD 600x400 2 đầu mặt bích",
+     "ket_qua": false
     }
+   ],
+   "bat_dau_hang_ong_nuoc": [
+    "đồng hồ",
+    "mặt bích",
+    "van phao",
+    "van xả đáy",
+    "van bi xả đáy",
+    "van cổng xả đáy"
    ]
   },
   {
    "id": "PV-02_THUONG_MAI_THEO_TEN",
    "ten": "Tên bắt đầu bằng thiết bị / phụ trợ (quạt, máy lạnh, tủ điện, cảm biến, giá đỡ...) → THUONG_MAI",
-   "nguon": "bd1d662 20/10; dde7498 28/10; giá đỡ / quang treo kể cả tiền tố 'lắp đặt' User chốt 2026-11-03 (việc C2, TAHK R66); thang cáp / máng cáp / vỏ tủ / hộp kiểm tra tiếp địa-điện trở 2026-11-13 (NBT-BG DA luxora: hàng điện có KT + chữ tôn bị nhận thành ống gió khi --include-duct)",
+   "nguon": "bd1d662 20/10; dde7498 28/10; giá đỡ / quang treo kể cả tiền tố 'lắp đặt' User chốt 2026-11-03 (việc C2, TAHK R66); thang cáp / máng cáp / vỏ tủ / hộp kiểm tra tiếp địa-điện trở 2026-11-13 (NBT-BG DA luxora: hàng điện có KT + chữ tôn bị nhận thành ống gió khi --include-duct); Outdoor / Indoor Unit, Package Unit (thiết bị điều hòa đặt phòng máy) 2026-11-20 — User chốt, tien luong moi thau V1_18t11 R73-81 'Outdoor/ Indoor Unit Phòng Chiller / Phòng nguồn MEC / Phòng máy biến áp (Package Unit Floor Standing)' bị tô vàng 'không ghi đủ kích thước': là thiết bị điều hòa cho phòng máy, không thuộc Swind -> không báo",
    "ly_do": "Loại hàng chính dòng tự ghi thắng Title cha (AGENTS.md 1a).",
    "regex_gia_do": "^(?:lắp\\s*đặt\\s+|gia\\s*công\\s+)?(?:giá\\s*đỡ|giá\\s*treo|quang\\s*treo|ty\\s*treo)\\b",
    "bat_dau": [
@@ -202,7 +244,11 @@
     "hộp kiểm tra tiếp địa",
     "hộp kiểm tra điện trở",
     "điều hòa cục bộ",
-    "+ điều hòa cục bộ"
+    "+ điều hòa cục bộ",
+    "outdoor/",
+    "outdoor unit",
+    "indoor unit",
+    "package unit"
    ],
    "vi_du": [
     {
@@ -219,6 +265,18 @@
     },
     {
      "ten": "Cửa gió 600x300",
+     "ket_qua": false
+    },
+    {
+     "ten": "Outdoor/ Indoor Unit Phòng Chiller (Package Unit Floor Standing)",
+     "ket_qua": true
+    },
+    {
+     "ten": "Package Unit phòng máy biến áp",
+     "ket_qua": true
+    },
+    {
+     "ten": "Cửa gió phòng máy 600x300",
      "ket_qua": false
     }
    ]
@@ -424,7 +482,7 @@
   {
    "id": "PV-11_QUET_DO_PHU",
    "ten": "Full-BOQ Coverage Audit: dòng bị lọc có KL mà tên thuộc phạm vi Swind → ⚠️ cần xác nhận; dòng có KL/kích thước parser không đọc → ⚠️ sót dòng",
-   "nguon": "bd1d662 20/10; tiền tố ngoài phạm vi dde7498 28/10; 'ống tole / ống tôn' vào tiền tố ống gió (User duyệt 2026-11-03, CAND R253 'Ống tole tráng kẽm dày 0.6mm D150')",
+   "nguon": "bd1d662 20/10; tiền tố ngoài phạm vi dde7498 28/10; 'ống tole / ống tôn' vào tiền tố ống gió (User duyệt 2026-11-03, CAND R253 'Ống tole tráng kẽm dày 0.6mm D150'); 2026-11-20 User chốt (tien luong moi thau V1_18t11 R471 'Ống gió mềm D150mm'): ống gió mềm ngoài phạm vi Swind -> không tô vàng / không hỏi xác nhận (vẫn báo được khi có --include-flex-duct hoặc giữ giá đối tác, rule PV-04)",
    "ly_do": "AGENTS.md quy tắc 2 (zero-omission).",
    "tu_khoa_pham_vi": [
     "cửa gió",
@@ -480,7 +538,9 @@
     "fcu",
     "nhân công",
     "bảo ôn",
-    "cách nhiệt"
+    "cách nhiệt",
+    "ống gió mềm",
+    "ống mềm"
    ],
    "tien_to_ngoai_pham_vi": [
     "giá treo",
@@ -588,7 +648,7 @@
     }
    ],
    "khong_phai_hang_swind_sot_dong": {
-    "nguon": "User duyệt 2026-11-03 (đợt kiểm bất biến E2E): ống gas / PVC / PPR / uPVC, bảo ôn, đường link URL không phải hàng Swind → không cảnh báo SÓT DÒNG. LCCT KHÔNG được đưa vào (mặt hàng có báo giá). Bổ sung (User duyệt 2026-11-03, PLH Gói 1): ống inox, Y lọc, bích rỗng / bích đặc (KHÔNG dùng chữ 'bích' đứng riêng — van/cửa gió có '2 đầu bích TDC'), nắp thăm, rọ hút (crefin), mối nối mềm DN (nước), ký hiệu ống giảm nước 'D200/90'. 'Măng xông D90' (đường kính 2 chữ số / DN = phụ kiện nước, PLH Gói 1) — User chốt 2026-11-03.",
+    "nguon": "User duyệt 2026-11-03 (đợt kiểm bất biến E2E): ống gas / PVC / PPR / uPVC, bảo ôn, đường link URL không phải hàng Swind → không cảnh báo SÓT DÒNG. LCCT KHÔNG được đưa vào (mặt hàng có báo giá). Bổ sung (User duyệt 2026-11-03, PLH Gói 1): ống inox, Y lọc, bích rỗng / bích đặc (KHÔNG dùng chữ 'bích' đứng riêng — van/cửa gió có '2 đầu bích TDC'), nắp thăm, rọ hút (crefin), mối nối mềm DN (nước), ký hiệu ống giảm nước 'D200/90'. 'Măng xông D90' (đường kính 2 chữ số / DN = phụ kiện nước, PLH Gói 1) — User chốt 2026-11-03.; 2026-11-20 User chốt (dự án tien luong moi thau V1_18t11_HỆ HVAC, ~70 dòng Van bướm / Van cổng / Van cân bằng / Van bypass / Van bi / Van điện / Van 1 chiều DN-PN, Lọc Y, Van phao, Van xả đáy bị tô vàng '⚠️ CHƯA BÁO GIÁ ... OUT_OF_SCOPE_THUONG_MAI'): hàng ống nước, không thuộc phạm vi Swind -> không báo, KHÔNG tô vàng / không hỏi xác nhận. Dòng 'Van ... DN|PN <số>' = van đường ống nước (van gió Swind ghi kích thước AxB, không ghi DN/PN)",
     "tu_khoa": [
      "ống gas",
      "ống ga ",
@@ -619,7 +679,10 @@
      "bích đặc",
      "nắp thăm",
      "rọ hút",
-     "crefin"
+     "crefin",
+     "xả đáy",
+     "lọc y",
+     "van phao"
     ],
     "vi_du": [
      {
@@ -697,12 +760,45 @@
      {
       "ten": "Măng xông D200",
       "ket_qua": false
+     },
+     {
+      "ten": "Van bướm tay quay PN16 DN250",
+      "ket_qua": true
+     },
+     {
+      "ten": "Van điện ON/OFF DN250",
+      "ket_qua": true
+     },
+     {
+      "ten": "Van cổng xả đáy PN16 DN20",
+      "ket_qua": true
+     },
+     {
+      "ten": "Van bi xả đáy DN25",
+      "ket_qua": true
+     },
+     {
+      "ten": "Lọc Y DN150",
+      "ket_qua": true
+     },
+     {
+      "ten": "Van phao điện báo mức",
+      "ket_qua": true
+     },
+     {
+      "ten": "Van chặn lửa FD 600x400",
+      "ket_qua": false
+     },
+     {
+      "ten": "Van MFD 250x250",
+      "ket_qua": false
      }
     ],
     "regex": [
      "mối\\s*nối\\s*mềm\\s*dn\\s*\\d",
      "^\\s*d\\d{2,3}\\s*/\\s*\\d{2,3}\\b",
-     "m[ăa]ng\\s*x[ôo]ng\\s*(?:dn\\s*\\d+|d\\s*\\d{2}\\b)"
+     "m[ăa]ng\\s*x[ôo]ng\\s*(?:dn\\s*\\d+|d\\s*\\d{2}\\b)",
+     "^\\s*van\\b.*\\b(?:dn|pn)\\s*\\d"
     ]
    },
    "dong_tieu_de_khong_kl_dvt": {
@@ -842,6 +938,35 @@
     },
     {
      "ten": "quạt hướng trục 600x400",
+     "ket_qua": false
+    }
+   ]
+  },
+  {
+   "id": "PV-17_CACH_NHIET_ONG_GIO",
+   "ten": "Dòng Tên bắt đầu 'Cách nhiệt / Bảo ôn ống gió ...' (vật liệu cách nhiệt, đơn vị m²) → THUONG_MAI, không báo giá",
+   "nguon": "2026-11-20, User chốt (dự án tien luong moi thau V1_18t11_HỆ HVAC, R438 / R450 / R530 'Cách nhiệt ống gió dày 25mm', 'Cách nhiệt ống gió loại có nhôm dày 25mm'): bỏ không báo, đã bị tính nhầm như ống tôn 0.58mm",
+   "ly_do": "Cách nhiệt / bảo ôn là vật tư thương mại, không phải ống gió tôn Swind. Chỉ áp khi Tên bắt đầu bằng cụm này; 'Ống gió ... kèm cách nhiệt' (ống / phụ kiện có kèm bảo ôn) vẫn là ống gió.",
+   "regex": "^\\s*(?:cách\\s*nhiệt|bảo\\s*ôn)\\s+ống\\s*gió",
+   "vi_du": [
+    {
+     "ten": "cách nhiệt ống gió dày 25mm",
+     "ket_qua": true
+    },
+    {
+     "ten": "cách nhiệt ống gió loại có nhôm dày 25mm",
+     "ket_qua": true
+    },
+    {
+     "ten": "bảo ôn ống gió",
+     "ket_qua": true
+    },
+    {
+     "ten": "cút hướng gió bằng tôn mạ kẽm dày 1.15mm, kèm cách nhiệt dày 25mm",
+     "ket_qua": false
+    },
+    {
+     "ten": "ống gió 400x400 kèm cách nhiệt",
      "ket_qua": false
     }
    ]

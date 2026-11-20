@@ -54,6 +54,10 @@ def is_non_swind_system_item(name_lower, full_name_lower, sec_lower, name_str, f
         if re.search(r["regex_phu_kien_ong_nuoc"], name_str, re.IGNORECASE):
             if not any(dk in name_lower for dk in r["tru_phu_kien_ong_nuoc"]):
                 hit = True
+    if not hit and name_lower.startswith(tuple(r.get("bat_dau_hang_ong_nuoc", ()))):
+        # Đồng hồ (áp suất / đo nước), mặt bích, van phao, van xả đáy: đọc nội dung dòng, không phụ thuộc Title cha
+        if not any(dk in name_lower for dk in r["tru_phu_kien_ong_nuoc"]):
+            hit = True
     return hit
 
 
@@ -90,6 +94,11 @@ def is_glued_damper_code(name_lower, rules=None):
 def is_fan_connection_transition(name_lower, rules=None):
     """PV-16: Tên chỉ '<W>x<H>/Quạt' (chuyển tiết diện nối miệng quạt, thiếu đường kính) → không báo (User chốt 2026-11-17)."""
     return bool(re.search((rules or load_rules())["PV-16"]["regex"], name_lower))
+
+
+def is_duct_insulation(name_lower, rules=None):
+    """PV-17: Tên bắt đầu 'Cách nhiệt / Bảo ôn ống gió ...' → vật tư cách nhiệt, không báo (User chốt 2026-11-20)."""
+    return bool(re.search((rules or load_rules())["PV-17"]["regex"], name_lower))
 
 
 def is_non_swind_omission(row_txt, rules=None):

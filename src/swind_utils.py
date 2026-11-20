@@ -692,7 +692,9 @@ def extract_duct_fitting_geometry(text, default_w=0.0, default_h=0.0, default_d=
         radius = float(m_rad.group(1))
 
     # 4. Tìm góc cút / chếch (90, 60, 45, 30)
-    m_ang = re.search(r'\b(90|60|45|30)\s*(?:độ|o|°|deg)?\b', s_lower)
+    # 'º' (U+00BA, dấu thứ tự) là chữ cái trong Unicode nên '45º' không có \b sau số -> trước đây bị bỏ qua, cút 45º tính như 90°
+    # (User chốt 2026-11-20, tien luong moi thau V1_18t11 R470 'Cút 45º ống gió D450mm')
+    m_ang = re.search(r'\b(90|60|45|30)\s*(?:độ|o|°|º|deg)?(?![0-9a-zA-Z])', s_lower)
     if m_ang:
         angle = int(m_ang.group(1))
     elif "chếch" in s_lower or "chech" in s_lower or "lơi" in s_lower:

@@ -100,6 +100,10 @@ class ScopeRuleTableTest(unittest.TestCase):
         for v in self.R["PV-16"]["vi_du"]:
             self.assertEqual(sf.is_fan_connection_transition(v["ten"]), v["ket_qua"], v["ten"])
 
+    def test_pv17_duct_insulation(self):
+        for v in self.R["PV-17"]["vi_du"]:
+            self.assertEqual(sf.is_duct_insulation(v["ten"]), v["ket_qua"], v["ten"])
+
     def test_pv15_glued_damper_code(self):
         for ex in self.R["PV-15"]["vi_du"]:
             with self.subTest(ten=ex["ten"]):

@@ -5,6 +5,9 @@ from swind_utils import detect_boq_header, get_quotation_profile, vat_label
 import typo_normalizer
 from agent_03_input_auditor import odd_size_flag, boq_size
 
+# Thương hiệu tôn ghi đè cho ghi chú vật liệu cuối BG (cờ --duct-steel-brand của runner); rỗng = mặc định financial_policy.json
+STEEL_BRAND_OVERRIDE = ""
+
 class SwindExcelBuilder:
     """
     Trình khởi tạo và xuất Workbook Dự Toán Swind (Excel-First Architecture).
@@ -802,6 +805,8 @@ class SwindExcelBuilder:
             r_f = r_tot + 2
             qp = get_quotation_profile()
             mat_notes = (list(qp.get("material_notes", [])) + ["", ""])[:2]
+            if STEEL_BRAND_OVERRIDE:  # --duct-steel-brand: 'Tôn Hoa Sen' -> thương hiệu dự án (User chốt 2026-11-20)
+                mat_notes = [str(n).replace("Hoa Sen", STEEL_BRAND_OVERRIDE) for n in mat_notes]
             benef = (list(qp.get("beneficiary_lines", [])) + ["", "", "", ""])[:4]
             ws.cell(r_f, 2, "- Ghi chú : ").font = note_hdr_font
             ws.cell(r_f + 1, 2, qp.get("validity_note", "")).font = note_txt_font

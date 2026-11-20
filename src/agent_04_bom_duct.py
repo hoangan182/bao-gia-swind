@@ -157,6 +157,10 @@ class Agent04_DuctworkBOM:
         calc = cls._calculate_duct_item_base(item)
         pct = float(item.get("duct_uplift_pct") or 0.0)
         coating = str(item.get("duct_coating") or "").strip()
+        brand = str(item.get("duct_steel_brand") or "").strip()
+        if brand and isinstance(calc, dict):
+            calc = dict(calc)
+            calc["spec_note"] = str(calc.get("spec_note") or "").replace("Hoa Sen", brand)
         if (pct or coating) and isinstance(calc, dict):
             calc = dict(calc)
             if pct and float(calc.get("unit_price") or 0.0) > 0:

@@ -1265,7 +1265,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
             elif info.get("reason") == "MISSING_DIMS" and not is_non_product and not is_lump_sum:
                 missing_dims.append(desc)
                 flag_rows[r] = "⚠️ KHÔNG BÁO GIÁ: BOQ không ghi đủ kích thước (thiếu cạnh / chỉ ghi D cho hàng chữ nhật / mã ký hiệu S2, R3... — gửi kích thước để báo)"
-            elif not is_non_product and is_swind_product_name(nm_l, scope_kws) and not any(k in nm_l for k in SWIND_NON_SCOPE_KWS):
+            elif not is_non_product and is_swind_product_name(nm_l, scope_kws) and not any(k in nm_l for k in SWIND_NON_SCOPE_KWS) and not scope_filter.is_non_swind_omission(nm_l):  # PV-11: van / lọc Y ống nước DN-PN không thuộc Swind (User chốt 2026-11-20)
                 skipped_in_scope.append(f"{desc} | Lý do lọc={info.get('reason')}")
                 flag_rows[r] = f"⚠️ CHƯA BÁO GIÁ: dòng thuộc phạm vi Swind bị lọc ({info.get('reason')}) — cần xác nhận"
             else:
@@ -1342,7 +1342,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
     return coverage
 
 
-def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None, neck_size=False, motor_price=None, mprd_motor_price=None, include_flex_duct=False, spec_priority="name", include_box=False, strict=False, include_duct=False, include_canvas=False, md_shaft_only=False, mprd_onoff=False, duct_ei=0, fire_duct_only=False, duct_straight_only=False, skip_fire_duct=False, duct_uplift=0.0, duct_coating="", duct_ei_note="", duct_only=False):
+def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None, neck_size=False, motor_price=None, mprd_motor_price=None, include_flex_duct=False, spec_priority="name", include_box=False, strict=False, include_duct=False, include_canvas=False, md_shaft_only=False, mprd_onoff=False, duct_ei=0, fire_duct_only=False, duct_straight_only=False, skip_fire_duct=False, duct_uplift=0.0, duct_coating="", duct_ei_note="", duct_only=False, duct_steel_brand=""):
     """
     Hàm điều phối Quy trình B: Nhận file BOQ khách hàng -> Phân tích & Áp giá từ Master Data có sẵn (Agent 01 -> Agent 08).
     """
@@ -1466,6 +1466,9 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
                         if _r.strip().isdigit():
                             _notes[int(_r)] = _v.strip()
             it["duct_ei_notes"] = _notes
+        if it.get("category") in ("ONG_GIO", "TIEU_AM") and duct_steel_brand:
+            # --duct-steel-brand "Hòa Phát": ghi chú ống / tiêu âm ghi 'tôn Hòa Phát' thay 'tôn Hoa Sen' (User chốt 2026-11-20, tien luong moi thau V1_18t11)
+            it["duct_steel_brand"] = str(duct_steel_brand)
         if it.get("category") == "ONG_GIO" and (duct_uplift or duct_coating):
             # --duct-uplift / --duct-coating (User chốt 2026-11-19, GMS TASEOC): cộng % vào đơn giá ống + ghi chú tôn Z18
             it["duct_uplift_pct"] = float(duct_uplift or 0.0)
@@ -1646,6 +1649,8 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     # BƯỚC 3: NẠP MASTER DATA & THỰC HIỆN DỰ TOÁN THEO RULE
     # -------------------------------------------------------------
     tech_records, price_records, acc_rules, subtype_rules, fin_policy = load_master_data()
+    import swind_excel_builder as _seb
+    _seb.STEEL_BRAND_OVERRIDE = str(duct_steel_brand or "")
     if motor_price is not None and float(motor_price) > 0:
         mp_val = float(motor_price)
         mb_up = str(motor_brand or "").strip().upper()
@@ -2113,6 +2118,7 @@ def main():
     parser.add_argument("--duct-uplift", type=float, default=0.0, help="Điều kiện dự án: cộng thêm N%% vào đơn giá Ống gió & phụ kiện ống (VD 7). Dùng kèm --include-duct")
     parser.add_argument("--duct-only", action="store_true", help="Chỉ báo Ống gió & phụ kiện ống (tự bật --include-duct): bỏ cửa / van / tiêu âm / canvas / ống mềm / hàng thương mại và dòng ống kèm LCCT / lọc G4")
     parser.add_argument("--duct-ei-note", type=str, default="", help="Ghi chú cấu tạo ống gió theo cấp EI, dạng '30=<ghi chú>|45,60=<ghi chú>' (nối vào ghi chú dòng ống bọc EI tương ứng)")
+    parser.add_argument("--duct-steel-brand", type=str, default="", help="Thương hiệu tôn ghi trong ghi chú ống gió / tiêu âm thay cho 'Hoa Sen' (VD 'Hòa Phát'); không đổi giá")
     parser.add_argument("--duct-coating", type=str, default="", help="Ghi chú lớp mạ tôn nối vào ghi chú ống gió (VD Z18 -> ', tôn Z18')")
     parser.add_argument("--duct-ei", type=int, default=0, help="Điều kiện dự án: toàn bộ Ống gió & phụ kiện ống bọc chống cháy EI<N> (VD 60) và van FD báo có bọc. Dùng kèm --include-duct")
     parser.add_argument("--strict", action="store_true", help="Không xuất file báo giá nếu còn lỗi chặn (dòng có KL chưa có giá, QA_REJECTED...)")
@@ -2214,7 +2220,8 @@ def main():
         duct_uplift=args.duct_uplift,
         duct_coating=args.duct_coating,
         duct_ei_note=args.duct_ei_note,
-        duct_only=args.duct_only
+        duct_only=args.duct_only,
+        duct_steel_brand=args.duct_steel_brand
     )
     if args.duct_formula != "mpq" and not args.include_duct:
         print(f"  [Lưu ý] --duct-formula {args.duct_formula} -> tự động bật --include-duct (báo giá ống gió).")
