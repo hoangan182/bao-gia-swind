@@ -9,7 +9,7 @@ from copy import copy
 from datetime import datetime
 import openpyxl
 from openpyxl.cell.cell import MergedCell
-from swind_utils import vietnamese_slugify
+from swind_utils import vietnamese_slugify, ensure_core_props
 
 
 def sanitize_sheet_title(title, existing_titles=None):
@@ -318,7 +318,7 @@ def merge_project_quotation_files(project_dir, project_name=None, sheet_files=No
 
     has_orig_boq = bool(boq_file and os.path.exists(boq_file) and boq_file.lower().endswith(('.xlsx', '.xlsm')))
     if has_orig_boq:
-        merged_wb = openpyxl.load_workbook(boq_file)
+        merged_wb = ensure_core_props(openpyxl.load_workbook(boq_file))
         orig_sheet_count = len(merged_wb.worksheets)
         default_ws = None
         existing_titles = set(merged_wb.sheetnames)

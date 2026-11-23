@@ -37,7 +37,8 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(BASE_DIR, "src"))
-from swind_utils import detect_boq_header, get_quotation_profile, vat_label  # noqa: E402
+from swind_utils import detect_boq_header, get_quotation_profile, vat_label, ensure_core_props  # noqa: E402
+from old_quote_memory import MEMORY_DIR, apply_memory, load_memory, save_memory  # noqa: E402
 
 RUNNER = os.path.join(BASE_DIR, "src", "swind_master_runner.py")
 VALVE_FAMILIES = {"FD", "MFD", "MD", "VCD", "NRD", "PRD", "PRD_MOTOR"}
@@ -129,7 +130,52 @@ def accessories(text):
         acc.add("LCCT")
     if re.search(r"\bLLB\b|\bG4\b|PHIN LOC|LOC BUI|LUOI LOC|FILTER", t):
         acc.add("FILTER")
+    # Hộp gió là phụ kiện riêng: giá cũ có hộp ≠ BOQ không hộp -> nhóm hỏi 'Khác hộp gió' (2026-11-23, dự án 261123_HH3_RFQ)
+    if re.search(r"HOP GIO|\bBOX\b|PLENUM", t):
+        acc.add("BOX")
     return frozenset(acc)
+
+
+FIRE_WORDS = ("NGAN LUA", "CHAN LUA", "NGAN CHAY")
+
+
+def combo_family(text):
+    """Dòng ghi CẢ cửa/louver + van, hoặc VCD + FD -> loại combo riêng (VD 'VCD+FD', 'LOUVER+FD', 'GRILLE+MD').
+    Chỉ khớp với combo cùng loại, không khớp van rời (2026-11-23, dự án 261123_HH3_RFQ: 'VCD + FD 200x150' bị ghép giá FD rời)."""
+    t = norm(text)
+    fire = any(w in t for w in FIRE_WORDS)
+    has_mfd = bool(re.search(r"\bM-?F(S)?D\b|MSFD|MFSD", t)) or (fire and ("DONG CO" in t or "MO TO" in t))
+    has_fd = not has_mfd and (bool(re.search(r"\bFD\b|\bFSD\b|\bFSS\b", t)) or fire)
+    has_vcd = "VCD" in t or "DIEU CHINH LUU LUONG" in t
+    door = None
+    if "LOUVER" in t or re.search(r"\b(FAL|EAL|OAL|S?WL)\b", t):
+        door = "LOUVER"
+    elif re.search(r"\b(CUA GIO|MIENG)\b", t):
+        door = "GRILLE"
+    valve = "MFD" if has_mfd else "FD" if has_fd else None
+    if door:
+        if valve is None:
+            valve = "MD" if re.search(r"\bMD\b", t) else "VCD" if has_vcd else "NRD" if ("NRD" in t or "1 CHIEU" in t) else None
+        return f"{door}+{valve}" if valve else None
+    if has_vcd and valve == "FD":
+        return "VCD+FD"
+    return None
+
+
+def ei_level(text):
+    """Cấp chịu lửa EI lớn nhất ghi trong chuỗi (Tên / Spec / Ghi chú / Model), VD 'MFD-EI120' -> 120."""
+    vals = [int(x) for x in re.findall(r"(?<![A-Z])EI\s*-?\s*(\d{2,3})", norm(text))]
+    return max(vals) if vals else None
+
+
+def priced_family(sig):
+    """Loại thực tế BG cũ đã báo: không combo -> theo Model nếu nhận ra; combo -> chỉ thay phần van chống cháy theo Model
+    (VD Louver + FD mà Model MFD -> 'LOUVER+MFD'), Model 'E-FD' của combo Louver+FD vẫn là combo."""
+    fam, fm = sig["family"], sig.get("family_model")
+    if fam and "+" in fam:
+        head, tail = fam.rsplit("+", 1)
+        return f"{head}+{fm}" if fm in ("FD", "MFD") and tail in ("FD", "MFD") else fam
+    return fm or fam
 
 
 def profile_from_text(text):
@@ -167,7 +213,7 @@ def grille_code(text):
 
 def build_signature(name, extra, model, size_fallback=None):
     """name: cột Tên | extra: Spec/Ghi chú | model: cột Model. Họ hàng xác định theo cột Tên (giống --spec-priority name)."""
-    fam_name = family_of(name)
+    fam_name = combo_family(name) or family_of(name)
     fam_model = model_family(model)
     fam = fam_name or fam_model or family_of(extra)
     size = parse_size(name)
@@ -175,8 +221,9 @@ def build_signature(name, extra, model, size_fallback=None):
     if size is None and fam in VALVE_FAMILIES:
         size = size_fallback
     full = f"{name} {extra}"
-    sig = {"family": fam, "family_name": fam_name, "family_model": fam_model, "size": size, "size_from_name": size_from_name}
-    if fam in ("GRILLE", "LOUVER"):
+    sig = {"family": fam, "family_name": fam_name, "family_model": fam_model, "size": size, "size_from_name": size_from_name,
+           "ei": ei_level(f"{full} {model}")}
+    if fam in ("GRILLE", "LOUVER") or str(fam).startswith(("GRILLE+", "LOUVER+")):
         sig["acc"] = accessories(full)
     if fam == "GRILLE":
         sig["profile"] = profile_from_text(name) or profile_from_text(extra) or profile_from_model(model)
@@ -231,6 +278,12 @@ def _old_header(rows):
                 elif "REMARK" in t or "GHI CHU" in t:
                     cmap.setdefault("remark", c)
             if "name" in cmap and "price" in cmap:
+                # Header 2 tầng (BG Swind: 'Model' nằm ở dòng dưới 'Danh mục sản phẩm') -> bổ sung cột còn thiếu từ 2 dòng kế
+                # (User hỏi 2026-11-23, dự án 261123_HH3_RFQ: cột Model BG trống vì chỉ đọc dòng header đầu)
+                for sub in rows[i + 1:i + 3]:
+                    for c, v in enumerate(sub):
+                        if norm(v).startswith("MODEL") and "model" not in cmap and c not in cmap.values():
+                            cmap["model"] = c
                 if cmap["name"] + 1 not in cmap.values() and not texts[cmap["name"] + 1]:
                     cmap["note"] = cmap["name"] + 1
                 return i, cmap
@@ -278,13 +331,14 @@ def load_old_quote(path, sheets):
             if sig["family"] is None or sig["size"] is None:
                 continue
             # Báo giá cũ đã đổi loại (VD: tên 'FD', ghi chú 'Chuyển sang MFD', model MFD) -> loại thực tế theo Model
-            sig["family_priced"] = sig["family_model"] or sig["family"]
+            sig["family_priced"] = priced_family(sig)
             entries.append({
                 "sheet": sh, "row": i + 1, "prio": prio, "name": str(name).strip(), "note": note.strip(),
                 "model": model.strip(), "brand": g(row, "brand"),
                 "a1": g(row, "a1"), "a2": g(row, "a1", 1), "b1": g(row, "a1", 2), "b2": g(row, "a1", 3),
                 "modul": g(row, "modul"), "l": g(row, "l"), "thk": g(row, "thk"),
                 "price": int(round(price)), "remark": remark.strip(), "sig": sig, "name_col": cmap["name"] + 1,
+                "qty": _num(g(row, "qty")) or 0,
             })
     wb.close()
     return entries
@@ -319,6 +373,10 @@ def load_boq_rows(path, sheet=None):
             continue
         unit = get(r, "unit")
         qty = get(r, "qty")
+        # Dòng đánh số cột ngay dưới header (Tên='2', ĐVT='4', KL='5'...) không phải mặt hàng
+        # (2026-11-23, dự án 261123_HH3_RFQ: dòng '1 | 2 | 3 | 4 | 5 ...' bị đọc thành hàng ĐVT '4', KL 5).
+        if str(name).strip().isdigit() and (unit is None or str(unit).strip().isdigit()):
+            continue
         is_item = unit is not None and str(unit).strip() != ""
         rows.append({
             "row": r, "name": str(name).strip(), "spec": str(get(r, "spec") or ""), "model": str(get(r, "model") or ""),
@@ -345,7 +403,7 @@ def match_row(item, entries):
     item["sig"] = sig
     fam = sig["family"]
     if fam is None or sig["size"] is None:
-        return {"status": "NEW", "reason": "Không nhận diện được loại hàng / kích thước"}
+        return {"status": "NEW", "flags": set(), "reason": "Không nhận diện được loại hàng / kích thước"}
 
     cands, converted, near = [], [], []
     for e in entries:
@@ -357,13 +415,24 @@ def match_row(item, entries):
             if es["family"] == fam:
                 converted.append((e, rel))
             continue
-        reasons = []
+        reasons, flags = [], set()
         if rel == "swap":
             reasons.append(f"đảo chiều kích thước ({es['size'][1]}x{es['size'][2]})")
-        if fam in ("GRILLE", "LOUVER"):
-            if sig["acc"] != es["acc"]:
-                near.append((e, f"khác phụ kiện (BOQ={'+'.join(sorted(sig['acc'])) or 'không'}, BG cũ={'+'.join(sorted(es['acc'])) or 'không'})"))
+            flags.add("swap")
+        if "acc" in sig:
+            diff = sig["acc"] ^ es.get("acc", frozenset())
+            if diff == {"BOX"}:
+                # Chỉ khác hộp gió -> hỏi User, không tự coi là khớp (2026-11-23, dự án 261123_HH3_RFQ)
+                reasons.append(f"khác hộp gió (BOQ {'có' if 'BOX' in sig['acc'] else 'không'} hộp, BG cũ {'có' if 'BOX' in es['acc'] else 'không'} hộp)")
+                flags.add("box")
+            elif diff:
+                near.append((e, f"khác phụ kiện (BOQ={'+'.join(sorted(sig['acc'])) or 'không'}, BG cũ={'+'.join(sorted(es.get('acc', ()))) or 'không'})"))
                 continue
+        fire_fam = fam in ("FD", "MFD") or fam.endswith(("+FD", "+MFD"))
+        if (fire_fam or (fam == "GRILLE" and sig["ei"])) and sig["ei"] != es["ei"]:
+            # Khác cấp EI (FD EI30 ↔ giá cũ EI120) -> hỏi User (2026-11-23, dự án 261123_HH3_RFQ)
+            reasons.append(f"khác cấp EI (BOQ={'EI' + str(sig['ei']) if sig['ei'] else 'không ghi'}, BG cũ={'EI' + str(es['ei']) if es['ei'] else 'không ghi'})")
+            flags.add("ei")
         if fam == "GRILLE":
             p_new, p_old = sig["profile"], es["profile"]
             if p_new and p_old and p_new != p_old:
@@ -372,21 +441,24 @@ def match_row(item, entries):
             if not (p_new and p_old):
                 if not (p_new is None and p_old is None and sig["code"] and sig["code"] == es["code"]):
                     reasons.append(f"kiểu nan chưa xác định (BOQ={p_new or '?'}, BG cũ={p_old or '?'})")
+                    flags.add("profile")
         score = (
             0 if not reasons else 1,
             0 if es["size_from_name"] else 1,  # ưu tiên dòng BG cũ ghi KT ngay trong tên (hơn KT suy từ cột A1/A2)
             0 if (fam != "GRILLE" or sig["code"] == es["code"]) else 1,
             e["prio"], e["row"],
         )
-        cands.append((score, e, reasons))
+        cands.append((score, e, reasons, flags))
 
     if cands:
         cands.sort(key=lambda x: x[0])
-        best_score, best, reasons = cands[0]
+        best_score, best, reasons, flags = cands[0]
         same_tier = [c for c in cands if c[0][:3] == best_score[:3]]
         prices = sorted({c[1]["price"] for c in same_tier})
-        res = {"status": "EXACT" if not reasons else "REVIEW", "entry": best, "reasons": list(reasons)}
+        res = {"status": "EXACT" if not reasons else "REVIEW", "entry": best, "reasons": list(reasons),
+               "flags": set(flags), "candidates": [c[1] for c in same_tier]}
         if len(prices) > 1:
+            res["flags"].add("multi")
             res["reasons"].append(
                 "BG cũ có nhiều giá cho cùng mặt hàng: " + ", ".join(f"{p:,}" for p in prices)
                 + f" -> lấy {best['sheet']}!{best['row']}"
@@ -395,13 +467,101 @@ def match_row(item, entries):
     if converted:
         e, rel = sorted(converted, key=lambda x: (x[1] != "exact", x[0]["prio"], x[0]["row"]))[0]
         return {
-            "status": "CONVERTED", "entry": e,
+            "status": "CONVERTED", "entry": e, "flags": set(), "candidates": [e],
             "reasons": [f"BG cũ đã đổi '{e['name']}' sang {FAMILY_LABEL.get(e['sig']['family_priced'], e['sig']['family_priced'])} ({e['model']}{', ' + e['note'] if e['note'] else ''})"],
         }
     if near:
         e, why = sorted(near, key=lambda x: ("kiểu nan" not in x[1], x[0]["prio"], x[0]["row"]))[0]
-        return {"status": "NEW", "reason": f"Không có hàng trùng; gợi ý BG cũ cùng KT nhưng {why}: {e['sheet']}!{e['row']} '{e['name']}' {e['price']:,}đ"}
-    return {"status": "NEW", "reason": "Không có trong báo giá cũ"}
+        return {"status": "NEW", "flags": set(), "reason": f"Không có hàng trùng; gợi ý BG cũ cùng KT nhưng {why}: {e['sheet']}!{e['row']} '{e['name']}' {e['price']:,}đ"}
+    return {"status": "NEW", "flags": set(), "reason": "Không có trong báo giá cũ"}
+
+
+# ----------------------------------------------------------------------------------------------
+# Nhóm hỏi / khoá dòng / đề xuất (trợ lý 'bao-gia-tu-bg-cu' — 2026-11-23, dự án 261123_HH3_RFQ)
+# ----------------------------------------------------------------------------------------------
+GROUP_EXACT, GROUP_PROFILE, GROUP_BOX, GROUP_EI = "khop", "kieu_nan", "khac_hop", "khac_ei"
+GROUP_CONVERTED, GROUP_MULTI, GROUP_NEW = "combo_doi_loai", "nhieu_gia", "khong_co"
+GROUP_ORDER = [GROUP_EXACT, GROUP_PROFILE, GROUP_BOX, GROUP_EI, GROUP_CONVERTED, GROUP_MULTI, GROUP_NEW]
+GROUP_LABEL = {
+    GROUP_EXACT: "Khớp chắc chắn", GROUP_PROFILE: "Kiểu nan chưa rõ", GROUP_BOX: "Khác hộp gió",
+    GROUP_EI: "Khác cấp EI", GROUP_CONVERTED: "Combo / BG cũ đổi loại", GROUP_MULTI: "Nhiều giá trong BG cũ",
+    GROUP_NEW: "Không có trong BG cũ",
+}
+
+
+def row_keys(items):
+    """Khoá ổn định theo NỘI DUNG dòng (không số dòng / STT / cột Spec thô — Spec HH3 chứa 'KL theo khu' đổi theo từng lần):
+    Tên chuẩn hoá | loại | KT | phụ kiện | EI | ĐVT, trùng nhau thêm '#n' theo thứ tự xuất hiện."""
+    out, seen = {}, {}
+    for it in items:
+        sig = it.get("sig") or build_signature(it["name"], it.get("spec", ""), it.get("model", ""))
+        size = sig["size"]
+        size_s = "" if size is None else (f"{size[1]}x{size[2]}" if size[0] == "R" else f"D{size[1]}")
+        base = "|".join([norm(it["name"]), str(sig["family"] or ""), size_s, "+".join(sorted(sig.get("acc", ()))),
+                         str(sig.get("ei") or ""), norm(it.get("unit"))])
+        seen[base] = seen.get(base, 0) + 1
+        out[it["row"]] = f"{base}#{seen[base]}"
+    return out
+
+
+def classify(match, item=None):
+    """-> (nhóm, đề xuất 'carry'|'new'|'ask', lý do). Ưu tiên: combo/đổi loại > EI > hộp > kiểu nan/đảo KT > nhiều giá > khớp."""
+    st, flags = match.get("status"), match.get("flags") or set()
+    why = "; ".join(match.get("reasons") or ([match["reason"]] if match.get("reason") else []))
+    if st == "CONVERTED":
+        return GROUP_CONVERTED, "new", why or "BG cũ đã báo loại khác"
+    if st == "NEW":
+        return GROUP_NEW, "new", why or "Không có trong báo giá cũ"
+    if "ei" in flags:
+        return GROUP_EI, "ask", why
+    if "box" in flags:
+        return GROUP_BOX, "ask", why
+    if flags & {"profile", "swap"}:
+        e, sig = match.get("entry") or {}, (item or {}).get("sig") or {}
+        same_code = "profile" in flags and "swap" not in flags and sig.get("code") and sig.get("code") == (e.get("sig") or {}).get("code")
+        return GROUP_PROFILE, ("carry" if same_code else "ask"), why
+    if "multi" in flags:
+        return GROUP_MULTI, "ask", why
+    return GROUP_EXACT, "carry", why
+
+
+def pick_entry(match):
+    """Chọn 1 dòng BG cũ khi có nhiều giá: sheet ưu tiên (prio nhỏ) -> tổng KL BG cũ lớn nhất -> dòng đầu. Lý do ghi đủ các giá."""
+    cands = match.get("candidates") or ([match["entry"]] if match.get("entry") else [])
+    if not cands:
+        return None, ""
+    best = sorted(cands, key=lambda e: (e["prio"], -(e.get("qty") or 0), e["row"]))[0]
+    prices = sorted({e["price"] for e in cands})
+    if len(prices) < 2:
+        return best, ""
+    lst = "; ".join(f"{e['sheet']}!{e['row']} {e['price']:,}" for e in cands)
+    return best, f"BG cũ có {len(prices)} giá ({lst}) -> đề xuất {best['sheet']}!{best['row']} {best['price']:,} (sheet ưu tiên, KL lớn nhất)"
+
+
+def suggest_options(matches):
+    """Đề xuất tuỳ chọn phần báo mới theo BG cũ: mã MFD (SWIND-1.0x) và hãng động cơ phổ biến nhất trong các dòng đã khớp."""
+    mfd, brand = {}, {}
+    for m in matches:
+        e = m.get("entry") or {}
+        ref = f"{e.get('sheet')}!{e.get('row')}"
+        txt = norm(f"{e.get('model', '')} {e.get('note', '')} {e.get('remark', '')}")
+        for code in re.findall(r"SWIND-(1\.0[1-5])", txt):
+            mfd.setdefault(code, []).append(ref)
+        for b in re.findall(r"\b(BELIMO|KLB|HONEYWELL)\b", txt):
+            brand.setdefault(b, []).append(ref)
+    out = {}
+    for key, d in (("mfd_model", mfd), ("motor_brand", brand)):
+        if d:
+            v = max(d, key=lambda k: len(d[k]))
+            out[key] = {"value": v, "evidence": sorted(set(d[v]))}
+    return out
+
+
+def suggest_project_key(boq_path):
+    stem = re.sub(r"^\d{6}_", "", os.path.splitext(os.path.basename(boq_path))[0])
+    s = unicodedata.normalize("NFD", stem.replace("đ", "d").replace("Đ", "D"))
+    s = "".join(ch for ch in s if unicodedata.category(ch) != "Mn")
+    return re.sub(r"[^A-Za-z0-9]+", "_", s).strip("_") or "DU_AN"
 
 
 # ----------------------------------------------------------------------------------------------
@@ -425,7 +585,16 @@ def _footer_start(ws):
     return ws.max_row + 1
 
 
+def _is_numbering_row(ws, r):
+    """Dòng đánh số cột của BOQ (Tên='2', ĐVT='4', KL='5') runner chép sang BG — không phải mặt hàng
+    (2026-11-23, dự án 261123_HH3_RFQ)."""
+    vals = [ws.cell(r, c).value for c in (2, 12, 13)]
+    return all(v is not None and str(v).strip().isdigit() for v in vals) and ws.cell(r, 14).value in (None, "")
+
+
 def _is_item_bg_row(ws, r):
+    if _is_numbering_row(ws, r):
+        return False
     return any(ws.cell(r, c).value not in (None, "") for c in (3, 12, 13, 14))
 
 
@@ -678,6 +847,68 @@ def build_compact_boq(src_path, sheet, carried_rows, neck_rows, dest):
 # ----------------------------------------------------------------------------------------------
 # Main
 # ----------------------------------------------------------------------------------------------
+def _ref(e):
+    return f"{e['sheet']}!{e['row']}" if e else None
+
+
+def build_plan(items, results, keys, project_key, boq_path, boq_sheet, old_quote, memory, entries):
+    """Kế hoạch ghép theo nhóm cho trợ lý: mỗi dòng có khoá, nhóm, đề xuất, ứng viên BG cũ, ai quyết định."""
+    rows = []
+    for b in items:
+        m = results[b["row"]]
+        group, proposal, reason = classify(m, b)
+        cands = m.get("candidates") or []
+        chosen, preason = pick_entry(m) if m["status"] != "NEW" else (None, "")
+        if group == GROUP_MULTI and preason:
+            reason = preason
+        row = {"key": keys[b["row"]], "boq_row": b["row"], "stt": b.get("stt"), "name": b["name"], "unit": b["unit"], "qty": b["qty"],
+               "group": group, "proposal": proposal, "reason": reason, "chosen_ref": _ref(chosen),
+               "candidates": [{"ref": _ref(e), "name": e["name"], "model": e["model"], "note": e.get("remark") or e.get("note"),
+                               "price": e["price"]} for e in cands],
+               "decided_by": None, "decision": None}
+        if proposal in ("carry", "new"):
+            row["decided_by"] = "auto"
+            row["decision"] = {"action": proposal, "ref": _ref(chosen) if proposal == "carry" else None}
+        rows.append(row)
+    apply_memory(rows, memory, entries, old_quote)
+    runs = (memory or {}).get("runs") or []
+    return {
+        "project_key": project_key, "project_key_suggestion": suggest_project_key(boq_path), "boq": boq_path, "boq_sheet": boq_sheet,
+        "old_quote": old_quote,
+        "memory": {"exists": bool((memory or {}).get("rows")), "decided_rows": len((memory or {}).get("rows") or {}),
+                   "last_run_at": runs[-1]["at"] if runs else None},
+        "rows": rows,
+        "suggested_options": suggest_options([m for m in results.values() if m["status"] in ("EXACT", "REVIEW")]),
+        "remembered_options": (memory or {}).get("options"),
+    }
+
+
+def apply_decisions(plan, decisions, results, entries):
+    """Gộp file quyết định vào kế hoạch -> (carried {boq_row: match}, neck_rows set, missing keys)."""
+    dec_rows = decisions.get("rows") or {}
+    by_ref = {_ref(e): e for e in entries}
+    carried, neck, missing = {}, set(), []
+    for row in plan["rows"]:
+        d = dec_rows.get(row["key"])
+        if d:
+            row["decided_by"], row["decision"] = "user", dict(d)
+        elif row["decided_by"] is None:
+            missing.append(row["key"])
+            continue
+        dec = row["decision"]
+        if dec.get("action") == "carry":
+            m = results[row["boq_row"]]
+            e = by_ref.get(dec.get("ref")) or by_ref.get(row.get("chosen_ref")) or m.get("entry")
+            if e is None:
+                missing.append(row["key"])
+                continue
+            dec["ref"], dec["price"] = _ref(e), e["price"]
+            carried[row["boq_row"]] = dict(m, entry=e)
+        elif dec.get("neck"):
+            neck.add(row["boq_row"])
+    return carried, neck, missing
+
+
 def main():
     ap = argparse.ArgumentParser(description="Agent 10 — Nhặt giá từ báo giá cũ sang BOQ mới, phần còn lại báo giá mới")
     ap.add_argument("boq_file")
@@ -695,12 +926,23 @@ def main():
                     help="Dòng BOQ (báo mới) hiểu kích thước là KÍCH THƯỚC CỔ, VD '2956,2957' (ghi dấu KTC vào cột Spec bản BOQ tạm; "
                          "không dùng --override theo dòng vì Agent 00B có thể đánh lại số dòng)")
     ap.add_argument("--dry-run", action="store_true", help="Chỉ in kết quả ghép giá, không chạy báo giá phần còn lại")
+    # Trợ lý 'bao-gia-tu-bg-cu' (User chốt 2026-11-23, dự án 261123_HH3_RFQ)
+    ap.add_argument("--project-key", default=None, help="Mã dự án cho kho ghi nhớ (mặc định: theo tên file BOQ)")
+    ap.add_argument("--memory-dir", default=MEMORY_DIR, help="Thư mục kho ghi nhớ quyết định theo dự án")
+    ap.add_argument("--no-memory", action="store_true", help="Không đọc / ghi kho ghi nhớ")
+    ap.add_argument("--plan-json", default=None, help="Ghi kế hoạch ghép theo nhóm ra JSON rồi dừng (không báo giá, không ghi kho)")
+    ap.add_argument("--decisions", default=None, help="File JSON quyết định của User theo khoá dòng (thay --force-new / --accept-review)")
     args, runner_args = ap.parse_known_args()
 
     boq_path = os.path.abspath(args.boq_file)
     old_path = os.path.abspath(args.old_quote)
+    project_key = args.project_key or suggest_project_key(boq_path)
     if not args.old_sheets:
         cands = list_quote_sheets(old_path)
+        if args.plan_json:
+            with open(args.plan_json, "w", encoding="utf-8") as f:
+                json.dump({"sheet_summary": [{"sheet": s, "priced_rows": len(load_old_quote(old_path, [s]))} for s in cands],
+                           "project_key_suggestion": suggest_project_key(boq_path)}, f, ensure_ascii=False, indent=1)
         print("⛔ Chưa chỉ định --old-sheets. Các sheet có dạng báo giá trong file cũ:")
         for s in cands:
             print(f"   • {s}")
@@ -750,6 +992,9 @@ def main():
     def _rows_str(lst, limit=25):
         return ", ".join(str(b["row"]) for b in lst[:limit]) + (f" ... (+{len(lst) - limit})" if len(lst) > limit else "")
 
+    # Chạy qua --decisions (trợ lý): quyết định đã có trong file -> không in banner hỏi lại của luồng cờ cũ (2026-11-23)
+    if args.decisions:
+        pending, multi = [], []
     if pending:
         print("\n" + "-" * 95)
         print(f"⚠️ [HỎI LẠI USER] {len(pending)} dòng có mặt hàng tương tự trong BG cũ nhưng CHƯA tự nhặt giá (đang báo mới theo hệ thống):")
@@ -783,6 +1028,33 @@ def main():
         print(f"\nℹ️ {len(news)} dòng không có trong BG cũ -> báo giá mới. Dòng BOQ: {_rows_str(news)}")
         for b, m in hints:
             print(f"   • Dòng {b['row']} '{b['name'][:50]}': {m['reason']}")
+
+    # ---------------- Kế hoạch theo nhóm + ghi nhớ + quyết định (trợ lý) ----------------
+    old_quote_info = {"path": old_path, "mtime": int(os.path.getmtime(old_path)), "sheets": old_sheets}
+    memory = {} if args.no_memory else load_memory(project_key, args.memory_dir)
+    plan = build_plan(items, results, row_keys(items), project_key, boq_path, boq_sheet, old_quote_info, memory, entries)
+    if args.plan_json:
+        with open(args.plan_json, "w", encoding="utf-8") as f:
+            json.dump(plan, f, ensure_ascii=False, indent=1, default=str)
+        ask = sum(1 for r in plan["rows"] if r["decided_by"] is None)
+        print(f"\n📝 [--plan-json] {args.plan_json} | cần hỏi: {ask} dòng | ghi nhớ áp lại: "
+              f"{sum(1 for r in plan['rows'] if r['decided_by'] == 'memory')} dòng")
+        return 0
+    decisions = None
+    if args.decisions:
+        with open(args.decisions, encoding="utf-8") as f:
+            decisions = json.load(f)
+        carried, neck_dec, missing = apply_decisions(plan, decisions, results, entries)
+        if missing:
+            print(f"\n⛔ [THIẾU QUYẾT ĐỊNH] {len(missing)} dòng chưa có quyết định trong {args.decisions}:")
+            for k in missing[:40]:
+                print(f"   • {k}")
+            return 3
+        if neck_dec:
+            args.neck_rows = ",".join(map(str, sorted(neck_dec | {int(x) for x in re.findall(r"\d+", args.neck_rows or "")})))
+        runner_args = runner_args + list((decisions.get("options") or {}).get("runner_args") or [])
+        print(f"  -> [--decisions] Nhặt giá cũ {len(carried)} dòng | báo mới {len(items) - len(carried)} dòng | "
+              f"tuỳ chọn runner: {' '.join(runner_args) or '(mặc định)'}")
 
     if args.dry_run:
         print("\n[--dry-run] Dừng sau bước ghép giá.")
@@ -827,7 +1099,7 @@ def main():
     if runner_file and os.path.exists(runner_file):
         wb_r = openpyxl.load_workbook(runner_file)
         ws_runner = wb_r["BG"] if "BG" in wb_r.sheetnames else None
-    wb_out = openpyxl.load_workbook(boq_path)
+    wb_out = ensure_core_props(openpyxl.load_workbook(boq_path))
     bg_title = "BG" if "BG" not in wb_out.sheetnames else "BG_SWIND"
     ws_bg, stats, row_source = build_merged_bg(wb_out, ws_runner, boq_rows, carried, bg_title)
     wb_out.active = wb_out.sheetnames.index(bg_title)
@@ -847,6 +1119,10 @@ def main():
             "old_ref": f"{e['sheet']}!{e['row']}" if e else "", "old_name": e.get("name", ""), "old_price": e.get("price"),
             "reasons": m.get("reasons") or ([m["reason"]] if m.get("reason") else []), "price_source": row_source.get(b["row"], ""),
         })
+    plan_by_row = {r["boq_row"]: r for r in plan["rows"]}
+    for x in report:
+        pr = plan_by_row.get(x["boq_row"]) or {}
+        x.update({"key": pr.get("key"), "group": pr.get("group"), "decided_by": pr.get("decided_by")})
     rep_json = os.path.join(project_dir, "internal_estimation", "OLD_QUOTE_MATCH_REPORT.json")
     with open(rep_json, "w", encoding="utf-8") as f:
         json.dump({"boq": boq_path, "old_quote": old_path, "old_sheets": old_sheets, "rows": report}, f, ensure_ascii=False, indent=1, default=str)
@@ -887,9 +1163,15 @@ def main():
     elif stats["unpriced_rows"]:
         print(f"\n⛔ Còn {stats['unpriced_rows']} dòng có KL chưa có đơn giá (xem [KIỂM SOÁT CUỐI] của runner ở trên).")
         rc = rc or 2
-    if pending:
+    if pending and decisions is None:
         print(f"⚠️ {len(pending)} dòng chờ User xác nhận có nhặt giá cũ hay không (bảng HỎI LẠI USER ở trên).")
     print(f"ℹ️ Đối chiếu từng dòng: {rep_xlsx}")
+    if decisions is not None and not args.no_memory and not stats["unpriced_list"]:
+        to_save = {"rows": {r["key"]: r["decision"] for r in plan["rows"] if r["decided_by"] in ("user", "memory")},
+                   "options": decisions.get("options") or (memory or {}).get("options")}
+        path = save_memory(project_key, memory, to_save, plan, {"carried": stats["carried_value"], "new": stats["new_value"], "total": total},
+                           args.memory_dir)
+        print(f"💾 [GHI NHỚ] Đã lưu {len(to_save['rows'])} quyết định: {path}")
     return rc
 
 

@@ -9,6 +9,10 @@ from swind_utils import get_master_bom_rules, get_master_price_map, extract_duct
 # Làm tròn Excel & hệ số lợi nhuận: dùng chung ở swind_pricing (gom giá 2026-11-03)
 from swind_pricing import excel_round, mfg_markup as _mfg_markup, mesh_price  # noqa: E402
 
+# --lined-duct-as-duct (User chốt 2026-11-21, dự án Ống thông gió): cụm '( kèm tiêu âm trong dày 50mm)' trên dòng ống gió.
+# Khi item['lined_duct_as_duct'] bật, bỏ cụm này khỏi chuỗi phân loại để tính như ống gió thường (không ra SILENCER / TA-VUONG).
+LINED_DUCT_RX = re.compile(r"\(?\s*(?:kèm|kem|có|co|\+)?\s*ti[êe]u\s*[âa]m\s*trong[^)]*\)?", re.IGNORECASE)
+
 
 class Agent04_DuctworkBOM:
     """
@@ -198,6 +202,9 @@ class Agent04_DuctworkBOM:
         if (_full_nm and _full_nm != raw_name and not re.search(r"[A-Za-zÀ-ỹ]{3,}", raw_name)
                 and re.search(r"c[úu]t|chân rẽ|chan re|chạc|chac|\bz\b|zét|chuyển tiết diện|\bcôn\b|\btê\b", _full_nm, re.IGNORECASE)):
             raw_name = _full_nm
+        if item.get("lined_duct_as_duct"):
+            raw_name = re.sub(r"\s{2,}", " ", LINED_DUCT_RX.sub(" ", raw_name)).strip()
+            note_boq = re.sub(r"\s{2,}", " ", LINED_DUCT_RX.sub(" ", note_boq)).strip()
         full_text = f"{raw_name} {note_boq}".strip()
 
         w_in = float(item.get("w") or 0.0)

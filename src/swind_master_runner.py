@@ -23,7 +23,7 @@ from agent_00b_input_normalizer import Agent00B_InputNormalizer
 from agent_01_boq_extractor import Agent01_BOQExtractor
 from agent_02_boq_reviewer import find_ambiguous_items, resolve_ambiguous_interactive, apply_suggestions_non_interactive, save_typo_proposal
 from agent_03_input_auditor import Agent03_InputAuditor
-from agent_04_bom_duct import Agent04_DuctworkBOM
+from agent_04_bom_duct import Agent04_DuctworkBOM, LINED_DUCT_RX
 from agent_05_bom_damper import Agent05_DamperBOM
 from agent_06_bom_diffuser import Agent06_DiffuserBOM
 from agent_07_excel_builder import Agent07_ExcelBuilder
@@ -33,7 +33,7 @@ import damper_classifier
 import duct_classifier
 import scope_filter
 import typo_normalizer
-from swind_utils import vietnamese_slugify, prune_named_styles_in_file, get_quotation_profile, vat_label
+from swind_utils import vietnamese_slugify, prune_named_styles_in_file, ensure_core_props, get_quotation_profile, vat_label
 from openpyxl.cell.cell import MergedCell
 
 def safe_set(ws, row, col, val, num_fmt=None):
@@ -965,7 +965,7 @@ def export_customer_boq_quotation_files(
         if src_boq and os.path.exists(src_boq):
             from copy import copy
             from swind_merge_quotations import restore_boq_drawings
-            wb_cust = openpyxl.load_workbook(src_boq)
+            wb_cust = ensure_core_props(openpyxl.load_workbook(src_boq))
             keep_all_orig = (len(target_sheets) == 1)
             orig_keep = sh_name if sh_name in wb_cust.sheetnames else wb_cust.sheetnames[0]
             if not keep_all_orig:
@@ -1070,7 +1070,7 @@ def export_customer_boq_quotation_files(
             is_ecoba_sheet = ("LỰA CHỌN" in str(ws_chk_ec.cell(10, 16).value or "").upper() and "PHƯƠNG ÁN 1" in str(ws_chk_ec.cell(10, 29).value or "").upper())
         if boq_file and os.path.exists(boq_file) and (is_ecoba_sheet or template_wb is None):
             try:
-                wb_cust = openpyxl.load_workbook(boq_file)
+                wb_cust = ensure_core_props(openpyxl.load_workbook(boq_file))
                 if wb_cust is not None and sh_name in wb_cust.sheetnames:
                     ws_cust = wb_cust[sh_name]
                     v16 = str(ws_cust.cell(10, 16).value or "").upper()
@@ -1238,6 +1238,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
         missing_qty_notes = []
         missing_dims = []
         skipped_in_scope = []
+        title_row_ask = []
         flag_rows = {}
         skipped_other_cnt = 0
         suspect_unparsed = []
@@ -1257,11 +1258,30 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
             if info.get("reason") == "USER_SKIP" or (info.get("reason") == "MISSING_DIMS" and is_skip_rule):
                 skipped_other_cnt += 1
                 continue
+            if info.get("reason") in ("TITLE_ROW_ASK", "TITLE_UNCLEAR") and (
+                    (info.get("category") == "ONG_GIO" and not include_duct)
+                    or (info.get("category") == "CANVAS" and not include_canvas)
+                    or (only_cua_van and info.get("category") not in ("CUA_GIO", "VAN_GIO"))):
+                # Nhóm đang không báo theo cờ -> bỏ như mặc định, không hỏi lại (E2E 2026-11-23, Ống thông gió 5.2 R336)
+                skipped_other_cnt += 1
+                continue
+            if info.get("reason") in ("TITLE_ROW_ASK", "TITLE_UNCLEAR"):
+                # Phân vai Title / Dòng (title_row_rules.json TR-04, User chốt 2026-11-23): không báo, tô vàng, hỏi lại
+                ttl = str(info.get("title") or "").strip()
+                if info["reason"] == "TITLE_ROW_ASK":
+                    flag_rows[r] = f"⚠️ HỎI LẠI: dòng không rõ loại hàng, Title là '{ttl}' — báo theo Title? (--title-wins \"{sh_name}!{r}\")"
+                else:
+                    flag_rows[r] = f"⚠️ HỎI LẠI: dòng chỉ ghi kích thước nhưng Title '{ttl}' không ghi loại hàng — chưa báo giá"
+                title_row_ask.append({"row": r, "reason": info["reason"], "title": ttl, "desc": desc})
+                continue
             if info.get("reason") == "MISSING_Z_OFFSET" and not include_duct:
                 skipped_other_cnt += 1
             elif info.get("reason") == "MISSING_Z_OFFSET":
                 skipped_in_scope.append(f"{desc} | Lý do lọc=MISSING_Z_OFFSET (chưa có độ lệch E)")
                 flag_rows[r] = "⚠️ CHƯA BÁO GIÁ: Chữ Z chưa ghi độ lệch E (chênh cao độ) — Kỹ thuật kiểm tra & bổ sung"
+            elif info.get("reason") == "MISSING_DIMS" and scope_filter.is_non_swind_omission(nm_l):
+                # PV-11: van ống nước 'Cụm van PICV DN25' không phải hàng Swind -> không báo, không cảnh báo thiếu KT (User chốt 2026-11-23, KL ống gió)
+                skipped_other_cnt += 1
             elif info.get("reason") == "MISSING_DIMS" and not is_non_product and not is_lump_sum:
                 missing_dims.append(desc)
                 flag_rows[r] = "⚠️ KHÔNG BÁO GIÁ: BOQ không ghi đủ kích thước (thiếu cạnh / chỉ ghi D cho hàng chữ nhật / mã ký hiệu S2, R3... — gửi kích thước để báo)"
@@ -1322,6 +1342,11 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
             print(f"     ⚠️ [DÒNG BỊ LỌC CÓ KL THUỘC PHẠM VI SWIND — CẦN XÁC NHẬN] {len(skipped_in_scope)} dòng:")
             for si in skipped_in_scope:
                 print(f"        - {si}")
+        if title_row_ask:
+            print(f"     ⚠️ [TITLE / DÒNG — HỎI LẠI USER] {len(title_row_ask)} dòng chưa báo giá (tô vàng Sheet BG):")
+            for ta in title_row_ask:
+                kind = "Loại 4: dòng không rõ loại hàng → báo theo Title?" if ta["reason"] == "TITLE_ROW_ASK" else "Title không ghi loại hàng"
+                print(f"        - {ta['desc']} | Title='{ta['title']}' | {kind}")
         if skipped_other_cnt:
             print(f"     • {skipped_other_cnt} dòng có KL bị lọc vì ngoài phạm vi (thiết bị, quạt, chi phí...) — xem INPUT_COVERAGE_REPORT.json")
         if suspect_unparsed:
@@ -1333,6 +1358,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
         coverage[sh_name] = {
             "missing_dims": missing_dims,
             "skipped_in_scope": skipped_in_scope,
+            "title_row_ask": title_row_ask,
             "suspect_unparsed": suspect_unparsed,
             "flag_rows": flag_rows,
             "skipped_rows_detail": {str(k): v for k, v in skip_reasons.items()},
@@ -1342,7 +1368,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
     return coverage
 
 
-def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None, neck_size=False, motor_price=None, mprd_motor_price=None, include_flex_duct=False, spec_priority="name", include_box=False, strict=False, include_duct=False, include_canvas=False, md_shaft_only=False, mprd_onoff=False, duct_ei=0, fire_duct_only=False, duct_straight_only=False, skip_fire_duct=False, duct_uplift=0.0, duct_coating="", duct_ei_note="", duct_only=False, duct_steel_brand=""):
+def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None, neck_size=False, motor_price=None, mprd_motor_price=None, include_flex_duct=False, spec_priority="name", include_box=False, strict=False, include_duct=False, include_canvas=False, md_shaft_only=False, mprd_onoff=False, duct_ei=0, fire_duct_only=False, duct_straight_only=False, skip_fire_duct=False, duct_uplift=0.0, duct_coating="", duct_ei_note="", duct_only=False, duct_steel_brand="", lined_duct_as_duct=False):
     """
     Hàm điều phối Quy trình B: Nhận file BOQ khách hàng -> Phân tích & Áp giá từ Master Data có sẵn (Agent 01 -> Agent 08).
     """
@@ -1424,6 +1450,7 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
         need_reparse = any(
             str(v.get("skip", "0")).strip() not in ("", "0", "false", "False")
             or "qty" in v
+            or "title" in v
             or (any(k in v for k in ("w", "h", "d")) and r in agent_01.parser.skipped_rows.get(sh, set()))
             for (sh, r), v in ov_by_sheet.items()
         )
@@ -1466,6 +1493,11 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
                         if _r.strip().isdigit():
                             _notes[int(_r)] = _v.strip()
             it["duct_ei_notes"] = _notes
+        if lined_duct_as_duct and it.get("category") == "TIEU_AM" and LINED_DUCT_RX.search(f"{it.get('raw_name') or it.get('name') or ''} {it.get('note_boq') or ''}"):
+            # --lined-duct-as-duct (User chốt 2026-11-21, dự án Ống thông gió): 'Ống gió ... ( kèm tiêu âm trong dày 50mm)'
+            # báo như ống gió thường (ONG_GIO, giá ống kỳ hiện hành, nhận --duct-uplift), không tính tiêu âm. Mặc định giữ OG-04 (tiêu âm).
+            it["category"] = "ONG_GIO"
+            it["lined_duct_as_duct"] = True
         if it.get("category") in ("ONG_GIO", "TIEU_AM") and duct_steel_brand:
             # --duct-steel-brand "Hòa Phát": ghi chú ống / tiêu âm ghi 'tôn Hòa Phát' thay 'tôn Hoa Sen' (User chốt 2026-11-20, tien luong moi thau V1_18t11)
             it["duct_steel_brand"] = str(duct_steel_brand)
@@ -1859,6 +1891,15 @@ def evaluate_quotation_gate(coverage, qa_reports, input_audit, unresolved_items,
         # Rule User (2026-11-03): không có kích thước -> KHÔNG báo giá, chỉ thông báo (không chặn); BOQ có đơn giá đối tác thì giữ (parser)
         if cv.get("missing_dims"):
             confirm.append(f"[THÔNG BÁO USER] Sheet '{sh}': {len(cv['missing_dims'])} dòng Cửa/Van có KL nhưng BOQ không ghi kích thước -> KHÔNG báo giá (tô vàng trên Sheet BG); cấp kích thước bằng --override nếu cần báo")
+        if cv.get("title_row_ask"):
+            l4 = [t for t in cv["title_row_ask"] if t["reason"] == "TITLE_ROW_ASK"]
+            uc = [t for t in cv["title_row_ask"] if t["reason"] == "TITLE_UNCLEAR"]
+            if l4:
+                confirm.append(f"[HỎI LẠI USER] Sheet '{sh}': {len(l4)} dòng không rõ loại hàng dưới Title là loại hàng (Loại 4) -> CHƯA báo giá; duyệt báo theo Title bằng --title-wins \"{sh}!<dòng>\": "
+                               + "; ".join(f"R{t['row']} (Title '{t['title']}')" for t in l4[:10]))
+            if uc:
+                confirm.append(f"[HỎI LẠI USER] Sheet '{sh}': {len(uc)} dòng chỉ ghi kích thước nhưng Title không ghi loại hàng -> CHƯA báo giá: "
+                               + "; ".join(f"R{t['row']} (Title '{t['title']}')" for t in uc[:10]))
         if cv.get("skipped_in_scope"):
             confirm.append(f"Sheet '{sh}': {len(cv['skipped_in_scope'])} dòng có KL thuộc phạm vi Swind bị lọc (lọc G4, ống gió m2, tiêu âm...) -> xác nhận có báo giá không")
         if cv.get("suspect_unparsed"):
@@ -2110,6 +2151,7 @@ def main():
     parser.add_argument("--include-box", action="store_true", help="Tính và báo giá thêm Hộp gió (theo công thức sheet BG PKV) cho các Cửa gió có kèm hộp (Mặc định: Không tính hộp)")
     parser.add_argument("--spec-priority", choices=["name", "note"], default="name", help="Thứ tự ưu tiên khi Cột Tên và Cột Ghi chú/Spec mâu thuẫn: 'name' (mặc định ưu tiên Cột Tên) hoặc 'note' (ưu tiên Cột Ghi chú/Spec)")
     parser.add_argument("--override", default=None, help="Ghi đè nhanh theo dòng BOQ (VD: '7:w=600,h=600;10:skip=1'). BOQ nhiều sheet: 'Tên Sheet!7:w=600'")
+    parser.add_argument("--title-wins", default=None, help="Duyệt dòng Loại 4 (dòng không rõ loại hàng) báo theo Title cha: 'Tên Sheet!12,15;Sheet 2!30' (BOQ 1 sheet: '12,15'). Tương đương --override '<dòng>:title=1'")
     parser.add_argument("--include-canvas", action="store_true", help="Báo giá cả Khớp nối mềm / Canvas (Mặc định: Swind KHÔNG báo giá canvas)")
     parser.add_argument("--include-duct", action="store_true", help="Báo giá cả Ống gió & phụ kiện ống (Mặc định: KHÔNG báo ống gió, chỉ báo khi khách yêu cầu)")
     parser.add_argument("--fire-duct-only", action="store_true", help="Chỉ báo Ống gió & phụ kiện thuộc mục '+ Đường ống gió ... chống cháy' của BOQ, bỏ ống thường (không cần --include-duct). Kèm --duct-ei N để báo bọc EI<N>")
@@ -2119,7 +2161,8 @@ def main():
     parser.add_argument("--duct-only", action="store_true", help="Chỉ báo Ống gió & phụ kiện ống (tự bật --include-duct): bỏ cửa / van / tiêu âm / canvas / ống mềm / hàng thương mại và dòng ống kèm LCCT / lọc G4")
     parser.add_argument("--duct-ei-note", type=str, default="", help="Ghi chú cấu tạo ống gió theo cấp EI, dạng '30=<ghi chú>|45,60=<ghi chú>' (nối vào ghi chú dòng ống bọc EI tương ứng)")
     parser.add_argument("--duct-steel-brand", type=str, default="", help="Thương hiệu tôn ghi trong ghi chú ống gió / tiêu âm thay cho 'Hoa Sen' (VD 'Hòa Phát'); không đổi giá")
-    parser.add_argument("--duct-coating", type=str, default="", help="Ghi chú lớp mạ tôn nối vào ghi chú ống gió (VD Z18 -> ', tôn Z18')")
+    parser.add_argument("--lined-duct-as-duct", action="store_true", help="Dòng 'Ống gió ... kèm tiêu âm trong' báo như ống gió thường (không tính tiêu âm, model TA-VUONG). Dùng kèm --include-duct")
+    parser.add_argument("--duct-coating",type=str, default="", help="Ghi chú lớp mạ tôn nối vào ghi chú ống gió (VD Z18 -> ', tôn Z18')")
     parser.add_argument("--duct-ei", type=int, default=0, help="Điều kiện dự án: toàn bộ Ống gió & phụ kiện ống bọc chống cháy EI<N> (VD 60) và van FD báo có bọc. Dùng kèm --include-duct")
     parser.add_argument("--strict", action="store_true", help="Không xuất file báo giá nếu còn lỗi chặn (dòng có KL chưa có giá, QA_REJECTED...)")
 
@@ -2144,6 +2187,14 @@ def main():
                         if "=" in kv:
                             k, v = kv.split("=", 1)
                             row_overrides[ov_key][k.strip()] = v.strip()
+    # --title-wins: User duyệt Loại 4 (title_row_rules.json TR-04, User chốt 2026-11-23) -> override title=1
+    if args.title_wins:
+        for grp in str(args.title_wins).split(";"):
+            sh_tw, rows_tw = (grp.rsplit("!", 1) if "!" in grp else (None, grp))
+            sh_tw = sh_tw.strip().strip("'\"") if sh_tw else None
+            for r_tw in rows_tw.split(","):
+                if r_tw.strip().isdigit():
+                    row_overrides.setdefault((sh_tw, int(r_tw)) if sh_tw else int(r_tw), {})["title"] = "1"
 
     boq_path = args.boq_file
     boq_paths = []
@@ -2221,7 +2272,8 @@ def main():
         duct_coating=args.duct_coating,
         duct_ei_note=args.duct_ei_note,
         duct_only=args.duct_only,
-        duct_steel_brand=args.duct_steel_brand
+        duct_steel_brand=args.duct_steel_brand,
+        lined_duct_as_duct=args.lined_duct_as_duct
     )
     if args.duct_formula != "mpq" and not args.include_duct:
         print(f"  [Lưu ý] --duct-formula {args.duct_formula} -> tự động bật --include-duct (báo giá ống gió).")

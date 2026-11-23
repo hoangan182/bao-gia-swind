@@ -175,6 +175,32 @@ def detect_code_typos(row_text, context_text):
     return events
 
 
+def detect_accent_typos(text):
+    """TY-05: cụm từ khóa chính bị SAI DẤU (chữ có dấu nhưng sai: 'cưa gió', 'cửa giò', 'ông gió') → sự kiện DOAN.
+    Chạy sau TY-01 (lỗi đã duyệt sửa lặng lẽ); chữ hoàn toàn không dấu để TY-02; chữ thuộc TY-02.giu_dau không bị nghi.
+    (User chốt 2026-11-23, Ống thông gió.xls 5.2 'Của gió kèm hộp gió kích thước:')"""
+    R = load_rules()
+    if "TY-05" not in R or not text:
+        return []
+    t = apply_dictionary(unicodedata.normalize("NFC", str(text)).lower(), "*")
+    folded = _fold(t)
+    if len(folded) != len(t):
+        return []
+    giu_dau = set(R["TY-02"].get("giu_dau", []))
+    events, seen = [], set()
+    for phrase in R["TY-05"]["cum_chinh"]:
+        phrase = unicodedata.normalize("NFC", phrase).lower()
+        for m in re.finditer(r"(?<![a-z0-9])" + re.escape(_fold(phrase)) + r"(?![a-z0-9])", folded):
+            span = t[m.start():m.end()]
+            if span == phrase or span in seen or _fold(span) == span:
+                continue
+            if any(w in giu_dau for w in span.split()):
+                continue
+            seen.add(span)
+            events.append({"loai": "DOAN", "goc": span, "sua": phrase, "ung_vien": [phrase], "rule": "TY-05"})
+    return events
+
+
 def apply_guesses(text, events):
     """Áp các sự kiện DOAN vào chuỗi so khớp (thay nguyên chữ, không phân biệt hoa thường)."""
     for e in events or ():
@@ -227,7 +253,7 @@ def gate_lines(all_items, limit=10):
         (asks if any(e["loai"] == "HOI_LAI" for e in evs) else guessed).append(desc)
     out = []
     if guessed:
-        out.append(f"[ĐÃ ĐOÁN — XÁC NHẬN] {len(guessed)} dòng hệ thống tự hiểu lỗi gõ mã (tô vàng trên Sheet BG): " + "; ".join(guessed[:limit]))
+        out.append(f"[ĐÃ ĐOÁN — XÁC NHẬN] {len(guessed)} dòng hệ thống tự hiểu lỗi gõ (mã viết tắt / sai dấu — tô vàng trên Sheet BG): " + "; ".join(guessed[:limit]))
     if asks:
         out.append(f"[HỎI LẠI USER] {len(asks)} dòng có mã nghi gõ sai, không đoán được (đang đọc nguyên chữ, tô vàng trên Sheet BG): " + "; ".join(asks[:limit]))
     return out

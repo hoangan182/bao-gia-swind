@@ -105,6 +105,7 @@
       "sọt trưng",
       "dạng lưới",
       "kiểu lưới",
+      "nan (lưới)",
       "eggcrate",
       "egg crate",
       "ecg",
@@ -435,9 +436,10 @@
     },
     {
       "van_ban": "mesh_search",
-      "mo_ta": "Bỏ 'dạng/kiểu lưới' (= sọt trứng) và 'lưới lọc / lưới gió' trước khi dò LCCT",
+      "mo_ta": "Bỏ 'dạng/kiểu lưới', 'nan (lưới)' (= sọt trứng) và 'lưới lọc / lưới gió' trước khi dò LCCT",
+      "nguon_bo_sung": "'nan (lưới)' = sọt trứng, không phải LCCT (User chốt 2026-11-23, dự án 261123_HH3_RFQ R15-R19 'Miệng gió hút/cấp dạng nan (lưới)')",
       "tu": "mesh_base",
-      "xoa_regex": "(?:(?:dạng|kiểu)\\s+lưới|lưới\\s+(?:lọc|gió))"
+      "xoa_regex": "(?:(?:dạng|kiểu)\\s+lưới|nan\\s*\\(\\s*lưới\\s*\\)|lưới\\s+(?:lọc|gió))"
     },
     {
       "co": "has_mesh",
@@ -547,7 +549,8 @@
             "trong": "box_clean_search"
           },
           {
-            "regex": "\\bhộp\\s*[hHlL=]?\\s*\\d{2,4}\\b|\\bbox\\b",
+            "regex": "\\bhộp\\s*[hHlL=]?\\s*\\d{2,4}\\b|\\bbox\\b|\\btrổ\\s*\\d*\\s*lỗ\\b",
+            "nguon_bo_sung": "'trổ N lỗ' = cửa gió kèm hộp gió trổ N lỗ cổ (User chốt 2026-11-23, dự án KL ống gió (sheet BOQ HĐ), R235-249 'Cửa gió hồi trổ 03 lỗ D200; KT 1200x200' + Ghi chú 'Bao gồm hộp tole')",
             "trong": "box_clean_search"
           }
         ]
@@ -663,20 +666,28 @@
     },
     {
       "co": "is_eggcrate",
-      "mo_ta": "Cửa nan sọt trứng (dạng/kiểu lưới = sọt trứng)",
-      "nguon": "78741b5 2026-10-26; 'kiểu lưới' 7cdc069 2026-11-02",
+      "mo_ta": "Cửa nan sọt trứng (dạng/kiểu lưới, nan (lưới) = sọt trứng)",
+      "nguon": "78741b5 2026-10-26; 'kiểu lưới' 7cdc069 2026-11-02; 'nan (lưới)' User chốt 2026-11-23 (dự án 261123_HH3_RFQ R15-R19)",
       "dieu_kien": {
-        "tu_khoa": [
-          "sọt trứng",
-          "sọt trưng",
-          "dạng lưới",
-          "kiểu lưới",
-          "eggcrate",
-          "egg crate",
-          "ecg",
-          "seeg"
-        ],
-        "trong": "blade_search"
+        "mot_trong": [
+          {
+            "tu_khoa": [
+              "sọt trứng",
+              "sọt trưng",
+              "dạng lưới",
+              "kiểu lưới",
+              "eggcrate",
+              "egg crate",
+              "ecg",
+              "seeg"
+            ],
+            "trong": "blade_search"
+          },
+          {
+            "regex": "nan\\s*\\(\\s*lưới\\s*\\)",
+            "trong": "blade_search"
+          }
+        ]
       }
     },
     {
@@ -1011,12 +1022,18 @@
     {
       "co": "is_sq_ac_diffuser",
       "mo_ta": "Cửa vuông 600/450/300 hệ điều hòa → khuếch tán vuông SD (AIR_CONDITIONING_SQUARE_DIFFUSER_SD_RULE)",
-      "nguon": "1805d82 2026-10-20",
+      "nguon": "1805d82 2026-10-20; ngoại lệ 'Cửa gió trổ N lỗ' (không ghi cấp/hồi) → nan thẳng SDG, không phải khuếch tán (User chốt 2026-11-23, dự án KL ống gió BOQ HĐ R249 'Cửa gió trổ 01 lỗ 100x100; KT: 300x300')",
       "dieu_kien": {
         "tat_ca": [
           "!is_slot_sld",
           "!is_standalone_lcct",
           "!is_standalone_filter",
+          {
+            "khong": {
+              "regex": "cửa\\s*gió\\s*trổ\\s*\\d*\\s*lỗ",
+              "trong": "combined_search"
+            }
+          },
           {
             "so_sanh": [
               "w",
@@ -1024,13 +1041,7 @@
               0
             ]
           },
-          {
-            "so_sanh": [
-              "w",
-              "==",
-              "h"
-            ]
-          },
+          {"so_sanh": ["w", "==", "h"]},
           {
             "thuoc": [
               "w",
@@ -1583,6 +1594,32 @@
           ],
           "he_so_thao_lap": 1.15,
           "nguon_boq": "input/260910_MKS_BoQ goi thau (BP05a)"
+        },
+        {
+          "ten": "Miệng gió hút/cấp dạng nan (lưới) 250x250",
+          "kt": [
+            250,
+            250
+          ],
+          "model": "ECG",
+          "b": [
+            200,
+            200
+          ],
+          "nguon_boq": "compare/23111/261123_HH3_RFQ_Cua_gio_Van_gio_Ham_L1_L2_Y1 R15 (User chốt 2026-11-23: 'dạng nan (lưới)' = nan sọt trứng)"
+        },
+        {
+          "ten": "Miệng gió hút/cấp dạng nan (lưới) + van điều chỉnh OBD 500x350",
+          "kt": [
+            500,
+            350
+          ],
+          "model": "ECG+O",
+          "b": [
+            450,
+            300
+          ],
+          "nguon_boq": "compare/23111/261123_HH3_RFQ_Cua_gio_Van_gio_Ham_L1_L2_Y1 R16"
         }
       ],
       "vi_du_sai": [
@@ -2819,6 +2856,20 @@
       "nguon": "bd1d662 2026-10-20; slot 3062d31 2026-10-27; kiểu nan theo blade_search 7cdc069 2026-11-02",
       "ly_do": "Mặc định cửa nan thẳng bầu dục SDG; profile 'SRD' từ subtype_rules rơi vào nhánh '*' (giữ nguyên hành vi cũ).",
       "vi_du_dung": [
+        {
+          "ten": "Cửa gió trổ 01 lỗ 100x100; KT: 300x300",
+          "ghi_chu": "Bao gồm hộp tole",
+          "kt": [
+            300,
+            300
+          ],
+          "model": "SDG",
+          "b": [
+            250,
+            250
+          ],
+          "nguon": "User chốt 2026-11-23, KL ống gió BOQ HĐ R249: 'Cửa gió trổ N lỗ' không ghi cấp/hồi = nan thẳng, không phải khuếch tán vuông 300"
+        },
         {
           "ten": "Kiểu nan T-1000x400",
           "ghi_chu": "Linear grille type - 1000x400 mm",

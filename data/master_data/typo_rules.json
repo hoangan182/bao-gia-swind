@@ -45,6 +45,18 @@
      "nguon": "User chốt 2026-11-03, BOQ_ANH_KHACH_01 R13 ('Miệng gio kèm OBD')"
     },
     {
+     "mau": "\\bcủa\\s+gió\\b",
+     "thay": "cửa gió",
+     "pham_vi": [
+      "ten",
+      "title",
+      "full",
+      "combo",
+      "agent01"
+     ],
+     "nguon": "User chốt 2026-11-23, Ống thông gió.xls sheet 5.2 R346 (Title 'Của gió kèm hộp gió kích thước:' + dòng chỉ ghi KT bị báo thành ống gió vuông)"
+    },
+    {
      "mau": "_",
      "thay": " ",
      "pham_vi": [
@@ -519,6 +531,78 @@
      "ngu_canh": "ODB 300x300",
      "loai": "HOI_LAI",
      "sua": null
+    }
+   ]
+  },
+  {
+   "id": "TY-05_SAI_DAU",
+   "ten": "Sai dấu ở cụm từ khóa chính (chữ CÓ dấu nhưng sai dấu) → đoán theo cụm chính, tô vàng chờ xác nhận",
+   "nguon": "User chốt 2026-11-23 (Ống thông gió.xls sheet 5.2: Title 'Của gió kèm hộp gió kích thước:' bị báo thành ống gió vuông — thiết kế docs/superpowers/specs/2026-11-23-title-dong-va-chinh-ta-design.md)",
+   "ly_do": "TY-02 chỉ khôi phục chữ HOÀN TOÀN không dấu; lỗi sai dấu ('của gió', 'cửa giò', 'ông gió') không lớp nào bắt → phân loại sai lặng lẽ. Chỉ xét danh sách cụm chính (không mọi chữ) để tránh đổi chữ đúng khác nghĩa ('ống luồn' dây điện ≠ 'ống lượn'). Chữ thuộc TY-02.giu_dau không bao giờ bị coi là sai. Chạy sau TY-01: lỗi đã duyệt vào từ điển thì sửa lặng lẽ, không sinh sự kiện. Sự kiện DOAN → tô vàng Sheet BG + [ĐÃ ĐOÁN — XÁC NHẬN], duyệt bằng agent_02_boq_reviewer.py --approve-pending (ghi TY-01).",
+   "cum_chinh": [
+    "cửa gió",
+    "miệng gió",
+    "ống gió",
+    "van gió",
+    "hộp gió",
+    "lưới chắn",
+    "côn trùng",
+    "tiêu âm",
+    "chặn lửa",
+    "một chiều",
+    "động cơ",
+    "khuếch tán",
+    "bầu dục",
+    "sọt trứng",
+    "nan thẳng",
+    "cửa chớp",
+    "lọc bụi",
+    "chân rẽ",
+    "côn thu",
+    "bịt đầu",
+    "nối mềm",
+    "xả áp",
+    "tăng áp",
+    "hút khói"
+   ],
+   "vi_du_dung": [
+    {
+     "vao": "Cưa gió kèm hộp gió kích thước:",
+     "goc": "cưa gió",
+     "sua": "cửa gió"
+    },
+    {
+     "vao": "Cửa giò hồi 600x300",
+     "goc": "cửa giò",
+     "sua": "cửa gió"
+    },
+    {
+     "vao": "Ông gió thẳng 600x300",
+     "goc": "ông gió",
+     "sua": "ống gió"
+    },
+    {
+     "vao": "Miêng gió cấp",
+     "goc": "miêng gió",
+     "sua": "miệng gió"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "vao": "Cửa gió hồi 600x300",
+     "ly_do": "đúng dấu"
+    },
+    {
+     "vao": "cua gio hoi",
+     "ly_do": "hoàn toàn không dấu → TY-02 lo"
+    },
+    {
+     "vao": "Của gió kèm hộp gió",
+     "ly_do": "đã có trong TY-01 (sửa lặng lẽ)"
+    },
+    {
+     "vao": "Ống luồn dây điện",
+     "ly_do": "không thuộc cụm chính"
     }
    ]
   }

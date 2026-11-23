@@ -326,6 +326,12 @@ class Agent01_BOQExtractor:
             if m_neck:
                 n_necks = int(m_neck.group(1)) if m_neck.group(1) else 1
                 d_box = float(m_neck.group(2))
+            else:
+                # 'Cửa gió hồi trổ 03 lỗ D200' = hộp gió trổ 3 lỗ cổ tròn D200 (User chốt 2026-11-23, dự án KL ống gió)
+                m_tro = re.search(r'trổ\s*0?([1-8])\s*lỗ\s*[dDØø]\s*(\d{2,4})\b', combined_search, flags=re.IGNORECASE)
+                if m_tro:
+                    n_necks = int(m_tro.group(1))
+                    d_box = float(m_tro.group(2))
             is_insul_box = any(k in combined_search for k in ("bảo ôn", "bao on", "cách nhiệt", "cach nhiet", "insul"))
             thk_box = Agent04_DuctworkBOM.get_standard_thickness(max(w_box, h_box, d_box), is_round=False, explicit_thk=(thk if thk > 0 else 0.0))
             _, _, box_l_out, box_s_area, box_unit_price, box_spec_label, box_trace = Agent04_DuctworkBOM._calc_plenum_box(

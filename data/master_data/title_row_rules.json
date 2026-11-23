@@ -1,0 +1,324 @@
+{
+ "_mo_ta": "Bảng rule PHÂN VAI Title cha / Dòng con — nguồn dữ liệu của src/title_row_resolver.py (parser gọi sau khi đã xác định nhóm hàng). Chỉ quyết định khi nào phải HỎI LẠI User thay vì để Title quyết định lặng lẽ; quy tắc kế thừa thông số (OBD/LCCT/G4/EI/độ dày) và 'dòng ghi loại khác thắng Title' (AGENTS.md 1a) giữ nguyên ở các bộ phân loại. Thiết kế: docs/superpowers/specs/2026-11-23-title-dong-va-chinh-ta-design.md.",
+ "phien_ban": "2026-11-23",
+ "quy_tac": [
+  {
+   "id": "TR-01_TU_LOAI_HANG",
+   "ten": "Từ khóa LOẠI HÀNG bổ sung (ngoài keywords của manufacturable_catalog.json + commercial_catalog.json)",
+   "nguon": "User chốt 2026-11-23 (4 loại Title / Dòng)",
+   "ly_do": "Title chứa loại hàng → vai LOAI_HANG; Dòng chứa loại hàng → vai DU_LOAI (dòng tự quyết, kể cả hàng thương mại như giá đỡ / bộ nguồn — AGENTS.md 3c). LCCT / lọc / hộp gió là sản phẩm riêng nên là loại hàng, không phải thông số. Mã viết tắt chuẩn Swind (typo_rules.json TY-03.ma_chuan: MSFD, MPRD, SDG...) tự động là loại hàng (E2E 2026-11-23: 'MSFD 1000x200' NOXH bị coi là không nhận ra).",
+   "tu_khoa": [
+    "cửa",
+    "miệng",
+    "ống",
+    "cút",
+    "côn",
+    "tê",
+    "hộp gió",
+    "hộp",
+    "box",
+    "plenum",
+    "grille",
+    "griller",
+    "diffuser",
+    "lưới chắn côn trùng",
+    "lưới chắn chim",
+    "lưới",
+    "lcct",
+    "insect screen",
+    "lọc bụi",
+    "lọc thô",
+    "phin lọc",
+    "lọc",
+    "filter",
+    "giá đỡ",
+    "ty treo",
+    "thanh treo",
+    "bộ nguồn",
+    "bộ chuyển đổi",
+    "nguồn",
+    "bịt",
+    "zét",
+    "măng xông",
+    "kẹp",
+    "bích",
+    "nẹp",
+    "đầu chờ",
+    "tôn",
+    "tole",
+    "chuyển tiết diện",
+    "tiết diện",
+    "chạc",
+    "chuyển"
+   ],
+   "vi_du_dung": [
+    {
+     "vao": "giá đỡ ống gió 600x300",
+     "vai_dong": "DU_LOAI"
+    },
+    {
+     "vao": "lưới chắn côn trùng kích thước:",
+     "vai_title": "LOAI_HANG"
+    },
+    {
+     "vao": "msfd 1000x200",
+     "vai_dong": "DU_LOAI"
+    },
+    {
+     "vao": "chuyển tiết diện kích thước :",
+     "vai_title": "LOAI_HANG"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "vao": "hệ thống điều hòa",
+     "vai_title": "HANG_MUC",
+     "ly_do": "không có loại hàng"
+    }
+   ]
+  },
+  {
+   "id": "TR-02_TU_THONG_SO",
+   "ten": "Từ THÔNG SỐ / CHỨC NĂNG (không phải loại hàng)",
+   "nguon": "User chốt 2026-11-23 (Title phụ kiện chung — AGENTS.md 1a: thông số kế thừa xuống dòng)",
+   "ly_do": "Title chỉ có thông số → vai PHU_KIEN (không tự cho loại hàng). Ở Dòng, thông số không làm dòng thành 'không nhận ra': 'EI60 600x300' dưới Title 'Van chặn lửa' vẫn là dòng chỉ kích thước (kế thừa Title). Chỉ dùng khớp nguyên chữ; 'ei\\d+' dạng mã có số đã được bỏ ở TR-03. Bổ sung thông số tiếng Anh / 'bọc' (E2E 2026-11-23: EZLAND 'GI - 1.15mm thickness EI60' dưới Title 'ỐNG GIÓ', MEPF CC01 'Kích thước D300, bọc bảo ôn' dưới 'Ống gió mềm' là dòng thông số, không phải Loại 4).",
+   "tu_khoa": [
+    "ei",
+    "chống cháy",
+    "tăng áp",
+    "hút khói",
+    "cấp gió",
+    "hồi gió",
+    "thải gió",
+    "gió tươi",
+    "thông gió",
+    "dày",
+    "độ dày",
+    "tráng kẽm",
+    "mạ kẽm",
+    "sơn tĩnh điện",
+    "sơn",
+    "nhôm",
+    "inox",
+    "cách nhiệt",
+    "bảo ôn",
+    "kèm",
+    "và",
+    "có",
+    "không",
+    "gồm",
+    "loại",
+    "nan",
+    "tiêu chuẩn",
+    "định hình",
+    "cấp",
+    "hồi",
+    "thải",
+    "hút",
+    "lớp",
+    "khung",
+    "động cơ",
+    "on/off",
+    "tuyến tính",
+    "belimo",
+    "klb",
+    "honeywell",
+    "bọc",
+    "gi",
+    "thickness",
+    "thick",
+    "galvanized",
+    "steel",
+    "sheet",
+    "insulation",
+    "insulated",
+    "with",
+    "without",
+    "and",
+    "fire",
+    "rated",
+    "bảo ôn"
+   ],
+   "vi_du_dung": [
+    {
+     "vao": "hệ thống tăng áp cầu thang - kèm ei60",
+     "vai_title": "PHU_KIEN"
+    },
+    {
+     "vao": "gi - 1.15mm thickness ei60",
+     "vai_dong": "CHI_KT"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "vao": "van chặn lửa ei60",
+     "vai_title": "LOAI_HANG",
+     "ly_do": "có loại hàng 'van'"
+    }
+   ]
+  },
+  {
+   "id": "TR-03_BO_QUA_KHI_XET_CHI_KT",
+   "ten": "Chữ bỏ qua khi xét Dòng 'chỉ ghi kích thước' (mã ký hiệu, số, đơn vị, vị trí)",
+   "nguon": "User chốt 2026-11-23 (Review Focus 1: 'CG-01 600x300', 'Tầng 3: 600x300', '1200x150+F' không được hỏi lại)",
+   "ly_do": "Dòng còn lại không chữ nào sau khi bỏ kích thước / số / mã ký hiệu (token có chữ số, '+F'), đơn vị, từ chỉ vị trí → CHI_KT (Title quyết định loại hàng — Loại 3). Ca dương tính giả (dòng hợp lệ bị hỏi lại) → THÊM CHỮ VÀO ĐÂY, không sửa code. 'dạng' thêm 2026-11-23 (Ống thông gió 5.1 R119 '300x300 ( DẠNG NAN)').",
+   "mau_bo": [
+    "[a-z]*[-_./]?\\d[a-z0-9\\-_./]*",
+    "\\d+(?:[.,]\\d+)?",
+    "\\+\\s*[a-z]{1,2}\\b",
+    "\\b[a-z]\\b"
+   ],
+   "tu_bo": [
+    "mm",
+    "cm",
+    "kt",
+    "kích thước",
+    "size",
+    "dim",
+    "bộ",
+    "cái",
+    "chiếc",
+    "sl",
+    "loại",
+    "kiểu",
+    "mã",
+    "ký hiệu",
+    "tầng",
+    "tầng hầm",
+    "hầm",
+    "mái",
+    "phòng",
+    "khu",
+    "khu vực",
+    "vực",
+    "căn",
+    "căn hộ",
+    "hộ",
+    "trục",
+    "hành lang",
+    "sảnh",
+    "wc",
+    "vệ sinh",
+    "bếp",
+    "ngủ",
+    "khách",
+    "kho",
+    "block",
+    "tòa",
+    "zone",
+    "level",
+    "floor",
+    "room",
+    "type",
+    "như",
+    "tương tự",
+    "ghi chú",
+    "theo",
+    "bản vẽ",
+    "dài",
+    "rộng",
+    "cao",
+    "sâu",
+    "đường kính",
+    "phi",
+    "ø",
+    "dquạt",
+    "d quạt",
+    "dạng",
+    "kiểu dáng"
+   ],
+   "vi_du_dung": [
+    {
+     "vao": "cg-01 600x300",
+     "vai_dong": "CHI_KT"
+    },
+    {
+     "vao": "tầng 3: 600x300",
+     "vai_dong": "CHI_KT"
+    },
+    {
+     "vao": "1200x150+f",
+     "vai_dong": "CHI_KT"
+    },
+    {
+     "vao": "600x400/dquạt/l600",
+     "vai_dong": "CHI_KT"
+    },
+    {
+     "vao": "300x300 ( dạng nan)",
+     "vai_dong": "CHI_KT"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "vao": "abc xyz 600x300",
+     "vai_dong": "KHONG_NHAN_RA"
+    }
+   ]
+  },
+  {
+   "id": "TR-04_BANG_QUYET_DINH",
+   "ten": "Bảng quyết định Title × Dòng (chỉ các ô HỎI LẠI; ô khác giữ hành vi hiện tại)",
+   "nguon": "User chốt 2026-11-23: Loại 4 (dòng sai / không liên quan → lấy Title) PHẢI hỏi lại User mới được làm; Title không có loại hàng + dòng chỉ kích thước → hỏi lại (lưới an toàn cho Title gõ sai)",
+   "ly_do": "Chỉ áp khi nhóm hàng hiện tại là hàng Swind (nhom_ap_dung) — tức hệ thống đang định báo giá theo Title. Dòng có đơn giá đối tác giữ hành vi cũ. Duyệt Loại 4: --title-wins \"Sheet!dòng\" (hoặc --override \"Sheet!dòng:title=1\").",
+   "nhom_ap_dung": [
+    "CUA_GIO",
+    "VAN_GIO",
+    "ONG_GIO",
+    "TIEU_AM",
+    "CANVAS",
+    "ONG_MEM"
+   ],
+   "o_hoi_lai": [
+    {
+     "title": "LOAI_HANG",
+     "dong": "KHONG_NHAN_RA",
+     "ket_qua": "TITLE_ROW_ASK",
+     "loai": 4
+    },
+    {
+     "title": "PHU_KIEN",
+     "dong": "CHI_KT",
+     "ket_qua": "TITLE_UNCLEAR",
+     "loai": 3
+    },
+    {
+     "title": "HANG_MUC",
+     "dong": "CHI_KT",
+     "ket_qua": "TITLE_UNCLEAR",
+     "loai": 3
+    }
+   ],
+   "vi_du_dung": [
+    {
+     "title": "LOAI_HANG",
+     "dong": "KHONG_NHAN_RA",
+     "nhom": "CUA_GIO",
+     "ket_qua": "TITLE_ROW_ASK"
+    },
+    {
+     "title": "HANG_MUC",
+     "dong": "CHI_KT",
+     "nhom": "ONG_GIO",
+     "ket_qua": "TITLE_UNCLEAR"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "title": "LOAI_HANG",
+     "dong": "CHI_KT",
+     "nhom": "CUA_GIO",
+     "ket_qua": null,
+     "ly_do": "Loại 3 — Title quyết định"
+    },
+    {
+     "title": "HANG_MUC",
+     "dong": "CHI_KT",
+     "nhom": "KHAC",
+     "ket_qua": null,
+     "ly_do": "không định báo giá"
+    }
+   ]
+  }
+ ]
+}

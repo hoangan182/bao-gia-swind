@@ -217,6 +217,8 @@
    "tu_khoa": [
     "côn thu vuông tròn",
     "con thu vuong tron",
+    "cổ chuyển",
+    "co chuyen",
     "côn vuông tròn",
     "con vuong tron",
     "vuông tròn",
@@ -231,9 +233,18 @@
     "cvt"
    ],
    "hoac_hinh_hoc": "vuong_co_d_khong_w2",
-   "nguon": "bd1d662 20/10",
+   "nguon": "bd1d662 20/10; 'cổ chuyển' = côn thu vuông tròn (User chốt 2026-11-23, dự án KL ống gió (sheet BOQ HĐ), R440-444 'Cổ chuyển 200x200/D200')",
    "ly_do": "Có cặp AxB + đường kính D (chưa có cạnh thứ 2) = côn vuông → tròn.",
    "vi_du_dung": [
+    {
+     "ten": "Cổ chuyển 200x150/D200",
+     "kt": [
+      200,
+      150
+     ],
+     "d": 200,
+     "loai": "SQUARE_TO_ROUND"
+    },
     {
      "ten": "Côn thu vuông tròn 600x400/D300",
      "kt": [

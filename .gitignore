@@ -51,6 +51,8 @@ page_1.png
 input/
 output/
 data/projects/
+data/old_quote_memory/
+.superpowers/
 
 # ---------------------------------------------------------------------------
 # QUY TẮC GIT SWIND: chỉ đưa lên git FILE HỆ THỐNG (code, master data JSON, tài liệu, rule).

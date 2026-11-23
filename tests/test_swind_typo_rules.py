@@ -463,3 +463,37 @@ class ReviewFixTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AccentTypoTest(unittest.TestCase):
+    """TY-05: sai dấu ở cụm từ khóa chính (User chốt 2026-11-23, Ống thông gió.xls 5.2 'Của gió kèm hộp gió')."""
+
+    def _pairs(self, text):
+        return [(e["loai"], e["goc"], e["sua"], e["rule"]) for e in tn.detect_accent_typos(text)]
+
+    def test_rule_examples(self):
+        R = tn.load_rules()
+        for ex in R["TY-05"]["vi_du_dung"]:
+            with self.subTest(ex=ex):
+                self.assertEqual(self._pairs(ex["vao"]), [("DOAN", ex["goc"], ex["sua"], "TY-05")])
+        for ex in R["TY-05"]["vi_du_sai"]:
+            with self.subTest(ex=ex):
+                self.assertEqual(tn.detect_accent_typos(ex["vao"]), [])
+
+    def test_ty05_gio_huyen(self):
+        self.assertEqual(self._pairs("cửa giò hồi"), [("DOAN", "cửa giò", "cửa gió", "TY-05")])
+
+    def test_ty05_khong_dau_de_ty02(self):
+        self.assertEqual(tn.detect_accent_typos("cua gio"), [])
+
+    def test_ty05_giu_dau(self):
+        self.assertEqual(tn.detect_accent_typos("ống luồn dây điện"), [])
+        self.assertEqual(tn.detect_accent_typos("hợp gió"), [])  # 'hợp' thuộc TY-02.giu_dau
+
+    def test_guess_applied_to_match_string(self):
+        ev = tn.detect_accent_typos("cưa gió kèm hộp gió 800x250")
+        self.assertIn("cửa gió", tn.normalize_for_match("cưa gió kèm hộp gió 800x250", "ten", ev))
+
+    def test_bg_flag_and_gate(self):
+        ev = tn.detect_accent_typos("cửa giò hồi 600x300")
+        self.assertIn("ĐÃ HIỂU", tn.bg_flag(ev))

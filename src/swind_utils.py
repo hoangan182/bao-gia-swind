@@ -931,6 +931,23 @@ def vat_label(rate=None):
     return f"{r * 100:g}%"
 
 
+def ensure_core_props(wb, author="Swind Multi-Agent AI"):
+    """
+    BOQ khách có <dc:creator></dc:creator> rỗng -> openpyxl lưu bỏ hẳn thẻ creator, docProps/core.xml không còn
+    namespace dc -> Numbers (macOS) KHÔNG mở được file (Excel vẫn mở). Điền tác giả mặc định trước khi lưu.
+    Nguồn: 2026-11-23, dự án KL ống gió (User báo Numbers không mở được file báo giá; file builder tự ghi creator thì mở được).
+    """
+    try:
+        props = wb.properties
+        if not (props.creator or "").strip():
+            props.creator = author
+        if not (props.lastModifiedBy or "").strip():
+            props.lastModifiedBy = author
+    except Exception:
+        pass
+    return wb
+
+
 def prune_named_styles_in_file(src_path, dst_path, threshold=200):
     """
     Loại Named Style rác bằng cách chỉnh trực tiếp xl/styles.xml (giữ nguyên byte-for-byte mọi

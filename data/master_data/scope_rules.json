@@ -207,9 +207,9 @@
   {
    "id": "PV-02_THUONG_MAI_THEO_TEN",
    "ten": "Tên bắt đầu bằng thiết bị / phụ trợ (quạt, máy lạnh, tủ điện, cảm biến, giá đỡ...) → THUONG_MAI",
-   "nguon": "bd1d662 20/10; dde7498 28/10; giá đỡ / quang treo kể cả tiền tố 'lắp đặt' User chốt 2026-11-03 (việc C2, TAHK R66); thang cáp / máng cáp / vỏ tủ / hộp kiểm tra tiếp địa-điện trở 2026-11-13 (NBT-BG DA luxora: hàng điện có KT + chữ tôn bị nhận thành ống gió khi --include-duct); Outdoor / Indoor Unit, Package Unit (thiết bị điều hòa đặt phòng máy) 2026-11-20 — User chốt, tien luong moi thau V1_18t11 R73-81 'Outdoor/ Indoor Unit Phòng Chiller / Phòng nguồn MEC / Phòng máy biến áp (Package Unit Floor Standing)' bị tô vàng 'không ghi đủ kích thước': là thiết bị điều hòa cho phòng máy, không thuộc Swind -> không báo",
+   "nguon": "bd1d662 20/10; dde7498 28/10; giá đỡ / quang treo kể cả tiền tố 'lắp đặt' User chốt 2026-11-03 (việc C2, TAHK R66); thang cáp / máng cáp / vỏ tủ / hộp kiểm tra tiếp địa-điện trở 2026-11-13 (NBT-BG DA luxora: hàng điện có KT + chữ tôn bị nhận thành ống gió khi --include-duct); Outdoor / Indoor Unit, Package Unit (thiết bị điều hòa đặt phòng máy) 2026-11-20 — User chốt, tien luong moi thau V1_18t11 R73-81 'Outdoor/ Indoor Unit Phòng Chiller / Phòng nguồn MEC / Phòng máy biến áp (Package Unit Floor Standing)' bị tô vàng 'không ghi đủ kích thước': là thiết bị điều hòa cho phòng máy, không thuộc Swind -> không báo; tiền tố 'Hệ thống' trước giá đỡ / ty treo 2026-11-23 (2026-11-16- ATP BOQ HVAC VER 1 R188 'Hệ thống ty treo, thanh đỡ U/V mạ kẽm cho toàn bộ đường ống gió' + Spec 'thanh U40x40' bị báo thành ống gió 40x40 — quy tắc 3c); chụp hút mùi bếp / công nghiệp, chụp hút khói bếp 2026-11-23 (cùng dự án R180-182, chụp bếp Inox 3600x1500 bị gán giá chụp thông hơi SFX-S-DN300 — cùng loại 'chụp hút bếp' đã có: thiết bị bếp, không báo)",
    "ly_do": "Loại hàng chính dòng tự ghi thắng Title cha (AGENTS.md 1a).",
-   "regex_gia_do": "^(?:lắp\\s*đặt\\s+|gia\\s*công\\s+)?(?:giá\\s*đỡ|giá\\s*treo|quang\\s*treo|ty\\s*treo)\\b",
+   "regex_gia_do": "^(?:hệ\\s*thống\\s+)?(?:lắp\\s*đặt\\s+|gia\\s*công\\s+)?(?:giá\\s*đỡ|giá\\s*treo|quang\\s*treo|ty\\s*treo)\\b",
    "bat_dau": [
     "quạt ",
     "máy lạnh",
@@ -238,6 +238,9 @@
     "lò xo giảm chấn",
     "cao su giảm chấn",
     "chụp hút bếp",
+    "chụp hút mùi bếp",
+    "chụp hút mùi công nghiệp",
+    "chụp hút khói bếp",
     "thang cáp",
     "máng cáp",
     "vỏ tủ",
@@ -648,7 +651,7 @@
     }
    ],
    "khong_phai_hang_swind_sot_dong": {
-    "nguon": "User duyệt 2026-11-03 (đợt kiểm bất biến E2E): ống gas / PVC / PPR / uPVC, bảo ôn, đường link URL không phải hàng Swind → không cảnh báo SÓT DÒNG. LCCT KHÔNG được đưa vào (mặt hàng có báo giá). Bổ sung (User duyệt 2026-11-03, PLH Gói 1): ống inox, Y lọc, bích rỗng / bích đặc (KHÔNG dùng chữ 'bích' đứng riêng — van/cửa gió có '2 đầu bích TDC'), nắp thăm, rọ hút (crefin), mối nối mềm DN (nước), ký hiệu ống giảm nước 'D200/90'. 'Măng xông D90' (đường kính 2 chữ số / DN = phụ kiện nước, PLH Gói 1) — User chốt 2026-11-03.; 2026-11-20 User chốt (dự án tien luong moi thau V1_18t11_HỆ HVAC, ~70 dòng Van bướm / Van cổng / Van cân bằng / Van bypass / Van bi / Van điện / Van 1 chiều DN-PN, Lọc Y, Van phao, Van xả đáy bị tô vàng '⚠️ CHƯA BÁO GIÁ ... OUT_OF_SCOPE_THUONG_MAI'): hàng ống nước, không thuộc phạm vi Swind -> không báo, KHÔNG tô vàng / không hỏi xác nhận. Dòng 'Van ... DN|PN <số>' = van đường ống nước (van gió Swind ghi kích thước AxB, không ghi DN/PN)",
+    "nguon": "User duyệt 2026-11-03 (đợt kiểm bất biến E2E): ống gas / PVC / PPR / uPVC, bảo ôn, đường link URL không phải hàng Swind → không cảnh báo SÓT DÒNG. LCCT KHÔNG được đưa vào (mặt hàng có báo giá). Bổ sung (User duyệt 2026-11-03, PLH Gói 1): ống inox, Y lọc, bích rỗng / bích đặc (KHÔNG dùng chữ 'bích' đứng riêng — van/cửa gió có '2 đầu bích TDC'), nắp thăm, rọ hút (crefin), mối nối mềm DN (nước), ký hiệu ống giảm nước 'D200/90'. 'Măng xông D90' (đường kính 2 chữ số / DN = phụ kiện nước, PLH Gói 1) — User chốt 2026-11-03.; 2026-11-20 User chốt (dự án tien luong moi thau V1_18t11_HỆ HVAC, ~70 dòng Van bướm / Van cổng / Van cân bằng / Van bypass / Van bi / Van điện / Van 1 chiều DN-PN, Lọc Y, Van phao, Van xả đáy bị tô vàng '⚠️ CHƯA BÁO GIÁ ... OUT_OF_SCOPE_THUONG_MAI'): hàng ống nước, không thuộc phạm vi Swind -> không báo, KHÔNG tô vàng / không hỏi xác nhận. Dòng 'Van ... DN|PN <số>' = van đường ống nước (van gió Swind ghi kích thước AxB, không ghi DN/PN); 2026-11-23 User chốt (KL ống gió, BOQ HĐ R37-38 Cụm van PICV DN25/DN20): thêm tiền tố 'Cụm van ... DN', không cảnh báo THIẾU KÍCH THƯỚC",
     "tu_khoa": [
      "ống gas",
      "ống ga ",
@@ -688,6 +691,11 @@
      {
       "ten": "Ống gas D12.7 dày 0.81 mm kèm bảo ôn 19mm",
       "ket_qua": true
+     },
+     {
+      "ten": "Cụm van PICV DN25",
+      "ket_qua": true,
+      "ghi_chu": "User chốt 2026-11-23, dự án KL ống gió (sheet BOQ HĐ dòng 37-38): 'Cụm van ... DN' = van ống nước, không phải hàng Swind, không cảnh báo thiếu kích thước"
      },
      {
       "ten": "Ống PPR PN10  / Pipe PPR PN10 D32",
@@ -798,7 +806,7 @@
      "mối\\s*nối\\s*mềm\\s*dn\\s*\\d",
      "^\\s*d\\d{2,3}\\s*/\\s*\\d{2,3}\\b",
      "m[ăa]ng\\s*x[ôo]ng\\s*(?:dn\\s*\\d+|d\\s*\\d{2}\\b)",
-     "^\\s*van\\b.*\\b(?:dn|pn)\\s*\\d"
+     "^\\s*(?:cụm\\s*)?van\\b.*\\b(?:dn|pn)\\s*\\d"
     ]
    },
    "dong_tieu_de_khong_kl_dvt": {

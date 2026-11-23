@@ -33,6 +33,25 @@
 - Không ghi `--old-sheets` → in danh sách sheet có dạng báo giá để hỏi User.
 - `--dry-run` → chỉ in kết quả ghép, không báo giá phần còn lại.
 
+## Trợ lý dẫn từng bước + ghi nhớ theo dự án (User chốt 2026-11-23, dự án 261123_HH3_RFQ)
+Skill `bao-gia-tu-bg-cu` (`.agents/skills/bao-gia-tu-bg-cu/SKILL.md`, symlink `.claude/skills/`) điều phối các cờ sau:
+- `--project-key <mã>`: mã dự án cho kho ghi nhớ (mặc định theo tên file BOQ, bỏ tiền tố ngày `YYMMDD_`).
+- `--plan-json <file>`: ghép + áp ghi nhớ, ghi kế hoạch theo nhóm (khoá dòng, nhóm, đề xuất, ứng viên BG cũ, `decided_by` = `memory` / `auto` / `null`, `suggested_options` MFD / hãng động cơ theo Model BG cũ) rồi dừng; không báo giá, không ghi kho. Thiếu `--old-sheets` → ghi `sheet_summary` (mã thoát 1).
+- `--decisions <file>`: `{"rows": {"<khoá>": {"action": "carry"|"new", "ref": "Sheet!dòng", "neck": bool}}, "options": {"runner_args": [...]}}`. Dòng cần hỏi mà thiếu quyết định → `⛔ [THIẾU QUYẾT ĐỊNH]`, mã thoát 3. Chạy xong, không còn dòng thiếu giá → lưu kho.
+- `--memory-dir <thư mục>` (mặc định `data/old_quote_memory/`), `--no-memory`.
+
+| Nhóm | Điều kiện | Đề xuất |
+| :--- | :--- | :--- |
+| `khop` | cùng loại / KT / phụ kiện / kiểu nan / EI / hộp, 1 giá | Lấy giá cũ (không hỏi) |
+| `kieu_nan` | kiểu nan chưa rõ / đảo chiều KT | Lấy giá cũ nếu cùng mã nan, ngược lại hỏi |
+| `khac_hop` | chỉ khác hộp gió | Hỏi |
+| `khac_ei` | FD / MFD / combo van chống cháy (hoặc miệng gió BOQ ghi EI) khác cấp EI | Hỏi |
+| `combo_doi_loai` | BG cũ đã đổi loại | Báo mới |
+| `nhieu_gia` | ≥2 giá cho cùng mặt hàng | Hỏi; đề xuất sheet ưu tiên → KL lớn nhất |
+| `khong_co` | không có trong BG cũ (combo chỉ khớp combo cùng loại) | Báo mới (không hỏi) |
+
+Kho ghi nhớ `data/old_quote_memory/<mã>.json` (`src/old_quote_memory.py`): chỉ lưu quyết định User; khoá = Tên chuẩn hoá | loại | KT | phụ kiện | EI | ĐVT (+ `#n` khi trùng) — không số dòng, không cột Spec thô. Quyết định `new` luôn áp lại; `carry` chỉ áp lại khi cùng file BG cũ (đường dẫn + ngày sửa) và dòng BG cũ còn, cùng giá — ngược lại hỏi lại kèm lý do *"thay đổi so với lần trước"*. File kho hỏng → bỏ qua, không ghi đè.
+
 ## Đầu ra
 - `output/<Project>/<Tên file BOQ gốc>.xlsx`: Sheet BOQ gốc + Sheet `BG` (giá cũ + báo mới, đúng thứ tự BOQ).
 - `output/<Project>/internal_estimation/OLD_QUOTE_MATCH_REPORT.xlsx|.json`: đối chiếu từng dòng (trạng thái, dòng BG cũ, giá cũ, lý do).
