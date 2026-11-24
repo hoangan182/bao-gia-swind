@@ -30,7 +30,8 @@ DUCT_BASELINE_PATH = os.path.join(BASE_DIR, "data", "master_data", "e2e_baseline
 # --modes: chạy nhiều chế độ trong 1 lệnh, mỗi chế độ so với baseline riêng (2026-11-24 — trước đây --include-duct bị so
 # nhầm với baseline mặc định nên luôn DIFF)
 MODES = {"default": ((), BASELINE_PATH), "duct": (("--include-duct",), DUCT_BASELINE_PATH)}
-DEFAULT_LIMIT = 50  # E2E mặc định chỉ chạy 50 BOQ mới nhất (User chốt 2026-11-11)
+DEFAULT_LIMIT = 0  # 0 = toàn bộ input/ (User chốt 2026-11-24, thay "50 BOQ mới nhất" 2026-11-11 — chạy song song ~80 giây)
+DEFAULT_MODES = "default,duct"  # mặc định chạy cả 2 chế độ (User chốt 2026-11-24)
 # --jobs: số runner chạy song song (2026-11-24: tuần tự 104 file mất ~21 phút/chế độ). Mỗi runner ghi output vào thư mục
 # tạm riêng + SWIND_NO_LEARNING_WRITE=1 (không ghi file học) nên chạy song song không tranh chấp file.
 DEFAULT_JOBS = max(1, (os.cpu_count() or 2) - 2)
@@ -304,10 +305,12 @@ def main():
     ap.add_argument("--modes", default=None,
                     help="Chạy nhiều chế độ trong 1 lệnh, mỗi chế độ so baseline riêng: 'default', 'duct' hoặc 'default,duct'")
     ap.add_argument("--files-from", default=None,
-                    help="Chỉ chạy các file có tên trong file văn bản này (mỗi dòng 1 tên — đầu ra của swind_impact_scan.py)")
+                    help="Chỉ chạy các file có tên trong file văn bản này (mỗi dòng 1 tên — VD output/_pattern_lab/e2e_files.txt của swind_pattern_lab.py --check)")
     args = ap.parse_args()
     if args.line_diff:
         sys.exit(run_line_diff(args.line_diff[0], args.line_diff[1], args.report))
+    if not args.modes and not args.runner_args and not args.baseline:
+        args.modes = DEFAULT_MODES  # không chỉ định chế độ / cờ runner / baseline → cả 2 chế độ
     if args.modes:
         modes = [(m.strip(), MODES[m.strip()][0], MODES[m.strip()][1]) for m in args.modes.split(",") if m.strip()]
     else:

@@ -59,6 +59,10 @@ class SwindBOQParser:
         # --price-zero-qty (User yêu cầu 2026-11-24, dự án Cửa gió NTL): sheet có cột 'Tổng khối lượng' / phiếu đặt hàng
         # vẫn giữ dòng Cửa/Van KL trống/0 để ghi Model + Đơn giá + Ghi chú (mặc định: bỏ như phiếu đặt hàng)
         self.keep_zero_qty = False
+        # Thư viện mẫu dòng (swind_pattern_lab.py, 2026-11-24): bật để ghi Title đang áp dụng + bố cục cột của từng dòng
+        self.record_row_context = False
+        self.row_context = {}
+        self.sheet_layouts = {}
         self._load_catalogs()
         # Phân vai Title / Dòng (title_row_rules.json) — User chốt 2026-11-23
         self.title_row_kws = title_row_resolver.product_keywords(self.manufacturable_catalog, self.commercial_catalog)
@@ -163,9 +167,13 @@ class SwindBOQParser:
                 break
         
         row_typo_events = {}  # dòng → sự kiện lỗi chính tả (typo_normalizer), gắn vào item ở cuối hàm
+        if self.record_row_context and not _is_side_table:
+            self.sheet_layouts[sheet_name] = (header_row, dict(col_map))
         for r in range(header_row + 1, ws.max_row + 1):
             if r in hidden_rows:
                 continue
+            if self.record_row_context and not _is_side_table:
+                self.row_context.setdefault(sheet_name, {})[r] = (current_section, current_section_aux)
                 
             name_val = ws.cell(r, col_map.get("name", 2)).value
             qty_val = ws.cell(r, col_map["qty"]).value if "qty" in col_map else None

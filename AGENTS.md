@@ -130,14 +130,24 @@ Khi người dùng hỏi *"Sao mặt hàng X ra diện tích/giá như vậy?"* 
    ```bash
    # 53 mặt hàng chuẩn (0.2s)
    ./venv/bin/python src/swind_item_inspector.py --self-test
-   # End-to-End: mặc định CHỈ 50 BOQ có báo giá gần nhất (User chốt 2026-11-11 — chạy toàn bộ input/ quá lâu).
-   # Xếp theo file báo giá trong output/<tên> (kể cả báo giá gộp: mọi từ của tên thư mục output nằm trong tên file input),
-   # chưa từng báo thì theo thời gian file input. Muốn chạy toàn bộ: --limit 0. So tổng tiền & số dòng từng sheet với baseline.
-   ./venv/bin/python src/swind_e2e_regression.py [--filter "<tên_file>"] [--limit 50]
-   # KHUYÊN DÙNG (2026-11-24): toàn bộ input/, CẢ 2 chế độ trong 1 lệnh, chạy song song (~80 giây thay vì ~40 phút):
-   # mỗi chế độ so baseline riêng (default -> e2e_regression_baseline.json, duct -> e2e_baseline_include_duct.json);
-   # --jobs N (mặc định số nhân CPU - 2). Runner trong E2E chạy với SWIND_NO_LEARNING_WRITE=1 (không ghi file học).
-   ./venv/bin/python src/swind_e2e_regression.py --limit 0 --modes default,duct
+   # End-to-End — MẶC ĐỊNH (User chốt 2026-11-24, thay "chỉ 50 BOQ gần nhất" 2026-11-11): TOÀN BỘ input/, CẢ 2 chế độ,
+   # chạy song song (~80 giây thay vì ~40 phút). Mỗi chế độ so baseline riêng (default -> e2e_regression_baseline.json,
+   # duct -> e2e_baseline_include_duct.json); --jobs N (mặc định số nhân CPU - 2). Runner trong E2E chạy với
+   # SWIND_NO_LEARNING_WRITE=1 (không ghi file học). So tổng tiền & số dòng từng sheet với baseline.
+   ./venv/bin/python src/swind_e2e_regression.py [--filter "<tên_file>"]
+   # 1 chế độ: --modes default | --modes duct; cờ runner riêng (1 chế độ, baseline mặc định): --runner-args="--price-zero-qty";
+   # N BOQ có báo giá gần nhất: --limit N
+   # KIỂM THỬ THEO MẪU DÒNG (tầng 1 + 2, 2026-11-24 — thời gian tăng theo SỐ MẪU, không theo số file):
+   # sửa RULE nhận diện / bộ phân loại / hằng số giá → --check (~3 giây) thay vì E2E toàn bộ; chỉ E2E đầy đủ các file bị ảnh hưởng.
+   ./venv/bin/python src/swind_pattern_lab.py --build          # đọc file BOQ mới / đã đổi vào thư viện (output/_pattern_lab/, không commit)
+   ./venv/bin/python src/swind_pattern_lab.py --check          # chạy lại theo mẫu, so ảnh chụp chuẩn → mẫu đổi / dòng / file + e2e_files.txt
+   # TẦNG 3: E2E đầy đủ chỉ (file bị ảnh hưởng ∪ BỘ FILE CANH GÁC) — canh gác = ít file nhất phủ mọi rule kích hoạt (CG/OG/VG),
+   # mọi loại kết quả / lý do lọc / gốc Model, mọi kiểu bố cục (loại cột, phiếu đặt hàng, cột/dòng ẩn, bảng phụ...): 19/100 file, ~21 giây
+   ./venv/bin/python src/swind_e2e_regression.py --modes default,duct --files-from output/_pattern_lab/e2e_files.txt
+   ./venv/bin/python src/swind_pattern_lab.py --canary         # xem bộ canh gác + rule CHƯA có file nào kiểm tới (canary_report.md)
+   ./venv/bin/python src/swind_pattern_lab.py --set-baseline   # sau khi User duyệt thay đổi
+   # Sửa phần ĐỌC CẤU TRÚC BOQ (header, cột / dòng ẩn, KL ở dòng khác, side table) → --build --force + E2E bộ canh gác,
+   # trước khi chốt chạy E2E toàn bộ (mẫu dòng không bắt được lỗi bố cục cả file). Sửa form Excel → chạy thử 3–5 file.
    # Unit test các cơ chế kiểm soát (cổng chặn, QA giá trị, học từ khóa, hằng số giá)
    ./venv/bin/python -m unittest discover -s tests -p "test_swind_*.py"
    # Cập nhật tọa độ dòng trong .agents/rules/03_FORMULA_INDEX.md sau khi sửa code
