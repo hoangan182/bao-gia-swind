@@ -65,6 +65,10 @@ def detect_subtype(text, w1=0.0, h1=0.0, w2=0.0, h2=0.0, d1=0.0, d2=0.0, unit=""
     R = rules or load_rules()
     t = unicodedata.normalize("NFC", str(text or "")).lower().strip()
     u = unicodedata.normalize("NFC", str(unit or "")).lower().strip()
+    # Cụm liệt kê phụ kiện đi kèm ('... co tê giảm hướng') không phải loại hàng (duct_rules.json, User 2026-11-24, AC.OG.CGVG)
+    xl = R.get("xoa_cum_liet_ke_phu_kien", {}).get("regex")
+    if xl:
+        t = re.sub(r"\s{2,}", " ", re.sub(xl, " ", t)).strip()
     rt = R["ong_tron"]
     has_rect_pair = bool(re.search(rt["regex_cap_vuong"], t))
     is_round = (d1 > 0 and w1 == 0) or (

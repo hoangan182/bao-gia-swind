@@ -12,6 +12,51 @@
    "khong_kich_thuoc": "W1 = H1 = D1 = 0"
   }
  },
+ "xoa_cum_liet_ke_phu_kien": {
+  "_mo_ta": "Bỏ cụm LIỆT KÊ phụ kiện đi kèm (câu mô tả phạm vi 'bao gồm ... co tê giảm hướng / các loại co, tê, chuyển hướng, giảm tốc') khỏi văn bản trước khi dò loại ống — chữ 'tê' / 'co' trong cụm này không phải loại hàng của dòng. Cụm 'bao gồm đầy đủ phụ kiện bích / đồng bộ / kèm theo' (mô tả phạm vi) cũng bỏ để ống m² không thành 'Phụ kiện m²' (OG-15). Cụm 'kết nối ống bằng nẹp C / TDC' (cách nối) cũng bỏ để ống thẳng không thành Măng xông (OG-08 'nối ống').",
+  "regex": "(?:các\\s+loại\\s+)?\\bco\\s*,?\\s*tê\\b(?:\\s*,?\\s*(?:giảm\\s+hướng|chuyển\\s+hướng|giảm\\s+tốc))*|(?:bao\\s+gồm\\s+)?(?:đầy\\s+đủ\\s+)?(?:các\\s+)?phụ\\s+kiện\\s+(?:đồng\\s+bộ|bích|kèm\\s+theo|đi\\s+kèm)|kết\\s+nối\\s+(?:ống\\s+)?bằng",
+  "nguon": "User yêu cầu 2026-11-24, dự án AC.OG.CGVG R41-42 'Ống gió EI30 dày 0.95 mm' (m²), cột Mô tả '... phụ kiện bích, thanh V/U, ty ren, gioăng chống cháy, co tê giảm hướng ...' bị nhận Tê vuông 0x0/0x0; 'kết nối ống bằng' — User yêu cầu 2026-11-24, dự án 261124_TEF_THÁP A, B R29-41 'Ống gió Tole tráng kẽm GI thk: 0.75mm, kết nối ống bằng nẹp C, TDC : KT: 1200x600' bị nhận Măng xông tròn",
+  "vi_du_dung": [
+   {
+    "ten": "Ống gió EI30 dày 0.95 mm bao gồm đầy đủ phụ kiện bích, ty ren, co tê giảm hướng",
+    "dvt": "m2",
+    "loai": "DUCT_M2"
+   },
+   {
+    "ten": "Ống gió Tole tráng kẽm GI thk: 0.58mm, kết nối ống bằng nẹp C, TDC : KT: 200x150",
+    "kt": [
+     200,
+     150
+    ],
+    "dvt": "md",
+    "loai": "DUCT_RECT"
+   }
+  ],
+  "vi_du_sai": [
+   {
+    "ten": "Tê 600x400/400x300",
+    "kt": [
+     600,
+     400
+    ],
+    "w2": 400,
+    "h2": 300,
+    "loai": "TEE_SQ",
+    "ghi_chu": "hàng Tê thật vẫn là Tê"
+   },
+   {
+    "ten": "Phụ kiện ống gió tôn 0.75",
+    "dvt": "m2",
+    "loai": "FITTING_M2",
+    "ghi_chu": "dòng phụ kiện thật vẫn là FITTING_M2"
+   },
+   {
+    "ten": "Măng xông nối ống D300",
+    "loai": "COUPLING_RT",
+    "ghi_chu": "măng xông thật vẫn là măng xông"
+   }
+  ]
+ },
  "ong_tron": {
   "_mo_ta": "is_round = (có D1, không W1) HOẶC (D1 = W1 = H1, văn bản không có cặp AxB, có từ khóa tròn)",
   "regex_cap_vuong": "(?<![dDØø])\\b\\d{2,4}\\s*[xX*]\\s*\\d{2,4}\\b",
@@ -230,10 +275,12 @@
     "côn đầu quạt",
     "con dau quat",
     "v-t",
-    "cvt"
+    "cvt",
+    "vuông chuyển tròn",
+    "vuong chuyen tron"
    ],
    "hoac_hinh_hoc": "vuong_co_d_khong_w2",
-   "nguon": "bd1d662 20/10; 'cổ chuyển' = côn thu vuông tròn (User chốt 2026-11-23, dự án KL ống gió (sheet BOQ HĐ), R440-444 'Cổ chuyển 200x200/D200')",
+   "nguon": "bd1d662 20/10; 'cổ chuyển' = côn thu vuông tròn (User chốt 2026-11-23, dự án KL ống gió (sheet BOQ HĐ), R440-444 'Cổ chuyển 200x200/D200'); 'vuông chuyển tròn' — User yêu cầu 2026-11-24, dự án 261124_TEF_THÁP A, B R47-54 'Vuông chuyển tròn : 1200x650/D800 L=500'",
    "ly_do": "Có cặp AxB + đường kính D (chưa có cạnh thứ 2) = côn vuông → tròn.",
    "vi_du_dung": [
     {
@@ -252,6 +299,14 @@
       400
      ],
      "d": 300,
+     "loai": "SQUARE_TO_ROUND"
+    },
+    {
+     "ten": "Vuông chuyển tròn : 600x350/D300 L=200",
+     "kt": [
+      600,
+      350
+     ],
      "loai": "SQUARE_TO_ROUND"
     }
    ]
@@ -443,7 +498,7 @@
     "bt45",
     "elbow"
    ],
-   "nguon": "bd1d662 20/10",
+   "nguon": "bd1d662 20/10; '^co <AxB>' (VD 'Co 1200x650/R150') = cút vuông — User yêu cầu 2026-11-24, dự án 261124_TEF_THÁP A, B R55-64 (trước rơi về ống vuông)",
    "ly_do": "",
    "vi_du_dung": [
     {
@@ -453,7 +508,18 @@
       400
      ],
      "loai": "ELBOW_SQ"
+    },
+    {
+     "ten": "Co 500x300/R150",
+     "kt": [
+      500,
+      300
+     ],
+     "loai": "ELBOW_SQ"
     }
+   ],
+   "regex": [
+    "^co\\s+\\d{2,4}\\s*[x×*]\\s*\\d{2,4}"
    ]
   },
   {

@@ -46,7 +46,12 @@ def is_non_swind_system_item(name_lower, full_name_lower, sec_lower, name_str, f
     is_dn_valve = (name_lower.startswith(tuple(r["van_nuoc_bat_dau"])) and bool(re.search(r["regex_van_nuoc_dn"], name_lower))
                    and not any(match_keyword(k, name_lower) for k in r["tu_khoa_van_gio"]))
     is_hvac_prd = is_hvac_pressure_damper(full_name_lower, full_name_str, note_boq, rules)
-    hit = is_cable or is_dn_valve or ((not is_hvac_prd) and any(pk in name_lower or pk in full_name_lower for pk in r["tu_khoa_ong_nuoc"]))
+    hit = is_cable or is_dn_valve or ((not is_hvac_prd) and any(pk in name_lower for pk in r["tu_khoa_ong_nuoc"]))
+    if not hit and not is_hvac_prd and any(pk in full_name_lower for pk in r["tu_khoa_ong_nuoc"]):
+        # Từ khóa ống nước chỉ nằm ở ngữ cảnh Title / dòng mô tả (không ở Tên dòng): Tên dòng tự ghi loại hàng
+        # Swind (van gió / cửa gió / MFD...) thì dòng thắng Title (quy tắc 1a) — User yêu cầu 2026-11-24, dự án
+        # AC.OG.CGVG R21-24, R65-68: mô tả 'Khung cánh thép tráng kẽm ... van MFD' kéo MFD / NRD / cửa gió thành THUONG_MAI
+        hit = not any(dk in name_lower for dk in r["tru_ten_title_ong_nuoc"])
     if not hit and any(sk in sec_lower for sk in r["title_ong_nuoc"]):
         if not any(dk in name_lower for dk in r["tru_ten_title_ong_nuoc"]):
             hit = True

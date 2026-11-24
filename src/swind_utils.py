@@ -931,6 +931,13 @@ def vat_label(rate=None):
     return f"{r * 100:g}%"
 
 
+def learning_writes_disabled():
+    """SWIND_NO_LEARNING_WRITE=1 (E2E chạy song song — 2026-11-24): KHÔNG ghi file học / kinh nghiệm / hàng chờ
+    (format_learning_db, boq_keyword_learning, pending_approval_queue, swind_experience_db, temp_ambiguous)."""
+    import os
+    return os.environ.get("SWIND_NO_LEARNING_WRITE") == "1"
+
+
 def ensure_core_props(wb, author="Swind Multi-Agent AI"):
     """
     BOQ khách có <dc:creator></dc:creator> rỗng -> openpyxl lưu bỏ hẳn thẻ creator, docProps/core.xml không còn

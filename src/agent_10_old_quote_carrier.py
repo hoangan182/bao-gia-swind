@@ -600,6 +600,9 @@ def _is_item_bg_row(ws, r):
 
 def build_merged_bg(wb_out, ws_runner, boq_rows, carried, bg_title):
     """ws_runner: Sheet 'BG' do runner sinh cho phần còn lại (hoặc None). carried: {row_boq: match}."""
+    from swind_excel_builder import bg_template_sheet
+    # Mẫu form BG (User chốt 2026-11-24): đầu trang 1..14 (dòng 14 trống), dữ liệu từ dòng 15; form cũ: 1..13 / 14
+    HDR_LAST = 14 if bg_template_sheet() is not None else 13
     ws = wb_out.create_sheet(bg_title)
     thin = Side(style="thin", color="000000")
     hair = Side(style="hair", color="000000")
@@ -611,7 +614,10 @@ def build_merged_bg(wb_out, ws_runner, boq_rows, carried, bg_title):
         f_start = _footer_start(ws_runner)
         for col_l, dim in ws_runner.column_dimensions.items():
             ws.column_dimensions[col_l].width = dim.width
-        for r in range(1, 14):
+        ws.sheet_view.zoomScale = ws_runner.sheet_view.zoomScale  # mẫu form BG: zoom / lề / khổ giấy
+        ws.page_margins = copy(ws_runner.page_margins)
+        ws.page_setup.orientation = ws_runner.page_setup.orientation
+        for r in range(1, HDR_LAST + 1):
             if ws_runner.row_dimensions[r].height:
                 ws.row_dimensions[r].height = ws_runner.row_dimensions[r].height
             for c in range(1, 17):
@@ -619,7 +625,7 @@ def build_merged_bg(wb_out, ws_runner, boq_rows, carried, bg_title):
                 dst = ws.cell(r, c, value=src.value)
                 _copy_style(src, dst)
         for m in ws_runner.merged_cells.ranges:
-            if m.max_row <= 13:
+            if m.max_row <= HDR_LAST:
                 ws.merge_cells(str(m))
         # Căn dòng BG của runner về dòng BOQ (BG giữ đúng thứ tự BOQ, cột B = tên BOQ)
         remaining = [b for b in boq_rows if b["row"] not in carried]
@@ -666,7 +672,7 @@ def build_merged_bg(wb_out, ws_runner, boq_rows, carried, bg_title):
             if flag:
                 cell.fill = yellow
 
-    out_r, stt = 14, 0
+    out_r, stt = HDR_LAST + 1, 0
     stats = {"carried_rows": 0, "carried_value": 0.0, "new_rows": 0, "new_value": 0.0, "unpriced_rows": 0, "unpriced_list": []}
     row_source = {}
 
@@ -736,7 +742,9 @@ def build_merged_bg(wb_out, ws_runner, boq_rows, carried, bg_title):
                 v = src.value
                 if isinstance(v, str) and v.startswith("="):
                     v = Translator(v, origin=src.coordinate).translate_formula(ws.cell(tr, c).coordinate)
-                    v = re.sub(r"(SUBTOTAL\(9,\s*)O\d+:O\d+", rf"\g<1>O14:O{last_body}", v)
+                    v = re.sub(r"(SUBTOTAL\(9,\s*)O\d+:O\d+", rf"\g<1>O{HDR_LAST + 1}:O{last_body}", v)
+                    if fr == footer_rows[0] and c == 15:  # mẫu form BG: Tổng trước thuế = SUM(O15:O..)
+                        v = re.sub(r"(SUM\()O\d+:O\d+", rf"\g<1>O{HDR_LAST + 1}:O{last_body}", v)
                 dst = ws.cell(tr, c, value=v)
                 _copy_style(src, dst)
         for m in ws_runner.merged_cells.ranges:
@@ -746,7 +754,7 @@ def build_merged_bg(wb_out, ws_runner, boq_rows, carried, bg_title):
         bold = Font(name="Times New Roman", size=10, bold=True)
         vat_rate = get_quotation_profile()["vat_rate"]  # VAT theo financial_policy.json (gom giá 2026-11-03)
         for i, (lbl, f) in enumerate([
-            ("Total/ Tổng Trước thuế", f"=SUBTOTAL(9,O14:O{last_body})"),
+            ("Total/ Tổng Trước thuế", f"=SUBTOTAL(9,O{HDR_LAST + 1}:O{last_body})"),
             (f"VAT {vat_label()}", f"=ROUND(O{out_r}*{vat_rate}, 0)"),
             (f"Total Amount (including VAT {vat_label()})/ Tổng sau thuế", f"=O{out_r}+O{out_r + 1}"),
         ]):

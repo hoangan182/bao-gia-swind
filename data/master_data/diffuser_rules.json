@@ -204,6 +204,13 @@
       "nan bd",
       "sọt trứng",
       "sọt trưng"
+    ],
+    "tu_ghi_khuech_tan": [
+      "khuếch tán",
+      "khuyếch tán",
+      "khuyết tán",
+      "khuêch tán",
+      "diffuser"
     ]
   },
   "buoc_nhan_dien": [
@@ -439,7 +446,10 @@
       "mo_ta": "Bỏ 'dạng/kiểu lưới', 'nan (lưới)' (= sọt trứng) và 'lưới lọc / lưới gió' trước khi dò LCCT",
       "nguon_bo_sung": "'nan (lưới)' = sọt trứng, không phải LCCT (User chốt 2026-11-23, dự án 261123_HH3_RFQ R15-R19 'Miệng gió hút/cấp dạng nan (lưới)')",
       "tu": "mesh_base",
-      "xoa_regex": "(?:(?:dạng|kiểu)\\s+lưới|nan\\s*\\(\\s*lưới\\s*\\)|lưới\\s+(?:lọc|gió))"
+      "nguon_bo_sung_2": "'van ... lưới bảo vệ' trong Title mô tả van (PRD: khung van, lá van, lưới bảo vệ) là bộ phận của van, không phải LCCT của cửa gió bên dưới (User chốt 2026-11-24, dự án AC.OG.CGVG R50-55, R58)",
+      "vi_du_dung": "Title 'Van xả áp cơ (PRD) ... bao gồm khung van, lá van, lưới bảo vệ' + dòng 'Cửa gió nan thẳng, kèm hộp gió + OBD 600x600' -> SDG+O (không +N)",
+      "vi_du_sai": "'Louver kèm lưới bảo vệ 600x300' (không có chữ van đứng trước) vẫn nhận LCCT",
+      "xoa_regex": "(?:(?:dạng|kiểu)\\s+lưới|nan\\s*\\(\\s*lưới\\s*\\)|lưới\\s+(?:lọc|gió)|\\b(?:van|damper)\\b[^.;]*?lưới\\s+bảo\\s+vệ)"
     },
     {
       "co": "has_mesh",
@@ -1020,20 +1030,74 @@
       "trong": "combined_search"
     },
     {
+      "co": "dong_ghi_khuech_tan",
+      "mo_ta": "CHÍNH DÒNG (Tên / Ghi chú / Model) ghi kiểu khuếch tán: khuếch tán (kể cả viết sai khuyếch tán), diffuser, 'N hướng', mã SD / SCD / SAD / SRD",
+      "nguon": "User chốt 2026-11-24 (quét báo giá người lập: CENTRO 'SAG 300x300 c/w OBD' → SDG+OBD; MEPF 'Miệng cấp gió SAG + OBD 600x600' → SDG+OBD; 'Miệng gió cấp 4 hướng' → SD; Penta 'Cửa khuếch tán KT bì 450x450' → SAD) — dự án AC.OG.CGVG R157/R158 'cửa hút bếp 600x600 / 450x450 + OBD' ra SDG / SD do chữ '450' trong danh sách từ khóa cũ",
+      "dieu_kien": {
+        "mot_trong": [
+          {
+            "tu_khoa": [
+              "@tu_ghi_khuech_tan"
+            ],
+            "trong": "raw_name_low"
+          },
+          {
+            "tu_khoa": [
+              "@tu_ghi_khuech_tan"
+            ],
+            "trong": "note_model_low"
+          },
+          {
+            "regex": "(?<![a-z0-9])\\d\\s*hướng\\b|(?<![a-z])(?:sd|scd|sad|srd)(?![a-z])",
+            "trong": "raw_name_low"
+          },
+          {
+            "regex": "(?<![a-z0-9])\\d\\s*hướng\\b|(?<![a-z])(?:sd|scd|sad|srd)(?![a-z])",
+            "trong": "note_model_low"
+          }
+        ]
+      }
+    },
+    {
+      "co": "title_ghi_khuech_tan",
+      "mo_ta": "Title cha ghi khuếch tán, dòng không tự ghi kiểu nan khác, và Title KHÔNG phải danh sách nhóm hàng ('Miệng gió, cửa gió, miệng gió khuếch tán' — CENTRO người lập vẫn báo SDG)",
+      "nguon": "User chốt 2026-11-24 (quét báo giá người lập: CENTRO 'SAG 300x300 c/w OBD' → SDG+OBD; MEPF 'Miệng cấp gió SAG + OBD 600x600' → SDG+OBD; 'Miệng gió cấp 4 hướng' → SD; Penta 'Cửa khuếch tán KT bì 450x450' → SAD) — dự án AC.OG.CGVG R157/R158 'cửa hút bếp 600x600 / 450x450 + OBD' ra SDG / SD do chữ '450' trong danh sách từ khóa cũ",
+      "dieu_kien": {
+        "tat_ca": [
+          {
+            "mot_trong": [
+              {
+                "tu_khoa": [
+                  "@tu_ghi_khuech_tan"
+                ],
+                "trong": "title_low"
+              },
+              {
+                "regex": "(?<![a-z0-9])\\d\\s*hướng\\b|(?<![a-z])(?:sd|scd|sad|srd)(?![a-z])",
+                "trong": "title_low"
+              }
+            ]
+          },
+          {
+            "khong": {
+              "regex": "(?:cửa|miệng)\\s*gió\\s*(?:,|/|&|\\+|\\bvà\\b)",
+              "trong": "title_low"
+            }
+          },
+          "!has_any_explicit_blade"
+        ]
+      }
+    },
+    {
       "co": "is_sq_ac_diffuser",
-      "mo_ta": "Cửa vuông 600/450/300 hệ điều hòa → khuếch tán vuông SD (AIR_CONDITIONING_SQUARE_DIFFUSER_SD_RULE)",
-      "nguon": "1805d82 2026-10-20; ngoại lệ 'Cửa gió trổ N lỗ' (không ghi cấp/hồi) → nan thẳng SDG, không phải khuếch tán (User chốt 2026-11-23, dự án KL ống gió BOQ HĐ R249 'Cửa gió trổ 01 lỗ 100x100; KT: 300x300')",
+      "mo_ta": "Cửa vuông 600/450/300 (595/445/295) được BOQ GHI là khuếch tán (dòng hoặc Title hợp lệ) → khuếch tán vuông SD. Không ghi → mặc định nan thẳng bầu dục SDG, bất kể cỡ, OBD, hệ cấp / hút / bếp (User chốt 2026-11-24, thay rule 1805d82 'cửa vuông 600/450/300 hệ điều hòa mặc định SD' + điều kiện OBD/từ khóa 'cấp, lạnh, 450, 150' b5bf9c1)",
+      "nguon": "User chốt 2026-11-24 (quét báo giá người lập: CENTRO 'SAG 300x300 c/w OBD' → SDG+OBD; MEPF 'Miệng cấp gió SAG + OBD 600x600' → SDG+OBD; 'Miệng gió cấp 4 hướng' → SD; Penta 'Cửa khuếch tán KT bì 450x450' → SAD) — dự án AC.OG.CGVG R157/R158 'cửa hút bếp 600x600 / 450x450 + OBD' ra SDG / SD do chữ '450' trong danh sách từ khóa cũ",
+      "nguon_cu": "1805d82 2026-10-20; ngoại lệ 'Cửa gió trổ N lỗ' (không ghi cấp/hồi) → nan thẳng SDG, không phải khuếch tán (User chốt 2026-11-23, dự án KL ống gió BOQ HĐ R249 'Cửa gió trổ 01 lỗ 100x100; KT: 300x300')",
       "dieu_kien": {
         "tat_ca": [
           "!is_slot_sld",
           "!is_standalone_lcct",
           "!is_standalone_filter",
-          {
-            "khong": {
-              "regex": "cửa\\s*gió\\s*trổ\\s*\\d*\\s*lỗ",
-              "trong": "combined_search"
-            }
-          },
           {
             "so_sanh": [
               "w",
@@ -1041,80 +1105,64 @@
               0
             ]
           },
-          {"so_sanh": ["w", "==", "h"]},
+          {
+            "so_sanh": [
+              "w",
+              "==",
+              "h"
+            ]
+          },
           {
             "thuoc": [
               "w",
               [
                 600,
+                595,
                 450,
-                300
+                445,
+                300,
+                295
               ]
             ]
           },
-          "!is_return_grille",
-          "!is_louver_z",
-          "!is_press_or_smoke",
-          "!is_eggcrate",
           {
             "mot_trong": [
-              "!has_obd",
-              {
-                "tu_khoa": [
-                  "cấp",
-                  "lạnh",
-                  "điều hòa",
-                  "sag",
-                  "sad",
-                  "scd",
-                  "khuếch tán",
-                  "450",
-                  "150"
-                ],
-                "trong": "combined_search"
-              }
+              "dong_ghi_khuech_tan",
+              "title_ghi_khuech_tan"
             ]
-          },
-          {
-            "khong": {
-              "tu_khoa": [
-                "nan thẳng",
-                "gió thẳng",
-                "miệng thẳng",
-                "cửa thẳng",
-                "bầu dục",
-                "nan bd",
-                "lớp nan",
-                "nan đơn",
-                "nan đôi",
-                "air grille",
-                "sọt trứng",
-                "sọt trưng",
-                "eggcrate",
-                "ecg",
-                "linear",
-                "nan t",
-                "dạng nan",
-                "格栅",
-                "kiểm tra",
-                "检查",
-                "access door",
-                "cửa công tác",
-                "cửa thăm",
-                "tháo lắp",
-                "inspection",
-                "oag",
-                "eag",
-                "mag",
-                "fag",
-                "ngoài trời",
-                "gió thải"
-              ],
-              "trong": "blade_search"
-            }
           }
         ]
-      }
+      },
+      "vi_du_dung": [
+        {
+          "ten": "Miệng gió cấp 4 hướng: Kích thước 600x600",
+          "model": "SD"
+        },
+        {
+          "ten": "Cửa khuếch tán KT bì 450x450",
+          "model": "SD"
+        },
+        {
+          "ten": "450x450",
+          "title": "Cửa thổi gió kiểu khuếch tán vuông kèm hộp gió",
+          "model": "SD"
+        }
+      ],
+      "vi_du_sai": [
+        {
+          "ten": "cửa hút bếp, 450x450, kèm hộp gió + OBD",
+          "model": "SDG+O"
+        },
+        {
+          "ten": "SAG 300x300 c/w OBD",
+          "title": "Miệng gió, cửa gió, miệng gió khuếch tán",
+          "model": "SDG+O"
+        },
+        {
+          "ten": "Cửa gió cấp 600x600",
+          "model": "SDG"
+        }
+      ]
     },
     {
       "co": "is_diffuser_sq",
@@ -1132,55 +1180,66 @@
           "!is_standalone_filter",
           {
             "mot_trong": [
-              {"tu_khoa": ["round", "tròn", "srd"], "trong": "combined_search"},
-              {
-                "tat_ca": [
-                  {"so_sanh": ["w", "==", "h"]},
-                  {"thuoc": ["w", [600, 595, 450, 445, 300, 295]]}
-                ]
-              }
-            ]
-          },
-          {
-            "mot_trong": [
               {
                 "tu_khoa": [
-                  "khuếch tán",
-                  "scd",
-                  "sad",
-                  "diffuser"
+                  "round",
+                  "tròn",
+                  "srd"
                 ],
-                "trong": "blade_search"
+                "trong": "combined_search"
               },
-              "is_sq_ac_diffuser",
               {
                 "tat_ca": [
                   {
                     "so_sanh": [
                       "w",
                       "==",
-                      600
+                      "h"
                     ]
                   },
                   {
-                    "so_sanh": [
-                      "h",
-                      "==",
-                      600
+                    "thuoc": [
+                      "w",
+                      [
+                        600,
+                        595,
+                        450,
+                        445,
+                        300,
+                        295
+                      ]
                     ]
-                  },
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "mot_trong": [
+              "is_sq_ac_diffuser",
+              {
+                "tat_ca": [
                   {
                     "tu_khoa": [
-                      "sag"
+                      "round",
+                      "tròn",
+                      "srd"
                     ],
-                    "trong": "blade_search"
+                    "trong": "combined_search"
+                  },
+                  {
+                    "mot_trong": [
+                      "dong_ghi_khuech_tan",
+                      "title_ghi_khuech_tan"
+                    ]
                   }
                 ]
               }
             ]
           }
         ]
-      }
+      },
+      "nguon_bo_sung_2026_11_24": "Bỏ nhánh 'SAG 600x600 → SD' và 'khuếch tán trong blade_search (gồm Title danh sách nhóm)': chỉ khuếch tán khi dòng / Title hợp lệ ghi khuếch tán — User chốt 2026-11-24 (quét báo giá người lập: CENTRO 'SAG 300x300 c/w OBD' → SDG+OBD; MEPF 'Miệng cấp gió SAG + OBD 600x600' → SDG+OBD; 'Miệng gió cấp 4 hướng' → SD; Penta 'Cửa khuếch tán KT bì 450x450' → SAD) — dự án AC.OG.CGVG R157/R158 'cửa hút bếp 600x600 / 450x450 + OBD' ra SDG / SD do chữ '450' trong danh sách từ khóa cũ"
     },
     {
       "co": "is_makeup_air_z",
@@ -2517,8 +2576,18 @@
         {
           "khi": {
             "tat_ca": [
-              {"tu_khoa": ["khuếch tán", "scd", "sad", "diffuser"], "trong": "blade_search"},
-              {"khong": "is_round_diff"}
+              {
+                "tu_khoa": [
+                  "khuếch tán",
+                  "scd",
+                  "sad",
+                  "diffuser"
+                ],
+                "trong": "blade_search"
+              },
+              {
+                "khong": "is_round_diff"
+              }
             ]
           },
           "profile": "BD"
@@ -2952,12 +3021,45 @@
       "id": "CG-KT-01_KHUECH_TAN_TOI_DA_600",
       "mo_ta": "[ĐÃ THAY 2026-11-18: cỡ ngoài 600/450/300 không còn ra Model SD nên cờ này không còn kích hoạt — giữ làm lưới an toàn] Cửa khuếch tán vuông (Model SD...) kích thước mặt tối đa 600x600: vượt → VẪN báo giá theo BOQ, ghi chú + tô vàng Sheet BG + HỎI LẠI USER ở Kiểm soát cuối",
       "nguon": "User chốt 2026-11-13 (KL Swind 1 R21 'KTM 595x1195 + OBD' — Spec 'Cửa gió khuếch tán')",
-      "model_bat_dau": ["SD"],
-      "model_loai_tru_bat_dau": ["SDG"],
-      "toi_da": [600, 600],
+      "model_bat_dau": [
+        "SD"
+      ],
+      "model_loai_tru_bat_dau": [
+        "SDG"
+      ],
+      "toi_da": [
+        600,
+        600
+      ],
       "canh_bao": "⚠️ CẦN XÁC NHẬN: Cửa khuếch tán kích thước tối đa 600x600 — BOQ ghi {w}x{h}",
-      "vi_du_dung": [{"model": "SD+O", "kt": [595, 1195], "canh_bao": true}],
-      "vi_du_sai": [{"model": "SD+O", "kt": [595, 595], "canh_bao": false}, {"model": "SDG+O", "kt": [595, 1195], "canh_bao": false}]
+      "vi_du_dung": [
+        {
+          "model": "SD+O",
+          "kt": [
+            595,
+            1195
+          ],
+          "canh_bao": true
+        }
+      ],
+      "vi_du_sai": [
+        {
+          "model": "SD+O",
+          "kt": [
+            595,
+            595
+          ],
+          "canh_bao": false
+        },
+        {
+          "model": "SDG+O",
+          "kt": [
+            595,
+            1195
+          ],
+          "canh_bao": false
+        }
+      ]
     }
   ],
   "co_explicit": {

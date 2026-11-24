@@ -5,7 +5,7 @@
   {
    "id": "TR-01_TU_LOAI_HANG",
    "ten": "Từ khóa LOẠI HÀNG bổ sung (ngoài keywords của manufacturable_catalog.json + commercial_catalog.json)",
-   "nguon": "User chốt 2026-11-23 (4 loại Title / Dòng)",
+   "nguon": "User chốt 2026-11-23 (4 loại Title / Dòng); 'co' (= cút) và 'giảm' (= côn thu) — User yêu cầu 2026-11-24, dự án 261124_TEF_THÁP A, B R55-72 'Co 1200x650/R150', 'Giảm 400x250/350x250 L= 200' bị hỏi lại Loại 4",
    "ly_do": "Title chứa loại hàng → vai LOAI_HANG; Dòng chứa loại hàng → vai DU_LOAI (dòng tự quyết, kể cả hàng thương mại như giá đỡ / bộ nguồn — AGENTS.md 3c). LCCT / lọc / hộp gió là sản phẩm riêng nên là loại hàng, không phải thông số. Mã viết tắt chuẩn Swind (typo_rules.json TY-03.ma_chuan: MSFD, MPRD, SDG...) tự động là loại hàng (E2E 2026-11-23: 'MSFD 1000x200' NOXH bị coi là không nhận ra).",
    "tu_khoa": [
     "cửa",
@@ -49,7 +49,9 @@
     "chuyển tiết diện",
     "tiết diện",
     "chạc",
-    "chuyển"
+    "chuyển",
+    "co",
+    "giảm"
    ],
    "vi_du_dung": [
     {
@@ -67,6 +69,14 @@
     {
      "vao": "chuyển tiết diện kích thước :",
      "vai_title": "LOAI_HANG"
+    },
+    {
+     "vao": "co 500x300/r150",
+     "vai_dong": "DU_LOAI"
+    },
+    {
+     "vao": "giảm 400x250/350x250 l= 200",
+     "vai_dong": "DU_LOAI"
     }
    ],
    "vi_du_sai": [

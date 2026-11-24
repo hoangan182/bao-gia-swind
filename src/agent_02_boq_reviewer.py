@@ -84,6 +84,9 @@ def _load_json(rel_path, default):
 
 
 def _write_json(rel_path, data, indent=2):
+    from swind_utils import learning_writes_disabled
+    if learning_writes_disabled():
+        return
     with open(resolve_path(rel_path), "w", encoding="utf-8") as f:
         json.dump(data, f, indent=indent, ensure_ascii=False)
 
@@ -303,8 +306,10 @@ def run_reviewer(boq_file, sheet_name="DHKK", interactive=False):
         print(f"  ... (Và {len(ambiguous_items) - 5} mặt hàng khác)")
 
     out_path = resolve_path("data/projects/temp_ambiguous.json")
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(ambiguous_items, f, indent=4, ensure_ascii=False)
+    from swind_utils import learning_writes_disabled
+    if not learning_writes_disabled():
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(ambiguous_items, f, indent=4, ensure_ascii=False)
 
     print("\nĐể định nghĩa và phân loại chính xác, vui lòng chạy Master Runner hoặc cập nhật học máy.")
     return False

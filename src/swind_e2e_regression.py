@@ -26,7 +26,14 @@ import subprocess
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASELINE_PATH = os.path.join(BASE_DIR, "data", "master_data", "e2e_regression_baseline.json")
+DUCT_BASELINE_PATH = os.path.join(BASE_DIR, "data", "master_data", "e2e_baseline_include_duct.json")
+# --modes: chạy nhiều chế độ trong 1 lệnh, mỗi chế độ so với baseline riêng (2026-11-24 — trước đây --include-duct bị so
+# nhầm với baseline mặc định nên luôn DIFF)
+MODES = {"default": ((), BASELINE_PATH), "duct": (("--include-duct",), DUCT_BASELINE_PATH)}
 DEFAULT_LIMIT = 50  # E2E mặc định chỉ chạy 50 BOQ mới nhất (User chốt 2026-11-11)
+# --jobs: số runner chạy song song (2026-11-24: tuần tự 104 file mất ~21 phút/chế độ). Mỗi runner ghi output vào thư mục
+# tạm riêng + SWIND_NO_LEARNING_WRITE=1 (không ghi file học) nên chạy song song không tranh chấp file.
+DEFAULT_JOBS = max(1, (os.cpu_count() or 2) - 2)
 # Dự án cũ có baseline sai (lưu trước đợt cải tiến 02-03/11/2026) -> bỏ qua, không check / không lưu lại (User chốt 2026-11-03)
 EXCLUDED_PATH = os.path.join(BASE_DIR, "data", "master_data", "e2e_excluded_files.json")
 
@@ -220,7 +227,7 @@ def run_one(boq_path, timeout=300, extra_args=()):
     # Chạy trong thư mục tạm: KHÔNG ghi vào data/projects/ & output/ thật (tránh đè file báo giá gửi khách)
     import tempfile
     with tempfile.TemporaryDirectory(prefix="swind_e2e_") as tmp:
-        env = dict(os.environ, SWIND_OUTPUT_DIR=os.path.join(tmp, "output"))
+        env = dict(os.environ, SWIND_OUTPUT_DIR=os.path.join(tmp, "output"), SWIND_NO_LEARNING_WRITE="1")
         proc = subprocess.run(
             [PY if os.path.exists(PY) else sys.executable, RUNNER, boq_path, "--non-interactive", "--auto-accept", *extra_args],
             cwd=BASE_DIR, capture_output=True, text=True, timeout=timeout, env=env
@@ -292,44 +299,88 @@ def main():
     ap.add_argument("--report", default=None, help="File Markdown báo cáo cho --line-diff")
     ap.add_argument("--limit", type=int, default=DEFAULT_LIMIT,
                     help=f"Chỉ chạy N BOQ có báo giá gần nhất (theo file báo giá trong output/, chưa báo thì theo file input; mặc định {DEFAULT_LIMIT}; 0 = toàn bộ)")
+    ap.add_argument("--jobs", type=int, default=DEFAULT_JOBS,
+                    help=f"Số runner chạy song song (mặc định {DEFAULT_JOBS} = số nhân CPU - 2; 1 = tuần tự như cũ)")
+    ap.add_argument("--modes", default=None,
+                    help="Chạy nhiều chế độ trong 1 lệnh, mỗi chế độ so baseline riêng: 'default', 'duct' hoặc 'default,duct'")
+    ap.add_argument("--files-from", default=None,
+                    help="Chỉ chạy các file có tên trong file văn bản này (mỗi dòng 1 tên — đầu ra của swind_impact_scan.py)")
     args = ap.parse_args()
     if args.line_diff:
         sys.exit(run_line_diff(args.line_diff[0], args.line_diff[1], args.report))
-    baseline_path = args.baseline or BASELINE_PATH
-    extra_args = tuple(args.runner_args.split()) if args.runner_args else ()
+    if args.modes:
+        modes = [(m.strip(), MODES[m.strip()][0], MODES[m.strip()][1]) for m in args.modes.split(",") if m.strip()]
+    else:
+        modes = [("", tuple(args.runner_args.split()) if args.runner_args else (), args.baseline or BASELINE_PATH)]
 
     files = sorted(glob.glob(os.path.join(BASE_DIR, "input", "*.xls*")))
     files = [f for f in files if not os.path.basename(f).startswith("~$")]
     if args.filter:
         flt = unicodedata.normalize("NFC", args.filter).lower()
         files = [f for f in files if flt in unicodedata.normalize("NFC", os.path.basename(f)).lower()]
+    if args.files_from:
+        with open(args.files_from, "r", encoding="utf-8") as fh:
+            wanted = {unicodedata.normalize("NFC", ln.strip()) for ln in fh if ln.strip()}
+        files = [f for f in files if unicodedata.normalize("NFC", os.path.basename(f)) in wanted]
     # Giới hạn N báo giá gần nhất (User chốt 2026-11-11: chạy toàn bộ input/ quá lâu) — xếp theo lần báo giá gần nhất
     # (file báo giá trong output/<tên file>/), chưa từng báo thì theo thời gian file input; chạy theo thứ tự tên
-    if args.limit and args.limit > 0 and len(files) > args.limit:
+    if args.limit and args.limit > 0 and len(files) > args.limit and not args.files_from:
         n_all = len(files)
         files = sorted(sorted(files, key=_recent_quote_time, reverse=True)[:args.limit])
         print(f"ℹ️  E2E chỉ chạy {len(files)}/{n_all} BOQ có báo giá gần nhất (--limit {args.limit}; --limit 0 để chạy toàn bộ)")
 
+    # Chạy song song mọi (chế độ, file) trong 1 hàng đợi; file nặng chạy trước để không kéo dài cuối hàng
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    tasks = [(m, fp) for (m, _a, _b) in modes for fp in files]
+    tasks.sort(key=lambda t: -os.path.getsize(t[1]))
+    args_of = {m: a for (m, a, _b) in modes}
+    snapshots = {p: open(p, "rb").read() for p in LEARNING_FILES if os.path.exists(p)}
+    results_all = {m: {} for (m, _a, _b) in modes}
+    t_start = time.time()
+    try:
+        with ThreadPoolExecutor(max_workers=max(1, args.jobs)) as ex:
+            futs = {ex.submit(run_one, fp, 300, args_of[m]): (m, fp) for (m, fp) in tasks}
+            done = 0
+            for fut in as_completed(futs):
+                m, fp = futs[fut]
+                try:
+                    res = fut.result()
+                except Exception as e:  # noqa: BLE001 — timeout / lỗi tiến trình: ghi thành FAIL
+                    res = {"exit_code": -1, "sheets": {}, "total": 0, "unpriced_rows": 0, "qa_rejected": 0, "omission_warnings": 0,
+                           "blocked": False, "duct_only_stop": False, "price_not_increasing": 0, "row_issues": [], "bg_lines": [],
+                           "elapsed_s": 0, "traceback": True, "tail": [str(e)]}
+                results_all[m][os.path.basename(fp)] = res
+                done += 1
+                if done % 10 == 0 or done == len(tasks):
+                    print(f"  ... {done}/{len(tasks)} lượt xong ({time.time() - t_start:.0f}s)", flush=True)
+    finally:
+        # Khôi phục file học (an toàn thêm — runner đã không ghi nhờ SWIND_NO_LEARNING_WRITE=1)
+        for p_snap, data in snapshots.items():
+            with open(p_snap, "wb") as f:
+                f.write(data)
+    print(f"⏱️  {len(tasks)} lượt chạy xong trong {time.time() - t_start:.0f}s (--jobs {args.jobs})")
+
+    any_failed = False
+    for (m, _a, baseline_path) in modes:
+        if len(modes) > 1 or m:
+            print(f"\n================ CHẾ ĐỘ: {m}  (baseline: {os.path.basename(baseline_path)}) ================")
+        any_failed |= _report_mode(files, results_all[m], baseline_path, args)
+    sys.exit(1 if (any_failed and not args.save_baseline) else 0)
+
+
+def _report_mode(files, results, baseline_path, args):
+    """In kết quả 1 chế độ theo thứ tự tên file; lưu baseline / snapshot nếu có cờ. Trả True khi có file DIFF / FAIL."""
     baseline = {}
     if os.path.exists(baseline_path):
         with open(baseline_path, "r", encoding="utf-8") as f:
             baseline = json.load(f)
-
     excluded = load_excluded(baseline_path)
-    results = {}
     counts = {"OK": 0, "INV-OK": 0, "DIFF": 0, "FAIL": 0}
     failed_names = []
-    snapshots = {p: open(p, "rb").read() for p in LEARNING_FILES if os.path.exists(p)}
     for idx, fp in enumerate(files, 1):
         name = os.path.basename(fp)
         nfc = unicodedata.normalize("NFC", name)
-        try:
-            res = run_one(fp, extra_args=extra_args)
-        finally:
-            for p_snap, data in snapshots.items():
-                with open(p_snap, "wb") as f:
-                    f.write(data)
-        results[name] = res
+        res = results[name]
         fails, warns = check_invariants(res)
         res["invariant_fails"] = fails
         base = None if nfc in excluded else baseline.get(name)
@@ -364,10 +415,11 @@ def main():
     print(f"\n📋 Kết quả: {counts['OK']} khớp baseline | {counts['INV-OK']} chỉ đạt kiểm bất biến (chưa có baseline duyệt) | "
           f"{counts['DIFF']} lệch baseline | {counts['FAIL']} lỗi bất biến  ({len(files)} file)")
     if args.line_snapshot:
-        os.makedirs(os.path.dirname(os.path.abspath(args.line_snapshot)), exist_ok=True)
-        with open(args.line_snapshot, "w", encoding="utf-8") as f:
+        snap = args.line_snapshot if len((args.modes or "").split(",")) <= 1 else args.line_snapshot.replace(".json", f"_{os.path.basename(baseline_path).split('.')[0]}.json")
+        os.makedirs(os.path.dirname(os.path.abspath(snap)), exist_ok=True)
+        with open(snap, "w", encoding="utf-8") as f:
             json.dump({k: v.get("bg_lines", []) for k, v in results.items()}, f, ensure_ascii=False, indent=1)
-        print(f"📸 Snapshot giá từng dòng: {args.line_snapshot} ({sum(len(v.get('bg_lines', [])) for v in results.values())} dòng)")
+        print(f"📸 Snapshot giá từng dòng: {snap} ({sum(len(v.get('bg_lines', [])) for v in results.values())} dòng)")
     if args.save_baseline:
         # Chỉ lưu file qua kiểm bất biến; không lưu lại dự án cũ đã loại (baseline sai) — User chốt 2026-11-03
         merged = dict(baseline)
@@ -383,7 +435,7 @@ def main():
             print(f"❌ E2E CHƯA ĐẠT: {len(failed_names)} file lệch baseline / lỗi bất biến: {failed_names}")
         else:
             print(f"✅ E2E ĐẠT: mọi file qua kiểm bất biến; {counts['OK']} file khớp baseline đã duyệt.")
-    sys.exit(1 if (failed_names and not args.save_baseline) else 0)
+    return bool(failed_names)
 
 
 if __name__ == "__main__":

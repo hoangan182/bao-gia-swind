@@ -560,6 +560,9 @@ class FormatLearningDB:
                 self.patterns = []
 
     def _save(self):
+        from swind_utils import learning_writes_disabled
+        if learning_writes_disabled():
+            return
         os.makedirs(os.path.dirname(self.DB_PATH), exist_ok=True)
         with open(self.DB_PATH, "w", encoding="utf-8") as f:
             json.dump(self.patterns, f, ensure_ascii=False, indent=2)

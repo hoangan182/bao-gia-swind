@@ -207,7 +207,7 @@
   {
    "id": "PV-02_THUONG_MAI_THEO_TEN",
    "ten": "Tên bắt đầu bằng thiết bị / phụ trợ (quạt, máy lạnh, tủ điện, cảm biến, giá đỡ...) → THUONG_MAI",
-   "nguon": "bd1d662 20/10; dde7498 28/10; giá đỡ / quang treo kể cả tiền tố 'lắp đặt' User chốt 2026-11-03 (việc C2, TAHK R66); thang cáp / máng cáp / vỏ tủ / hộp kiểm tra tiếp địa-điện trở 2026-11-13 (NBT-BG DA luxora: hàng điện có KT + chữ tôn bị nhận thành ống gió khi --include-duct); Outdoor / Indoor Unit, Package Unit (thiết bị điều hòa đặt phòng máy) 2026-11-20 — User chốt, tien luong moi thau V1_18t11 R73-81 'Outdoor/ Indoor Unit Phòng Chiller / Phòng nguồn MEC / Phòng máy biến áp (Package Unit Floor Standing)' bị tô vàng 'không ghi đủ kích thước': là thiết bị điều hòa cho phòng máy, không thuộc Swind -> không báo; tiền tố 'Hệ thống' trước giá đỡ / ty treo 2026-11-23 (2026-11-16- ATP BOQ HVAC VER 1 R188 'Hệ thống ty treo, thanh đỡ U/V mạ kẽm cho toàn bộ đường ống gió' + Spec 'thanh U40x40' bị báo thành ống gió 40x40 — quy tắc 3c); chụp hút mùi bếp / công nghiệp, chụp hút khói bếp 2026-11-23 (cùng dự án R180-182, chụp bếp Inox 3600x1500 bị gán giá chụp thông hơi SFX-S-DN300 — cùng loại 'chụp hút bếp' đã có: thiết bị bếp, không báo)",
+   "nguon": "bd1d662 20/10; dde7498 28/10; giá đỡ / quang treo kể cả tiền tố 'lắp đặt' User chốt 2026-11-03 (việc C2, TAHK R66); thang cáp / máng cáp / vỏ tủ / hộp kiểm tra tiếp địa-điện trở 2026-11-13 (NBT-BG DA luxora: hàng điện có KT + chữ tôn bị nhận thành ống gió khi --include-duct); Outdoor / Indoor Unit, Package Unit (thiết bị điều hòa đặt phòng máy) 2026-11-20 — User chốt, tien luong moi thau V1_18t11 R73-81 'Outdoor/ Indoor Unit Phòng Chiller / Phòng nguồn MEC / Phòng máy biến áp (Package Unit Floor Standing)' bị tô vàng 'không ghi đủ kích thước': là thiết bị điều hòa cho phòng máy, không thuộc Swind -> không báo; tiền tố 'Hệ thống' trước giá đỡ / ty treo 2026-11-23 (2026-11-16- ATP BOQ HVAC VER 1 R188 'Hệ thống ty treo, thanh đỡ U/V mạ kẽm cho toàn bộ đường ống gió' + Spec 'thanh U40x40' bị báo thành ống gió 40x40 — quy tắc 3c); chụp hút mùi bếp / công nghiệp, chụp hút khói bếp 2026-11-23 (cùng dự án R180-182, chụp bếp Inox 3600x1500 bị gán giá chụp thông hơi SFX-S-DN300 — cùng loại 'chụp hút bếp' đã có: thiết bị bếp, không báo); 'cùm ống mềm' (đai kẹp ống mềm, hàng mua ngoài) — User yêu cầu 2026-11-24, dự án 261124_TEF_THÁP A, B R87-88 bị nhận cửa SDG theo Title",
    "ly_do": "Loại hàng chính dòng tự ghi thắng Title cha (AGENTS.md 1a).",
    "regex_gia_do": "^(?:hệ\\s*thống\\s+)?(?:lắp\\s*đặt\\s+|gia\\s*công\\s+)?(?:giá\\s*đỡ|giá\\s*treo|quang\\s*treo|ty\\s*treo)\\b",
    "bat_dau": [
@@ -251,7 +251,9 @@
     "outdoor/",
     "outdoor unit",
     "indoor unit",
-    "package unit"
+    "package unit",
+    "cùm ống mềm",
+    "cùm ống gió mềm"
    ],
    "vi_du": [
     {

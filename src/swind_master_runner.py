@@ -941,6 +941,11 @@ def export_customer_boq_quotation_files(
 
         ws = wb[keep_sheet]
         ws.title = "BG"
+        from swind_excel_builder import bg_template_sheet
+        bg_tpl = bg_template_sheet() is not None
+        if bg_tpl:
+            # Mẫu form BG: ô 'Số hiệu' = tên file báo giá (User chốt 2026-11-24; PT Kinh doanh / ĐT cố định trong mẫu)
+            ws.cell(7, 16).value = os.path.splitext(os.path.basename(out_file))[0]
         sh_items = [it for it in all_items if it.get("source_sheet") == sh_name]
         q_row_price = {idx + 1: int(it.get("calc_sell_unit", 0)) for idx, it in enumerate(sh_items, 1)}
 
@@ -951,7 +956,8 @@ def export_customer_boq_quotation_files(
                 if m_q:
                     q_row = int(m_q.group(1))
                     ws.cell(r, 14).value = q_row_price.get(q_row, 0)
-                    ws.cell(r, 14).number_format = "#,##0"
+                    if not bg_tpl:  # mẫu form BG giữ định dạng kế toán của mẫu
+                        ws.cell(r, 14).number_format = "#,##0"
             val_p = ws.cell(r, 16).value
             if isinstance(val_p, str) and "FSLF24V US" in val_p:
                 ws.cell(r, 16).value = val_p.replace("FSLF24V US", "FSLF US")
@@ -1034,6 +1040,10 @@ def export_customer_boq_quotation_files(
                             new_c.alignment = copy(cell.alignment)
                             new_c.number_format = cell.number_format
                             style_cache[s_key] = copy(new_c._style)
+            # Mẫu form BG (User chốt 2026-11-24): zoom / lề / khổ giấy theo Sheet BG đã dựng
+            ws_swind.sheet_view.zoomScale = ws.sheet_view.zoomScale
+            ws_swind.page_margins = copy(ws.page_margins)
+            ws_swind.page_setup.orientation = ws.page_setup.orientation
             last_idx = len(wb_cust.worksheets) - 1
             wb_cust.active = last_idx
             if wb_cust.views:
@@ -1368,7 +1378,7 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
     return coverage
 
 
-def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None, neck_size=False, motor_price=None, mprd_motor_price=None, include_flex_duct=False, spec_priority="name", include_box=False, strict=False, include_duct=False, include_canvas=False, md_shaft_only=False, mprd_onoff=False, duct_ei=0, fire_duct_only=False, duct_straight_only=False, skip_fire_duct=False, duct_uplift=0.0, duct_coating="", duct_ei_note="", duct_only=False, duct_steel_brand="", lined_duct_as_duct=False):
+def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accept=False, dual_options=False, merge_sheets=False, only_cua_van=False, motor_brand=None, mfd_model=None, row_overrides=None, neck_size=False, motor_price=None, mprd_motor_price=None, include_flex_duct=False, spec_priority="name", include_box=False, strict=False, include_duct=False, include_canvas=False, md_shaft_only=False, mprd_onoff=False, duct_ei=0, fire_duct_only=False, duct_straight_only=False, skip_fire_duct=False, duct_uplift=0.0, duct_coating="", duct_ei_note="", duct_only=False, duct_steel_brand="", lined_duct_as_duct=False, price_zero_qty=False):
     """
     Hàm điều phối Quy trình B: Nhận file BOQ khách hàng -> Phân tích & Áp giá từ Master Data có sẵn (Agent 01 -> Agent 08).
     """
@@ -1437,6 +1447,8 @@ def run_master_pipeline(boq_file, sheet_names=None, interactive=True, auto_accep
     print("-" * 60)
     Agent01_BOQExtractor.INCLUDE_BOX = bool(include_box)
     agent_01 = Agent01_BOQExtractor(boq_file=boq_file, project_name=project_name, wb=shared_wb, include_flex_duct=include_flex_duct)
+    if price_zero_qty and agent_01.parser:
+        agent_01.parser.keep_zero_qty = True
     target_sheets, all_items = agent_01.detect_and_parse(sheet_names=sheet_names)
     # Override kích thước cho dòng parser đã loại (thiếu kích thước) -> parse lại với kích thước User cung cấp
     if row_overrides:
@@ -2147,6 +2159,7 @@ def main():
     parser.add_argument("--neck-size", action="store_true", help="Quy định kích thước cửa gió trong BOQ là kích thước cổ (Neck Size -> cộng thêm viền ra kích thước mặt)")
     parser.add_argument("--motor-price", type=float, default=None, help="Ghi đè đơn giá gốc động cơ van cho dự án (VD: 2300000)")
     parser.add_argument("--mprd-motor-price", type=float, default=None, help="Ghi đè đơn giá gốc động cơ van xả áp MPRD (động cơ tuyến tính 230V Belimo On/Off 10Nm) cho dự án, chỉ áp cho MPRD (VD: 4000000)")
+    parser.add_argument("--price-zero-qty", action="store_true", help="Dòng Cửa/Van KL trống/0 vẫn ghi Model + Đơn giá + Ghi chú, kể cả sheet có cột 'Tổng khối lượng' / phiếu đặt hàng (Mặc định: sheet đặt hàng bỏ dòng KL=0)")
     parser.add_argument("--include-flex-duct", action="store_true", help="Cho phép báo giá Ống gió mềm (Mặc định: Hệ thống KHÔNG báo giá ống mềm, chỉ báo khi có yêu cầu)")
     parser.add_argument("--include-box", action="store_true", help="Tính và báo giá thêm Hộp gió (theo công thức sheet BG PKV) cho các Cửa gió có kèm hộp (Mặc định: Không tính hộp)")
     parser.add_argument("--spec-priority", choices=["name", "note"], default="name", help="Thứ tự ưu tiên khi Cột Tên và Cột Ghi chú/Spec mâu thuẫn: 'name' (mặc định ưu tiên Cột Tên) hoặc 'note' (ưu tiên Cột Ghi chú/Spec)")
@@ -2257,6 +2270,7 @@ def main():
         motor_price=args.motor_price,
         mprd_motor_price=args.mprd_motor_price,
         include_flex_duct=args.include_flex_duct,
+        price_zero_qty=args.price_zero_qty,
         spec_priority=args.spec_priority,
         include_box=args.include_box,
         strict=args.strict,

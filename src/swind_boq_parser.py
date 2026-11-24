@@ -56,6 +56,9 @@ class SwindBOQParser:
         self.skip_reasons = {}
         self.parse_errors = {}
         self.row_overrides = {}
+        # --price-zero-qty (User yêu cầu 2026-11-24, dự án Cửa gió NTL): sheet có cột 'Tổng khối lượng' / phiếu đặt hàng
+        # vẫn giữ dòng Cửa/Van KL trống/0 để ghi Model + Đơn giá + Ghi chú (mặc định: bỏ như phiếu đặt hàng)
+        self.keep_zero_qty = False
         self._load_catalogs()
         # Phân vai Title / Dòng (title_row_rules.json) — User chốt 2026-11-23
         self.title_row_kws = title_row_resolver.product_keywords(self.manufacturable_catalog, self.commercial_catalog)
@@ -98,7 +101,7 @@ class SwindBOQParser:
 
         if not _is_side_table and _override_col_map is None and _override_header_row is None and max_items is None and not self.row_overrides:
             cache_dict = getattr(self.wb, "_swind_parsed_cache", None)
-            cache_key = (sheet_name, self.include_flex_duct)
+            cache_key = (sheet_name, self.include_flex_duct, self.keep_zero_qty)
             if cache_dict and cache_key in cache_dict:
                 c_items, c_skip, c_miss, c_reasons = cache_dict[cache_key]
                 self.skipped_rows[sheet_name] = set(c_skip)
@@ -242,10 +245,11 @@ class SwindBOQParser:
                 model_chk = str(ws.cell(r, col_map["model"]).value or "").strip() if "model" in col_map else ""
                 nl_chk = f"{name_str} {spec_chk} {model_chk}".lower()
                 is_blank_qty = (qty_val is None or str(qty_val).strip() == "")
-                is_zero_qty_with_unit = (not col_map.get("is_order_sheet") and qty_val in (0, 0.0, "0") and unit_val not in (None, "", 0, "0"))
+                drop_zero_order = bool(col_map.get("is_order_sheet")) and not self.keep_zero_qty
+                is_zero_qty_with_unit = (not drop_zero_order and qty_val in (0, 0.0, "0") and unit_val not in (None, "", 0, "0"))
                 has_cv_kw = any(k in nl_chk for k in cv_kws) or bool(re.search(cv_rx, nl_chk))
                 has_cv_dim = bool(re.search(r'([wWaAbB]?\s*\d+\s*[xX*]\s*[hHbBwW]?\s*\d+|\b[dD][nN]?\s*\d{2,4}\b|\b(?:vcd|fd|nrd|prd|md)\s+\d{2,4}\b)', nl_chk))
-                if (is_zero_qty_with_unit or _ov_force_blank or (is_blank_qty and not col_map.get("is_order_sheet") and has_cv_kw and has_cv_dim)) and "tổng cộng" not in nl_chk:
+                if (is_zero_qty_with_unit or _ov_force_blank or (is_blank_qty and not drop_zero_order and has_cv_kw and has_cv_dim)) and "tổng cộng" not in nl_chk:
                     if "qty" in col_map:
                         is_missing_qty = is_blank_qty
                         qty_val = 0.0
@@ -389,7 +393,7 @@ class SwindBOQParser:
                 if category == "KHAC" and name_lower.startswith(("box ", "hộp ", "hôp ")) and not name_lower.startswith(("hộp và cửa", "hộp + cửa", "hộp kèm cửa", "box và cửa", "box + cửa", "hộp quạt", "hộp điện", "hộp nối", "hộp cứu hỏa", "hộp chữa cháy")) and "tiêu âm" not in name_lower:
                     category = "ONG_GIO"
                 # 'cổ chuyển' = côn thu vuông tròn (User chốt 2026-11-23, dự án KL ống gió R440-444 'Cổ chuyển 200x200/D200')
-                if category == "KHAC" and not is_plumbing_item and "tiêu âm" not in name_lower and name_lower.startswith(("cút ", "co ", "chếch ", "côn ", "tê ", "chạc ", "chân rẽ", "gót giày", "cổ trích", "cổ chuyển", "bịt đầu", "bịt ống", "nắp bịt", "măng xông", "măng sông", "nối ống", "zét ", "ống lượn")):
+                if category == "KHAC" and not is_plumbing_item and "tiêu âm" not in name_lower and name_lower.startswith(("cút ", "co ", "chếch ", "côn ", "tê ", "chạc ", "chân rẽ", "gót giày", "cổ trích", "cổ chuyển", "vuông chuyển tròn", "giảm ", "bịt đầu", "bịt ống", "nắp bịt", "măng xông", "măng sông", "nối ống", "zét ", "ống lượn")):
                     # '(?:\s*mm)?': 'Cút 45º ống gió D450mm, R250 ... Kèm lưới chắn côn trùng' (D450mm không có \b sau số) bị từ khóa LCCT kéo thành
                     # CUA_GIO/LCCT, mất phần cút — User chốt 2026-11-20, dự án tien luong moi thau V1_18t11 R470 (báo cút tròn kèm lưới)
                     if re.search(r'\b(?:[dD][nN]?|Ø|phi\s*)\d{2,4}(?:\s*mm)?\b|\b\d{2,4}\s*[xX*]\s*\d{2,4}\b', name_str, re.IGNORECASE):
@@ -446,8 +450,10 @@ class SwindBOQParser:
                     if category == "KHAC" and full_name_lower != name_lower and not name_lower.startswith(("tole", "tôn ")):
                         for mfg in self.manufacturable_catalog:
                             if mfg.get("mapping_category") not in ("ONG_GIO", "PHU_KIEN_ONG", "KHAC"):
-                                # Chỉ chặn kế thừa nhóm CANVAS từ Title khi tên dòng là ống / phụ kiện ống (không đụng Cửa/Van/Tiêu âm)
-                                if own_is_duct and mfg.get("mapping_category") in ("CANVAS", "KHOP_NOI_MEM", "CHUP_THONG_HOI"):
+                                # Tên dòng là ống / phụ kiện ống -> không kế thừa nhóm CANVAS / CỬA / VAN từ Title (giữ Tiêu âm — OG-19).
+                                # CỬA / VAN thêm 2026-11-24 (User yêu cầu, dự án 261124_TEF_THÁP A, B R29-41 'Ống gió Tole ... KT: 1200x600'
+                                # dưới Title 'Hệ thống cửa gió, ống gió và phụ kiện' bị báo cửa SDG)
+                                if own_is_duct and mfg.get("mapping_category") in ("CANVAS", "KHOP_NOI_MEM", "CHUP_THONG_HOI", "CUA_GIO", "VAN_GIO"):
                                     continue
                                 if any(match_keyword(kw, full_name_lower) for kw in mfg.get("keywords", [])):
                                     category = mfg.get("mapping_category")
@@ -467,7 +473,9 @@ class SwindBOQParser:
                     # Tên tự ghi tôn / tole (vật tư ống gió m²) -> không kế thừa THUONG_MAI từ Title cha (quy tắc 1a)
                     # (2026-11-23, dự án 2026-11-16- ATP BOQ HVAC VER 1 R26-28 'Tôn tráng kẽm dày 0.58/0.75/0.95mm' m2 dưới Title
                     # 'Ống nước ngưng và bảo ôn ống nước ngưng' bị xếp THUONG_MAI, sót 824 m² không cảnh báo)
-                    if category == "KHAC" and full_name_lower != name_lower and not name_lower.startswith(("tole", "tôn ")):
+                    # Tên bắt đầu 'ống gió' cũng không kế thừa THUONG_MAI từ Title (2026-11-24, E2E NOVH_E2 R202 'Ống gió tôn (chiều dày
+                    # tôn theo TCXD 232-1999) KT: 260x260' dưới Title 'Cấp gió tự nhiên (cửa gió + van qua tường...)')
+                    if category == "KHAC" and full_name_lower != name_lower and not name_lower.startswith(("tole", "tôn ", "ống gió")):
                         for comm in self.commercial_catalog:
                             if own_air_duct and comm.get("product_code") == "PIPE_COPPER":
                                 continue
@@ -690,7 +698,13 @@ class SwindBOQParser:
             ei_spec_text = "" if any(k in str(spec_str or "").lower() for k in ("smd", "không kiểm định")) else str(spec_str or "")
             full_dim_search_text = f"{full_name_str} {model_str} {note_boq}"
             ei_rating = 0
-            ei_match = re.search(r'(?<![a-zA-Z])EI\s*[-:]?\s*(\d{2,3})\b', ei_primary_text, re.IGNORECASE) or re.search(r'(?<![a-zA-Z])EI\s*[-:]?\s*(\d{2,3})\b', ei_spec_text, re.IGNORECASE)
+            ei_rx = r'(?<![a-zA-Z])EI\s*[-:]?\s*(\d{2,3})\b'
+            # Title liệt kê NHIỀU mức EI ('EI (EI30, EI45, EI60, EI120)') là mô tả chung -> không kế thừa EI xuống dòng;
+            # chỉ lấy EI của chính dòng (Tên / Model / Ghi chú). User chốt 2026-11-24, dự án AC.OG.CGVG R42
+            # 'Ống gió dày 0.95 mm' (Mô tả: ống tôn mạ kẽm) bị báo EI30 theo Title R40.
+            if len({int(x) for x in re.findall(ei_rx, f"{current_section} {current_section_aux}", re.IGNORECASE)}) >= 2:
+                ei_primary_text = f"{raw_name_str} {model_str} {note_boq_raw}"
+            ei_match = re.search(ei_rx, ei_primary_text, re.IGNORECASE) or re.search(ei_rx, ei_spec_text, re.IGNORECASE)
             if ei_match:
                 ei_rating = int(ei_match.group(1))
             elif "cấp bù gió khi có cháy" in full_name_lower:
@@ -759,6 +773,14 @@ class SwindBOQParser:
             elif has_diffuser and re.search(damp_rx, own_txt) and not re.search(diff_rx, own_txt):
                 has_diffuser = False
             m_damper = re.search(damp_rx, search_combo_txt) if not is_access_door_item else None
+            # 1a chiều ngược (User yêu cầu 2026-11-24, dự án AC.OG.CGVG R67-68 'Cửa gió nan thẳng, kèm hộp gió, OBD' đặt
+            # dưới Title 'Van chặn lửa chạy điện MFD ...'): Title là VAN, Tên dòng tự ghi cửa / miệng gió / louver mà chính dòng
+            # không ghi van -> chỉ báo cửa, không ghép van từ Title (trước đây ra 'SDG+O + MFD').
+            # Title 'Cửa gió ... kèm van FD' + dòng cửa vẫn ghép như cũ (Title có ghi cửa / miệng gió).
+            if (m_damper and has_diffuser and re.search(damp_rx, sec_lower) and not re.search(diff_rx, sec_lower)
+                    and re.match(r'^\s*(?:cửa|miệng|louver|luover|louvre|grille|diffuser)', raw_full_name_str.lower())
+                    and not re.search(damp_rx, own_txt)):
+                m_damper = None
 
             # Tách các van trong dòng + thứ bậc van chính: damper_rules.json VG-13 (src/damper_classifier.py)
             scan_base = raw_name_str if re.search(r'[a-zA-ZÀ-ỹ]{2,}', re.sub(r'\b(?:mm|kt|w|h|l|d|dn|phi)\b', '', raw_name_str, flags=re.IGNORECASE)) else name_str
@@ -1033,7 +1055,7 @@ class SwindBOQParser:
         if not _is_side_table and _override_col_map is None and _override_header_row is None and max_items is None and not self.row_overrides:
             if not hasattr(self.wb, "_swind_parsed_cache"):
                 self.wb._swind_parsed_cache = {}
-            self.wb._swind_parsed_cache[(sheet_name, self.include_flex_duct)] = (
+            self.wb._swind_parsed_cache[(sheet_name, self.include_flex_duct, self.keep_zero_qty)] = (
                 [dict(it) for it in items],
                 set(self.skipped_rows.get(sheet_name, set())),
                 list(self.missing_dim_rows.get(sheet_name, [])),

@@ -254,6 +254,8 @@ def classify(item, subtype_rules, raw_name, name, raw_search, full_search, w, h,
         note_boq_low=_nm(str(item.get("note_boq") or "").lower(), item),
         note_model_low=_nm((str(item.get("note_boq") or "") + " " + str(item.get("model") or "")).lower(), item),
         raw_name_low=_nm(raw_name.lower(), item),
+        # Title cha riêng (cờ title_ghi_khuech_tan — User chốt 2026-11-24)
+        title_low=_nm(str(item.get("section") or "").lower(), item),
         raw_search=raw_search,
         full_search=full_search,
         raw_name=raw_name,

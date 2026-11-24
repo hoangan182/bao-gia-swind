@@ -39,6 +39,9 @@ class SwindUniversalExtractor:
 
     def _safe_write_json(self, path, data):
         """Atomic write: ghi ra file .tmp rồi rename để chống hỏng file khi crash."""
+        from swind_utils import learning_writes_disabled
+        if learning_writes_disabled():
+            return
         os.makedirs(path.parent, exist_ok=True)
         tmp_path = path.with_suffix(".tmp")
         with open(tmp_path, "w", encoding="utf-8") as f:

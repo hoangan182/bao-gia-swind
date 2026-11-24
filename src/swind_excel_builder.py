@@ -8,6 +8,56 @@ from agent_03_input_auditor import odd_size_flag, boq_size
 # Thương hiệu tôn ghi đè cho ghi chú vật liệu cuối BG (cờ --duct-steel-brand của runner); rỗng = mặc định financial_policy.json
 STEEL_BRAND_OVERRIDE = ""
 
+# ---------------------------------------------------------------------------------------------------------------
+# MẪU FORM SHEET 'BG' (User chốt 2026-11-24): form báo giá chuẩn Swind lấy từ sheet 'B1' của
+# 'BG20- Sland-Xtech 23.11.26  AC.OG.CGVG.xlsx' → data/master_data/templates/BG_MAU_SWIND.xlsx (scripts/build_bg_template.py).
+# Có file mẫu → BG dựng theo mẫu (đầu trang, độ rộng cột, style dòng, dòng tổng, điều khoản, zoom, lề); VAT vẫn theo
+# financial_policy.json (8%). Không có file mẫu → form cũ (code bên dưới).
+# ---------------------------------------------------------------------------------------------------------------
+import os as _os
+BG_TEMPLATE_PATH = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "data", "master_data", "templates", "BG_MAU_SWIND.xlsx")
+TPL_HEADER_LAST, TPL_SECTION_ROW, TPL_ITEM_ROW, TPL_TOTAL_ROW, TPL_NOTE_ROW, TPL_NOTE_COUNT = 14, 15, 16, 18, 22, 13
+TPL_MAT_NOTE_IDX = (3, 4)          # dòng ghi chú vật liệu trong khối điều khoản ('Tôn Hoa Sen...') — áp --duct-steel-brand
+TPL_LINE_PT, TPL_CHARS_PER_W = 13.0, 1.2   # chiều cao 1 dòng chữ / ký tự trên 1 đơn vị độ rộng cột (hiệu chỉnh theo mẫu B1: 221/242 dòng khớp)
+_BG_TPL_CACHE = {}
+
+
+def bg_template_sheet():
+    """Sheet mẫu BG (đọc 1 lần); None khi chưa có file mẫu."""
+    if "ws" not in _BG_TPL_CACHE:
+        ws = None
+        if _os.path.exists(BG_TEMPLATE_PATH):
+            try:
+                ws = openpyxl.load_workbook(BG_TEMPLATE_PATH)["BG"]
+            except Exception:
+                ws = None
+        _BG_TPL_CACHE["ws"] = ws
+    return _BG_TPL_CACHE["ws"]
+
+
+def tpl_copy_cell(src, dst, value=True):
+    """Chép ô từ workbook mẫu sang workbook khác (chép từng thành phần style — chỉ số _style thuộc workbook nguồn)."""
+    from copy import copy as _cp
+    if value and not isinstance(dst, openpyxl.cell.cell.MergedCell):
+        dst.value = src.value
+    if src.has_style:
+        dst.font, dst.fill, dst.border = _cp(src.font), _cp(src.fill), _cp(src.border)
+        dst.alignment, dst.protection = _cp(src.alignment), _cp(src.protection)
+        dst.number_format = src.number_format
+
+
+def tpl_row_height(ws, vals):
+    """Chiều cao dòng theo số dòng chữ (cột Tên B, Model C, Ghi chú P) như mẫu B1 (Excel tự giãn)."""
+    import math
+    n = 1
+    for c_i in (2, 3, 16):
+        v = vals[c_i - 1] if len(vals) >= c_i else None
+        if v is None or (isinstance(v, str) and v.startswith("=")):
+            continue
+        w = (ws.column_dimensions[get_column_letter(c_i)].width or 10) * TPL_CHARS_PER_W
+        n = max(n, sum(max(1, math.ceil(len(seg) / w)) for seg in str(v).split("\n")))
+    return TPL_LINE_PT * n
+
 class SwindExcelBuilder:
     """
     Trình khởi tạo và xuất Workbook Dự Toán Swind (Excel-First Architecture).
@@ -238,7 +288,66 @@ class SwindExcelBuilder:
             cell.font = Font(bold=True)
             cell.number_format = "#,##0"
 
+    def _setup_quotation_header_from_template(self, ws, tpl, option_label):
+        """Đầu trang BG theo file mẫu (dòng 1..14, merge, độ rộng cột, zoom, lề, khổ giấy) — User chốt 2026-11-24."""
+        from copy import copy as _cp
+        for r in range(1, TPL_HEADER_LAST + 1):
+            if tpl.row_dimensions[r].height:
+                ws.row_dimensions[r].height = tpl.row_dimensions[r].height
+            for c in range(1, 18):
+                tpl_copy_cell(tpl.cell(r, c), ws.cell(r, c))
+        for m in tpl.merged_cells.ranges:
+            if m.max_row <= TPL_HEADER_LAST:
+                ws.merge_cells(str(m))
+        for col_l, dim in tpl.column_dimensions.items():
+            if dim.width:
+                ws.column_dimensions[col_l].width = dim.width
+        ws.sheet_view.zoomScale = tpl.sheet_view.zoomScale
+        ws.sheet_view.showGridLines = tpl.sheet_view.showGridLines
+        ws.page_margins = _cp(tpl.page_margins)
+        ws.page_setup.orientation = tpl.page_setup.orientation
+        if option_label and "TIÊU CHUẨN" not in option_label:
+            ws.cell(6, 1).value = f"BẢNG BÁO GIÁ ({option_label})"
+
+    def _write_footer_from_template(self, worksheets, tpl, first_row, data_first_row, last_item_row):
+        """3 dòng tổng + khối điều khoản theo file mẫu. VAT theo financial_policy.json (User chốt 2026-11-24: giữ 8%)."""
+        vat = get_quotation_profile()["vat_rate"]
+        for ws, _m in worksheets:
+            r_sub, r_vat, r_tot = first_row, first_row + 1, first_row + 2
+            vals = {
+                r_sub: ("Total/ Tổng Trước thuế", f"=SUM(O{data_first_row}:O{last_item_row})"),
+                r_vat: (f"VAT {vat_label()}", f"=ROUND(O{r_sub}*{vat:g}, 0)"),
+                r_tot: (f"Total Amount (including VAT {vat_label()})/ Tổng sau thuế", f"=SUM(O{r_sub}:O{r_vat})"),
+            }
+            off_t = first_row - TPL_TOTAL_ROW
+            for i, r_t in enumerate((r_sub, r_vat, r_tot)):
+                src_r = TPL_TOTAL_ROW + i
+                if tpl.row_dimensions[src_r].height:
+                    ws.row_dimensions[r_t].height = tpl.row_dimensions[src_r].height
+                for c in range(1, 18):
+                    tpl_copy_cell(tpl.cell(src_r, c), ws.cell(r_t, c), value=False)
+                ws.cell(r_t, 1).value, ws.cell(r_t, 15).value = vals[r_t]
+            r_note = r_tot + 2
+            off_n = r_note - TPL_NOTE_ROW
+            for i in range(TPL_NOTE_COUNT):
+                src_r, dst_r = TPL_NOTE_ROW + i, r_note + i
+                if tpl.row_dimensions[src_r].height:
+                    ws.row_dimensions[dst_r].height = tpl.row_dimensions[src_r].height
+                for c in range(1, 18):
+                    tpl_copy_cell(tpl.cell(src_r, c), ws.cell(dst_r, c))
+                if i in TPL_MAT_NOTE_IDX and STEEL_BRAND_OVERRIDE and isinstance(ws.cell(dst_r, 2).value, str):
+                    # --duct-steel-brand: 'Tôn Hoa Sen' -> thương hiệu dự án (User chốt 2026-11-20)
+                    ws.cell(dst_r, 2).value = ws.cell(dst_r, 2).value.replace("Hoa Sen", STEEL_BRAND_OVERRIDE)
+            for m in tpl.merged_cells.ranges:
+                if TPL_TOTAL_ROW <= m.min_row <= TPL_TOTAL_ROW + 2:
+                    ws.merge_cells(start_row=m.min_row + off_t, start_column=m.min_col, end_row=m.max_row + off_t, end_column=m.max_col)
+                elif TPL_NOTE_ROW <= m.min_row < TPL_NOTE_ROW + TPL_NOTE_COUNT:
+                    ws.merge_cells(start_row=m.min_row + off_n, start_column=m.min_col, end_row=m.max_row + off_n, end_column=m.max_col)
+
     def _setup_quotation_sheet_header(self, ws, option_label):
+        tpl = bg_template_sheet()
+        if tpl is not None:
+            return self._setup_quotation_header_from_template(ws, tpl, option_label)
         navy_font = Font(name="Times New Roman", size=11, bold=True, color="002060")
         normal_font = Font(name="Times New Roman", size=10, bold=False)
         bold_font = Font(name="Times New Roman", size=10, bold=True)
@@ -398,7 +507,9 @@ class SwindExcelBuilder:
         )
 
         current_section = None
-        curr_row = 14
+        tpl = bg_template_sheet()
+        curr_row = TPL_HEADER_LAST + 1 if tpl is not None else 14  # mẫu: dòng 14 trống, dữ liệu từ dòng 15
+        data_first_row = curr_row
 
         import os
         import re
@@ -424,7 +535,26 @@ class SwindExcelBuilder:
         align_right = Alignment(horizontal="right", vertical="center")
         row_style_cache = {}
 
+        def _write_row_cells_tpl(r_num, vals_std, vals_fslf, vals_bfn, is_section):
+            """Dòng BG theo file mẫu: style từng cột lấy từ dòng mẫu (Title nhóm / mặt hàng), chiều cao theo số dòng chữ."""
+            src_row = TPL_SECTION_ROW if is_section else TPL_ITEM_ROW
+            for ws, mode in worksheets:
+                r_vals = vals_std if (is_section or mode == "std") else ((vals_fslf or vals_std) if mode == "fslf" else (vals_bfn or vals_std))
+                r_vals = list(r_vals) + [None] * (16 - len(r_vals))
+                for c_i in range(1, 17):
+                    cell = ws.cell(r_num, c_i, value=r_vals[c_i - 1])
+                    s_key = (id(ws), "tpl", src_row, c_i)
+                    cached_s = row_style_cache.get(s_key)
+                    if cached_s is not None:
+                        cell._style = _copy_style(cached_s)
+                    else:
+                        tpl_copy_cell(tpl.cell(src_row, c_i), cell, value=False)
+                        row_style_cache[s_key] = _copy_style(cell._style)
+                ws.row_dimensions[r_num].height = tpl_row_height(ws, r_vals)
+
         def _write_row_cells(r_num, vals_std, vals_fslf=None, vals_bfn=None, is_section=False):
+            if tpl is not None:
+                return _write_row_cells_tpl(r_num, vals_std, vals_fslf, vals_bfn, is_section)
             for ws, mode in worksheets:
                 ws_id = id(ws)
                 if is_section:
@@ -762,6 +892,9 @@ class SwindExcelBuilder:
 
         # Footer Totals on quotation sheets (đóng khung chuẩn mẫu Swind)
         last_item_row = curr_row - 1
+        if tpl is not None:
+            self._write_footer_from_template(worksheets, tpl, curr_row, data_first_row, last_item_row)
+            return
         total_font = Font(name="Times New Roman", size=10, bold=True)
         total_fill = PatternFill("solid", fgColor="FFC000")
         tot_sub_bdr = Border(left=thin_side, right=thin_side, top=thin_side, bottom=hair_side)
