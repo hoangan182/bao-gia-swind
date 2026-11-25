@@ -163,5 +163,133 @@ class DiffuserRuleTableTest(unittest.TestCase):
             self.assertAlmostEqual(with_mesh_x3[k], qty(1.0, True)[k], msg=k)  # LCCT giữ nguyên
 
 
+
+def _classify_res(ex):
+    """Dựng dòng CUA_GIO (Tên riêng ở 'name' như parser, Title ở 'section'), chạy qua Agent01.resolve_item_spec,
+    trả dict kết quả đầy đủ của diffuser_classifier.classify."""
+    w, h = ex.get("kt", [0, 0])
+    item = {
+        "category": "CUA_GIO", "raw_name": ex["ten"], "name": ex["ten"],
+        "note_boq": ex.get("ghi_chu", ""), "section": ex.get("title", ""), "model": ex.get("model_cot", ""),
+        "w": w, "h": h, "d": ex.get("d", 0), "spec_priority": "name",
+    }
+    got = {}
+    orig = dc.classify
+
+    def _spy(*a, **k):
+        res = orig(*a, **k)
+        got.setdefault("res", res)
+        return res
+
+    dc.classify = _spy
+    try:
+        Agent01_BOQExtractor.resolve_item_spec(item, get_subtype_rules(), price_map={}, idx=1)
+    finally:
+        dc.classify = orig
+    return got["res"]
+
+
+class DiffuserProvenanceTest(unittest.TestCase):
+    """Bảng 'đã hiểu thế nào' (2026-11-24): classify trả thêm nguồn chữ + dấu mặc định, không đổi kết quả."""
+
+    def test_nguon_title(self):
+        res = _classify_res({"ten": "600x600", "title": "Cửa gió khuếch tán", "kt": [600, 600]})
+        self.assertEqual(res["rule_id"].split("_")[0], "CG-08B")
+        self.assertIn("TITLE", res["nguon"])
+        self.assertFalse(res["mac_dinh"])
+        self.assertEqual(res["rule_quyet_dinh"], res["rule_id"])
+
+    def test_nguon_ten(self):
+        res = _classify_res({"ten": "Cửa gió nan Z 800x400", "kt": [800, 400]})
+        self.assertEqual(res["rule_id"].split("_")[0], "CG-06")
+        self.assertEqual(res["nguon"], ["TEN"])
+        self.assertFalse(res["mac_dinh"])
+
+    def test_default_profile(self):
+        res = _classify_res({"ten": "Cửa gió 600x300", "kt": [600, 300]})
+        self.assertEqual(res["rule_quyet_dinh"], "CG-09-MAC-DINH")
+        self.assertTrue(res["rule_id"].startswith("CG-09_"), res["rule_id"])  # id rule giữ nguyên (ví dụ JSON / pattern lab)
+        self.assertTrue(res["mac_dinh"])
+        self.assertEqual(res["nguon"], ["MAC_DINH"])
+        self.assertTrue(res["model"].startswith("SDG"), res["model"])
+
+
+
+class BoxComboByNameTest(unittest.TestCase):
+    """Task B bước 2 (2026-11-25): fallback is_box_combo của runner + swind_item_inspector → diffuser_rules.json
+    `hop_gio_theo_ten`, hàm dc.box_combo_by_name. Giá trị = hành vi literal cũ (ghim trước khi chuyển)."""
+
+    def test_rule_has_source_and_examples(self):
+        cfg = dc.load_rules()["hop_gio_theo_ten"]
+        for key in ("tu_khoa_hop", "tu_khoa_cua", "nguon", "ly_do", "vi_du_dung", "vi_du_sai"):
+            self.assertTrue(cfg.get(key), key)
+        for t in cfg["vi_du_dung"]:
+            self.assertTrue(dc.box_combo_by_name(t), t)
+        for t in cfg["vi_du_sai"]:
+            self.assertFalse(dc.box_combo_by_name(t), t)
+
+    def test_literal_behaviour(self):
+        for hop in ("kèm hộp gió", "kèm hộp", "kèm box", "có hộp gió", "gắn hộp gió"):
+            for cua in ("cửa gió", "miệng gió", "cửa cấp", "miệng cấp", "cửa hồi", "miệng hồi"):
+                self.assertTrue(dc.box_combo_by_name(f"{cua.upper()} 600x600 {hop.upper()}"), (cua, hop))
+        for t in ("Cửa gió 600x600", "Hộp gió 600x600 kèm hộp", "Van gió kèm hộp gió", "Cửa gió có hộp 600x600",
+                  "Miệng gió kèm hôp", "", None):
+            self.assertFalse(dc.box_combo_by_name(t), t)
+
+
+
+def _old_diffuser_conflict(rn_l, nb_l, note_prio):
+    """Bản chép NGUYÊN VĂN biểu thức cũ trong swind_master_runner.print_quotation_summary_table (trước Task B) — dùng
+    làm chuẩn so cho dc.name_note_conflict."""
+    if note_prio or not nb_l:
+        return False
+    if ("sọt trứng" in nb_l or "eggcrate" in nb_l) and not any(k in rn_l for k in ("sọt trứng", "eggcrate", "ecg")):
+        return True
+    elif ("nan z" in nb_l or "louver" in nb_l) and any(k in rn_l for k in ("nan thẳng", "bầu dục", "khuếch tán", "sọt trứng", "mag", "sag", "rag", "fag", "eag", "oag")):
+        return True
+    elif (any(k in nb_l for k in ("bầu dục", "nan thẳng"))
+          and any(k in rn_l for k in ("khuếch tán", "sọt trứng", "sọt trưng", "kiểu lưới", "dạng lưới", "nan z", "louver", "slot", "kiểu khe"))
+          and not any(k in rn_l for k in ("bầu dục", "nan thẳng"))):
+        return True
+    return False
+
+
+class DiffuserNameNoteConflictTest(unittest.TestCase):
+    """Task B bước 3 (2026-11-25): bộ dò xung đột Tên – Ghi chú cửa gió → diffuser_rules.json `xung_dot_ten_ghi_chu`."""
+
+    TEN = ["cửa gió nan thẳng 600x300", "cửa gió 600x300", "cửa gió sọt trứng 600x600", "cửa ecg 600x600",
+           "miệng hút gió eag+obd kích thước: 200x200", "cửa sọt trứng 600x600", "miệng gió sag 300x300",
+           "cửa gió message 600x300", "cửa gió khe slot 1000x150", "cửa gió sọt trưng 600x600", "cửa gió kiểu lưới",
+           "cửa gió slot nan thẳng", "cửa gió khuếch tán 4 hướng", "cửa gió dạng lưới bầu dục", "cửa louver nan z",
+           "cửa eggcrate", "miệng gió mag", "miệng gió rag", "fag 600x600", "oag 300x300", "cửa gió kiểu khe", "",
+           "CỬA GIÓ SỌT TRỨNG", "cua gio sot trung"]
+    GHI_CHU = ["", "cửa nan sọt trứng", "eggcrate", "nan sọt trứng louver", "louver nan z", "nan z", "nan thẳng",
+               "bầu dục", "nan thẳng bầu dục", "khuếch tán", "cửa nan sọt trứng kèm van obd", "louver bầu dục",
+               "NAN Z", "nan thang bau duc"]
+
+    def test_rule_table(self):
+        cfg = dc.load_rules()["xung_dot_ten_ghi_chu"]
+        for key in ("mo_ta", "nguon", "ly_do", "quy_tac"):
+            self.assertTrue(cfg.get(key), key)
+        for r in cfg["quy_tac"]:
+            self.assertTrue(r.get("id") and r.get("ghi_chu_co"), r)
+            self.assertTrue(r.get("nguon") and r.get("ly_do"), r["id"])
+            for ex in r["vi_du_dung"]:
+                self.assertEqual(dc.name_note_conflict(ex["ten"], ex["ghi_chu"]), r["id"], ex)
+
+    def test_equals_old_expression_full_grid(self):
+        for rn in self.TEN:
+            for nb in self.GHI_CHU:
+                for prio in (False, True):
+                    with self.subTest(ten=rn, ghi_chu=nb, prio=prio):
+                        self.assertEqual(bool(dc.name_note_conflict(rn, nb, prio)), _old_diffuser_conflict(rn, nb, prio))
+
+    def test_first_matching_rule_wins(self):
+        self.assertEqual(dc.name_note_conflict("cửa gió nan thẳng", "sọt trứng louver").split("_")[0], "XD-CG-01")
+        self.assertEqual(dc.name_note_conflict("cửa sọt trứng", "sọt trứng louver").split("_")[0], "XD-CG-02")
+        self.assertEqual(dc.name_note_conflict("cửa gió kiểu lưới", "nan thẳng").split("_")[0], "XD-CG-03")
+        self.assertIsNone(dc.name_note_conflict("cửa gió", "nan z"))
+
+
 if __name__ == "__main__":
     unittest.main()

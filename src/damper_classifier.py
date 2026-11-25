@@ -103,6 +103,9 @@ def classify_type(item, subtype_rules, raw_search, full_search, rules=None):
             for src in reversed(order):  # giữ đúng thứ tự lồng get_subtype(a, get_subtype(b, get_subtype(c, mặc định)))
                 damper_type = A01.get_subtype(subtype_rules, "VAN_GIO", texts[src], damper_type)
             trail.append("VG-02")
+            # Bảng 'đã hiểu thế nào' (2026-11-24, chỉ ghi vết): không nguồn nào khớp từ khóa → dùng mac_dinh của VG-02
+            if all(A01.get_subtype(subtype_rules, "VAN_GIO", texts[src], None) is None for src in order):
+                trail.append("VG-02-MAC-DINH")
 
         r3 = R["VG-03"]
         mprd_src = (note_only + " " + raw_low + " " + full_low) if note_mode else name_model
@@ -124,6 +127,41 @@ def classify_type(item, subtype_rules, raw_search, full_search, rules=None):
     return damper_type, model_code, trail
 
 
+# ---------------------------------------------------------------- Nguồn chữ (bảng 'đã hiểu thế nào')
+
+VG02_TEXT_VAR = {"ten_model": "ten_model", "raw_search": "raw_search", "full_search": "full_search",
+                 "ghi_chu_bo_vat_lieu": "note_boq_low"}
+
+
+def _type_sources(R, item, subtype_rules, raw_search, full_search, trail):
+    """Loại van dựa trên chữ nào (chỉ đọc lại, không đổi kết quả): VG-01 → MODEL; VG-02A → TEN (Tên chỉ ghi kích thước,
+    loại do chính dòng ghi); VG-02 → nguồn các chuỗi khớp từ khóa (ten_model/raw_search → TEN, full_search → TITLE,
+    Ghi chú → GHI_CHU); VG-02 không khớp → MAC_DINH."""
+    from decision_trace import TEXT_SOURCE, SOURCES
+    if "VG-01" in trail:
+        return ["MODEL"]
+    if "VG-02A" in trail:
+        return ["TEN"]
+    if any(r in trail for r in ("VG-03", "VG-04", "VG-05")):
+        # Mặc định VCD đã bị VG-03/04/05 nâng cấp (MPRD / MFD) theo chữ của chính dòng -> không còn là mặc định;
+        # nguồn chi tiết không dò lại, ghi gọn là TEN (đơn giản có chủ đích).
+        return ["TEN"]
+    if "VG-02-MAC-DINH" in trail:
+        return ["MAC_DINH"]
+    from agent_01_boq_extractor import Agent01_BOQExtractor as A01
+    r2 = R["VG-02"]
+    note_only = str(item.get("note_boq") or "").lower()
+    texts = {
+        "ten_model": (_effective_name(R, item) + " " + str(item.get("model", ""))).lower(),
+        "raw_search": raw_search, "full_search": full_search,
+        "ghi_chu_bo_vat_lieu": re.sub(r2["regex_bo_vat_lieu_chong_chay"], ' ', note_only),
+    }
+    order = r2["thu_tu_nguon_che_do_note"] if (item.get("spec_priority") == "note" and note_only) else r2["thu_tu_nguon"]
+    found = {TEXT_SOURCE[VG02_TEXT_VAR[src]] for src in order
+             if A01.get_subtype(subtype_rules, "VAN_GIO", texts[src], None) is not None}
+    return [s for s in SOURCES if s in found] or ["MAC_DINH"]
+
+
 # ---------------------------------------------------------------- Phân loại đầy đủ
 
 def classify(item, subtype_rules, raw_search, full_search, w, h, d, ei_rating, a1, a2, rules=None):
@@ -134,6 +172,7 @@ def classify(item, subtype_rules, raw_search, full_search, w, h, d, ei_rating, a
     """
     R = rules or load_rules()
     damper_type, model_code, trail = classify_type(item, subtype_rules, raw_search, full_search, R)
+    nguon = _type_sources(R, item, subtype_rules, raw_search, full_search, trail)
     eff_type = "MFD" if damper_type == "MFD_LOUVER" else damper_type
     w_use = w if w > 0 else (d if d > 0 else 300.0)
     h_use = h if h > 0 else (d if d > 0 else 300.0)
@@ -215,6 +254,8 @@ def classify(item, subtype_rules, raw_search, full_search, w, h, d, ei_rating, a
         "is_fd_ei": is_fd_ei, "ei_rating": ei_rating,
         "w": w, "h": h, "d": d, "w_use": w_use, "h_use": h_use, "a1": a1, "a2": a2,
         "trail": trail,
+        # Bảng 'đã hiểu thế nào': loại van dựa trên chữ nào (MODEL / TEN / TITLE / GHI_CHU) hoặc MAC_DINH
+        "nguon": nguon,
         # Cờ dự án --md-shaft-only (User yêu cầu 2026-11-03, dự án 150-YCVT LUXQV): van MD báo trục chờ, không gồm động cơ
         "md_shaft_only": bool(item.get("md_shaft_only")),
         # Động cơ tuyến tính: chỉ khi nội dung dòng ghi rõ "tuyến tính" (cờ theo dòng do runner đặt, xem is_linear_motor_text)
@@ -357,3 +398,18 @@ def detect_dampers(scan_base, model_str, m_damper_text, diff_rx, rules=None):
 def sort_by_priority(dampers, rules=None):
     order = (rules or load_rules())["VG-13"]["thu_bac"]
     return sorted(dampers, key=lambda x: order.index(x) if x in order else 99)
+
+
+def name_note_conflict(subtype, note_low, note_priority=False, rules=None):
+    """`xung_dot_ten_ghi_chu`: loại van đã nhận diện (subtype) trái Ghi chú / Spec → id rule (runner in cảnh báo HỎI LẠI
+    USER), không thì None. Chuỗi con thuần trên Ghi chú chữ thường (Task B, dọn sạch sau Việc 4, 2026-11-25)."""
+    cfg = (rules or load_rules())["_all"]["xung_dot_ten_ghi_chu"]
+    sub, nb = str(subtype or ""), str(note_low or "")
+    if not nb:
+        return None
+    for r in cfg["quy_tac"]:
+        if sub not in r["loai_van"] or (note_priority and r.get("bo_qua_khi_uu_tien_ghi_chu")):
+            continue
+        if any(k in nb for k in r["ghi_chu_co"]) and not any(k in nb for k in r.get("ghi_chu_khong", ())):
+            return r["id"]
+    return None

@@ -856,5 +856,81 @@
     }
    ]
   }
- ]
+ ],
+ "xung_dot_ten_ghi_chu": {
+  "mo_ta": "Bộ dò xung đột loại van giữa Cột Tên (loại van đã nhận diện = subtype) và Ghi chú / Spec của dòng VAN GIÓ → runner in '⚠️ [PHÁT HIỆN GHI CHÚ / SPEC KHÁC BIỆT CỘT TÊN — BẮT BUỘC HỎI LẠI USER]'. Không đổi giá. Rule đầu tiên khớp thắng: subtype thuộc loai_van VÀ Ghi chú có ≥ 1 ghi_chu_co VÀ không có ghi_chu_khong; bo_qua_khi_uu_tien_ghi_chu = không xét khi chạy --spec-priority note. So chuỗi con thuần trên Ghi chú chữ thường.",
+  "nguon": "1e5672d 2026-10-29 (bộ dò trong swind_master_runner.print_quotation_summary_table); Ghi chú ghi EI không còn hỏi lại — có EI → báo bọc (VG-14, User chốt 2026-11-17); chuyển vào JSON — Task B dọn sạch sau Việc 4, 2026-11-25",
+  "ly_do": "Van cơ (NRD / PRD / MPRD / VCD) mà Ghi chú ghi van chặn lửa / MFD / bọc chống cháy MgO, hoặc van MFD mà Ghi chú chỉ ghi 'Van FD' (không động cơ) → AI phải hỏi User (AGENTS.md quy tắc 3).",
+  "quy_tac": [
+   {
+    "id": "XD-VG-01_VAN_CO_GHI_CHU_CHONG_CHAY",
+    "nguon": "1e5672d 2026-10-29 (bộ dò trong swind_master_runner); chuyển từ swind_master_runner.py 2026-11-25",
+    "ly_do": "Van cơ NRD / PRD / MPRD / VCD mà Ghi chú ghi van chặn lửa / MFD / bọc chống cháy MgO → hỏi User theo Tên hay Ghi chú.",
+    "loai_van": [
+     "NRD",
+     "PRD",
+     "MPRD",
+     "VCD"
+    ],
+    "bo_qua_khi_uu_tien_ghi_chu": true,
+    "ghi_chu_co": [
+     "mfd",
+     "smd",
+     "van ngăn cháy",
+     "van chặn lửa",
+     "bọc chống cháy",
+     "bọc tấm mgo",
+     "tấm chống cháy mgo"
+    ],
+    "vi_du_dung": [
+     {
+      "loai": "NRD",
+      "ghi_chu": "van chặn lửa"
+     },
+     {
+      "loai": "VCD",
+      "ghi_chu": "bọc tấm mgo"
+     }
+    ],
+    "vi_du_sai": [
+     {
+      "loai": "VCD",
+      "ghi_chu": "van ei60"
+     }
+    ]
+   },
+   {
+    "id": "XD-VG-02_MFD_GHI_CHU_VAN_FD",
+    "nguon": "1e5672d 2026-10-29 (bộ dò trong swind_master_runner); chuyển từ swind_master_runner.py 2026-11-25",
+    "ly_do": "Van MFD mà Ghi chú chỉ ghi 'Van FD' (không động cơ / MFD) → hỏi User; không bỏ qua khi --spec-priority note.",
+    "loai_van": [
+     "MFD",
+     "MSFD",
+     "MFSD"
+    ],
+    "bo_qua_khi_uu_tien_ghi_chu": false,
+    "ghi_chu_co": [
+     "van fd"
+    ],
+    "ghi_chu_khong": [
+     "mfd",
+     "động cơ",
+     "on/off",
+     "on-off"
+    ],
+    "vi_du_dung": [
+     {
+      "loai": "MFD",
+      "ghi_chu": "van fd"
+     }
+    ],
+    "vi_du_sai": [
+     {
+      "loai": "MFD",
+      "ghi_chu": "van fd kèm động cơ"
+     }
+    ]
+   }
+  ]
+ }
 }

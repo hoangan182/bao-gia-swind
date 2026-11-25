@@ -56,10 +56,15 @@
         "remarks_keywords": ["ghi chú", "remarks", "remark"]
     },
     "COMBO_AND_DETECTION_RULES": {
-        "missing_qty_cv_keywords": ["louver", "luover", "louvre", "miệng gió", "miệng hút", "miệng lấy", "miệng cấp", "miệng thải", "miệng hồi", "cửa gió", "mặt gió", "cửa nan", "van ", "vcd", "mfd", "mfsd", "nrd", "prd", "ống gió", "cút", "côn", "chân rẽ", "tê", "hộp gió"],
+        "missing_qty_cv_keywords": ["louver", "luover", "louvre", "miệng gió", "miệng hút", "miệng lấy", "miệng cấp", "miệng thải", "miệng hồi", "cửa gió", "mặt gió", "cửa nan", "van ", "vcd", "mfd", "mfsd", "nrd", "prd", "ống gió", "cút", "côn", "chân rẽ", "tê", "hộp gió", "cửa chớp", "chớp nhôm"],
+        "_nguon_missing_qty_cv_cua_chop": "'cửa chớp', 'chớp nhôm' trước đây cộng cứng trong swind_boq_parser.py (commit f31a9d4, 2026-11-03, tách bộ nhận diện cửa gió) — chuyển vào JSON Task A dọn sạch sau Việc 4, 2026-11-25. Lý do: dòng cửa chớp có kích thước nhưng KL trống vẫn giữ (không thành Title).",
         "missing_qty_cv_regex": "\\b(fd|md|sag|rag|eag|oag|pag|seg|eal|oal|fal)\\b",
         "combo_diffuser_regex": "\\bmiệng\\s*gió\\b|\\bcửa\\s*gió\\b|\\bmặt\\s*gió\\b|\\bcửa\\s*nan\\b|\\blouver\\b|\\bluover\\b|\\blouvre\\b|\\bgrille\\b|\\bgriller\\b|\\bdiffuser\\b|\\b(?:sag|rag|fag|eag|seag|kag|mag|aag|fal|eal|oal)\\b|cửa\\s*(?:chớp|nan|thẳng|gió|hút|cấp|hồi|thải|lấy|xả|tăng\\s*áp|tạo\\s*áp|\\+)",
         "combo_damper_regex": "\\b(mfd|mfsd|md|fd|prd|nrd|vcd)\\b|van\\s+(?:on/off|on-off|chống\\s*cháy|chặn\\s*lửa|ngăn\\s*cháy|động\\s*cơ|một\\s*chiều|1\\s*chiều|xả\\s*áp|giảm\\s*áp)",
+        "combo_category_list_title_regex": "^\\s*(?:van(?:\\s*gió)?|miệng\\s*gió|cửa\\s*gió)(?:\\s*(?:,|/|&|\\+|và)\\s*(?:van(?:\\s*gió)?|miệng\\s*gió|cửa\\s*gió))+\\s*$",
+        "_nguon_combo_category_list_title_regex": "Title kiểu danh sách nhóm 'Van gió, miệng gió' / 'Cửa gió / van' (re.match trên Title đã làm sạch) → combo xét theo Tên gốc, không ghép chữ Title. Regex trước đây là fallback SỐNG trong swind_boq_parser.py (key chưa có trong JSON) — chuyển nguyên văn Task A, 2026-11-25.",
+        "combo_own_diffuser_prefix_regex": "^\\s*(?:cửa|miệng|louver|luover|louvre|grille|diffuser)",
+        "_nguon_combo_own_diffuser_prefix_regex": "AGENTS 1a chiều ngược (User yêu cầu 2026-11-24, dự án AC.OG.CGVG R67-68, commit 1f7bc0f): Title là VAN, Tên dòng (re.match trên Tên+ngữ cảnh gốc chữ thường) bắt đầu bằng cửa / miệng / louver / grille / diffuser mà chính dòng không ghi van → chỉ báo cửa, không ghép van từ Title. Chuyển nguyên văn từ swind_boq_parser.py — Task A, 2026-11-25.",
         "inline_combo_dampers": ["MD", "FD", "VCD"],
         "combo_model_suffix": {
             "MD": "+MD",

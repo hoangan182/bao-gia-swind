@@ -46,6 +46,7 @@
     "khớp nối mềm cao su",
     "khớp nối mềm inox",
     "rọ bơm",
+    "rọ hút bơm",
     "y lọc",
     "van búa nước",
     "chống va",
@@ -78,8 +79,10 @@
    "regex_bo_nguon": "chuyển\\s+đổi\\s+ngu[ồố]n|^bộ\\s+ngu[ồố]n\\b",
    "van_nuoc_bat_dau": [
     "van ",
-    "bộ van"
+    "bộ van",
+    "cụm van"
    ],
+   "van_nuoc_bat_dau_nguon": "User chốt 2026-11-25 (KL ống gió R35-36 'Cụm van PIEV DN100/DN125') — cụm van PIEV ống nước không báo; 'Cụm van' + DN, không ghi loại van gió = hàng nước",
    "regex_van_nuoc_dn": "\\bdn\\s*\\d{2,3}\\b",
    "van_gio_xa_ap": [
     "van giảm áp",
@@ -135,12 +138,48 @@
    "tru_phu_kien_ong_nuoc": [
     "ống gió",
     "tôn",
-    "tole"
+    "tole",
+    "vuông tròn",
+    "vuông chuyển tròn"
    ],
+   "tu_khoa_ro_hut_bom_nguon": "User chốt 2026-11-25 (NBT-BG DA luxora-Đầm vạc-Vĩnh Yên R2576-77 'Rọ hút bơm DN80/DN125') — rọ hút bơm là phụ kiện bơm nước, không báo",
+   "tru_phu_kien_ong_nuoc_nguon": "User 2026-11-25, dự án 261124_TEF_THÁP A, B (Phương Bắc) R48 'Côn thu vuông tròn : 150x150/D140 L=200' — D140 khớp regex ống nước nên bị lọc THUONG_MAI; côn vuông-tròn là phụ kiện ống gió",
    "vi_du": [
     {
      "ten": "Ống thép tráng kẽm DN50",
      "ket_qua": true
+    },
+    {
+     "ten": "Cụm van PIEV DN100",
+     "ket_qua": true
+    },
+    {
+     "ten": "Cụm van PIEV DN125",
+     "ket_qua": true
+    },
+    {
+     "ten": "Cụm van gió 600x400",
+     "ket_qua": false
+    },
+    {
+     "ten": "Rọ hút bơm DN80",
+     "ket_qua": true
+    },
+    {
+     "ten": "Rọ hút bơm DN125",
+     "ket_qua": true
+    },
+    {
+     "ten": "Van gió 600x400",
+     "ket_qua": false
+    },
+    {
+     "ten": "Van chặn lửa FD 400x300",
+     "ket_qua": false
+    },
+    {
+     "ten": "Van điều chỉnh lưu lượng VCD 300x300",
+     "ket_qua": false
     },
     {
      "ten": "Cáp Cu/XLPE/PVC 3x2.5mm2",
@@ -645,6 +684,27 @@
     "cổ bạt",
     "flexible connection"
    ],
+   "tu_khoa_luoi_chan_con_trung": [
+    "lcct",
+    "lưới chắn côn trùng"
+   ],
+   "tu_khoa_lcct_theo_m2": {
+    "tu_khoa": [
+     "lưới chắn côn trùng",
+     "lcct",
+     "insect screen"
+    ],
+    "nguon": "User chốt 2026-11-03, TONG_HOP_KHOI_LUONG_DHKK R429, R572 (parser: Title 'LCCT ... kích thước:' ĐVT m2 có KL vẫn báo LCCT theo m²); chuyển từ biến is_lcct_name trong src/swind_boq_parser.py — Task A dọn sạch sau Việc 4, 2026-11-25",
+    "ly_do": "Dòng Tên kết thúc 'kích thước:' (không số) là Title cho dòng con; nếu Tên chứa 1 từ khóa ở đây + ĐVT m2 + KL > 0 thì báo luôn LCCT theo m² (gốc giá LCCT tính theo m²). So chuỗi con trên Tên chữ thường. Key RIÊNG: có 'insect screen' — KHÔNG gộp vào tu_khoa_luoi_chan_con_trung (đổi is_skip_rule Coverage Audit runner).",
+    "vi_du_dung": [
+     "Lưới chắn côn trùng LCCT kích thước:",
+     "Insect screen, kích thước:"
+    ],
+    "vi_du_sai": [
+     "Louver kích thước:",
+     "Lưới chắn rác kích thước:"
+    ]
+   },
    "regex_dong_tu_dau_dong": "(?:cung cấp|gia công|sản xuất|sx|lắp đặt|lắp|lđ|vận chuyển)",
    "vi_du": [
     {
@@ -814,6 +874,65 @@
    "dong_tieu_de_khong_kl_dvt": {
     "nguon": "User chốt 2026-11-03 (CAND R253 'Ống tole tráng kẽm dày 0.6mm D150'): dòng KHÔNG có KL và KHÔNG có đơn vị tính = tiêu đề → Coverage Audit không cảnh báo SÓT DÒNG.",
     "ap_dung": true
+   },
+   "tu_khoa_pham_vi_theo_co": {
+    "include_duct": [
+     "ống gió"
+    ],
+    "include_canvas": [
+     "nối mềm",
+     "canvas"
+    ],
+    "nguon": "1e5672d 2026-10-29 (swind_master_runner.audit_full_boq_coverage: lọc scope_kws theo cờ); chuyển vào JSON — Task B dọn sạch sau Việc 4, 2026-11-25",
+    "ly_do": "Không chạy --include-duct / --include-canvas thì dòng ống gió / nối mềm / canvas bị lọc là mặc định, Coverage Audit không coi là 'thuộc phạm vi Swind bị lọc'. Từ khóa bị BỎ khỏi tu_khoa_pham_vi khi cờ tương ứng tắt.",
+    "vi_du_dung": [
+     "Không --include-duct: 'ống gió' bị bỏ khỏi danh sách phạm vi"
+    ],
+    "vi_du_sai": [
+     "Có --include-duct: 'ống gió' vẫn trong danh sách"
+    ]
+   },
+   "tu_khoa_hang_chinh_kem_lcct": {
+    "tu_khoa": [
+     "louver",
+     "luover",
+     "louvre",
+     "cửa chớp",
+     "cửa gió",
+     "miệng gió",
+     "van "
+    ],
+    "nguon": "8d0e634 2026-11-11, User chốt (KL TB+VT CT3 R186 'Louver kèm lưới chắn côn trùng D503'): LCCT thiếu KT chỉ bỏ lặng lẽ khi LCCT là hàng chính; chuyển từ biến is_main_cv trong swind_master_runner — Task B dọn sạch sau Việc 4, 2026-11-25",
+    "ly_do": "Dòng 'Louver / cửa / van kèm LCCT' thiếu kích thước vẫn THÔNG BÁO USER (không bỏ như LCCT đứng riêng). Chuỗi con trên Tên chữ thường; 'van ' có dấu cách cuối (cố ý).",
+    "vi_du_dung": [
+     "louver kèm lưới chắn côn trùng d503",
+     "van kèm lcct"
+    ],
+    "vi_du_sai": [
+     "lcct 600x400",
+     "khung van"
+    ]
+   },
+   "tu_khoa_loai_tru_chi_cua_van": {
+    "tu_khoa": [
+     "ống chờ",
+     "ống lồng",
+     "ống nối mềm",
+     "mềm ei",
+     "khớp nối mềm",
+     "sleeve",
+     "flexible"
+    ],
+    "nguon": "bf59292 2026-10-26 (Coverage Audit chế độ --only-cua-van); chuyển từ literal trong swind_master_runner.audit_full_boq_coverage — Task B dọn sạch sau Việc 4, 2026-11-25",
+    "ly_do": "Chạy --only-cua-van: dòng ống chờ / ống lồng / khớp nối mềm / sleeve / flexible không phải cửa-van → không cảnh báo SÓT DÒNG. Chuỗi con trên Tên + Spec chữ thường.",
+    "vi_du_dung": [
+     "ống chờ 300x300",
+     "fire sleeve 300x300"
+    ],
+    "vi_du_sai": [
+     "cửa gió 600x600",
+     "ống gió 400x400"
+    ]
    }
   },
   {
@@ -977,6 +1096,53 @@
     },
     {
      "ten": "ống gió 400x400 kèm cách nhiệt",
+     "ket_qua": false
+    }
+   ]
+  },
+  {
+   "id": "PV-18_ONG_THANG_CHONG_CHAY_THEO_CO",
+   "ten": "Cờ --fire-duct-only --duct-straight-only: trong mục ống gió chống cháy chỉ giữ dòng ống thẳng (Tên 'Ống gió ...' không kèm tên phụ kiện, hoặc dòng chỉ kích thước dưới Title con 'Ống gió thẳng ...'); phụ kiện bỏ",
+   "nguon": "22ada12 2026-11-17 / User chốt 2026-11-14 (dự án 01. Bang thong ke khoi luong); chuyển từ biến fit_kw trong swind_master_runner.fire_duct_section_rows — Task B dọn sạch sau Việc 4, 2026-11-25",
+   "ly_do": "Ngữ cảnh = Tên nếu Tên bắt đầu tien_to_ong hoặc có từ khóa phụ kiện, ngược lại = Title con. Giữ dòng khi ngữ cảnh bắt đầu tien_to_ong và không chứa từ khóa phụ kiện. So chuỗi con trên chữ thường — 'tê' khớp cả 'tên', 'co ' có dấu cách cuối: giữ nguyên như code cũ (cờ chỉ 1 dự án, E2E không chạy).",
+   "tien_to_ong": "ống gió",
+   "tu_khoa_phu_kien": [
+    "cút",
+    "côn",
+    "chân rẽ",
+    "chạc",
+    "tê",
+    "z chuyển",
+    "hộp",
+    "chuyển tiết diện",
+    "bịt",
+    "măng xông",
+    "co "
+   ],
+   "vi_du": [
+    {
+     "ten": "400x300",
+     "title_con": "ống gió thẳng tôn dày 1.0mm:",
+     "ket_qua": true
+    },
+    {
+     "ten": "ống gió 300x300",
+     "title_con": "",
+     "ket_qua": true
+    },
+    {
+     "ten": "cút 90 độ 400x300",
+     "title_con": "ống gió thẳng:",
+     "ket_qua": false
+    },
+    {
+     "ten": "500x300",
+     "title_con": "phụ kiện:",
+     "ket_qua": false
+    },
+    {
+     "ten": "ống gió 600x400 kèm co 45",
+     "title_con": "",
      "ket_qua": false
     }
    ]

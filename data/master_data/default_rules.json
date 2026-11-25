@@ -1,0 +1,174 @@
+{
+ "_mo_ta": "Bảng chính sách MẶC ĐỊNH — nguồn dữ liệu của src/default_policy.py. Khớp item['decisions'][i]['rule'] == ap_cho. GIU = mặc định đã chốt, im lặng; BAO_VA_HOI = vẫn báo giá nhưng tô vàng Sheet BG + hỏi lại ở Kiểm soát cuối (User chốt 2026-11-24, Việc 3). Duyệt dòng bằng --override \"<sheet>!<dòng>:ok=1\" (item.default_confirmed).",
+ "phien_ban": "2026-11-25",
+ "quy_tac": [
+  {
+   "id": "MD-01",
+   "ap_cho": "CG-09-MAC-DINH",
+   "xu_ly": "GIU",
+   "nguon": "AGENTS.md 4a-0b, User chốt 2026-11-24: cửa không ghi kiểu → SDG",
+   "ly_do": "Mặc định cửa gió đã được User chốt, hỏi lại sẽ gây nhiễu.",
+   "vi_du_dung": [
+    {
+     "mo_ta": "Cửa gió 600x300 không ghi kiểu nan, decision rule CG-09-MAC-DINH → policy None",
+     "rule": "CG-09-MAC-DINH",
+     "gia_tri": "SDG",
+     "nguon": [
+      "MAC_DINH"
+     ],
+     "ket_qua": null
+    }
+   ]
+  },
+  {
+   "id": "MD-02",
+   "ap_cho": "VG-02-MAC-DINH",
+   "xu_ly": "BAO_VA_HOI",
+   "nguon": "Việc 3 2026-11-25: van không nhận ra loại → đang báo VCD (44 dòng/4 file, VD \"Van gió\")",
+   "ly_do": "BOQ không ghi loại van, hệ thống tự chọn VCD — chưa ai chốt nên phải hỏi lại.",
+   "vi_du_dung": [
+    {
+     "mo_ta": "Tên 'Van gió' 600x400, decision VG-02-MAC-DINH=VCD → BAO_VA_HOI",
+     "rule": "VG-02-MAC-DINH",
+     "gia_tri": "VCD",
+     "nguon": [
+      "MAC_DINH"
+     ],
+     "ket_qua": "MD-02"
+    },
+    {
+     "mo_ta": "Đã duyệt bằng --override ok=1 (default_confirmed) → im lặng",
+     "rule": "VG-02-MAC-DINH",
+     "gia_tri": "VCD",
+     "nguon": [
+      "MAC_DINH"
+     ],
+     "default_confirmed": true,
+     "ket_qua": null
+    }
+   ]
+  },
+  {
+   "id": "MD-03",
+   "ap_cho": "OG-MAC-DINH",
+   "xu_ly": "GIU",
+   "nguon": "OG-18 rule gốc \"còn lại = ống vuông\" + quy tắc 1c Loại 3 (User chốt 2026-11-23); 3.035 dòng ống bình thường — tô vàng sẽ làm BG mất tác dụng",
+   "ly_do": "Dòng chỉ kích thước dưới Title ống là trường hợp bình thường, rất nhiều dòng.",
+   "vi_du_dung": [
+    {
+     "mo_ta": "Dòng '600x400' dưới Title ống gió, decision OG-MAC-DINH → policy None",
+     "rule": "OG-MAC-DINH",
+     "gia_tri": "ONG_VUONG",
+     "nguon": [
+      "MAC_DINH"
+     ],
+     "ket_qua": null
+    }
+   ]
+  },
+  {
+   "id": "MD-04",
+   "ap_cho": "LH-26",
+   "xu_ly": "BAO_VA_HOI",
+   "chi_khi_gia_tri": ["ONG_GIO"],
+   "nguon": "loại hàng chỉ nhờ Title (bước 5, rule LH-26 category_rules.json — trước Việc 4 là PARSER-5-TITLE); 10 dòng thật là cút hợp lệ (NOVH_CT0304) → báo + tô vàng theo quyết định User 2026-11-24",
+   "ly_do": "Dòng không tự ghi loại hàng, chỉ suy từ Title cha — báo giá nhưng cần User xác nhận.",
+   "vi_du_dung": [
+    {
+     "mo_ta": "Dòng '90 độ 600x400' dưới Title 'Cút', decision LH-26 (nguon TITLE) → BAO_VA_HOI",
+     "rule": "LH-26",
+     "gia_tri": "ONG_GIO",
+     "nguon": [
+      "TITLE"
+     ],
+     "ket_qua": "MD-04"
+    },
+    {
+     "mo_ta": "Title suy ra hàng thương mại (gia_tri THUONG_MAI), không phải ống gió → MD-04 không áp",
+     "rule": "LH-26",
+     "gia_tri": "THUONG_MAI",
+     "nguon": [
+      "TITLE"
+     ],
+     "ket_qua": null
+    },
+    {
+     "mo_ta": "Đã duyệt bằng --override ok=1 (default_confirmed) → im lặng",
+     "rule": "LH-26",
+     "gia_tri": "ONG_GIO",
+     "nguon": [
+      "TITLE"
+     ],
+     "default_confirmed": true,
+     "ket_qua": null
+    }
+   ]
+  },
+  {
+   "id": "MD-05",
+   "ap_cho": "AGENT02-GOI-Y",
+   "xu_ly": "BAO_VA_HOI",
+   "nguon": "gợi ý loại tự động Agent 02 (--auto-accept), chưa duyệt",
+   "ly_do": "Loại hàng do máy gợi ý (độ tin cậy ≥ 60%) chưa qua người duyệt.",
+   "vi_du_dung": [
+    {
+     "mo_ta": "Dòng hàng lạ được Agent 02 gợi ý phân nhóm, decision AGENT02-GOI-Y (nguon HOC_MAY) → BAO_VA_HOI",
+     "rule": "AGENT02-GOI-Y",
+     "gia_tri": "VAN_GIO",
+     "nguon": [
+      "HOC_MAY"
+     ],
+     "ket_qua": "MD-05"
+    },
+    {
+     "mo_ta": "Agent 02 gợi ý nhưng dòng là hàng thương mại (category THUONG_MAI, Swind không báo) → im lặng",
+     "rule": "AGENT02-GOI-Y",
+     "gia_tri": "THUONG_MAI",
+     "nguon": [
+      "HOC_MAY"
+     ],
+     "category": "THUONG_MAI",
+     "ket_qua": null
+    },
+    {
+     "mo_ta": "Đã duyệt bằng --override ok=1 (default_confirmed) → im lặng",
+     "rule": "AGENT02-GOI-Y",
+     "gia_tri": "VAN_GIO",
+     "nguon": [
+      "HOC_MAY"
+     ],
+     "default_confirmed": true,
+     "ket_qua": null
+    }
+   ]
+  },
+  {
+   "id": "MD-06",
+   "ap_cho": "AGENT01-LOAI-DOI",
+   "xu_ly": "BAO_VA_HOI",
+   "nguon": "loại hàng bị đổi sau parser không rõ nguồn",
+   "ly_do": "Loại hàng đổi sau khi parser đã quyết mà không có rule giải thích — cần User xác nhận.",
+   "vi_du_dung": [
+    {
+     "mo_ta": "Parser ra CUA_GIO nhưng Agent 01 đổi sang VAN_GIO, decision AGENT01-LOAI-DOI → BAO_VA_HOI",
+     "rule": "AGENT01-LOAI-DOI",
+     "gia_tri": "VAN_GIO",
+     "nguon": [
+      "PARSER"
+     ],
+     "ket_qua": "MD-06"
+    },
+    {
+     "mo_ta": "Đã duyệt bằng --override ok=1 (default_confirmed) → im lặng",
+     "rule": "AGENT01-LOAI-DOI",
+     "gia_tri": "VAN_GIO",
+     "nguon": [
+      "PARSER"
+     ],
+     "default_confirmed": true,
+     "ket_qua": null
+    }
+   ]
+  }
+ ]
+}

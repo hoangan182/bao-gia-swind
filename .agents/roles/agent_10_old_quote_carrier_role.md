@@ -56,3 +56,4 @@ Kho ghi nhớ `data/old_quote_memory/<mã>.json` (`src/old_quote_memory.py`): ch
 - `output/<Project>/<Tên file BOQ gốc>.xlsx`: Sheet BOQ gốc + Sheet `BG` (giá cũ + báo mới, đúng thứ tự BOQ).
 - `output/<Project>/internal_estimation/OLD_QUOTE_MATCH_REPORT.xlsx|.json`: đối chiếu từng dòng (trạng thái, dòng BG cũ, giá cũ, lý do).
 - Lưu ý: `internal_estimation/*_ESTIMATION.xlsx` và Bảng tổng hợp runner in ra chỉ là **phần báo mới**; bảng tổng hợp cuối của Agent 10 mới là tổng toàn bộ.
+- Số dòng trong gợi ý tô vàng trên BG (`--override` / `--title-wins`) sinh ra trong luồng Agent 10 là số dòng của BOQ gọn do carrier dựng, không phải số dòng gốc của khách.

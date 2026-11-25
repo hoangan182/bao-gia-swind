@@ -34,6 +34,8 @@ from agent_01_boq_extractor import Agent01_BOQExtractor
 from agent_04_bom_duct import Agent04_DuctworkBOM
 from agent_05_bom_damper import Agent05_DamperBOM
 from agent_06_bom_diffuser import Agent06_DiffuserBOM
+import diffuser_classifier
+import duct_classifier
 
 
 BASELINE_PATH = os.path.join(PROJECT_ROOT, "data", "master_data", "formula_regression_baseline.json")
@@ -275,7 +277,7 @@ def _evaluate_parsed_item_in_ram(
     elif cat == "TIEU_AM":
         bom = Agent04_DuctworkBOM.calculate_acoustic_partition_bom(
             parent_id=item_id, w=w if w > 0 else 1000, h=h if h > 0 else 1000, l=l if l > 0 else 1000,
-            unit=item["unit"], include_casing=("tiêu âm trong" not in item.get("raw_name", "").lower()),
+            unit=item["unit"], include_casing=not duct_classifier.is_inner_lined_silencer(item.get("raw_name", "")),  # duct_rules.json OG-26
             d=d, raw_name=f"{item.get('raw_name', '')} {item.get('note_boq', '')}".strip(), item=item
         )
         components.extend(bom["components"])
@@ -444,9 +446,7 @@ def _evaluate_parsed_item_in_ram(
 
     raw_name_s = item.get("raw_name") or item.get("name") or ""
     is_box_combo = spec.get("is_box_combo") or item.get("is_box_combo") or (
-        any(k in raw_name_s.lower() for k in ("kèm hộp gió", "kèm hộp", "kèm box", "có hộp gió", "gắn hộp gió"))
-        and any(k in raw_name_s.lower() for k in ("cửa gió", "miệng gió", "cửa cấp", "miệng cấp", "cửa hồi", "miệng hồi"))
-    )
+        diffuser_classifier.box_combo_by_name(raw_name_s))  # diffuser_rules.json hop_gio_theo_ten
     p_ref = float(item.get("ref_price") or 0)
     has_standalone_cv_ref = bool(item.get("_has_standalone_cv_ref"))
     price_source = "SWIND_CALC"
@@ -465,6 +465,7 @@ def _evaluate_parsed_item_in_ram(
             price_source = "PARTNER_KEPT"
 
     return {
+        "decisions": list(item.get("decisions", [])),
         "input_text": raw_name_s,
         "section": item.get("section", ""),
         "note_boq": item.get("note_boq", ""),
@@ -684,10 +685,12 @@ def locate_requirement_target(topic):
             "tags": ["tu khoa", "keyword", "phan loai", "category", "subtype", "khac", "nhan dien", "model"],
             "title": "Thêm từ khóa nhận diện mặt hàng mới / Phân loại Category & Subtype",
             "json_targets": [
-                "data/master_data/subtype_rules.json -> keys 'CATEGORY_KEYWORDS', 'DUCT_FITTING_SUBTYPES', 'DAMPER_SUBTYPES', 'DIFFUSER_SUBTYPES'",
+                "data/master_data/category_rules.json (rule LH-01..LH-26: loại hàng)",
+                "data/master_data/manufacturable_catalog.json, data/master_data/commercial_catalog.json (từ khóa catalog)",
+                "data/master_data/subtype_rules.json -> keys 'DUCT_FITTING_SUBTYPES', 'DAMPER_SUBTYPES', 'DIFFUSER_SUBTYPES'",
                 "data/master_data/boq_keyword_learning.json"
             ],
-            "py_targets": [("src/swind_boq_parser.py", "parse_sheet"), ("src/agent_01_boq_extractor.py", "resolve_item_spec")]
+            "py_targets": [("src/category_classifier.py", "classify"), ("src/agent_01_boq_extractor.py", "resolve_item_spec")]
         },
         {
             "tags": ["title", "ke thua", "cha con", "kich thuoc", "do day", "thickness", "obd", "luoi", "loc", "combo"],
@@ -763,6 +766,7 @@ def locate_requirement_target(topic):
         "src/swind_master_runner.py",
         "src/agent_00b_input_normalizer.py",
         "src/swind_pricing.py",
+        "src/category_classifier.py",
     ]
     ast_index = {}
     for rel_path in src_files:
@@ -1391,6 +1395,11 @@ def main():
         print(f"📍 VỊ TRÍ CODE  : {r['code_location']}")
         print(f"📝 DIỄN GIẢI BG : {r['note_std']}")
         print(f"💰 ĐƠN GIÁ BÁN  : {r['sell_unit_price']:,.0f} VNĐ")
+        if r.get("decisions"):
+            import decision_trace
+            _ex = decision_trace.explain({"decisions": r["decisions"]})
+            if _ex:
+                print(f"🧭 ĐÃ HIỂU      : {_ex}")
         if r["components"]:
             print("🔩 CHI TIẾT BOM :")
             for c in r["components"]:

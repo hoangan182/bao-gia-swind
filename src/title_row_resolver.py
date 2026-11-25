@@ -33,6 +33,12 @@ def load_rules(path=None):
     return rules
 
 
+def is_title_kw_row(nl_chk, rules=None):
+    """TR-05: dòng không KL có chữ loại hàng → Title cha (parser `is_parent_title_kw`). Chuỗi con thuần trên chuỗi
+    đã `.lower()` của parser — không chuẩn hoá thêm (giữ y hành vi cũ)."""
+    return any(k in nl_chk for k in (rules or load_rules())["TR-05"]["tu_khoa"])
+
+
 def _norm(text):
     return unicodedata.normalize("NFC", str(text or "")).lower().strip()
 

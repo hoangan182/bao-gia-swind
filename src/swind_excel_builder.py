@@ -3,6 +3,7 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from swind_utils import detect_boq_header, get_quotation_profile, vat_label
 import typo_normalizer
+import default_policy
 from agent_03_input_auditor import odd_size_flag, boq_size
 
 # Thương hiệu tôn ghi đè cho ghi chú vật liệu cuối BG (cờ --duct-steel-brand của runner); rỗng = mặc định financial_policy.json
@@ -610,7 +611,8 @@ class SwindExcelBuilder:
             Xét kích thước BOQ trước khi cộng viền KTC (boq_size) — VD 'KT cổ 1000x135' không thành 1050x185."""
             flag = " | ".join(f for f in (typo_normalizer.bg_flag(item.get("typo_events")),
                                           odd_size_flag(*boq_size(item), item.get("d")),
-                                          item.get("size_limit_flag")) if f)
+                                          item.get("size_limit_flag"),
+                                          default_policy.bg_flag(item)) if f)
             if flag:
                 for row in (row_std, row_fslf, row_bfn):
                     row[15] = f"{row[15]} | {flag}" if row[15] else flag

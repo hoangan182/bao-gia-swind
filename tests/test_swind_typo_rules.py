@@ -435,8 +435,10 @@ class ReviewFixTest(unittest.TestCase):
             shutil.copy2(tn.RULES_PATH, rules)
             queue = os.path.join(d, "q.json")
             learning = os.path.join(d, "l.json")
-            open(queue, "w").write('{"pending_proposals": []}')
-            open(learning, "w").write("{}")
+            with open(queue, "w") as fh:
+                fh.write('{"pending_proposals": []}')
+            with open(learning, "w") as fh:
+                fh.write("{}")
             orig = (tn.RULES_PATH, a02.QUEUE_PATH, a02.LEARNING_PATH, builtins.input)
             tn.RULES_PATH, a02.QUEUE_PATH, a02.LEARNING_PATH = rules, queue, learning
             builtins.input = lambda *_: "R"
@@ -446,7 +448,8 @@ class ReviewFixTest(unittest.TestCase):
                 t = "Cửa gió hồi + ODB"
                 self.assertEqual(tn.detect_code_typos(t, t), [])
                 self.assertIn("odb", tn.load_rules()["TY-03"]["loai_tru"])
-                self.assertEqual(json.load(open(queue))["pending_proposals"][0]["status"], "REJECTED")
+                with open(queue) as fh:
+                    self.assertEqual(json.load(fh)["pending_proposals"][0]["status"], "REJECTED")
             finally:
                 tn.RULES_PATH, a02.QUEUE_PATH, a02.LEARNING_PATH, builtins.input = orig
 

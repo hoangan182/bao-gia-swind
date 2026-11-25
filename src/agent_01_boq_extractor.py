@@ -8,6 +8,7 @@ from agent_05_bom_damper import Agent05_DamperBOM
 from agent_06_bom_diffuser import Agent06_DiffuserBOM
 import diffuser_classifier
 import typo_normalizer
+import decision_trace
 from swind_utils import get_subtype_rules
 
 
@@ -112,6 +113,13 @@ class Agent01_BOQExtractor:
         cls_res = damper_classifier.classify(item, subtype_rules, raw_search, full_search, w, h, d, ei_rating, a1, a2)
         damper_type, eff_type = cls_res["damper_type"], cls_res["eff_type"]
         subtype = damper_type
+        _trail = cls_res.get("trail") or []
+        _type_rules = ("VG-01", "VG-02A", "VG-02", "VG-03", "VG-04", "VG-05")
+        # Mặc định chỉ khi VG-03/04/05 không nâng cấp loại van; rule ghi là rule quyết định LOẠI (không phải VG-06..14)
+        _is_def = "VG-02-MAC-DINH" in _trail and not any(r in _trail for r in ("VG-03", "VG-04", "VG-05"))
+        _type_rule = next((r for r in reversed(_trail) if r in _type_rules), _trail[-1] if _trail else "VG-02")
+        kieu_trace = ("VG-02-MAC-DINH" if _is_def else _type_rule,
+                      cls_res.get("nguon") or ["MAC_DINH"], not _is_def)
         eff_model_code, motor_brand = cls_res["eff_model_code"], cls_res["motor_brand"]
         ei_rating = cls_res["ei_rating"]
         w, h, d, a1, a2 = cls_res["w"], cls_res["h"], cls_res["d"], cls_res["a1"], cls_res["a2"]
@@ -211,7 +219,8 @@ class Agent01_BOQExtractor:
             "fslf_ratio": fslf_ratio,
             "act_unit": act_unit,
             "eff_model_code": eff_model_code,
-            "motor_brand": motor_brand
+            "motor_brand": motor_brand,
+            "kieu_trace": kieu_trace
         }
 
     @classmethod
@@ -227,6 +236,8 @@ class Agent01_BOQExtractor:
             item, subtype_rules, raw_name, name, raw_search, full_search, w, h, d, a1, a2, combo_cfg, include_box
         )
         profile_type = cls_res["profile_type"]
+        kieu_trace = (cls_res.get("rule_quyet_dinh") or cls_res.get("rule_id"),
+                      cls_res.get("nguon") or ["MAC_DINH"], not cls_res.get("mac_dinh"))
         model_fslf = model_bfn = cls_res["model"]
         note_fslf = note_bfn = cls_res["note"]
         b1, b2, a1, a2 = cls_res["b1"], cls_res["b2"], cls_res["a1"], cls_res["a2"]
@@ -394,7 +405,8 @@ class Agent01_BOQExtractor:
             "box_spec": box_spec,
             "n_slots": n_slots,
             "eff_model_code": eff_model_code,
-            "motor_brand": motor_brand
+            "motor_brand": motor_brand,
+            "kieu_trace": kieu_trace
         }
 
     @classmethod
@@ -404,7 +416,16 @@ class Agent01_BOQExtractor:
         is_fire_canvas = False
         has_mesh, has_filter = False, False
 
-        calc_duct = Agent04_DuctworkBOM.calculate_duct_item(item)
+        sub_trail = []
+        calc_duct = Agent04_DuctworkBOM.calculate_duct_item(item, trail=sub_trail)
+        _is_def = "OG-MAC-DINH" in sub_trail
+        if "OG-19" in sub_trail:
+            # Nhóm TIEU_AM (Title) ép loại SILENCER_*: rule OG-19, nguồn / độ chắc theo quyết định loai_hang của dòng
+            _lh = next((x for x in (item.get("decisions") or []) if x.get("truong") == "loai_hang"), None)
+            kieu_trace = ("OG-19", list(_lh["nguon"]) if _lh else ["TITLE"], bool(_lh["chac"]) if _lh else True)
+        else:
+            kieu_trace = ("OG-MAC-DINH" if _is_def else (sub_trail[-1] if sub_trail else "OG-MAC-DINH"),
+                          ["MAC_DINH"] if (_is_def or not sub_trail) else ["TEN"], not (_is_def or not sub_trail))
         item["duct_calc"] = calc_duct
         subtype = calc_duct["subtype"]
         if subtype == "PLENUM_BOX":
@@ -486,7 +507,8 @@ class Agent01_BOQExtractor:
             "model_fslf": model_fslf,
             "model_bfn": model_bfn,
             "note_fslf": note_fslf,
-            "note_bfn": note_bfn
+            "note_bfn": note_bfn,
+            "kieu_trace": kieu_trace
         }
 
     @classmethod
@@ -550,6 +572,7 @@ class Agent01_BOQExtractor:
         is_klb_req = (req_motor == "KLB") or (req_mfd_model == "1.03")
         is_honeywell_req = (req_motor == "HONEYWELL") or (req_mfd_model == "1.04")
         motor_brand = "KLB" if is_klb_req else ("HONEYWELL" if is_honeywell_req else "BELIMO")
+        kieu_trace = None  # (rule, nguồn, chắc) của quyết định kiểu — Bảng 'đã hiểu thế nào' (chỉ ghi vết)
 
         if cat == "VAN_GIO":
             dmp_res = cls._resolve_damper_spec(item, subtype_rules, price_map, idx, raw_search, full_search, w, h, d, ei_rating, a1, a2, motor_brand)
@@ -561,6 +584,7 @@ class Agent01_BOQExtractor:
             has_fslf_formula_diff = dmp_res["has_fslf_formula_diff"]
             fslf_ratio, act_unit = dmp_res["fslf_ratio"], dmp_res["act_unit"]
             eff_model_code, motor_brand = dmp_res["eff_model_code"], dmp_res["motor_brand"]
+            kieu_trace = dmp_res["kieu_trace"]
         elif cat == "CUA_GIO":
             dif_res = cls._resolve_diffuser_spec(item, subtype_rules, price_map, idx, raw_name, name, raw_search, full_search, w, h, d, l, thk, ei_rating, a1, a2, eff_model_code, motor_brand)
             subtype = dif_res["subtype"]
@@ -576,6 +600,7 @@ class Agent01_BOQExtractor:
             box_spec = dif_res.get("box_spec")
             n_slots = int(dif_res.get("n_slots") or 0)
             eff_model_code, motor_brand = dif_res["eff_model_code"], dif_res["motor_brand"]
+            kieu_trace = dif_res["kieu_trace"]
         elif cat in ("ONG_GIO", "CANVAS", "TIEU_AM", "ONG_MEM"):
             dct_res = cls._resolve_duct_spec(item, cat, raw_name, raw_search, w, h, d, a1, a2)
             subtype, is_fitting, brand = dct_res["subtype"], dct_res["is_fitting"], dct_res["brand"]
@@ -584,6 +609,7 @@ class Agent01_BOQExtractor:
             is_fire_canvas, has_mesh, has_filter = dct_res["is_fire_canvas"], dct_res["has_mesh"], dct_res["has_filter"]
             model_fslf, model_bfn = dct_res["model_fslf"], dct_res["model_bfn"]
             note_fslf, note_bfn = dct_res["note_fslf"], dct_res["note_bfn"]
+            kieu_trace = dct_res["kieu_trace"]
         else:
             subtype = "OTHER"
             brand = "SWIND" if ("chống cháy" in raw_search or "lưới" in raw_search) else None
@@ -638,6 +664,19 @@ class Agent01_BOQExtractor:
                 resolved_spec[k_note] = m2_note
         item["resolved_spec"] = resolved_spec
         item["is_box_combo"] = is_box_combo
+        # Bảng 'đã hiểu thế nào' (2026-11-24, chỉ ghi vết — không đổi phân loại / giá):
+        # Agent 02 / runner tự ghi khi đổi loại hàng; còn lệch nghĩa là chỗ đổi chưa ghi vết → mặc định, cần xác nhận.
+        # Item tạm (dmp_item / sec_item của combo) tự ghi lên chính nó, không chép vào item cha.
+        lh = next((d for d in item.get("decisions", []) if d.get("truong") == "loai_hang"), None)
+        if lh and lh.get("gia_tri") != cat:
+            decision_trace.record(item, "loai_hang", cat, "MAC_DINH", "AGENT01-LOAI-DOI", False)
+        if kieu_trace:
+            k_rule, k_src, k_sure = kieu_trace
+            decision_trace.record(item, "kieu", subtype, k_src, k_rule, k_sure)
+            if cat in ("CUA_GIO", "VAN_GIO"):
+                decision_trace.record(item, "model", model_std, k_src, k_rule, k_sure)
+        # --override ok=1: User đã duyệt mặc định → quyết định mặc định ghi thêm nguồn CO_USER (Việc 3, 2026-11-25)
+        decision_trace.confirm_by_user(item)
         return resolved_spec
 
     @classmethod

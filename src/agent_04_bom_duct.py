@@ -11,7 +11,7 @@ from swind_pricing import excel_round, mfg_markup as _mfg_markup, mesh_price  # 
 
 # --lined-duct-as-duct (User chốt 2026-11-21, dự án Ống thông gió): cụm '( kèm tiêu âm trong dày 50mm)' trên dòng ống gió.
 # Khi item['lined_duct_as_duct'] bật, bỏ cụm này khỏi chuỗi phân loại để tính như ống gió thường (không ra SILENCER / TA-VUONG).
-LINED_DUCT_RX = re.compile(r"\(?\s*(?:kèm|kem|có|co|\+)?\s*ti[êe]u\s*[âa]m\s*trong[^)]*\)?", re.IGNORECASE)
+# Regex: duct_rules.json OG-25 (duct_classifier.lined_duct_rx) — Task B dọn sạch sau Việc 4, 2026-11-25.
 
 
 class Agent04_DuctworkBOM:
@@ -153,12 +153,12 @@ class Agent04_DuctworkBOM:
         return duct_classifier.detect_subtype(text, w1, h1, w2, h2, d1, d2, unit)
 
     @classmethod
-    def calculate_duct_item(cls, item):
+    def calculate_duct_item(cls, item, trail=None):
         """
         Điều kiện dự án (User chốt 2026-11-19, GMS TASEOC): item['duct_uplift_pct'] = % cộng thêm vào đơn giá ống gió & phụ kiện
         (cờ --duct-uplift), item['duct_coating'] = ghi chú lớp mạ (cờ --duct-coating, VD Z18) nối vào ghi chú dòng.
         """
-        calc = cls._calculate_duct_item_base(item)
+        calc = cls._calculate_duct_item_base(item, trail=trail)
         pct = float(item.get("duct_uplift_pct") or 0.0)
         coating = str(item.get("duct_coating") or "").strip()
         brand = str(item.get("duct_steel_brand") or "").strip()
@@ -187,7 +187,7 @@ class Agent04_DuctworkBOM:
         return calc
 
     @classmethod
-    def _calculate_duct_item_base(cls, item):
+    def _calculate_duct_item_base(cls, item, trail=None):
         """
         Tính toán đầy đủ diện tích S (m2), độ dày tôn (mm), đơn giá bán (VNĐ) và giải trình công thức
         cho một hạng mục thuộc nhóm ONG_GIO, TIEU_AM, CANVAS, ONG_MEM.
@@ -203,8 +203,9 @@ class Agent04_DuctworkBOM:
                 and re.search(r"c[úu]t|chân rẽ|chan re|chạc|chac|\bz\b|zét|chuyển tiết diện|\bcôn\b|\btê\b", _full_nm, re.IGNORECASE)):
             raw_name = _full_nm
         if item.get("lined_duct_as_duct"):
-            raw_name = re.sub(r"\s{2,}", " ", LINED_DUCT_RX.sub(" ", raw_name)).strip()
-            note_boq = re.sub(r"\s{2,}", " ", LINED_DUCT_RX.sub(" ", note_boq)).strip()
+            lined_rx = duct_classifier.lined_duct_rx()
+            raw_name = re.sub(r"\s{2,}", " ", lined_rx.sub(" ", raw_name)).strip()
+            note_boq = re.sub(r"\s{2,}", " ", lined_rx.sub(" ", note_boq)).strip()
         full_text = f"{raw_name} {note_boq}".strip()
 
         w_in = float(item.get("w") or 0.0)
@@ -240,7 +241,8 @@ class Agent04_DuctworkBOM:
         is_insulated = bool(item.get("is_insulated") or geom["is_insulated"] or prev_geom.get("is_insulated"))
 
         # Dòng nhóm TIEU_AM kế thừa Title "Tiêu âm ..." mà Tên chỉ còn kích thước -> vẫn tính tiêu âm (OG-19)
-        subtype = duct_classifier.detect_subtype(full_text, w1, h1, w2, h2, d1, d2, unit, category=item.get("category"))
+        # trail: Bảng 'đã hiểu thế nào' (2026-11-24) — Agent 01 truyền list để nhận vết rule loại ống (chỉ ghi vết)
+        subtype = duct_classifier.detect_subtype(full_text, w1, h1, w2, h2, d1, d2, unit, category=item.get("category"), trail=trail)
 
         if subtype == "PLENUM_BOX":
             boxes = cls._parse_note_boxes(note_boq)
@@ -408,17 +410,12 @@ class Agent04_DuctworkBOM:
             W_outer, H_outer = max(w1_s, 100.0), max(h1_s, 100.0)
             W_inner, H_inner = max(W_outer - 100.0, 50.0), max(H_outer - 100.0, 50.0)
             thk = cls.get_standard_thickness(max(W_outer, H_outer), is_round=False, explicit_thk=explicit_thk)
-            t_name_low = raw_name.lower()
-            t_full_low = full_text.lower()
-            is_silencer_fitting = any(k in t_name_low for k in (
-                "phụ kiện", "phu kien", "cút", "cut ", "co ", "chếch", "chech",
-                "côn", "con ", "tê ", "te ", "chạc", "chac", "chân rẽ", "chan re",
-                "gót giày", "got giay", "zét", "zet", "ống lượn", "ong luon", "bịt đầu", "bit dau"
-            )) or ("phụ kiện tiêu âm" in t_full_low)
+            is_silencer_fitting = duct_classifier.is_silencer_fitting(raw_name, full_text)  # OG-27 (duct_rules.json)
+            is_sil_elbow = is_silencer_fitting and duct_classifier.is_silencer_elbow_name(raw_name)
             if w1_s == 0 and h1_s == 0:
                 s_outer = 1.0
                 l_out_s = None
-            elif is_silencer_fitting and any(k in t_name_low for k in ("cút", "cut ", "co ", "chếch", "chech")):
+            elif is_sil_elbow:
                 R_val = R_s if R_s > 0 else (W_outer / 2.0)
                 if angle == 60:
                     el_factor = (2.0 * 1.1) / 3.0
@@ -434,7 +431,7 @@ class Agent04_DuctworkBOM:
                 s_4 = ((W_outer + H_outer) * 2.0 * 100.0) / 1e6
                 s_outer = (s_1 + s_2 + s_3 + s_4) * el_factor
                 l_out_s = int(R_val)
-            elif is_silencer_fitting and any(k in t_name_low for k in ("côn", "con ", "chân rẽ", "chan re", "gót giày", "got giay")):
+            elif is_silencer_fitting and duct_classifier.is_silencer_cone_name(raw_name):
                 W2_val = w2_s if w2_s > 0 else max(W_outer - 100.0, 100.0)
                 H2_val = h2_s if h2_s > 0 else H_outer
                 L_red = (geom_raw["length"] or length) if (geom_raw["length"] or length) > 0 else 500.0
@@ -461,7 +458,7 @@ class Agent04_DuctworkBOM:
                 "b2": int(H_inner) if h1_s > 0 else None,
                 "area_m2": round(s_outer, 3),
                 "unit_price": unit_price,
-                "spec_note": f"{'Phụ kiện tiêu âm vuông' if is_silencer_fitting else 'Hộp tiêu âm vuông'}" + (f" {int(W_outer)}x{int(H_outer)}" if (w1_s > 0 and h1_s > 0) else "") + (f" R={l_out_s}" if (is_silencer_fitting and any(k in t_name_low for k in ('cút', 'cut ', 'co ', 'chếch', 'chech'))) else (f"xL{l_out_s}" if l_out_s else "")) + f", tôn Hoa Sen dày {thk:.2f}mm, bông khoáng 60kg/m3 + vải thủy tinh + tôn đục lỗ" + (f", bọc chống cháy EI{ei_rating}" if ei_rating > 0 else ""),
+                "spec_note": f"{'Phụ kiện tiêu âm vuông' if is_silencer_fitting else 'Hộp tiêu âm vuông'}" + (f" {int(W_outer)}x{int(H_outer)}" if (w1_s > 0 and h1_s > 0) else "") + (f" R={l_out_s}" if is_sil_elbow else (f"xL{l_out_s}" if l_out_s else "")) + f", tôn Hoa Sen dày {thk:.2f}mm, bông khoáng 60kg/m3 + vải thủy tinh + tôn đục lỗ" + (f", bọc chống cháy EI{ei_rating}" if ei_rating > 0 else ""),
                 "trace": f"BG TIEU AM ({'Phụ kiện tiêu âm vuông x1.3' if is_silencer_fitting else 'Tiêu âm vuông'}): S={s_outer:.3f}m2 x {silencer_rate:,.0f} đ/m2 = {unit_price:,.0f} đ"
             }
 

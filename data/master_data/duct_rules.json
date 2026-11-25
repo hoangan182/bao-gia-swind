@@ -827,6 +827,120 @@
      "loai": "CANVAS_SQ"
     }
    ]
+  },
+  {
+   "id": "OG-25_ONG_KEM_TIEU_AM_TRONG",
+   "ten": "Cờ --lined-duct-as-duct: dòng 'Ống gió ... ( kèm tiêu âm trong dày 50mm)' (nhóm TIEU_AM) báo như ống gió thường — runner đổi nhóm TIEU_AM → ONG_GIO khi Tên / Ghi chú khớp regex; Agent 04 xóa cụm khớp khỏi Tên / Ghi chú trước khi phân loại & tính giá",
+   "nguon": "ab4a8f8 2026-11-23 / User chốt 2026-11-21 (dự án Ống thông gió); chuyển hằng LINED_DUCT_RX từ src/agent_04_bom_duct.py (runner import) — Task B dọn sạch sau Việc 4, 2026-11-25",
+   "ly_do": "Regex dùng ở 2 chỗ (runner nhận diện, agent_04 xóa cụm) → 1 nguồn. Khớp cả không dấu ('tieu am trong'), '+', 'có' — KHÁC OG-26 (chuỗi con có dấu 'tiêu âm trong', quyết định có vỏ tiêu âm) — không gộp.",
+   "regex_ong_kem_tieu_am_trong": "\\(?\\s*(?:kèm|kem|có|co|\\+)?\\s*ti[êe]u\\s*[âa]m\\s*trong[^)]*\\)?",
+   "ignorecase": true,
+   "vi_du_dung": [
+    {
+     "ten": "Ống gió 800x400 ( kèm tiêu âm trong dày 50mm)"
+    },
+    {
+     "ten": "ống gió + tieu am trong 25mm"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Ống tiêu âm 800x400 L1000"
+    },
+    {
+     "ten": "Ống gió 800x400"
+    }
+   ]
+  },
+  {
+   "id": "OG-26_TIEU_AM_TRONG_KHONG_VO",
+   "ten": "Tiêu âm (TIEU_AM) Tên ghi 'tiêu âm trong' → tiêu âm lót trong ống, KHÔNG tính vỏ (include_casing = False) ở Agent 04 calculate_acoustic_partition_bom",
+   "nguon": "bd1d662 2026-10-20 (runner include_casing; bản sao swind_item_inspector); chuyển vào JSON — Task B dọn sạch sau Việc 4, 2026-11-25",
+   "ly_do": "Chuỗi con thuần trên Tên chữ thường, CHỈ có dấu — không thay bằng OG-25 (OG-25 khớp cả không dấu → đổi giá các dòng không dấu).",
+   "tu_khoa": [
+    "tiêu âm trong"
+   ],
+   "vi_du_dung": [
+    {
+     "ten": "Ống gió 800x400 ( kèm tiêu âm trong dày 50mm)"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "ống gió tieu am trong"
+    },
+    {
+     "ten": "Hộp tiêu âm 600x600"
+    }
+   ]
+  },
+  {
+   "id": "OG-27_PHU_KIEN_TIEU_AM",
+   "ten": "Tiêu âm vuông: Tên ghi phụ kiện (cút / côn / tê / chạc / chân rẽ / gót giày / zét / ống lượn / bịt đầu) hoặc toàn dòng ghi 'phụ kiện tiêu âm' → phụ kiện tiêu âm (PK-TA-VUONG, giá × he_so_phu_kien); cút / côn / chân rẽ chọn công thức diện tích riêng — Agent 04 _calc_silencer_item",
+   "nguon": "BG TIEU AM / sheet Excel chuẩn Swind (hệ số phụ kiện 1.3); chuyển từ src/agent_04_bom_duct.py — Task C dọn sạch sau Việc 4, 2026-11-25",
+   "ly_do": "Chuỗi con thuần trên Tên chữ thường; các chữ có dấu cách cuối ('cut ', 'co ', 'te ', 'con ') là cố ý (tránh khớp 'cutter', 'conn'...). Không đổi thứ tự / danh sách — đổi là đổi giá tiêu âm.",
+   "tu_khoa_ten": [
+    "phụ kiện",
+    "phu kien",
+    "cút",
+    "cut ",
+    "co ",
+    "chếch",
+    "chech",
+    "côn",
+    "con ",
+    "tê ",
+    "te ",
+    "chạc",
+    "chac",
+    "chân rẽ",
+    "chan re",
+    "gót giày",
+    "got giay",
+    "zét",
+    "zet",
+    "ống lượn",
+    "ong luon",
+    "bịt đầu",
+    "bit dau"
+   ],
+   "tu_khoa_toan_dong": [
+    "phụ kiện tiêu âm"
+   ],
+   "tu_khoa_cut": [
+    "cút",
+    "cut ",
+    "co ",
+    "chếch",
+    "chech"
+   ],
+   "tu_khoa_con": [
+    "côn",
+    "con ",
+    "chân rẽ",
+    "chan re",
+    "gót giày",
+    "got giay"
+   ],
+   "vi_du_dung": [
+    {
+     "ten": "Cút 90 tiêu âm 600x400"
+    },
+    {
+     "ten": "Côn thu tiêu âm 600x400"
+    },
+    {
+     "ten": "Chân rẽ tiêu âm 600x400"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Hộp tiêu âm 600x600"
+    },
+    {
+     "ten": "Ống gió tiêu âm 800x400"
+    }
+   ]
   }
  ]
 }

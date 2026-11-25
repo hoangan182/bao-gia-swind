@@ -18,13 +18,15 @@
 | `nhom_tu_khoa` | Nhóm từ khóa dùng chung (`@mesh_kws`, `@louver_kws`...). Nhóm có `tu_cau_hinh` lấy danh sách từ `subtype_rules.json -> COMBO_AND_DETECTION_RULES` rồi cộng `them`. |
 | `buoc_nhan_dien` | Chạy **theo thứ tự**: tính cờ (`co`), văn bản xét (`van_ban`, VD `blade_search` = văn bản xét kiểu nan), bước đặc biệt (`tinh`: đếm khe slot, áp KTC). Cờ có thể bị bước sau bật thêm (`dat_true_khi`). |
 | `thu_tu_uu_tien` | Danh sách rule, **rule đầu tiên khớp thắng**. Mỗi rule: `id`, `ten`, `dieu_kien`, `gan` (đổi cờ khi rule thắng), `profile`, `model`, `b`, `ghi_chu`, `nguon`, `ly_do`, `vi_du_dung`, `vi_du_sai`. Rule cuối `CG-09_DU_PHONG` (`dieu_kien: true`) chọn profile qua `chon_profile` rồi lấy kết quả ở `theo_profile`. |
+| `hop_gio_theo_ten` | Cửa kèm hộp gió trong Tên (`box_combo_by_name`; `swind_item_inspector` dùng chung). |
+| `xung_dot_ten_ghi_chu` | `XD-CG-01..03` bộ dò Tên ≠ Ghi chú (sọt trứng / nan Z / bầu dục) → `name_note_conflict`; mỗi rule có `nguon` / `ly_do`. |
 | `thao_lap` / `co_explicit` | Hậu xử lý: hệ số tháo lắp (`cua.he_so_thao_lap`), kích thước cổ ghi rõ ghi đè B1/B2. |
 
 Cú pháp điều kiện ghi ở khóa `cu_phap` trong JSON (`tat_ca` / `mot_trong` / `khong` / `tu_khoa` / `regex` / `so_sanh` / `thuoc`, cờ `"ten_co"` / `"!ten_co"`).
 
 Thứ tự ưu tiên hiện tại: `CG-01` cửa kiểm tra SDGK → `CG-02` LCCT rời → `CG-03` lọc G4 rời → `CG-04` sọt trứng ECG → `CG-05` tăng áp / hút khói / cấp bù kèm OBD (Tên không ghi louver) → `CG-06` louver nan Z → `CG-07` cửa hồi SDG+F → `CG-08A` khuếch tán tròn SRD → `CG-08B` khuếch tán vuông SD → `CG-09` dự phòng (slot SLD → linear SLB → mã nan thẳng BD → `subtype_rules.json CUA_GIO`, mặc định SDG).
 
-## 3. QUY TẮC SỬA RULE (AGENTS.md mục 7)
+## 3. QUY TẮC SỬA RULE (`.agents/rules/05_CLI_VA_KIEM_THU.md` mục 7)
 1. **Sửa trong JSON, không thêm `if/elif` vào code.** Cú pháp chưa đủ diễn tả → mở rộng bộ chạy điều kiện trong `diffuser_classifier.py` (hàm `_Ctx.ok`), không viết nhánh riêng cho 1 dự án.
 2. Trước khi sửa: `git log -S "<từ khóa>"` tìm commit / dự án sinh ra rule (đã ghi ở `nguon`). Rẽ nhánh giữ case cũ; chỉ xóa khi rule được xác nhận sai.
 3. Ghi `nguon` (commit / ngày / dự án / người chốt) và `ly_do`. Case từng sai → thêm vào `vi_du_sai` kèm `loi_cu`.

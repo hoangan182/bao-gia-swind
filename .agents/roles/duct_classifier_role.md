@@ -17,7 +17,7 @@
 |---|---|
 | `ong_tron` | Điều kiện ống tròn (`is_round`) |
 | `thu_tu_nhan_dien` | `OG-01..OG-18`, **rule đầu tiên khớp thắng**; khớp theo `tu_khoa` / `regex` / `bat_dau` / `don_vi` / `hoac_hinh_hoc`, lọc bằng `va_hinh_hoc` / `tru_cum` / `tru_bat_dau` (xem `cu_phap`) |
-| `quy_tac_bo_sung` | `OG-19` tiêu âm theo Title · `OG-20` Zét thiếu độ lệch E → trống giá · `OG-21` hộp trong Ghi chú (≥ 2 hộp cộng tiền; 1 hộp khác Tên → hỏi lại) · `OG-22` LCCT/G4 trong cút · `OG-23` LCCT trong phụ kiện vuông · `OG-24` canvas chống cháy |
+| `quy_tac_bo_sung` | `OG-19` tiêu âm theo Title · `OG-20` Zét thiếu độ lệch E → trống giá · `OG-21` hộp trong Ghi chú (≥ 2 hộp cộng tiền; 1 hộp khác Tên → hỏi lại) · `OG-22` LCCT/G4 trong cút · `OG-23` LCCT trong phụ kiện vuông · `OG-24` canvas chống cháy · `OG-25` regex ống kèm tiêu âm trong (cờ `--lined-duct-as-duct`) · `OG-26` `tiêu âm trong` → không vỏ · `OG-27` phụ kiện tiêu âm (cút / côn / chân rẽ → `PK-TA-VUONG`; `is_silencer_fitting`) |
 
 ## 3. QUY TẮC SỬA RULE (AGENTS.md mục 7)
 1. Đổi từ khóa / thứ tự / thêm rule → sửa JSON. Điều kiện hình học mới → thêm vào `_GEOM` trong `duct_classifier.py` và `cu_phap.hinh_hoc`.

@@ -27,8 +27,11 @@
 | PV-11 | Danh sách từ khóa Full-BOQ Coverage Audit |
 | PV-12 | Mã `IS` đứng đầu Tên ngay trước kích thước → LCCT; `mprd` → van |
 | PV-13 | Cảnh báo kiểm chứng đọc BOQ ở sheet có dòng báo giá → `⚠️ [HỎI LẠI USER]` ở Kiểm soát cuối (không chặn) |
+| PV-18 | Cờ `--fire-duct-only --duct-straight-only`: mục ống gió chống cháy chỉ giữ ống thẳng, bỏ phụ kiện (`tu_khoa_phu_kien`; `is_straight_fire_duct_row`) |
 
-## 3. QUY TẮC SỬA RULE (AGENTS.md mục 7)
+Khóa mới của PV-11 (2026-11-25): `tu_khoa_pham_vi_theo_co`, `tu_khoa_hang_chinh_kem_lcct`, `tu_khoa_loai_tru_chi_cua_van`, `tu_khoa_lcct_theo_m2`, `tu_khoa_luoi_chan_con_trung`. PV-01 có tiền tố `cụm van` (ví dụ sai: `Cụm van gió 600x400`).
+
+## 3. QUY TẮC SỬA RULE (`.agents/rules/05_CLI_VA_KIEM_THU.md` mục 7)
 Sửa từ khóa / regex trong JSON; điều kiện mới → sửa đúng hàm PV-xx trong `scope_filter.py`. Mỗi rule có `nguon`, `ly_do`, `vi_du`. Chạy `tests/test_swind_scope_rules.py` + self-test + unit + E2E 2 chế độ. Thay đổi phạm vi ảnh hưởng số dòng / tổng tiền → so cả `--include-canvas`, `--include-flex-duct`, `--only-cua-van`.
 
 ## 4. LỊCH SỬ

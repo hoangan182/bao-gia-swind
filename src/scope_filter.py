@@ -244,3 +244,80 @@ def coverage_lists(rules=None):
         "CANVAS_NAME_PREFIXES": tuple(r["tien_to_canvas"]),
         "VERB_RX": r["regex_dong_tu_dau_dong"],
     }
+
+
+# ---------------------------------------------------------------- Helper tên (chuyển từ runner, Việc 4, 2026-11-25)
+# Dữ liệu (tiền tố, regex động từ, từ khóa LCCT) nằm ở PV-11 trong scope_rules.json.
+
+def main_noun(name, rules=None):
+    """Bỏ các động từ đầu dòng ("Cung cấp và lắp đặt", "Gia công, lắp đặt", "SX & LĐ"...) để lấy danh từ chính."""
+    verb = coverage_lists(rules)["VERB_RX"]
+    n = re.sub(r'^\s*[-•*+]+\s*', '', str(name or "").lower().strip())
+    return re.sub(rf'^(?:{verb}(?:\s*(?:,|và|&|\+|/)\s*{verb})*)\s*:?\s*', '', n)
+
+
+def is_canvas_like_name(name, rules=None):
+    prefixes = coverage_lists(rules)["CANVAS_NAME_PREFIXES"]
+    return any(main_noun(name, rules).startswith(p) for p in prefixes)
+
+
+def is_duct_like_name(name, rules=None):
+    prefixes = coverage_lists(rules)["DUCT_NAME_PREFIXES"]
+    return any(main_noun(name, rules).startswith(p) for p in prefixes)
+
+
+def is_swind_product_name(name, scope_kws, rules=None):
+    noun = main_noun(name, rules)
+    if any(noun.startswith(p) for p in coverage_lists(rules)["SWIND_NON_SCOPE_PREFIXES"]):
+        return False
+    return any(k in noun for k in scope_kws)
+
+
+def is_lcct_m2_title(name_lower, rules=None):
+    """Title 'LCCT ... kích thước:' (ĐVT m2 có KL) báo LCCT theo m² — từ khóa PV-11 `tu_khoa_lcct_theo_m2.tu_khoa`
+    (chuỗi con trên Tên chữ thường; có 'insect screen'). Parser gọi (Task A, 2026-11-25)."""
+    r = (rules or load_rules())["PV-11"]
+    return any(k in name_lower for k in r["tu_khoa_lcct_theo_m2"]["tu_khoa"])
+
+
+def is_insect_screen_name(name, rules=None):
+    """Tên có chữ LCCT / lưới chắn côn trùng (từ khóa ở PV-11 `tu_khoa_luoi_chan_con_trung`)."""
+    r = (rules or load_rules())["PV-11"]
+    return any(k in name for k in r["tu_khoa_luoi_chan_con_trung"])
+
+
+# ---------------------------------------------------------------- Runner: danh sách theo cờ (Task B, dọn sạch sau Việc 4, 2026-11-25)
+
+def audit_scope_keywords(only_cua_van, include_duct, include_canvas, rules=None):
+    """PV-11: từ khóa phạm vi của Coverage Audit theo cờ chạy — bỏ `tu_khoa_pham_vi_theo_co.include_duct` khi không
+    --include-duct, `include_canvas` khi không --include-canvas (giữ thứ tự danh sách gốc)."""
+    R = rules or load_rules()
+    cov = coverage_lists(R)
+    kws = cov["SWIND_SCOPE_CUA_VAN_KWS"] if only_cua_van else cov["SWIND_SCOPE_KWS"]
+    by_flag = R["PV-11"]["tu_khoa_pham_vi_theo_co"]
+    if not include_duct:
+        kws = tuple(k for k in kws if k not in by_flag["include_duct"])
+    if not include_canvas:
+        kws = tuple(k for k in kws if k not in by_flag["include_canvas"])
+    return kws
+
+
+def is_main_cv_name(name_lower, rules=None):
+    """PV-11 `tu_khoa_hang_chinh_kem_lcct`: Tên có Louver / cửa / van là hàng chính (LCCT chỉ đi kèm) — dòng thiếu KT
+    vẫn THÔNG BÁO USER, không bỏ lặng lẽ như LCCT đứng riêng (User chốt 2026-11-11)."""
+    return any(k in name_lower for k in (rules or load_rules())["PV-11"]["tu_khoa_hang_chinh_kem_lcct"]["tu_khoa"])
+
+
+def is_cua_van_only_excluded(row_txt_lower, rules=None):
+    """PV-11 `tu_khoa_loai_tru_chi_cua_van`: chế độ --only-cua-van, dòng ống chờ / ống lồng / khớp nối mềm / sleeve /
+    flexible không cảnh báo SÓT DÒNG."""
+    return any(k in row_txt_lower for k in (rules or load_rules())["PV-11"]["tu_khoa_loai_tru_chi_cua_van"]["tu_khoa"])
+
+
+def is_straight_fire_duct_row(name_lower, sub_title_lower, rules=None):
+    """PV-18 (cờ --duct-straight-only): dòng là ống gió thẳng? Ngữ cảnh = Tên nếu Tên bắt đầu `tien_to_ong` hoặc có từ
+    khóa phụ kiện, ngược lại = Title con; giữ khi ngữ cảnh bắt đầu `tien_to_ong` và không có từ khóa phụ kiện."""
+    r = (rules or load_rules())["PV-18"]
+    pre, fit = r["tien_to_ong"], r["tu_khoa_phu_kien"]
+    ctx = name_lower if (name_lower.startswith(pre) or any(k in name_lower for k in fit)) else sub_title_lower
+    return ctx.startswith(pre) and not any(k in ctx for k in fit)

@@ -1,0 +1,1157 @@
+{
+ "_mo_ta": "Bảng rule quyết định LOẠI HÀNG (nhóm) của 1 dòng BOQ — nguồn dữ liệu của src/category_classifier.py (Việc 4 Task 3, 2026-11-25; thay chuỗi if/elif trong SwindBOQParser.parse_sheet). Rule xét theo thứ tự, chỉ khi loại hàng còn KHAC; 1 rule khớp thì bỏ các rule còn lại cùng 'khoi'; rule khớp sau cùng là rule quyết định. nguon_chu TEN_HOAC_TITLE = TITLE khi dòng chỉ kích thước đã ghép Title vào tên (cờ name_has_title). chac=false: bước 5 chỉ nhờ Title (default_rules.json MD-04). Sửa rule ở đây, không thêm if/elif vào parser; mỗi rule có ví dụ và chạy tests/test_swind_category_rules.py.",
+ "phien_ban": "2026-11-25",
+ "bien": {
+  "name_lower": "Tên dòng (đã ghép Title nếu dòng chỉ kích thước), chuẩn hoá chính tả",
+  "full_name_lower": "Title cha + Tên + ngữ cảnh phụ",
+  "sec_lower": "Title cha",
+  "name_str": "Tên gốc (chưa hạ chữ)",
+  "note_lower": "Ghi chú BOQ",
+  "note_model_lower": "Ghi chú + cột Model",
+  "raw_name_lower": "Tên ô gốc"
+ },
+ "co": {
+  "is_plumbing_item": "PV-01 hàng hệ khác",
+  "is_hvac_prd": "van xả áp HVAC",
+  "name_has_title": "dòng chỉ kích thước đã ghép Title",
+  "co_ghi_chu_model": "có Ghi chú hoặc Model",
+  "title_khac_ten": "Title + Tên khác Tên"
+ },
+ "nhom_tu_khoa": {
+  "cua_dac_thu": [
+   "access door",
+   "cửa công tác",
+   "cửa thăm",
+   "cửa kiểm tra",
+   "cửa chớp",
+   "chớp nhôm",
+   "cửa bầu dục",
+   "cửa nan z",
+   "cửa sọt trứng",
+   "cửa khuếch tán"
+  ]
+ },
+ "loc_tho_dung_rieng": {
+  "_mo_ta": "Dữ liệu cho hàm category_classifier.is_standalone_coarse_filter (rule LH-05 → CUA_GIO / FILTER_G4). Hàm bỏ gạch đầu dòng + động từ 'cung cấp / gia công / sản xuất / lắp đặt' rồi xét: Tên bắt đầu bằng 1 'tien_to' VÀ không khớp 'regex_loc_tinh' (re.search trên chữ thường).",
+  "tien_to": [
+   "lọc bụi",
+   "lọc thô",
+   "lọc sơ cấp",
+   "lọc g4",
+   "phin lọc",
+   "lưới lọc",
+   "tấm lọc",
+   "bộ lọc",
+   "khung lọc",
+   "filter g4",
+   "g4 filter",
+   "pre filter",
+   "pre-filter"
+  ],
+  "regex_loc_tinh": "\\b(?:f[5-9]|m[5-6]|e1[0-2]|h1[0-4]|hepa|ulpa)\\b|than hoạt tính|tĩnh điện|túi|carbon|bag",
+  "nguon": "AGENTS.md quy tắc 5 'Lọc G4 đứng riêng' (commit 1e5672d, 2026-10-29); chuyển từ hằng số FILTER_PREFIXES / FINE_FILTER_RX trong src/category_classifier.py (trước đó ở swind_boq_parser) — Task A dọn sạch sau Việc 4, 2026-11-25",
+  "ly_do": "Lọc thô G4 đứng riêng là hàng Swind sản xuất (FILTER_G4, đơn giá cua.loc_g4_m2); lọc tinh F5-F9 / HEPA / ULPA / than hoạt tính / tĩnh điện / lọc túi là hàng thương mại. 'túi', 'bag', 'carbon' so chuỗi con cố ý (không ranh giới từ).",
+  "vi_du_dung": [
+   "Lọc bụi G4 500x500",
+   "- Cung cấp, lắp đặt lọc bụi G4 500x500",
+   "Pre-filter 600x600"
+  ],
+  "vi_du_sai": [
+   "Lọc HEPA H13 600x600",
+   "Bộ lọc túi F7",
+   "Cửa gió kèm lọc bụi 600x600"
+  ]
+ },
+ "quy_tac": [
+  {
+   "id": "LH-01",
+   "ten": "Học máy — khớp nguyên chữ Tên",
+   "khoi": "BUOC_1_4",
+   "khi": true,
+   "ket_qua": {
+    "hoc_may": "name_lower"
+   },
+   "nguon_chu": "HOC_MAY",
+   "chac": true,
+   "nguon": "Chuỗi parser cũ bước 1 'Kiểm tra Học máy (Learned keywords)' (boq_keyword_learning.json, Agent 02 duyệt)",
+   "ly_do": "Từ khóa đã duyệt (Two-Tier Learning) thắng mọi rule khác. Giá trị học là KHAC vẫn bỏ bước 2-4 nhưng bước 5 vẫn chạy (if/elif cũ).",
+   "vi_du_dung": [
+    {
+     "ten": "Cửa gió 600x300",
+     "hoc_may": {
+      "cửa gió 600x300": "VAN_GIO"
+     },
+     "loai": "VAN_GIO",
+     "mo_ta": "(tổng hợp)"
+    }
+   ]
+  },
+  {
+   "id": "LH-02",
+   "ten": "Học máy — khớp Title + Tên",
+   "khoi": "BUOC_1_4",
+   "khi": true,
+   "ket_qua": {
+    "hoc_may": "full_name_lower"
+   },
+   "nguon_chu": "HOC_MAY",
+   "chac": true,
+   "nguon": "Chuỗi parser cũ bước 1 (elif full_name_lower in learned_keywords)",
+   "ly_do": "Chuỗi Title cha + Tên đã được học.",
+   "vi_du_dung": [
+    {
+     "ten": "600x300",
+     "title": "Ống gió cấp",
+     "hoc_may": {
+      "ống gió cấp 600x300": "ONG_GIO"
+     },
+     "loai": "ONG_GIO",
+     "mo_ta": "(tổng hợp)"
+    }
+   ]
+  },
+  {
+   "id": "LH-03",
+   "ten": "Hệ ống nước / chữa cháy / ống đồng / cáp điện (PV-01)",
+   "khoi": "BUOC_1_4",
+   "khi": "is_plumbing_item",
+   "ket_qua": "THUONG_MAI",
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "PV-01 (scope_rules.json): hệ ống nước / chữa cháy / ống đồng / cáp điện / bộ nguồn van / van nước DN -> THUONG_MAI",
+   "ly_do": "Hàng hệ khác không thuộc phạm vi Swind (cờ is_plumbing_item do scope_filter.is_non_swind_system_item tính).",
+   "vi_du_dung": [
+    {
+     "ten": "Bộ chia gas dàn lạnh",
+     "title": "2. Ống đống",
+     "co": {
+      "is_plumbing_item": true
+     },
+     "loai": "THUONG_MAI",
+     "mo_ta": "(tổng hợp)"
+    }
+   ]
+  },
+  {
+   "id": "LH-04",
+   "ten": "Cửa sổ cấp bù gió / khi có cháy → van",
+   "khoi": "BUOC_1_4",
+   "khi": {
+    "tat_ca": [
+     {
+      "bat_dau": [
+       "cửa sổ"
+      ],
+      "trong": "name_lower"
+     },
+     {
+      "tu_khoa": [
+       "cấp bù gió",
+       "khi có cháy"
+      ],
+      "trong": "name_lower"
+     }
+    ]
+   },
+   "ket_qua": "VAN_GIO",
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "Chuỗi parser cũ bước 2a ('Kiểm tra các trường hợp đặc thù ưu tiên cao (tránh bị từ khóa ngắn như van, cửa, miệng, fd bắt nhầm)')",
+   "ly_do": "Cửa sổ cấp bù gió khi có cháy là van gió; cửa sổ khác là hàng thương mại (từ khóa 'cửa sổ' của catalog ống đồng).",
+   "vi_du_dung": [
+    {
+     "ten": "Cửa sổ cấp bù gió khi có cháy 1000x800",
+     "loai": "VAN_GIO",
+     "mo_ta": "(tổng hợp)"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Cửa sổ nhôm kính 1000x800",
+     "mo_ta": "(tổng hợp)"
+    }
+   ]
+  },
+  {
+   "id": "LH-05",
+   "ten": "Lọc thô G4 đứng riêng → cửa gió (FILTER_G4)",
+   "khoi": "BUOC_1_4",
+   "khi": {
+    "ham": "is_standalone_coarse_filter",
+    "trong": "name_lower"
+   },
+   "ket_qua": "CUA_GIO",
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "Chuỗi parser cũ bước 2a; AGENTS.md quy tắc 5 (lọc G4 đứng riêng)",
+   "ly_do": "Lọc thô G4 đứng riêng (có kích thước) -> Swind sản xuất: báo giá theo công thức FILTER_G4 (Agent 06). Lọc tinh F5-F9 / HEPA / than hoạt tính / tĩnh điện / túi không áp.",
+   "vi_du_dung": [
+    {
+     "ten": "Lọc bụi G4 600x600",
+     "loai": "CUA_GIO",
+     "mo_ta": "(tổng hợp)"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Lọc HEPA H13 600x600",
+     "mo_ta": "(tổng hợp)"
+    }
+   ]
+  },
+  {
+   "id": "LH-06",
+   "ten": "Thiết bị / phụ trợ / giá đỡ / chuyển tiết diện nối quạt / bảo ôn ống gió (PV-02, PV-16, PV-17)",
+   "khoi": "BUOC_1_4",
+   "khi": {
+    "mot_trong": [
+     {
+      "ham": "scope_filter.is_commercial_by_name",
+      "trong": "name_lower"
+     },
+     {
+      "ham": "is_fan_connection_transition",
+      "trong": "raw_name_lower"
+     },
+     {
+      "ham": "is_duct_insulation",
+      "trong": "name_lower"
+     }
+    ]
+   },
+   "ket_qua": "THUONG_MAI",
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "PV-02 (scope_rules.json); AGENTS.md 3c (giá đỡ, User chốt 2026-11-03), 4f (PV-16, User chốt 2026-11-17), 4h (PV-17, User chốt 2026-11-20)",
+   "ly_do": "PV-02: thiết bị / phụ trợ / giá đỡ (kể cả 'Lắp đặt giá đỡ ...') -> thương mại, không kế thừa nhóm từ Title.",
+   "vi_du_dung": [
+    {
+     "ten": "Lắp đặt giá đỡ ống gió thép góc L25x25",
+     "loai": "THUONG_MAI",
+     "mo_ta": "AGENTS.md 3c"
+    }
+   ]
+  },
+  {
+   "id": "LH-07",
+   "ten": "Van nước / ống đồng theo catalog thương mại",
+   "khoi": "BUOC_1_4",
+   "khi": true,
+   "ket_qua": {
+    "danh_muc": "TM",
+    "trong": "name_lower",
+    "chi_ma": [
+     "VALVE_WATER",
+     "PIPE_COPPER"
+    ],
+    "bo_qua_khi": [
+     {
+      "ma": [
+       "VALVE_WATER"
+      ],
+      "khi": {
+       "mot_trong": [
+        "is_hvac_prd",
+        {
+         "tu_khoa": [
+          "lửa",
+          "khói",
+          "cháy",
+          "mfd",
+          "msfd",
+          "mfsd",
+          "fd",
+          "vcd",
+          "nrd",
+          "prd",
+          "md",
+          "xả áp"
+         ],
+         "trong": "name_lower"
+        }
+       ]
+      }
+     },
+     {
+      "ma": [
+       "PIPE_COPPER"
+      ],
+      "khi": {
+       "tu_khoa": [
+        "louver",
+        "louvre",
+        "cửa gió",
+        "miệng gió",
+        "ống gió"
+       ],
+       "trong": "name_lower"
+      }
+     }
+    ]
+   },
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "Chuỗi parser cũ bước 2a ('Van nước / Cửa sổ / ... -> THUONG_MAI'), quy tắc bỏ qua VALVE_WATER / PIPE_COPPER giữ nguyên",
+   "ly_do": "Chỉ xét 2 mục VALVE_WATER / PIPE_COPPER; van nước bỏ qua khi tên có chữ van gió PCCC (lửa / khói / cháy / mfd / fd / vcd / nrd / prd / md / xả áp) hoặc là van xả áp HVAC; ống đồng bỏ qua khi tên có louver / cửa gió / miệng gió / ống gió.",
+   "vi_du_dung": [
+    {
+     "ten": "Van cổng 200x200",
+     "loai": "THUONG_MAI",
+     "mo_ta": "(tổng hợp)"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Van chặn lửa 600x400",
+     "mo_ta": "(tổng hợp)"
+    }
+   ]
+  },
+  {
+   "id": "LH-08",
+   "ten": "Box / Hộp tĩnh áp tôn mạ kẽm → ống gió",
+   "khoi": "BUOC_1_4",
+   "khi": {
+    "tat_ca": [
+     {
+      "bat_dau": [
+       "box ",
+       "hộp ",
+       "hôp "
+      ],
+      "trong": "name_lower"
+     },
+     {
+      "khong": {
+       "bat_dau": [
+        "hộp và cửa",
+        "hộp + cửa",
+        "hộp kèm cửa",
+        "box và cửa",
+        "box + cửa",
+        "hộp quạt",
+        "hộp điện",
+        "hộp nối",
+        "hộp cứu hỏa",
+        "hộp chữa cháy"
+       ],
+       "trong": "name_lower"
+      }
+     },
+     {
+      "khong": {
+       "tu_khoa": [
+        "tiêu âm"
+       ],
+       "trong": "name_lower"
+      }
+     }
+    ]
+   },
+   "ket_qua": "ONG_GIO",
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "Chuỗi parser cũ bước 2b ('Box / Hộp tĩnh áp tôn mạ kẽm hoặc Phụ kiện ống gió đầu dòng (Cút, Côn, Tê, Bịt ống, Nối ống...) -> ONG_GIO')",
+   "ly_do": "Tên bắt đầu box / hộp (trừ hộp kèm cửa, hộp quạt / điện / nối / cứu hỏa, hộp tiêu âm) là hộp gió.",
+   "vi_du_dung": [
+    {
+     "ten": "Hộp tĩnh áp 600x400x300",
+     "loai": "ONG_GIO",
+     "mo_ta": "(tổng hợp)"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Hộp kèm cửa gió 600x300",
+     "mo_ta": "(tổng hợp)"
+    }
+   ]
+  },
+  {
+   "id": "LH-09",
+   "ten": "Phụ kiện ống gió đầu dòng (cút, côn, tê, cổ chuyển...) có kích thước → ống gió",
+   "khoi": "BUOC_1_4",
+   "khi": {
+    "tat_ca": [
+     "!is_plumbing_item",
+     {
+      "khong": {
+       "tu_khoa": [
+        "tiêu âm"
+       ],
+       "trong": "name_lower"
+      }
+     },
+     {
+      "bat_dau": [
+       "cút ",
+       "co ",
+       "chếch ",
+       "côn ",
+       "tê ",
+       "chạc ",
+       "chân rẽ",
+       "gót giày",
+       "cổ trích",
+       "cổ chuyển",
+       "vuông chuyển tròn",
+       "giảm ",
+       "bịt đầu",
+       "bịt ống",
+       "nắp bịt",
+       "măng xông",
+       "măng sông",
+       "nối ống",
+       "zét ",
+       "ống lượn"
+      ],
+      "trong": "name_lower"
+     },
+     {
+      "regex": "\\b(?:[dD][nN]?|Ø|phi\\s*)\\d{2,4}(?:\\s*mm)?\\b|\\b\\d{2,4}\\s*[xX*]\\s*\\d{2,4}\\b",
+      "trong": "name_str",
+      "ignorecase": true
+     }
+    ]
+   },
+   "ket_qua": "ONG_GIO",
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "Chuỗi parser cũ bước 2b; 'cổ chuyển' = côn thu vuông tròn (User chốt 2026-11-23, dự án KL ống gió R440-444); '(?:\\s*mm)?' User chốt 2026-11-20, dự án tien luong moi thau V1_18t11 R470",
+   "ly_do": "Tên bắt đầu bằng phụ kiện ống + có kích thước → ống gió. 'D450mm' (không có \\b sau số) trước đây bị từ khóa LCCT kéo thành CUA_GIO/LCCT, mất phần cút.",
+   "vi_du_dung": [
+    {
+     "ten": "Cổ chuyển 200x200/D200",
+     "loai": "ONG_GIO",
+     "mo_ta": "dự án KL ống gió R440-444"
+    },
+    {
+     "ten": "Cút 45º ống gió D450mm, R250 Kèm lưới chắn côn trùng",
+     "loai": "ONG_GIO",
+     "mo_ta": "tien luong moi thau V1_18t11 R470"
+    }
+   ]
+  },
+  {
+   "id": "LH-10",
+   "ten": "Ống thẳng / Ống bịt / Z đứng-ngang có ký hiệu xen giữa → ống gió",
+   "khoi": "BUOC_1_4",
+   "khi": {
+    "tat_ca": [
+     "!is_plumbing_item",
+     {
+      "khong": {
+       "tu_khoa": [
+        "tiêu âm"
+       ],
+       "trong": "name_lower"
+      }
+     },
+     {
+      "mot_trong": [
+       {
+        "regex": "^ống\\s+(?:(?:ei\\s*\\d{2,3}|[a-z]{2,3}d|bịt|gió|chữ\\s+nhật|vuông)\\s*[:;,]?\\s+)*(?:(?:kt|kích\\s*thước)\\s*[:;]?\\s*)?\\d{2,4}\\s*[xX*]\\s*\\d{2,4}\\b",
+        "trong": "name_lower"
+       },
+       {
+        "regex": "^z\\s+(?:đứng|ngang)\\b.*?\\b\\d{2,4}\\s*[xX*]\\s*\\d{2,4}\\b",
+        "trong": "name_lower"
+       }
+      ]
+     }
+    ]
+   },
+   "ket_qua": "ONG_GIO",
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "Chuỗi parser cũ bước 2b (ống thẳng / ống bịt / Z có ký hiệu xen giữa)",
+   "ly_do": "-> ONG_GIO trước khi Title cha (VD: 'Quạt tăng áp ...') kéo sang THUONG_MAI.",
+   "vi_du_dung": [
+    {
+     "ten": "Ống EI60 KT 500x400",
+     "loai": "ONG_GIO"
+    },
+    {
+     "ten": "Ống EAD KT 250x100",
+     "loai": "ONG_GIO"
+    },
+    {
+     "ten": "Ống bịt: 550x300, L100",
+     "loai": "ONG_GIO"
+    },
+    {
+     "ten": "Z đứng EI60 KT 500x1200",
+     "loai": "ONG_GIO"
+    }
+   ]
+  },
+  {
+   "id": "LH-11",
+   "ten": "Cửa kiểm tra / cửa chớp / cửa nan Z... ở Tên hoặc Ghi chú → cửa gió",
+   "khoi": "BUOC_1_4",
+   "khi": {
+    "mot_trong": [
+     {
+      "tu_khoa": "@cua_dac_thu",
+      "trong": "name_lower"
+     },
+     {
+      "tu_khoa": "@cua_dac_thu",
+      "trong": "note_lower"
+     }
+    ]
+   },
+   "ket_qua": "CUA_GIO",
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "Chuỗi parser cũ bước 2b (any(k in name_lower or k in note_boq.lower()))",
+   "ly_do": "Tên hoặc Ghi chú của chính dòng ghi loại cửa đặc thù (access door, cửa thăm, cửa chớp, cửa nan z...).",
+   "vi_du_dung": [
+    {
+     "ten": "Cửa thăm 600x600",
+     "loai": "CUA_GIO",
+     "mo_ta": "(tổng hợp)"
+    },
+    {
+     "ten": "600x300",
+     "ghi_chu": "Cửa nan Z",
+     "loai": "CUA_GIO",
+     "mo_ta": "(tổng hợp)"
+    }
+   ]
+  },
+  {
+   "id": "LH-12",
+   "ten": "Tên bắt đầu bằng cửa gió / miệng gió / louver → cửa gió",
+   "khoi": "BUOC_1_4",
+   "khi": {
+    "bat_dau": [
+     "cửa gió",
+     "miệng gió",
+     "cửa cấp",
+     "cửa hồi",
+     "cửa hút",
+     "cửa thải",
+     "cửa lấy",
+     "cửa xả",
+     "cửa tươi",
+     "cửa sọt",
+     "cửa nan",
+     "cửa khuếch tán",
+     "cửa bầu dục",
+     "cửa louver",
+     "cửa chớp",
+     "louver "
+    ],
+    "trong": "name_lower"
+   },
+   "ket_qua": "CUA_GIO",
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "Chuỗi parser cũ bước 2b (name_lower.startswith cửa gió / miệng gió ...)",
+   "ly_do": "Tên tự ghi là cửa / miệng gió.",
+   "vi_du_dung": [
+    {
+     "ten": "Miệng gió cấp 600x300",
+     "loai": "CUA_GIO",
+     "mo_ta": "(tổng hợp)"
+    }
+   ]
+  },
+  {
+   "id": "LH-13",
+   "ten": "Title cửa gió / louver / grille → cửa gió (dòng không tự ghi loại khác)",
+   "khoi": "BUOC_1_4",
+   "khi": {
+    "tat_ca": [
+     {
+      "tu_khoa": [
+       "cửa gió",
+       "miệng gió",
+       "cửa chớp",
+       "chớp nhôm",
+       "lưới chắn chim",
+       "louver",
+       "luover",
+       "louvre",
+       "grille",
+       "griller",
+       "diffuser",
+       "insect screen",
+       "i.s",
+       "lcct",
+       "lưới chắn côn trùng",
+       "fag",
+       "sag",
+       "rag",
+       "eag",
+       "seag",
+       "kag",
+       "mag",
+       "fal",
+       "eal",
+       "oal"
+      ],
+      "trong": "sec_lower"
+     },
+     {
+      "khong": {
+       "regex": "^\\s*(?:mfd|msfd|mfsd|md|fd|prd|nrd|vcd)\\s*[-:]?\\s*\\d",
+       "trong": "name_lower"
+      }
+     },
+     {
+      "khong": {
+       "bat_dau": [
+        "van ",
+        "damper",
+        "volume control",
+        "fire damper",
+        "motorized damper",
+        "non-return",
+        "ống ",
+        "cút ",
+        "côn ",
+        "tê ",
+        "chân rẽ",
+        "hộp ",
+        "box ",
+        "tole",
+        "tôn ",
+        "chụp hút",
+        "chụp thông"
+       ],
+       "trong": "name_lower"
+      }
+     },
+     {
+      "khong": {
+       "tu_khoa": [
+        "chụp hút",
+        "chụp thông"
+       ],
+       "trong": "sec_lower"
+      }
+     },
+     {
+      "khong": {
+       "tu_khoa": [
+        "volume control damper",
+        "fire damper",
+        "motorized damper",
+        "non-return damper"
+       ],
+       "trong": "name_lower"
+      }
+     }
+    ]
+   },
+   "ket_qua": "CUA_GIO",
+   "nguon_chu": "TITLE",
+   "chac": true,
+   "nguon": "AGENTS.md quy tắc 1a; 'tole/tôn/box ' thêm 2026-11-03 (Haus_Dalat DHKK); mã van đầu tên User chốt 2026-11-12, dự án 'BOQ Ống gió' (Title 'LOUVER, AIR GRILL, AIR VALVE')",
+   "ly_do": "Tên tự ghi loại hàng khác thì không kế thừa 'cửa gió' từ Title. Tên bắt đầu bằng MÃ van ('MFD 900x250', 'PRD 1000x600', 'VCD 2200x500') cũng không kế thừa: chỉ báo van, combo cửa+van chỉ khi chính dòng ghi cả hai.",
+   "vi_du_dung": [
+    {
+     "ten": "SL-01 600x300",
+     "title": "MIỆNG GIÓ",
+     "loai": "CUA_GIO",
+     "mo_ta": "(tổng hợp)"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "MFD 900x250",
+     "title": "LOUVER, AIR GRILL, AIR VALVE",
+     "mo_ta": "dự án 'BOQ Ống gió'"
+    },
+    {
+     "ten": "Tole 0.75mm",
+     "title": "MIỆNG GIÓ",
+     "mo_ta": "Haus_Dalat DHKK"
+    }
+   ]
+  },
+  {
+   "id": "LH-14",
+   "ten": "Mã 'IS' đứng riêng kèm kích thước → LCCT (PV-12)",
+   "khoi": "BUOC_1_4",
+   "khi": {
+    "ham": "is_insect_screen_code",
+    "trong": "name_lower"
+   },
+   "ket_qua": "CUA_GIO",
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "PV-12 (User chốt 2026-11-03, BOQ_ANH_KHACH_01); AGENTS.md 4e",
+   "ly_do": "Mã 'IS' (Insect Screen) đứng riêng kèm kích thước = lưới chắn côn trùng.",
+   "vi_du_dung": [
+    {
+     "ten": "IS 850x250",
+     "loai": "CUA_GIO",
+     "mo_ta": "AGENTS.md 4e"
+    }
+   ]
+  },
+  {
+   "id": "LH-15",
+   "ten": "Mã 'AL' đứng riêng kèm kích thước → Louver nan Z (PV-14)",
+   "khoi": "BUOC_1_4",
+   "khi": {
+    "ham": "is_louver_code",
+    "trong": "name_lower"
+   },
+   "ket_qua": "CUA_GIO",
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "PV-14 (User chốt 2026-11-03); AGENTS.md 4e",
+   "ly_do": "Mã 'AL' đứng riêng kèm kích thước = Louver nan Z.",
+   "vi_du_dung": [
+    {
+     "ten": "AL 600x300",
+     "loai": "CUA_GIO",
+     "mo_ta": "AGENTS.md 4e"
+    }
+   ]
+  },
+  {
+   "id": "LH-16",
+   "ten": "Mã van viết liền kích thước → van gió (PV-15)",
+   "khoi": "BUOC_1_4",
+   "khi": {
+    "ham": "is_glued_damper_code",
+    "trong": "name_lower"
+   },
+   "ket_qua": "VAN_GIO",
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "PV-15 (2026-11-06, 261031 NOXH hầm R10/R13/R20)",
+   "ly_do": "Mã van viết liền kích thước (FD550x350, MFD350x150) = van gió.",
+   "vi_du_dung": [
+    {
+     "ten": "FD550x350",
+     "loai": "VAN_GIO"
+    },
+    {
+     "ten": "MFD350x150",
+     "loai": "VAN_GIO"
+    }
+   ]
+  },
+  {
+   "id": "LH-17",
+   "ten": "Hàng sản xuất đặc thù (canvas / tiêu âm / cửa / van / ống mềm) theo Tên",
+   "khoi": "BUOC_1_4",
+   "khi": true,
+   "ket_qua": {
+    "danh_muc": "SX",
+    "trong": "name_lower",
+    "nhom_tru": [
+     "ONG_GIO",
+     "PHU_KIEN_ONG",
+     "KHAC"
+    ]
+   },
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "Chuỗi parser cũ bước 2c ('Kiểm tra Hàng Sản Xuất có độ đặc thù cao (Canvas, Chụp thông hơi, Tiêu âm, Cửa, Van, Ống mềm)')",
+   "ly_do": "Từ khóa catalog sản xuất (manufacturable_catalog.json, trừ ống gió / phụ kiện ống) khớp theo ranh giới từ trên Tên.",
+   "vi_du_dung": [
+    {
+     "ten": "Van gió VCD 600x400",
+     "loai": "VAN_GIO",
+     "mo_ta": "(tổng hợp)"
+    }
+   ]
+  },
+  {
+   "id": "LH-18",
+   "ten": "Hàng sản xuất đặc thù theo Ghi chú / cột Model",
+   "khoi": "BUOC_1_4",
+   "khi": {
+    "tat_ca": [
+     "co_ghi_chu_model"
+    ]
+   },
+   "ket_qua": {
+    "danh_muc": "SX",
+    "trong": "note_model_lower",
+    "nhom_tru": [
+     "ONG_GIO",
+     "PHU_KIEN_ONG",
+     "KHAC"
+    ]
+   },
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "Chuỗi parser cũ bước 2c (note_lower_cat = Ghi chú + Model)",
+   "ly_do": "Tên không nhận ra, Ghi chú / cột Model của chính dòng ghi loại hàng sản xuất. (Nguồn ghi vết giữ như chuỗi cũ: Tên, hoặc Title khi dòng chỉ kích thước.)",
+   "vi_du_dung": [
+    {
+     "ten": "Hạng mục A1",
+     "ghi_chu": "Van VCD",
+     "loai": "VAN_GIO",
+     "mo_ta": "(tổng hợp)"
+    }
+   ]
+  },
+  {
+   "id": "LH-19",
+   "ten": "Hàng sản xuất đặc thù theo Title + Tên (dòng không phải ống / tôn)",
+   "khoi": "BUOC_1_4",
+   "khi": {
+    "tat_ca": [
+     "title_khac_ten",
+     {
+      "khong": {
+       "bat_dau": [
+        "tole",
+        "tôn "
+       ],
+       "trong": "name_lower"
+      }
+     }
+    ]
+   },
+   "ket_qua": {
+    "danh_muc": "SX",
+    "trong": "full_name_lower",
+    "nhom_tru": [
+     "ONG_GIO",
+     "PHU_KIEN_ONG",
+     "KHAC"
+    ],
+    "bo_qua_khi": [
+     {
+      "nhom": [
+       "CANVAS",
+       "KHOP_NOI_MEM",
+       "CHUP_THONG_HOI",
+       "CUA_GIO",
+       "VAN_GIO"
+      ],
+      "khi": {
+       "tra_danh_muc": {
+        "danh_muc": "SX",
+        "trong": "name_lower",
+        "chi_nhom": [
+         "ONG_GIO",
+         "PHU_KIEN_ONG"
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "nguon_chu": "TITLE",
+   "chac": true,
+   "nguon": "AGENTS.md quy tắc 1a (2026-11-03); KL ong gio cap va hut WC R34-38, R76-82 (User duyệt 2026-11-03); CỬA / VAN thêm 2026-11-24 (User yêu cầu, dự án 261124_TEF_THÁP A, B R29-41)",
+   "ly_do": "Tên tự ghi là tôn / tole -> không lấy loại Cửa/Van từ Title cha. Tên dòng là ống / phụ kiện ống -> không kế thừa nhóm CANVAS / CỬA / VAN từ Title (giữ Tiêu âm — OG-19): VD Title 'Cổ bạt chống rung quạt' làm 'Chan re W350x150...' thành CANVAS bị bỏ; 'Ống gió Tole ... KT: 1200x600' dưới Title 'Hệ thống cửa gió, ống gió và phụ kiện' bị báo cửa SDG.",
+   "vi_du_dung": [
+    {
+     "ten": "D300/L150",
+     "title": "Nối mềm trước và sau quạt:",
+     "loai": "CANVAS",
+     "mo_ta": "dòng thật trong bản ghi chuẩn category_golden.jsonl (Task 2)"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Ống gió Tole KT: 1200x600",
+     "title": "Hệ thống cửa gió, ống gió và phụ kiện",
+     "mo_ta": "261124_TEF_THÁP A, B R29-41"
+    }
+   ]
+  },
+  {
+   "id": "LH-20",
+   "ten": "Hàng thương mại theo Tên (catalog thương mại)",
+   "khoi": "BUOC_1_4",
+   "khi": true,
+   "ket_qua": {
+    "danh_muc": "TM",
+    "trong": "name_lower",
+    "bo_qua_khi": [
+     {
+      "ma": [
+       "PIPE_COPPER"
+      ],
+      "khi": {
+       "tu_khoa": [
+        "ống gió"
+       ],
+       "trong": "name_lower"
+      }
+     }
+    ]
+   },
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "Chuỗi parser cũ bước 3; bỏ PIPE_COPPER khi tên ghi 'ống gió' (User chốt 2026-11-13, NBT-BG DA luxora R1810)",
+   "ly_do": "Tên dòng ghi 'ống gió' → không xếp PIPE_COPPER qua từ khóa chung 'phụ kiện' ('Phụ kiện Ống gió tôn tráng kẽm dày 0.75mm' m2 bị xếp THUONG_MAI).",
+   "vi_du_dung": [
+    {
+     "ten": "Côn thu quạt",
+     "title": "Hệ thống cấp gió tươi cho tầng 1",
+     "loai": "THUONG_MAI",
+     "mo_ta": "dòng thật trong bản ghi chuẩn category_golden.jsonl (Task 2)"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Phụ kiện Ống gió tôn tráng kẽm dày 0.75mm",
+     "mo_ta": "NBT-BG DA luxora R1810"
+    }
+   ]
+  },
+  {
+   "id": "LH-21",
+   "ten": "Hàng thương mại theo Title + Tên (dòng không phải tôn / ống gió)",
+   "khoi": "BUOC_1_4",
+   "khi": {
+    "tat_ca": [
+     "title_khac_ten",
+     {
+      "khong": {
+       "bat_dau": [
+        "tole",
+        "tôn ",
+        "ống gió"
+       ],
+       "trong": "name_lower"
+      }
+     }
+    ]
+   },
+   "ket_qua": {
+    "danh_muc": "TM",
+    "trong": "full_name_lower",
+    "bo_qua_khi": [
+     {
+      "ma": [
+       "PIPE_COPPER"
+      ],
+      "khi": {
+       "tu_khoa": [
+        "ống gió"
+       ],
+       "trong": "name_lower"
+      }
+     }
+    ]
+   },
+   "nguon_chu": "TITLE",
+   "chac": true,
+   "nguon": "Quy tắc 1a; tôn / tole 2026-11-23 (dự án 2026-11-16- ATP BOQ HVAC VER 1 R26-28); 'ống gió' 2026-11-24 (E2E NOVH_E2 R202)",
+   "ly_do": "Tên tự ghi tôn / tole (vật tư ống gió m²) hoặc bắt đầu 'ống gió' -> không kế thừa THUONG_MAI từ Title cha ('Tôn tráng kẽm dày 0.58/0.75/0.95mm' m2 dưới Title 'Ống nước ngưng và bảo ôn ống nước ngưng' bị xếp THUONG_MAI, sót 824 m² không cảnh báo).",
+   "vi_du_dung": [
+    {
+     "ten": "TEF-01 25l/s",
+     "title": "Quạt",
+     "loai": "THUONG_MAI",
+     "mo_ta": "(tổng hợp)"
+    }
+   ],
+   "vi_du_sai": [
+    {
+     "ten": "Tôn tráng kẽm dày 0.58mm",
+     "title": "Ống nước ngưng và bảo ôn ống nước ngưng",
+     "mo_ta": "ATP BOQ HVAC VER 1 R26-28"
+    },
+    {
+     "ten": "Ống gió tôn (chiều dày tôn theo TCXD 232-1999) KT: 260x260",
+     "title": "Cấp gió tự nhiên (cửa gió + van qua tường...)",
+     "mo_ta": "NOVH_E2 R202"
+    }
+   ]
+  },
+  {
+   "id": "LH-22",
+   "ten": "Ống gió & phụ kiện theo Tên (catalog sản xuất)",
+   "khoi": "BUOC_1_4",
+   "khi": true,
+   "ket_qua": {
+    "danh_muc": "SX",
+    "trong": "name_lower",
+    "chi_nhom": [
+     "ONG_GIO",
+     "PHU_KIEN_ONG"
+    ],
+    "gan": "ONG_GIO"
+   },
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "Chuỗi parser cũ bước 4 ('Nếu vẫn chưa khớp, kiểm tra Ống Gió & Phụ kiện ống gió')",
+   "ly_do": "Từ khóa ống gió / phụ kiện ống của catalog sản xuất khớp trên Tên.",
+   "vi_du_dung": [
+    {
+     "ten": "Ống gió tôn mạ kẽm dày 0.75mm",
+     "loai": "ONG_GIO",
+     "mo_ta": "(tổng hợp)"
+    }
+   ]
+  },
+  {
+   "id": "LH-23",
+   "ten": "Ống gió & phụ kiện theo Title + Tên",
+   "khoi": "BUOC_1_4",
+   "khi": "title_khac_ten",
+   "ket_qua": {
+    "danh_muc": "SX",
+    "trong": "full_name_lower",
+    "chi_nhom": [
+     "ONG_GIO",
+     "PHU_KIEN_ONG"
+    ],
+    "gan": "ONG_GIO"
+   },
+   "nguon_chu": "TITLE",
+   "chac": true,
+   "nguon": "Chuỗi parser cũ bước 4 (full_name_lower)",
+   "ly_do": "Từ khóa ống gió / phụ kiện ống chỉ có ở Title cha.",
+   "vi_du_dung": [
+    {
+     "ten": "Đoạn A-B",
+     "title": "Ống gió cấp",
+     "loai": "ONG_GIO",
+     "mo_ta": "(tổng hợp)"
+    }
+   ]
+  },
+  {
+   "id": "LH-24",
+   "ten": "Vật tư phụ (PV-03) → thương mại",
+   "khoi": "BUOC_5",
+   "khi": {
+    "ham": "is_auxiliary_material",
+    "trong": "name_lower"
+   },
+   "ket_qua": "THUONG_MAI",
+   "nguon_chu": "TEN_HOAC_TITLE",
+   "chac": true,
+   "nguon": "PV-03 (scope_rules.json); chuỗi parser cũ bước 5 ('Fallback heuristics có kiểm soát chặt chẽ')",
+   "ly_do": "Dòng vật tư phụ chưa phân loại → hàng thương mại.",
+   "vi_du_dung": [
+    {
+     "ten": "Bulong nở M10",
+     "loai": "THUONG_MAI",
+     "mo_ta": "(tổng hợp)"
+    }
+   ]
+  },
+  {
+   "id": "LH-25",
+   "ten": "Bước 5 — chính dòng ghi ống gió / tôn / kích thước ống",
+   "khoi": "BUOC_5",
+   "khi": {
+    "tat_ca": [
+     "!is_plumbing_item",
+     "!name_has_title",
+     {
+      "regex": "\\bống\\s+gió\\b|^ống\\s+(?:kt\\b|kích\\s*thước\\b|\\d{2,4}\\s*[xX*]\\s*\\d{2,4})|\\btole\\b|\\btôn\\b|(?:^|\\s)z\\s*\\d{2,4}\\s*[xX*]\\s*\\d{2,4}|(?:^|\\s)z\\s*chuyển|\\b\\d{2,4}\\s*[xX*]\\s*\\d{2,4}\\s*(?:[/\\-xX*\\s]+)?(?:[dD][nN]?|Ø|phi)\\s*\\d{2,4}\\b",
+      "trong": "name_lower"
+     }
+    ]
+   },
+   "ket_qua": "ONG_GIO",
+   "nguon_chu": "TEN",
+   "chac": true,
+   "nguon": "Chuỗi parser cũ bước 5 (has_duct trên chữ của chính dòng; id cũ PARSER-5-TEN)",
+   "ly_do": "Dòng chưa nhận ra nhưng chính Tên ghi 'ống gió', tôn / tole, Z kích thước hoặc '<W>x<H>/D<n>' → ống gió.",
+   "vi_du_dung": [
+    {
+     "ten": "300x300/D300",
+     "title": "Chuyển tiết diện kích thước :",
+     "loai": "ONG_GIO",
+     "mo_ta": "dòng thật trong bản ghi chuẩn category_golden.jsonl (Task 2)"
+    }
+   ]
+  },
+  {
+   "id": "LH-26",
+   "ten": "Bước 5 — loại hàng ống gió chỉ nhờ Title (chưa chắc)",
+   "khoi": "BUOC_5",
+   "khi": {
+    "tat_ca": [
+     "!is_plumbing_item",
+     {
+      "mot_trong": [
+       {
+        "regex": "\\bống\\s+gió\\b|^ống\\s+(?:kt\\b|kích\\s*thước\\b|\\d{2,4}\\s*[xX*]\\s*\\d{2,4})|\\btole\\b|\\btôn\\b|(?:^|\\s)z\\s*\\d{2,4}\\s*[xX*]\\s*\\d{2,4}|(?:^|\\s)z\\s*chuyển|\\b\\d{2,4}\\s*[xX*]\\s*\\d{2,4}\\s*(?:[/\\-xX*\\s]+)?(?:[dD][nN]?|Ø|phi)\\s*\\d{2,4}\\b",
+        "trong": "name_lower"
+       },
+       {
+        "tu_khoa": [
+         "ống gió",
+         "phụ kiện ống gió",
+         "côn, cút",
+         "hút mùi bếp",
+         "hút mùi wc",
+         "thông gió"
+        ],
+        "trong": "sec_lower"
+       }
+      ]
+     }
+    ]
+   },
+   "ket_qua": "ONG_GIO",
+   "nguon_chu": "TITLE",
+   "chac": false,
+   "nguon": "Chuỗi parser cũ bước 5 (id cũ PARSER-5-TITLE); default_rules.json MD-04 (BAO_VA_HOI, quyết định User 2026-11-24, 10 dòng NOVH_CT0304)",
+   "ly_do": "Dòng không tự ghi loại hàng: chỉ Title cha ghi ống gió / thông gió, hoặc chữ ống nằm trong phần Title đã ghép vào dòng chỉ kích thước → báo ống gió nhưng chưa chắc (tô vàng + hỏi lại theo MD-04).",
+   "vi_du_dung": [
+    {
+     "ten": "EAF-1",
+     "title": "Thiết bị thông gió",
+     "loai": "ONG_GIO",
+     "mo_ta": "dòng thật trong bản ghi chuẩn category_golden.jsonl (Task 2)"
+    }
+   ]
+  }
+ ],
+ "khong_khop": {
+  "id": "LH-KHAC",
+  "ten": "Không rule nào khớp → KHAC",
+  "nguon_chu": "TEN_HOAC_TITLE",
+  "chac": false,
+  "nguon": "Chuỗi parser cũ: category = 'KHAC' ban đầu (Agent 02 rà soát hàng lạ)",
+  "ly_do": "Không nhận ra loại hàng; Agent 02 gợi ý / User duyệt.",
+  "vi_du_dung": [
+   {
+    "ten": "Hạng mục xyz",
+    "loai": "KHAC",
+    "mo_ta": "(tổng hợp)"
+   }
+  ]
+ },
+ "chuan_hoa": [
+  {
+   "tu": [
+    "PHU_KIEN_ONG"
+   ],
+   "thanh": "ONG_GIO",
+   "nguon": "Chuỗi parser cũ (sau bước 4)"
+  },
+  {
+   "tu": [
+    "KHOP_NOI_MEM",
+    "CHUP_THONG_HOI"
+   ],
+   "thanh": "CANVAS",
+   "nguon": "Chuỗi parser cũ (sau bước 4)"
+  },
+  {
+   "tu": [
+    "CUA_GIO"
+   ],
+   "thanh": "CANVAS",
+   "khi": {
+    "ham": "duct_classifier.is_ventcap_name",
+    "trong": "name_lower"
+   },
+   "nguon": "OG-01 (User chốt 2026-11-13, GMS TASEOC DBTSCO-3.VGCG 'Cửa gió Ventcap, Inox 304, kích thước: D110 / D160')",
+   "ly_do": "Tên ghi 'Cửa gió Ventcap ...' là chụp thông hơi, không phải cửa SDG → CANVAS (mặc định không báo)."
+  }
+ ]
+}

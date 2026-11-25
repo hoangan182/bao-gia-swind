@@ -329,6 +329,36 @@
      "ly_do": "không định báo giá"
     }
    ]
+  },
+  {
+   "id": "TR-05_TU_KHOA_DONG_TIEU_DE",
+   "ten": "Dòng KHÔNG có KL (và không kích thước cửa/van) có chữ loại hàng → thành Title cha cho các dòng con",
+   "nguon": "Parser SwindBOQParser.parse_sheet biến is_parent_title_kw (commit bf59292, 2026-10-26: đọc BOQ không sót khi KL không cùng dòng); chuyển từ code sang JSON — Task A dọn sạch sau Việc 4, 2026-11-25",
+   "ly_do": "AGENTS.md 1a: dòng tiêu đề nhóm ('Cửa gió cấp', 'Van chặn lửa EI60'...) có ĐVT nhưng không KL vẫn phải thành Title để thông số kế thừa xuống dòng con. So CHUỖI CON thuần trên '<Tên> <Spec> <Model>'.lower() — KHÔNG chuẩn hoá chính tả, bỏ dấu hay ranh giới từ ('ống' khớp cả 'chống', 'van' khớp 'vanguard' — giữ y như code cũ). Điều kiện 'không có kích thước cửa/van' (has_cv_dim) và 'không phải dòng chỉ kích thước / tổng cộng' vẫn ở parser.",
+   "tu_khoa": [
+    "cửa",
+    "miệng",
+    "van",
+    "ống",
+    "louver",
+    "luover",
+    "louvre",
+    "grille",
+    "diffuser",
+    "damper",
+    "khớp nối",
+    "tiêu âm"
+   ],
+   "vi_du_dung": [
+    {"vao": "cửa gió cấp tầng hầm", "la_title": true},
+    {"vao": "van chặn lửa ei60", "la_title": true},
+    {"vao": "chống cháy ei60", "la_title": true, "ly_do": "'chống' chứa 'ống' — giữ hành vi cũ (chuỗi con)"},
+    {"vao": "hệ thống điều hòa", "la_title": true, "ly_do": "'thống' chứa 'ống' — giữ hành vi cũ (chuỗi con)"}
+   ],
+   "vi_du_sai": [
+    {"vao": "khu vực b - điều hòa", "la_title": false},
+    {"vao": "tầng 3", "la_title": false}
+   ]
   }
  ]
 }

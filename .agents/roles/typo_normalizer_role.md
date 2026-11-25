@@ -26,7 +26,7 @@
 - Mã riêng của khách bị nghi nhầm → thêm vào `TY-03.loai_tru`.
 - E2E sao lưu & khôi phục `typo_rules.json` (không học trong lúc chạy kiểm thử).
 
-## 4. QUY TẮC SỬA RULE (AGENTS.md mục 7)
+## 4. QUY TẮC SỬA RULE (`.agents/rules/05_CLI_VA_KIEM_THU.md` mục 7)
 1. Không đổi thứ tự / phạm vi mục TY-01 cũ khi chưa chạy E2E 2 chế độ; file nào lệch phải giải thích được.
 2. Mỗi rule sửa ghi `nguon` (ngày / dự án / người chốt), thêm `vi_du_dung` / `vi_du_sai`.
 3. Chạy: `./venv/bin/python -m unittest tests/test_swind_typo_rules.py` + self-test + unit + E2E 2 chế độ; quét `input/` bằng `swind_item_inspector.py --typo-scan`.

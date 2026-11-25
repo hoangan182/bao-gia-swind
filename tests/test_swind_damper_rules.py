@@ -113,5 +113,108 @@ class DamperParserRowsTest(unittest.TestCase):
         self.assertEqual(got, rows)
 
 
+
+def _classify_res(ex):
+    """Chạy ví dụ qua Agent01.resolve_item_spec, trả dict kết quả đầy đủ của damper_classifier.classify."""
+    got = {}
+    orig = dmc.classify
+
+    def _spy(*a, **k):
+        res = orig(*a, **k)
+        got.setdefault("res", res)
+        return res
+
+    dmc.classify = _spy
+    try:
+        _run_example(ex)
+    finally:
+        dmc.classify = orig
+    return got["res"]
+
+
+class DamperProvenanceTest(unittest.TestCase):
+    """Bảng 'đã hiểu thế nào' (2026-11-24): classify trả thêm nguồn chữ, trail ghi VG-02-MAC-DINH khi dùng mặc định."""
+
+    def test_vg02_default(self):
+        res = _classify_res({"ten": "Van 600x400", "kt": [600, 400]})
+        self.assertIn("VG-02-MAC-DINH", res["trail"])
+        self.assertEqual(res["damper_type"], "VCD")
+        self.assertEqual(res["nguon"], ["MAC_DINH"])
+
+    def test_vg01_model(self):
+        res = _classify_res({"ten": "Van 600x400", "kt": [600, 400], "model_cot": "MFD"})
+        self.assertIn("VG-01", res["trail"])
+        self.assertEqual(res["nguon"], ["MODEL"])
+
+    def test_vg02_ten(self):
+        res = _classify_res({"ten": "Van chặn lửa FD 600x400", "kt": [600, 400]})
+        self.assertNotIn("VG-02-MAC-DINH", res["trail"])
+        self.assertIn("TEN", res["nguon"])
+
+
+
+def _old_damper_conflict(sub_s, nb_l, note_prio):
+    """Bản chép NGUYÊN VĂN biểu thức cũ trong swind_master_runner (trước Task B), category VAN_GIO."""
+    if not note_prio and nb_l and sub_s in ("NRD", "PRD", "MPRD", "VCD"):
+        if any(k in nb_l for k in ("mfd", "smd", "van ngăn cháy", "van chặn lửa", "bọc chống cháy", "bọc tấm mgo", "tấm chống cháy mgo")):
+            return True
+    elif nb_l and sub_s in ("MFD", "MSFD", "MFSD") and "van fd" in nb_l and not any(k in nb_l for k in ("mfd", "động cơ", "on/off", "on-off")):
+        return True
+    return False
+
+
+class DamperNameNoteConflictTest(unittest.TestCase):
+    """Task B bước 3 (2026-11-25): bộ dò xung đột Tên – Ghi chú van gió → damper_rules.json `xung_dot_ten_ghi_chu`."""
+
+    SUB = ["NRD", "PRD", "MPRD", "VCD", "MFD", "MSFD", "MFSD", "MD", "FD", ""]
+    GHI_CHU = ["", "van chặn lửa", "mfd", "smd", "van ngăn cháy", "bọc chống cháy", "bọc tấm mgo", "tấm chống cháy mgo",
+               "van ei60", "van fd", "van fd ei60", "van fd kèm động cơ", "van fd on/off", "van fd on-off", "van fd mfd",
+               "tấm mgo", "van fd bọc chống cháy"]
+
+    def test_rule_table(self):
+        cfg = dmc.load_rules()["_all"]["xung_dot_ten_ghi_chu"]
+        for key in ("mo_ta", "nguon", "ly_do", "quy_tac"):
+            self.assertTrue(cfg.get(key), key)
+        for r in cfg["quy_tac"]:
+            self.assertTrue(r.get("id") and r.get("loai_van") and r.get("ghi_chu_co"), r)
+            self.assertTrue(r.get("nguon") and r.get("ly_do"), r["id"])
+            for ex in r["vi_du_dung"]:
+                self.assertEqual(dmc.name_note_conflict(ex["loai"], ex["ghi_chu"]), r["id"], ex)
+
+    def test_equals_old_expression_full_grid(self):
+        for sub in self.SUB:
+            for nb in self.GHI_CHU:
+                for prio in (False, True):
+                    with self.subTest(sub=sub, ghi_chu=nb, prio=prio):
+                        self.assertEqual(bool(dmc.name_note_conflict(sub, nb, prio)), _old_damper_conflict(sub, nb, prio))
+
+
+
+
+class DamperTraceDefaultTest(unittest.TestCase):
+    """Bảng 'đã hiểu thế nào' (vá cuối 2026-11-24): cờ mặc định / rule loại van."""
+
+    def test_note_mode_default_path(self):
+        _, item = _run_example({"ten": "Van 600x400", "ghi_chu": "lắp đặt theo bản vẽ", "kt": [600, 400],
+                                "spec_priority": "note"})
+        self.assertEqual(item["spec_priority"], "note")
+        R = dmc.load_rules()
+        _, _, trail = dmc.classify_type(item, get_subtype_rules(), "van 600x400", "van 600x400", R)
+        self.assertIn("VG-02-MAC-DINH", trail)
+
+    def test_upgrade_not_default_unit(self):
+        # VG-03/04/05 nâng cấp mặc định VCD -> _type_sources không trả MAC_DINH
+        R = dmc.load_rules()
+        src = dmc._type_sources(R, {}, get_subtype_rules(), "", "", ["VG-02", "VG-02-MAC-DINH", "VG-04"])
+        self.assertNotEqual(src, ["MAC_DINH"])
+
+    def test_motor_row_rule_is_type_rule(self):
+        spec, item = _run_example({"ten": "Van dập lửa motor 600x400", "kt": [600, 400]})
+        k = next(d for d in item["decisions"] if d["truong"] == "kieu") if item.get("decisions") else None
+        if k:
+            self.assertIn(k["rule"], ("VG-01", "VG-02A", "VG-02", "VG-03", "VG-04", "VG-05"))
+            self.assertTrue(k["chac"])
+
+
 if __name__ == "__main__":
     unittest.main()

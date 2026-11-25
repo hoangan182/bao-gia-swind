@@ -276,7 +276,7 @@ Giai đoạn B tùy mức độ rule đang nằm cứng trong code.
 | Móc ngữ cảnh trong parser | `src/swind_boq_parser.py` (`record_row_context`, `row_context`, `sheet_layouts`) |
 | Công tắc ghi file học | `src/swind_utils.py` → `learning_writes_disabled()` |
 | Bảng rule có ID | `data/master_data/*_rules.json` |
-| Quy trình trong tài liệu dự án | `AGENTS.md` mục "QUY TẮC TỐC ĐỘ… KIỂM TRA / SỬA / THÊM CÔNG THỨC" |
+| Quy trình trong tài liệu dự án | `.agents/rules/05_CLI_VA_KIEM_THU.md` mục "QUY TẮC TỐC ĐỘ… KIỂM TRA / SỬA / THÊM CÔNG THỨC" |
 
 ```bash
 # E2E (mặc định: toàn bộ, 2 chế độ, song song)

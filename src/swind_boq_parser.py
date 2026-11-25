@@ -5,22 +5,15 @@ import os
 import unicodedata
 from swind_utils import detect_boq_header, get_subtype_rules, extract_duct_fitting_geometry
 import damper_classifier
-import duct_classifier
 import scope_filter
 import typo_normalizer
 import title_row_resolver
+import decision_trace
+import category_classifier
 
-FILTER_PREFIXES = ("lọc bụi", "lọc thô", "lọc sơ cấp", "lọc g4", "phin lọc", "lưới lọc", "tấm lọc", "bộ lọc", "khung lọc", "filter g4", "g4 filter", "pre filter", "pre-filter")
 # Dòng cửa gió mà BOQ ghi rõ chỉ lấy phần hộp gió, không lấy cửa (BG DT C08: 'Chỉ gồm hộp, không gồm cửa gió')
 BOX_ONLY_RX = scope_filter.box_only_rx()  # PV-07 (scope_rules.json)
-FINE_FILTER_RX = re.compile(r'\b(?:f[5-9]|m[5-6]|e1[0-2]|h1[0-4]|hepa|ulpa)\b|than hoạt tính|tĩnh điện|túi|carbon|bag')
-
-
-def is_standalone_coarse_filter(name_lower):
-    """Dòng BOQ là lọc bụi thô / G4 đứng riêng (không phải lọc tinh F5-F9/HEPA, than hoạt tính, lọc tĩnh điện, lọc túi)."""
-    n = re.sub(r'^\s*[-•*+]+\s*', '', name_lower)
-    n = re.sub(r'^(?:cung cấp|gia công|sản xuất|lắp đặt)(?:\s*(?:,|và|&)\s*(?:cung cấp|gia công|sản xuất|lắp đặt))*\s*:?\s*', '', n)
-    return n.startswith(FILTER_PREFIXES) and not FINE_FILTER_RX.search(n)
+# Lọc thô G4 đứng riêng (FILTER_PREFIXES / is_standalone_coarse_filter): chuyển sang category_classifier (Việc 4 Task 3)
 
 
 def tag_typo_events(items, row_typo_events):
@@ -122,8 +115,8 @@ class SwindBOQParser:
         if _override_header_row is not None:
             header_row = _override_header_row
         combo_cfg = get_subtype_rules().get("COMBO_AND_DETECTION_RULES", {})
-        cv_kws = tuple(combo_cfg.get("missing_qty_cv_keywords", ("louver", "luover", "louvre", "miệng gió", "cửa gió", "cửa nan", "van ", "vcd", "mfd", "msfd", "mfsd", "nrd", "prd"))) + ("cửa chớp", "chớp nhôm")
-        cv_rx = combo_cfg.get("missing_qty_cv_regex", r'\b(fd|md|sag|rag|eag|oag|pag|seg|eal|oal|fal)\b')
+        cv_kws = tuple(combo_cfg["missing_qty_cv_keywords"])  # gồm 'cửa chớp', 'chớp nhôm' (Task A 2026-11-25: chuyển từ code)
+        cv_rx = combo_cfg["missing_qty_cv_regex"]
 
         image_rows = set()
         try:
@@ -237,7 +230,7 @@ class SwindBOQParser:
                 # LCCT ghi KL theo m² (ĐVT m2) mà không có kích thước -> vẫn là Title cho dòng con, NHƯNG báo luôn
                 # LCCT theo m² (gốc giá LCCT tính theo m²) — User chốt 2026-11-03, TONG_HOP_KHOI_LUONG_DHKK R429, R572
                 unit_m2 = re.sub(r'[\s²]', lambda m_: "2" if m_.group(0) == "²" else "", str(unit_val or "").lower()) == "m2"
-                is_lcct_name = any(k in name_str.lower() for k in ("lưới chắn côn trùng", "lcct", "insect screen"))
+                is_lcct_name = scope_filter.is_lcct_m2_title(name_str.lower())  # scope_rules.json PV-11 tu_khoa_lcct_theo_m2
                 if not (unit_m2 and is_lcct_name and isinstance(qty_val, (int, float)) and qty_val > 0):
                     continue
                 lcct_per_m2 = True
@@ -265,7 +258,7 @@ class SwindBOQParser:
                         qty_val = 1.0
                 else:
                     is_valid_unit_str = isinstance(unit_val, str) and unit_val.strip() != "" and not unit_val.strip().replace('.', '').isdigit()
-                    is_parent_title_kw = (not has_cv_dim) and any(k in nl_chk for k in ("cửa", "miệng", "van", "ống", "louver", "luover", "louvre", "grille", "diffuser", "damper", "khớp nối", "tiêu âm"))
+                    is_parent_title_kw = (not has_cv_dim) and title_row_resolver.is_title_kw_row(nl_chk)  # title_row_rules.json TR-05
                     if (not is_valid_unit_str or is_parent_title_kw) and not is_pure_dim and "tổng cộng" not in nl_chk:
                         if len(name_str) > 2:
                             current_section = name_str
@@ -359,169 +352,31 @@ class SwindBOQParser:
             full_name_lower = typo_normalizer.normalize_for_match(f"{full_name_str} {aux_context}".lower().strip(), "full", typo_events)
             sec_lower = typo_normalizer.normalize_for_match(f"{current_section} {current_section_aux}".lower(), "title", typo_events).strip()
             model_str = str(model_val).strip() if model_val is not None else ""
-            category = "KHAC"
-            
-            # Hàm kiểm tra từ khóa an toàn (chống va chạm từ con, ví dụ: 'chống cháy' chứa 'ống')
-            match_keyword = scope_filter.match_keyword
+            # --override "Sheet!Dòng:loai=<mã>" (Việc 3, User chốt 2026-11-25): User chỉ rõ loại hàng (MD / MFD / FD / SD / SDG...)
+            # → THAY toàn bộ chữ cột Model (kể cả khi cột Model đã ghi mã khác, VD 'MFD' / '1.04' + loai=MD → MD), để VG-01 /
+            # bộ phân loại cửa đọc tường minh, mã User thắng (review Task 4 fix round 1, 2026-11-25).
+            _ov_loai = str((_ov_q or {}).get("loai") or "").strip()
+            if _ov_loai:
+                model_str = _ov_loai
+            # Bảng 'đã hiểu thế nào' (2026-11-24): dòng chỉ kích thước đã ghép Title vào name_str (is_pure_dim, dòng ~246)
+            # → khớp trên name_lower thực chất là chữ Title (nguồn TITLE)
+            name_has_title = name_str != own_cell_name
 
             # PV-01 (scope_rules.json): hệ ống nước / chữa cháy / ống đồng / cáp điện / bộ nguồn van / van nước DN -> THUONG_MAI
             is_hvac_prd = scope_filter.is_hvac_pressure_damper(full_name_lower, full_name_str, note_boq)
             is_plumbing_item = scope_filter.is_non_swind_system_item(name_lower, full_name_lower, sec_lower, name_str, full_name_str, note_boq)
 
-            # 1. Kiểm tra Học máy (Learned keywords)
-            if name_lower in self.learned_keywords:
-                category = self.learned_keywords[name_lower]
-            elif full_name_lower in self.learned_keywords:
-                category = self.learned_keywords[full_name_lower]
-            elif is_plumbing_item:
-                category = "THUONG_MAI"
-            else:
-                # 2. Kiểm tra các trường hợp đặc thù ưu tiên cao (tránh bị từ khóa ngắn như 'van', 'cửa', 'miệng', 'fd' bắt nhầm)
-                # 2a. Van nước / Cửa sổ / Thiết bị bắt đầu bằng Quạt, Máy lạnh, Dàn lạnh, Dàn nóng -> THUONG_MAI
-                if name_lower.startswith("cửa sổ") and ("cấp bù gió" in name_lower or "khi có cháy" in name_lower):
-                    category = "VAN_GIO"
-                elif is_standalone_coarse_filter(name_lower):
-                    # Lọc thô G4 đứng riêng (có kích thước) -> Swind sản xuất: báo giá theo công thức FILTER_G4 (Agent 06)
-                    category = "CUA_GIO"
-                elif scope_filter.is_commercial_by_name(name_lower) or scope_filter.is_fan_connection_transition(str(raw_name_str).lower()) or scope_filter.is_duct_insulation(name_lower):
-                    # PV-02: thiết bị / phụ trợ / giá đỡ (kể cả 'Lắp đặt giá đỡ ...') -> thương mại, không kế thừa nhóm từ Title
-                    category = "THUONG_MAI"
-                else:
-                    for comm in self.commercial_catalog:
-                        if comm.get("product_code") in ("VALVE_WATER", "PIPE_COPPER"):
-                            if comm.get("product_code") == "VALVE_WATER" and (is_hvac_prd or any(k in name_lower for k in ("lửa", "khói", "cháy", "mfd", "msfd", "mfsd", "fd", "vcd", "nrd", "prd", "md", "xả áp"))):
-                                continue
-                            if comm.get("product_code") == "PIPE_COPPER" and any(k in name_lower for k in ("louver", "louvre", "cửa gió", "miệng gió", "ống gió")):
-                                continue
-                            if any(match_keyword(kw, name_lower) for kw in comm.get("keywords", [])):
-                                category = "THUONG_MAI"
-                                break
+            # Phân loại sản phẩm (loại hàng): bảng rule có thứ tự data/master_data/category_rules.json (LH-01..LH-26, LH-KHAC)
+            # → src/category_classifier.py (Việc 4 Task 3, 2026-11-25 — thay chuỗi if/elif cũ; sửa rule trong JSON, không thêm if/elif)
+            cat_res = category_classifier.classify(
+                {"name_lower": name_lower, "full_name_lower": full_name_lower, "sec_lower": sec_lower,
+                 "note_boq": note_boq, "model_str": model_str, "raw_name_str": str(raw_name_str),
+                 "name_str": name_str, "full_name_str": full_name_str},
+                {"is_plumbing_item": is_plumbing_item, "is_hvac_prd": is_hvac_prd, "name_has_title": name_has_title},
+                {"manufacturable": self.manufacturable_catalog, "commercial": self.commercial_catalog},
+                self.learned_keywords)
+            category = cat_res["category"]
 
-                # 2b. Box / Hộp tĩnh áp tôn mạ kẽm hoặc Phụ kiện ống gió đầu dòng (Cút, Côn, Tê, Bịt ống, Nối ống...) -> ONG_GIO
-                if category == "KHAC" and name_lower.startswith(("box ", "hộp ", "hôp ")) and not name_lower.startswith(("hộp và cửa", "hộp + cửa", "hộp kèm cửa", "box và cửa", "box + cửa", "hộp quạt", "hộp điện", "hộp nối", "hộp cứu hỏa", "hộp chữa cháy")) and "tiêu âm" not in name_lower:
-                    category = "ONG_GIO"
-                # 'cổ chuyển' = côn thu vuông tròn (User chốt 2026-11-23, dự án KL ống gió R440-444 'Cổ chuyển 200x200/D200')
-                if category == "KHAC" and not is_plumbing_item and "tiêu âm" not in name_lower and name_lower.startswith(("cút ", "co ", "chếch ", "côn ", "tê ", "chạc ", "chân rẽ", "gót giày", "cổ trích", "cổ chuyển", "vuông chuyển tròn", "giảm ", "bịt đầu", "bịt ống", "nắp bịt", "măng xông", "măng sông", "nối ống", "zét ", "ống lượn")):
-                    # '(?:\s*mm)?': 'Cút 45º ống gió D450mm, R250 ... Kèm lưới chắn côn trùng' (D450mm không có \b sau số) bị từ khóa LCCT kéo thành
-                    # CUA_GIO/LCCT, mất phần cút — User chốt 2026-11-20, dự án tien luong moi thau V1_18t11 R470 (báo cút tròn kèm lưới)
-                    if re.search(r'\b(?:[dD][nN]?|Ø|phi\s*)\d{2,4}(?:\s*mm)?\b|\b\d{2,4}\s*[xX*]\s*\d{2,4}\b', name_str, re.IGNORECASE):
-                        category = "ONG_GIO"
-                # Ống thẳng / Ống bịt / Z đứng-ngang có ký hiệu xen giữa (VD: 'Ống EI60 KT 500x400', 'Ống EAD KT 250x100', 'Ống bịt: 550x300, L100', 'Z đứng EI60 KT 500x1200')
-                # -> ONG_GIO trước khi Title cha (VD: 'Quạt tăng áp ...') kéo sang THUONG_MAI
-                if category == "KHAC" and not is_plumbing_item and "tiêu âm" not in name_lower and (
-                    re.search(r'^ống\s+(?:(?:ei\s*\d{2,3}|[a-z]{2,3}d|bịt|gió|chữ\s+nhật|vuông)\s*[:;,]?\s+)*(?:(?:kt|kích\s*thước)\s*[:;]?\s*)?\d{2,4}\s*[xX*]\s*\d{2,4}\b', name_lower)
-                    or re.search(r'^z\s+(?:đứng|ngang)\b.*?\b\d{2,4}\s*[xX*]\s*\d{2,4}\b', name_lower)
-                ):
-                    category = "ONG_GIO"
-
-                if category == "KHAC" and any(k in name_lower or k in note_boq.lower() for k in ("access door", "cửa công tác", "cửa thăm", "cửa kiểm tra", "cửa chớp", "chớp nhôm", "cửa bầu dục", "cửa nan z", "cửa sọt trứng", "cửa khuếch tán")):
-                    category = "CUA_GIO"
-                if category == "KHAC" and name_lower.startswith(("cửa gió", "miệng gió", "cửa cấp", "cửa hồi", "cửa hút", "cửa thải", "cửa lấy", "cửa xả", "cửa tươi", "cửa sọt", "cửa nan", "cửa khuếch tán", "cửa bầu dục", "cửa louver", "cửa chớp", "louver ")):
-                    category = "CUA_GIO"
-                if category == "KHAC" and any(k in sec_lower for k in ("cửa gió", "miệng gió", "cửa chớp", "chớp nhôm", "lưới chắn chim", "louver", "luover", "louvre", "grille", "griller", "diffuser", "insect screen", "i.s", "lcct", "lưới chắn côn trùng", "fag", "sag", "rag", "eag", "seag", "kag", "mag", "fal", "eal", "oal")):
-                    # Tên tự ghi loại hàng khác thì không kế thừa 'cửa gió' từ Title (AGENTS.md quy tắc 1a). 'tole/tôn/box ' thêm 2026-11-03:
-                    # Haus_Dalat DHKK 'Tole 0.75mm ... (m2)', 'Box gió cấp và box gió hồi ... kW' dưới Title '... box miệng gió' / 'MIỆNG GIÓ'.
-                    # Tên bắt đầu bằng MÃ van ('MFD 900x250', 'PRD 1000x600', 'VCD 2200x500') cũng không kế thừa — User chốt 2026-11-12,
-                    # dự án 'BOQ Ống gió' (Title 'LOUVER, AIR GRILL, AIR VALVE'): chỉ báo van, combo cửa+van chỉ khi chính dòng ghi cả hai.
-                    is_own_damper_code = bool(re.match(r'^\s*(?:mfd|msfd|mfsd|md|fd|prd|nrd|vcd)\s*[-:]?\s*\d', name_lower))
-                    if not is_own_damper_code and not name_lower.startswith(("van ", "damper", "volume control", "fire damper", "motorized damper", "non-return", "ống ", "cút ", "côn ", "tê ", "chân rẽ", "hộp ", "box ", "tole", "tôn ", "chụp hút", "chụp thông")) and not any(k in sec_lower for k in ("chụp hút", "chụp thông")) and not any(k in name_lower for k in ("volume control damper", "fire damper", "motorized damper", "non-return damper")):
-                        category = "CUA_GIO"
-
-                # PV-12: mã 'IS' đứng riêng kèm kích thước = lưới chắn côn trùng (User chốt 2026-11-03, BOQ_ANH_KHACH_01)
-                if category == "KHAC" and scope_filter.is_insect_screen_code(name_lower):
-                    category = "CUA_GIO"
-                # PV-14: mã 'AL' đứng riêng kèm kích thước = Louver nan Z (User chốt 2026-11-03)
-                if category == "KHAC" and scope_filter.is_louver_code(name_lower):
-                    category = "CUA_GIO"
-                # PV-15: mã van viết liền kích thước (FD550x350, MFD350x150) = van gió (2026-11-06, 261031 NOXH hầm R10/R13/R20)
-                if category == "KHAC" and scope_filter.is_glued_damper_code(name_lower):
-                    category = "VAN_GIO"
-                # 2c. Kiểm tra Hàng Sản Xuất có độ đặc thù cao (Canvas, Chụp thông hơi, Tiêu âm, Cửa, Van, Ống mềm)
-                if category == "KHAC":
-                    for mfg in self.manufacturable_catalog:
-                        if mfg.get("mapping_category") not in ("ONG_GIO", "PHU_KIEN_ONG", "KHAC"):
-                            if any(match_keyword(kw, name_lower) for kw in mfg.get("keywords", [])):
-                                category = mfg.get("mapping_category")
-                                break
-                    if category == "KHAC" and (note_boq or model_str):
-                        note_lower_cat = f"{note_boq} {model_str}".lower()
-                        for mfg in self.manufacturable_catalog:
-                            if mfg.get("mapping_category") not in ("ONG_GIO", "PHU_KIEN_ONG", "KHAC"):
-                                if any(match_keyword(kw, note_lower_cat) for kw in mfg.get("keywords", [])):
-                                    category = mfg.get("mapping_category")
-                                    break
-                    # Tên tự ghi là tôn / tole (vật tư ống gió theo m²) -> không lấy loại Cửa/Van từ Title cha (AGENTS.md quy tắc 1a, 2026-11-03)
-                    # Tên tự ghi là ống / phụ kiện ống (chân rẽ, co 90, côn...) -> dòng thắng Title (VD Title 'Cổ bạt chống rung quạt'
-                    # làm 'Chan re W350x150...', 'Co 90 W250x250' thành CANVAS bị bỏ — KL ong gio cap va hut WC R34-38, R76-82; User duyệt 2026-11-03)
-                    own_is_duct = any(match_keyword(kw, name_lower) for mfg in self.manufacturable_catalog
-                                      if mfg.get("mapping_category") in ("ONG_GIO", "PHU_KIEN_ONG") for kw in mfg.get("keywords", []))
-                    if category == "KHAC" and full_name_lower != name_lower and not name_lower.startswith(("tole", "tôn ")):
-                        for mfg in self.manufacturable_catalog:
-                            if mfg.get("mapping_category") not in ("ONG_GIO", "PHU_KIEN_ONG", "KHAC"):
-                                # Tên dòng là ống / phụ kiện ống -> không kế thừa nhóm CANVAS / CỬA / VAN từ Title (giữ Tiêu âm — OG-19).
-                                # CỬA / VAN thêm 2026-11-24 (User yêu cầu, dự án 261124_TEF_THÁP A, B R29-41 'Ống gió Tole ... KT: 1200x600'
-                                # dưới Title 'Hệ thống cửa gió, ống gió và phụ kiện' bị báo cửa SDG)
-                                if own_is_duct and mfg.get("mapping_category") in ("CANVAS", "KHOP_NOI_MEM", "CHUP_THONG_HOI", "CUA_GIO", "VAN_GIO"):
-                                    continue
-                                if any(match_keyword(kw, full_name_lower) for kw in mfg.get("keywords", [])):
-                                    category = mfg.get("mapping_category")
-                                    break
-    
-                # 3. Nếu chưa khớp, kiểm tra toàn bộ Hàng Thương Mại còn lại
-                # Tên dòng ghi 'ống gió' → không xếp PIPE_COPPER qua từ khóa chung 'phụ kiện' (Tên hoặc Title 'Ống gió và phụ kiện ...')
-                # (User chốt 2026-11-13, NBT-BG DA luxora R1810 'Phụ kiện Ống gió tôn tráng kẽm dày 0.75mm' m2 bị xếp THUONG_MAI)
-                own_air_duct = "ống gió" in name_lower
-                if category == "KHAC":
-                    for comm in self.commercial_catalog:
-                        if own_air_duct and comm.get("product_code") == "PIPE_COPPER":
-                            continue
-                        if any(match_keyword(kw, name_lower) for kw in comm.get("keywords", [])):
-                            category = "THUONG_MAI"
-                            break
-                    # Tên tự ghi tôn / tole (vật tư ống gió m²) -> không kế thừa THUONG_MAI từ Title cha (quy tắc 1a)
-                    # (2026-11-23, dự án 2026-11-16- ATP BOQ HVAC VER 1 R26-28 'Tôn tráng kẽm dày 0.58/0.75/0.95mm' m2 dưới Title
-                    # 'Ống nước ngưng và bảo ôn ống nước ngưng' bị xếp THUONG_MAI, sót 824 m² không cảnh báo)
-                    # Tên bắt đầu 'ống gió' cũng không kế thừa THUONG_MAI từ Title (2026-11-24, E2E NOVH_E2 R202 'Ống gió tôn (chiều dày
-                    # tôn theo TCXD 232-1999) KT: 260x260' dưới Title 'Cấp gió tự nhiên (cửa gió + van qua tường...)')
-                    if category == "KHAC" and full_name_lower != name_lower and not name_lower.startswith(("tole", "tôn ", "ống gió")):
-                        for comm in self.commercial_catalog:
-                            if own_air_duct and comm.get("product_code") == "PIPE_COPPER":
-                                continue
-                            if any(match_keyword(kw, full_name_lower) for kw in comm.get("keywords", [])):
-                                category = "THUONG_MAI"
-                                break
-                        
-                # 4. Nếu vẫn chưa khớp, kiểm tra Ống Gió & Phụ kiện ống gió
-                if category == "KHAC":
-                    for mfg in self.manufacturable_catalog:
-                        if mfg.get("mapping_category") in ("ONG_GIO", "PHU_KIEN_ONG"):
-                            if any(match_keyword(kw, name_lower) for kw in mfg.get("keywords", [])):
-                                category = "ONG_GIO"
-                                break
-                    if category == "KHAC" and full_name_lower != name_lower:
-                        for mfg in self.manufacturable_catalog:
-                            if mfg.get("mapping_category") in ("ONG_GIO", "PHU_KIEN_ONG"):
-                                if any(match_keyword(kw, full_name_lower) for kw in mfg.get("keywords", [])):
-                                    category = "ONG_GIO"
-                                    break
-
-            if category == "PHU_KIEN_ONG":
-                category = "ONG_GIO"
-            elif category in ("KHOP_NOI_MEM", "CHUP_THONG_HOI"):
-                category = "CANVAS"
-            # OG-01: Tên ghi 'Cửa gió Ventcap ...' là chụp thông hơi, không phải cửa SDG → CANVAS (mặc định không báo)
-            # (User chốt 2026-11-13, GMS TASEOC DBTSCO-3.VGCG 'Cửa gió Ventcap, Inox 304, kích thước: D110 / D160')
-            if category == "CUA_GIO" and duct_classifier.is_ventcap_name(name_lower):
-                category = "CANVAS"
-
-            # 5. Fallback heuristics có kiểm soát chặt chẽ
-            if category == "KHAC" and scope_filter.is_auxiliary_material(name_lower):  # PV-03
-                category = "THUONG_MAI"
-            elif category == "KHAC" and not is_plumbing_item:
-                has_duct = bool(re.search(r'\bống\s+gió\b|^ống\s+(?:kt\b|kích\s*thước\b|\d{2,4}\s*[xX*]\s*\d{2,4})|\btole\b|\btôn\b|(?:^|\s)z\s*\d{2,4}\s*[xX*]\s*\d{2,4}|(?:^|\s)z\s*chuyển|\b\d{2,4}\s*[xX*]\s*\d{2,4}\s*(?:[/\-xX*\s]+)?(?:[dD][nN]?|Ø|phi)\s*\d{2,4}\b', name_lower))
-                if has_duct or any(k in sec_lower for k in ("ống gió", "phụ kiện ống gió", "côn, cút", "hút mùi bếp", "hút mùi wc", "thông gió")):
-                    category = "ONG_GIO"
-                
             # Trích xuất kích thước: Ưu tiên tìm trên tên sản phẩm + model trước khi mở rộng sang cột Ghi chú BOQ
             # '250mm x 250mm' (đơn vị mm sau số thứ nhất): bỏ 'mm' đứng giữa 2 số để regex <W>x<H> đọc được kích thước
             # (User chốt 2026-11-20, tien luong moi thau V1_18t11 R472/R487 'Miệng gió thải EAG 250mm x 250mm + OBD')
@@ -665,7 +520,7 @@ class SwindBOQParser:
                         pass
                 elif d_val == 0:
                     no_ei_text = re.sub(r'(?<![a-zA-Z])EI\s*[-:]?\s*\d{2,3}\b', ' ', dim_clean_text, flags=re.IGNORECASE)
-                    single_d_rx = combo_cfg.get("single_dim_damper_regex", r'\b(?:vcd|fd|nrd|prd|md|obd|mfd|msfd|mfsd)\s+(\d{2,4})\b')
+                    single_d_rx = combo_cfg["single_dim_damper_regex"]
                     single_d_match = re.search(single_d_rx, no_ei_text, re.IGNORECASE)
                     if single_d_match:
                         parsed_sd = float(single_d_match.group(1))
@@ -735,7 +590,7 @@ class SwindBOQParser:
             name_str = full_name_str
 
             # Rule 1: Kích thước cửa gió ghi KTC hoặc cửa bù khí (mặc định nan Z) thì cộng thêm mỗi cạnh 50mm
-            ktc_rx = combo_cfg.get("ktc_regex", r'\bktc\b|kích\s*thước\s*c[ổôo]|\bkt\s*c[ổôo]\b')
+            ktc_rx = combo_cfg["ktc_regex"]
             raw_makeup_chk = f"{raw_name_str} {model_str} {note_boq}".lower()
             is_makeup_air_z = (
                 any(k in raw_makeup_chk for k in ("cấp khí bù", "bù khí", "cấp gió bù", "bù gió"))
@@ -758,14 +613,14 @@ class SwindBOQParser:
             # -> không dùng để dò combo Cửa+Van (nếu không, mọi van FD/MFD/NRD/VCD bên dưới bị ghép 'SDG + ...').
             # Nguồn: dự án Fezix Cầu Giấy Ver2 (2026-11-03). Title có thông số (OBD/EI/động cơ...) không khớp mẫu -> giữ nguyên.
             combo_name_str = name_str
-            cat_list_rx = combo_cfg.get("combo_category_list_title_regex", r'^\s*(?:van(?:\s*gió)?|miệng\s*gió|cửa\s*gió)(?:\s*(?:,|/|&|\+|và)\s*(?:van(?:\s*gió)?|miệng\s*gió|cửa\s*gió))+\s*$')
+            cat_list_rx = combo_cfg["combo_category_list_title_regex"]
             if clean_section and full_name_str != raw_full_name_str and re.match(cat_list_rx, clean_section.strip().lower()):
                 combo_name_str = raw_full_name_str
             search_combo_txt = re.sub(r'\(\s*(?:for|cho)\s+[^)]*\)', '', f"{raw_name_str} {combo_name_str} {model_str}".lower().replace("\n", " "))
             # Lỗi gõ nhầm phổ biến 'van MDF' = van MFD (User xác nhận 2026-11-02) — typo_rules.json TY-01
             search_combo_txt = typo_normalizer.normalize_for_match(search_combo_txt, "combo", typo_events)
-            diff_rx = combo_cfg.get("combo_diffuser_regex", r'\bmiệng\s*gió\b|\bcửa\s*gió\b|\bcửa\s*nan\b|\blouver\s*|\bluover\b|\blouvre\b|\bgrille\b|\bgriller\b|\bdiffuser\b|cửa\s*(?:chớp|nan|thẳng|gió|hút|cấp|hồi|thải|lấy|xả|tăng\s*áp|tạo\s*áp|\+)')
-            damp_rx = combo_cfg.get("combo_damper_regex", r'\b(mfd|msfd|mfsd|md|fd|prd|nrd|vcd)\b|van\s+(?:on/off|on-off|chống\s*cháy|chặn\s*lửa|ngăn\s*cháy|động\s*cơ|một\s*chiều|1\s*chiều|xả\s*áp)')
+            diff_rx = combo_cfg["combo_diffuser_regex"]
+            damp_rx = combo_cfg["combo_damper_regex"]
             is_access_door_item = any(k in search_combo_txt for k in ("access door", "cửa công tác", "cửa thăm", "cửa kiểm tra"))
             has_diffuser = bool(re.search(diff_rx, search_combo_txt)) and not is_access_door_item
             # AGENTS quy tắc 1a — dòng tự ghi loại hàng thắng Title (User duyệt 2026-11-03, đợt kiểm bất biến E2E):
@@ -786,7 +641,7 @@ class SwindBOQParser:
             # không ghi van -> chỉ báo cửa, không ghép van từ Title (trước đây ra 'SDG+O + MFD').
             # Title 'Cửa gió ... kèm van FD' + dòng cửa vẫn ghép như cũ (Title có ghi cửa / miệng gió).
             if (m_damper and has_diffuser and re.search(damp_rx, sec_lower) and not re.search(diff_rx, sec_lower)
-                    and re.match(r'^\s*(?:cửa|miệng|louver|luover|louvre|grille|diffuser)', raw_full_name_str.lower())
+                    and re.match(combo_cfg["combo_own_diffuser_prefix_regex"], raw_full_name_str.lower())
                     and not re.search(damp_rx, own_txt)):
                 m_damper = None
 
@@ -989,7 +844,20 @@ class SwindBOQParser:
                     "lcct_per_m2": lcct_per_m2,
                 }
                 items.append(item_data)
-            
+
+            # Bảng 'đã hiểu thế nào': mọi nhánh trên đều vừa thêm đúng 1 item (nhánh bỏ dòng đã 'continue').
+            # Ghi theo category CUỐI của item (sau PHU_KIEN_ONG→ONG_GIO, Ventcap→CANVAS, PV-05..08 adjust_category_after_dims),
+            # rule = bước parser đã quyết định loại hàng.
+            # chac: rule chắc (cat_res["chac"]; rule LH-26 'chỉ nhờ Title' = False) VÀ loại cuối ≠ KHAC. Bộ phân loại ra KHAC
+            # (chac False) mà loại cuối khác KHAC (VD --override skip → THUONG_MAI) vẫn chắc như chuỗi cũ.
+            decision_trace.record(
+                items[-1], "loai_hang", items[-1]["category"], cat_res["nguon"], cat_res["rule_id"],
+                sure=((cat_res["chac"] or cat_res["category"] == "KHAC") and items[-1]["category"] != "KHAC"))
+            # --override "Sheet!Dòng:ok=1" (Việc 3, 2026-11-25): User duyệt mặc định của dòng → default_policy không tô vàng / không hỏi;
+            # Agent 01 (decision_trace.confirm_by_user) ghi thêm nguồn CO_USER cho quyết định mặc định.
+            if _ov_q and str(_ov_q.get("ok", "0")).strip() not in ("", "0", "false", "False"):
+                items[-1]["default_confirmed"] = True
+
             if max_items and len(items) >= max_items:
                 break
 
@@ -1082,11 +950,7 @@ class SwindBOQParser:
             return zone_sheets
 
         combo_cfg = get_subtype_rules().get("COMBO_AND_DETECTION_RULES", {})
-        keywords = combo_cfg.get("hvac_sheet_keywords", [
-            "dhkk", "hvac", "thong gio", "thông gió", "thong_gio", 
-            "hut khoi", "hút khói", "hut_khoi", "tang ap", "tăng áp", "tang áp", "tăng ap",
-            "tang_ap", "duct", "lanh", "lạnh", "ventilation", "m.4 duct"
-        ])
+        keywords = combo_cfg["hvac_sheet_keywords"]
         detected = []
         for s in cand_sheets:
             s_lower = s.lower().strip()

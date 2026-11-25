@@ -32,7 +32,9 @@ Các bước chạy **theo thứ tự id** `VG-01 → VG-13`; mỗi rule mang t�
 | `VG-12` | Mẫu Model + ghi chú báo giá |
 | `VG-13` | Parser: tách các van trong dòng combo, thứ bậc van chính (sửa gõ nhầm `van MDF` đã chuyển sang `typo_rules.json` TY-01) |
 
-## 3. QUY TẮC SỬA RULE (AGENTS.md mục 7)
+Ngoài `VG-xx`: khối `xung_dot_ten_ghi_chu` (`XD-VG-01` van cơ ghi chú chống cháy / MFD, `XD-VG-02` MFD ghi chú chỉ `Van FD`) → `name_note_conflict`, mỗi rule có `nguon` / `ly_do`.
+
+## 3. QUY TẮC SỬA RULE (`.agents/rules/05_CLI_VA_KIEM_THU.md` mục 7)
 1. Đổi từ khóa / ngưỡng / mẫu chữ / thứ tự nguồn tra → **sửa JSON**. Đổi cấu trúc bước (thêm điều kiện mới) → sửa đúng hàm của bước đó trong `damper_classifier.py`, ghi id rule; không viết nhánh riêng cho 1 dự án.
 2. Trước khi sửa: `git log -S "<từ khóa>"` tìm commit / dự án sinh ra rule (đã ghi ở `nguon`). Rẽ nhánh giữ case cũ; chỉ xóa khi rule được xác nhận sai.
 3. Mỗi rule ≥ 1 ví dụ (ưu tiên dòng BOQ thật, ghi `nguon_boq`). Ví dụ kiểm `loai`, `model`, `ghi_chu_chua`, `fd_thuong`; combo kiểm `van`.

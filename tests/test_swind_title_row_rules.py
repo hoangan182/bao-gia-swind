@@ -34,6 +34,29 @@ class RuleTableTest(unittest.TestCase):
                 self.assertEqual(tr.decide(ex["title"], ex["dong"], ex["nhom"]), ex["ket_qua"])
 
 
+class TitleKwRowTest(unittest.TestCase):
+    """TR-05 (Task A, 2026-11-25): dòng không KL có chữ loại hàng → Title cha (parser is_parent_title_kw, AGENTS 1a).
+    So chuỗi con thuần trên chuỗi .lower() cũ — không chuẩn hoá chính tả / bỏ dấu / ranh giới từ."""
+
+    def test_tr05_data(self):
+        r = tr.load_rules()["TR-05"]
+        self.assertEqual(r["tu_khoa"], ["cửa", "miệng", "van", "ống", "louver", "luover", "louvre", "grille",
+                                         "diffuser", "damper", "khớp nối", "tiêu âm"])
+        for ex in r["vi_du_dung"]:
+            self.assertTrue(tr.is_title_kw_row(ex["vao"]), ex)
+        for ex in r["vi_du_sai"]:
+            self.assertFalse(tr.is_title_kw_row(ex["vao"]), ex)
+
+    def test_substring_semantics(self):
+        yes = ["hệ thống cửa gió tầng 1", "miệng gió cấp", "vanguard", "chống cháy ei60", "air grilles",
+               "khớp nối mềm", "hộp tiêu âm", "fire damper", "louvre", "hệ thống điều hòa"]
+        no = ["khu vực b - điều hòa", "tầng 3", "khop noi mem", "tieu am", "phụ kiện"]
+        for t in yes:
+            self.assertTrue(tr.is_title_kw_row(t), t)
+        for t in no:
+            self.assertFalse(tr.is_title_kw_row(t), t)
+
+
 class RolesTest(unittest.TestCase):
     def test_title_roles(self):
         self.assertEqual(tr.title_role("cửa gió kèm hộp gió kích thước:", KWS), "LOAI_HANG")

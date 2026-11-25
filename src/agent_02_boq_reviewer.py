@@ -5,6 +5,15 @@ from datetime import date
 from difflib import SequenceMatcher
 from swind_boq_parser import SwindBOQParser
 import typo_normalizer
+import decision_trace
+
+
+def _set_category(item, cat, source, rule, sure):
+    """Đổi loại hàng + ghi vết Bảng 'đã hiểu thế nào' (2026-11-24) khi giá trị thực sự đổi (chỉ ghi vết)."""
+    changed = item.get("category") != cat
+    item["category"] = cat
+    if changed:
+        decision_trace.record(item, "loai_hang", cat, source, rule, sure)
 
 
 def resolve_path(rel_path):
@@ -40,10 +49,10 @@ def find_ambiguous_items(items):
         name = item["name"].strip()
         raw_name = item.get("raw_name", name).strip()
         if raw_name.lower() in learned_map:
-            item["category"] = learned_map[raw_name.lower()]
+            _set_category(item, learned_map[raw_name.lower()], "HOC_MAY", "AGENT02-HOC-MAY", True)
             continue
         if name.lower() in learned_map:
-            item["category"] = learned_map[name.lower()]
+            _set_category(item, learned_map[name.lower()], "HOC_MAY", "AGENT02-HOC-MAY", True)
             continue
 
         cat = item["category"]
@@ -192,7 +201,8 @@ def apply_suggestions_non_interactive(ambiguous_items, auto_accept=False, projec
         score = float(item.get("suggested_score") or 0)
         raw_name = item.get("raw_name", item.get("name", ""))
         if auto_accept and sug_cat and score >= AUTO_APPLY_MIN_SCORE:
-            item["category"] = sug_cat
+            # Gợi ý học máy chỉ áp cho lần chạy này (chờ duyệt) → chưa chắc, đưa vào bảng cần xác nhận
+            _set_category(item, sug_cat, "HOC_MAY", "AGENT02-GOI-Y", False)
             save_learned_keyword(raw_name, sug_cat, project_name=project_name, approved=False, score=score)
             print(f"  -> [Auto-accept] '{raw_name}' -> [{sug_cat}] (độ tin cậy {score*100:.0f}%, đã đưa vào hàng chờ duyệt)")
         else:
@@ -235,13 +245,13 @@ def resolve_ambiguous_interactive(ambiguous_items, auto_accept_all=False):
         score = item.get("suggested_score", 0.0)
 
         if accept_all_thuong_mai:
-            item["category"] = "THUONG_MAI"
+            _set_category(item, "THUONG_MAI", "CO_USER", "AGENT02-USER", True)
             save_learned_keyword(raw_name, "THUONG_MAI", approved=True)
             print(f"  [{idx}/{len(ambiguous_items)}] Tự động đẩy: '{name}' -> [THUONG_MAI]")
             continue
 
         if accept_all and sug_cat:
-            item["category"] = sug_cat
+            _set_category(item, sug_cat, "CO_USER", "AGENT02-USER", True)
             save_learned_keyword(raw_name, sug_cat, approved=False, score=score)
             print(f"  [{idx}/{len(ambiguous_items)}] Tự động áp gợi ý: '{name}' -> [{sug_cat}] (đưa vào hàng chờ duyệt)")
             continue
@@ -273,7 +283,7 @@ def resolve_ambiguous_interactive(ambiguous_items, auto_accept_all=False):
         else:
             chosen_cat = sug_cat if sug_cat else "KHAC"
 
-        item["category"] = chosen_cat
+        _set_category(item, chosen_cat, "CO_USER", "AGENT02-USER", True)
         if chosen_cat != "KHAC":
             save_learned_keyword(raw_name, chosen_cat, approved=True)
             print(f"     ✅ Đã cập nhật & học máy: '{raw_name}' -> [{chosen_cat}]")

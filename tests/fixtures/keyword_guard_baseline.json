@@ -1,0 +1,137 @@
+{
+ "agent_00b_input_normalizer.py": {
+  "bịt đầu": 1,
+  "canvas": 1,
+  "chân rẽ": 1,
+  "cút": 1,
+  "cửa gió": 1,
+  "damper": 1,
+  "diffuser": 1,
+  "grille": 1,
+  "hộp gió": 1,
+  "louver": 1,
+  "miệng gió": 1,
+  "nối mềm": 1,
+  "tiêu âm": 1,
+  "ống gió": 6
+ },
+ "agent_01_boq_extractor.py": {
+  "lưới chắn": 1,
+  "lọc bụi": 1,
+  "ống gió": 1
+ },
+ "agent_01b_image_boq_reader.py": {
+  "chạc": 1,
+  "cút": 1,
+  "louver": 1,
+  "lưới chắn": 1,
+  "mfd": 1,
+  "nan thẳng": 1,
+  "nrd": 1,
+  "obd": 1,
+  "vcd": 1
+ },
+ "agent_03_input_auditor.py": {
+  "chặn lửa": 2,
+  "mfd": 1,
+  "mfsd": 1,
+  "msfd": 1,
+  "ngăn cháy": 1
+ },
+ "agent_04_bom_duct.py": {
+  "canvas": 9,
+  "chân rẽ": 1,
+  "chạc": 1,
+  "lcct": 2,
+  "lưới chắn": 3,
+  "nối mềm": 2,
+  "tiêu âm": 11,
+  "ventcap": 2,
+  "ống gió": 3
+ },
+ "agent_05_bom_damper.py": {
+  "chặn lửa": 1,
+  "nrd": 9,
+  "van chặn": 1,
+  "vcd": 11,
+  "xả áp": 2
+ },
+ "agent_06_bom_diffuser.py": {
+  "bầu dục": 2,
+  "cửa gió": 6,
+  "khuếch tán": 5,
+  "lcct": 1,
+  "lọc bụi": 4,
+  "sọt trứng": 4,
+  "tháo lắp": 4
+ },
+ "agent_10_old_quote_carrier.py": {
+  "chặn lửa": 2,
+  "hộp gió": 2,
+  "xả áp": 2
+ },
+ "scope_filter.py": {
+  "cửa gió": 1,
+  "hộp gió": 1,
+  "louver": 1
+ },
+ "swind_boq_parser.py": {
+  "bầu dục": 1,
+  "chân rẽ": 1,
+  "cút": 1,
+  "damper": 1,
+  "diffuser": 1,
+  "hộp gió": 1,
+  "khuếch tán": 2,
+  "louver": 1,
+  "mfd": 1,
+  "mfsd": 1,
+  "msfd": 1,
+  "nan thẳng": 1,
+  "nrd": 2,
+  "obd": 2,
+  "vcd": 2
+ },
+ "swind_excel_builder.py": {
+  "ống gió": 1
+ },
+ "swind_master_runner.py": {
+  "canvas": 6,
+  "chân rẽ": 1,
+  "chạc": 1,
+  "chặn lửa": 1,
+  "cút": 3,
+  "cửa gió": 5,
+  "hộp gió": 1,
+  "lọc bụi": 1,
+  "mfd": 1,
+  "mprd": 3,
+  "nối mềm": 3,
+  "tiêu âm": 6,
+  "van chặn": 1,
+  "xả áp": 3,
+  "ống gió": 21,
+  "ống mềm": 3
+ },
+ "swind_pricing.py": {
+  "chặn lửa": 5,
+  "lcct": 2,
+  "obd": 6,
+  "van gió": 3
+ },
+ "swind_universal_extractor.py": {
+  "chặn lửa": 1,
+  "louver": 1,
+  "lọc bụi": 1,
+  "phin lọc": 1,
+  "tiêu âm": 1
+ },
+ "swind_utils.py": {
+  "mfd": 1,
+  "mfsd": 1,
+  "msfd": 1,
+  "nrd": 1,
+  "obd": 1,
+  "vcd": 1
+ }
+}

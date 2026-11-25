@@ -80,6 +80,8 @@ def detect_subtype(text, w1=0.0, h1=0.0, w2=0.0, h2=0.0, d1=0.0, d2=0.0, unit=""
     subtype = res if isinstance(res, str) else res["tron" if is_round else "vuong"]
     if trail is not None:
         trail.append(rule["id"])
+        if rule.get("mac_dinh"):  # Bảng 'đã hiểu thế nào' (2026-11-24): không rule từ khóa nào khớp → rule mặc định
+            trail.append("OG-MAC-DINH")
     if str(category or "").upper() == "TIEU_AM" and subtype not in ("SILENCER_SQ", "SILENCER_RT"):
         subtype = "SILENCER_RT" if (d1 > 0 and w1 == 0) else "SILENCER_SQ"
         if trail is not None:
@@ -146,3 +148,36 @@ def is_fire_canvas(model_std, raw_search, rules=None):
     """OG-24: canvas chống cháy."""
     r = (rules or load_rules())["_extra"]["OG-24"]
     return ("CHONG-CHAY" in str(model_std or "")) or any(k in raw_search for k in r["tu_khoa"])
+
+
+def lined_duct_rx(rules=None):
+    """OG-25: regex cụm '( kèm tiêu âm trong ...)' trên dòng ống gió (cờ --lined-duct-as-duct) — runner nhận diện,
+    Agent 04 xóa cụm. Compile 1 lần theo bảng rule đã nạp (Task B, dọn sạch sau Việc 4, 2026-11-25)."""
+    R = rules or load_rules()
+    if "_lined_rx" not in R:
+        r = R["_extra"]["OG-25"]
+        R["_lined_rx"] = re.compile(r["regex_ong_kem_tieu_am_trong"], re.IGNORECASE if r.get("ignorecase") else 0)
+    return R["_lined_rx"]
+
+
+def is_inner_lined_silencer(raw_name, rules=None):
+    """OG-26: Tên có 'tiêu âm trong' (chuỗi con có dấu, chữ thường) → tiêu âm lót trong, không tính vỏ (include_casing=False)."""
+    t = str(raw_name or "").lower()
+    return any(k in t for k in (rules or load_rules())["_extra"]["OG-26"]["tu_khoa"])
+
+
+def is_silencer_fitting(raw_name, full_text, rules=None):
+    """OG-27: tiêu âm vuông là phụ kiện (Tên ghi cút / côn / tê... hoặc toàn dòng ghi 'phụ kiện tiêu âm') → PK-TA-VUONG."""
+    r = (rules or load_rules())["_extra"]["OG-27"]
+    name = str(raw_name).lower()
+    return any(k in name for k in r["tu_khoa_ten"]) or any(k in str(full_text).lower() for k in r["tu_khoa_toan_dong"])
+
+
+def is_silencer_elbow_name(raw_name, rules=None):
+    """OG-27: Tên phụ kiện tiêu âm là cút (công thức diện tích cút)."""
+    return any(k in str(raw_name).lower() for k in (rules or load_rules())["_extra"]["OG-27"]["tu_khoa_cut"])
+
+
+def is_silencer_cone_name(raw_name, rules=None):
+    """OG-27: Tên phụ kiện tiêu âm là côn / chân rẽ / gót giày (công thức diện tích côn)."""
+    return any(k in str(raw_name).lower() for k in (rules or load_rules())["_extra"]["OG-27"]["tu_khoa_con"])

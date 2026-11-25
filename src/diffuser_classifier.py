@@ -14,6 +14,8 @@ import json
 
 from swind_utils import remove_vietnamese_accents, K
 import typo_normalizer
+from decision_trace import TEXT_SOURCE, SOURCES
+from rule_dsl import RuleContext
 
 RULES_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "master_data", "diffuser_rules.json")
 _RULES_CACHE = {}
@@ -34,26 +36,19 @@ def load_rules(path=None):
     return rules
 
 
-class _Ctx:
-    """Trạng thái 1 lần phân loại: biến văn bản, biến số, cờ."""
+class _Ctx(RuleContext):
+    """Trạng thái 1 lần phân loại cửa gió. Bộ điều kiện chung ở `rule_dsl.RuleContext` (Việc 4, 2026-11-24);
+    phần riêng cửa: nhóm từ khóa đọc `combo_cfg`, `regex_cau_hinh`, `pick_text`, quy nguồn chữ Tên / Ghi chú / Title."""
+
+    label = "diffuser_rules"
 
     def __init__(self, rules, combo_cfg, subtype_rules):
-        self.rules = rules
+        super().__init__(rules)
         self.combo_cfg = combo_cfg or {}
         self.subtype_rules = subtype_rules
-        self.text = {}
-        self.flags = {}
-        self.num = {}
-        self._groups = {}
-
-    # --- Dữ liệu ---
-    def nums(self, name):
-        w, h = self.num["w"], self.num["h"]
-        if name == "max_wh":
-            return max(w, h)
-        if name == "min_wh":
-            return min(w, h)
-        return self.num[name]
+        # Bảng 'đã hiểu thế nào' (2026-11-24, chỉ ghi vết — không đổi kết quả): nguồn biến văn bản dẫn xuất (van_ban).
+        self.text_src = {}
+        self.derive = {}  # biến dẫn xuất -> (biến gốc, hàm biến đổi chữ) để tách phần Tên + Ghi chú
 
     def group(self, name):
         if name not in self._groups:
@@ -66,59 +61,51 @@ class _Ctx:
             self._groups[name] = words
         return self._groups[name]
 
-    def words(self, items):
-        out = []
-        for it in ([items] if isinstance(items, str) else items):
-            if it.startswith("@"):
-                out.extend(self.group(it[1:]))
-            else:
-                out.append(it)
-        return out
-
-    def operand(self, v):
-        if isinstance(v, (int, float)) and not isinstance(v, bool):
-            return v
-        if isinstance(v, list):  # [biến, '*', hệ số]
-            return self.operand(v[0]) * float(v[2])
-        return self.nums(v)
-
-    # --- Điều kiện ---
-    def ok(self, cond):
-        if cond is True or cond is False:
-            return cond
-        if isinstance(cond, str):
-            if cond.startswith("!"):
-                return not self.flags.get(cond[1:], False)
-            return bool(self.flags.get(cond, False))
-        if "tat_ca" in cond:
-            return all(self.ok(c) for c in cond["tat_ca"])
-        if "mot_trong" in cond:
-            return any(self.ok(c) for c in cond["mot_trong"])
-        if "khong" in cond:
-            return not self.ok(cond["khong"])
-        if "tu_khoa" in cond:
-            txt = self.text[cond["trong"]]
-            skip = set(cond.get("tru", ()))
-            return any(k in txt for k in self.words(cond["tu_khoa"]) if k not in skip)
-        if "regex" in cond:
-            pat = cond["regex"]
-            if cond.get("regex_cau_hinh"):
-                pat = self.combo_cfg.get(cond["regex_cau_hinh"], pat)
-            return bool(re.search(pat, self.text[cond["trong"]], re.IGNORECASE if cond.get("ignorecase") else 0))
-        if "so_sanh" in cond:
-            a, op, b = cond["so_sanh"]
-            a, b = self.operand(a), self.operand(b)
-            return {">": a > b, ">=": a >= b, "<": a < b, "<=": a <= b, "==": a == b, "!=": a != b}[op]
-        if "thuoc" in cond:
-            var, vals = cond["thuoc"]
-            return int(self.nums(var)) in vals
-        raise ValueError(f"diffuser_rules: điều kiện không hiểu: {cond}")
+    def regex_pattern(self, cond):
+        pat = cond["regex"]
+        if cond.get("regex_cau_hinh"):
+            pat = self.combo_cfg.get(cond["regex_cau_hinh"], pat)
+        return pat
 
     def pick_text(self, options):
-        for opt in options:
-            if "khi" not in opt or self.ok(opt["khi"]):
-                return self.text[opt["lay"]] if "lay" in opt else opt["chuoi"]
-        return ""
+        opt = self.pick_opt(options)
+        if opt is None:
+            return ""
+        return self.text[opt["lay"]] if "lay" in opt else opt["chuoi"]
+
+    # --- Nguồn chữ (bảng 'đã hiểu thế nào') ---
+    def _add_hit(self, var, matcher):
+        """Ghi biến văn bản đã khớp. Biến gộp (Tên + Ghi chú + Title) mà phần Tên + Ghi chú (raw_search) tự khớp
+        → ghi raw_search (TEN), không ghi cả chuỗi gộp (TITLE). Chỉ đọc, không đổi kết quả so khớp."""
+        own = self._own_text(var)
+        self.hits.add("raw_search" if (own is not None and matcher(own)) else var)
+
+    def _own_text(self, var):
+        raw = self.text.get("raw_search")
+        if raw is None:
+            return None
+        if var == "combined_search":
+            return raw.lower()
+        if var == "unaccent_search":
+            return re.sub(r'\s+', ' ', remove_vietnamese_accents(raw.lower()).lower())
+        if var in self.derive:
+            base, fn = self.derive[var]
+            own = self._own_text(base)
+            return fn(own) if own is not None else None
+        return None
+
+    def var_sources(self, var):
+        """Biến văn bản → tập nguồn (TEN / GHI_CHU / TITLE ...): biến dẫn xuất theo biến gốc, còn lại theo TEXT_SOURCE."""
+        if var in self.text_src:
+            return set(self.text_src[var])
+        src = TEXT_SOURCE.get(var)
+        return {src} if src else set()
+
+    def sources(self, hits):
+        out = set()
+        for v in hits:
+            out |= self.var_sources(v)
+        return [s for s in SOURCES if s in out]
 
 
 def _slots_by_edge(w, h):
@@ -128,15 +115,28 @@ def _slots_by_edge(w, h):
 
 def _run_step(ctx, step, item, dims):
     if "co" in step:
+        ctx.hits = set()
         if "dat_true_khi" in step:
             if ctx.ok(step["dat_true_khi"]):
                 ctx.flags[step["co"]] = True
+                ctx.flag_src[step["co"]] = ctx.flag_src.get(step["co"], set()) | ctx.hits
         else:
-            ctx.flags[step["co"]] = ctx.ok(step["dieu_kien"])
+            val = ctx.ok(step["dieu_kien"])
+            ctx.flags[step["co"]] = val
+            ctx.flag_src[step["co"]] = set(ctx.hits) if val else set()
     elif "van_ban" in step:
         if "chon" in step:
-            ctx.text[step["van_ban"]] = ctx.pick_text(step["chon"])
+            opt = ctx.pick_opt(step["chon"])
+            ctx.text[step["van_ban"]] = "" if opt is None else (ctx.text[opt["lay"]] if "lay" in opt else opt["chuoi"])
+            ctx.text_src[step["van_ban"]] = ctx.var_sources(opt["lay"]) if (opt and "lay" in opt) else set()
+            if opt and "lay" in opt:
+                ctx.derive[step["van_ban"]] = (opt["lay"], lambda t: t)
+            else:
+                ctx.derive.pop(step["van_ban"], None)
         else:
+            ctx.text_src[step["van_ban"]] = ctx.var_sources(step["tu"])
+            _rx, _fl = step["xoa_regex"], re.IGNORECASE if step.get("ignorecase") else 0
+            ctx.derive[step["van_ban"]] = (step["tu"], lambda t, _rx=_rx, _fl=_fl: re.sub(_rx, "", t, flags=_fl))
             ctx.text[step["van_ban"]] = re.sub(step["xoa_regex"], "", ctx.text[step["tu"]],
                                                flags=re.IGNORECASE if step.get("ignorecase") else 0)
     elif step.get("tinh") == "dem_khe":
@@ -229,10 +229,16 @@ def _build_note(ctx, parts):
 
 
 def _subtype_lookup(ctx):
-    """Tra bảng subtype_rules.json CUA_GIO (Tên + Ghi chú trước, rồi toàn bộ ngữ cảnh), mặc định BD."""
+    """Tra bảng subtype_rules.json CUA_GIO (Tên + Ghi chú trước, rồi toàn bộ ngữ cảnh), mặc định BD.
+    Trả (profile, biến văn bản đã khớp — 'raw_search' / 'full_search' — hoặc None khi không khớp từ khóa nào → mặc định)."""
     from agent_01_boq_extractor import Agent01_BOQExtractor as A01
-    return A01.get_subtype(ctx.subtype_rules, "CUA_GIO", ctx.text["raw_search"],
-                           A01.get_subtype(ctx.subtype_rules, "CUA_GIO", ctx.text["full_search"], "BD"))
+    hit_raw = A01.get_subtype(ctx.subtype_rules, "CUA_GIO", ctx.text["raw_search"], None)
+    if hit_raw is not None:
+        return hit_raw, "raw_search"
+    hit_full = A01.get_subtype(ctx.subtype_rules, "CUA_GIO", ctx.text["full_search"], None)
+    if hit_full is not None:
+        return hit_full, "full_search"
+    return "BD", None
 
 
 def _nm(text, item):
@@ -278,15 +284,36 @@ def classify(item, subtype_rules, raw_name, name, raw_search, full_search, w, h,
     for step in rules["buoc_nhan_dien"]:
         _run_step(ctx, step, item, dims)
 
-    rule = next(r for r in rules["thu_tu_uu_tien"] if ctx.ok(r["dieu_kien"]))
+    rule = None
+    for r in rules["thu_tu_uu_tien"]:
+        ctx.hits = set()
+        if ctx.ok(r["dieu_kien"]):
+            rule = r
+            break
+    if rule is None:
+        raise StopIteration
+    decided_by = set(ctx.hits)
+    rule_id, is_default = rule["id"], False
     if rule.get("canh_bao_user"):
         item["rule_alert"] = {"id": rule["id"], "text": rule["canh_bao_user"]}
     for g in rule.get("gan", []):
         ctx.flags[g["co"]] = g["gia_tri"] if "gia_tri" in g else ctx.ok(g["dieu_kien"])
     if "chon_profile" in rule:
-        profile = next(p["profile"] for p in rule["chon_profile"] if "khi" not in p or ctx.ok(p["khi"]))
+        profile = None
+        for p in rule["chon_profile"]:
+            ctx.hits = set()
+            if "khi" not in p or ctx.ok(p["khi"]):
+                profile = p["profile"]
+                break
+        if profile is None:
+            raise StopIteration
+        decided_by |= ctx.hits
         if profile == "@subtype_rules":
-            profile = _subtype_lookup(ctx)
+            profile, sub_var = _subtype_lookup(ctx)
+            if sub_var is None:
+                rule_id, is_default = rule["id"].split("_", 1)[0] + "-MAC-DINH", True
+            else:
+                decided_by.add(sub_var)
         out = rule["theo_profile"].get(profile) or rule["theo_profile"]["*"]
     else:
         profile, out = rule["profile"], rule
@@ -326,9 +353,15 @@ def classify(item, subtype_rules, raw_name, name, raw_search, full_search, w, h,
     # Giới hạn kích thước theo loại cửa (diffuser_rules.json -> gioi_han_kich_thuoc): vượt → vẫn báo, ghi chú + tô vàng BG + hỏi lại
     item["size_limit_flag"] = size_limit_flag(model, dims["a1"] or ctx.num["w"], dims["a2"] or ctx.num["h"], rules)
 
+    nguon = ["MAC_DINH"] if is_default else (ctx.sources(decided_by) or ["MAC_DINH"])
     f = ctx.flags
     return {
         "rule_id": rule["id"],
+        # Bảng 'đã hiểu thế nào': rule_id giữ nguyên id rule (test ví dụ JSON + vết pattern lab đang dùng);
+        # rule_quyet_dinh = "CG-09-MAC-DINH" khi CG-09 tra bảng subtype mà không khớp từ khóa nào (mặc định BD)
+        "rule_quyet_dinh": rule_id,
+        "nguon": nguon,
+        "mac_dinh": "MAC_DINH" in nguon,
         "profile_type": profile,
         "model": model,
         "note": note,
@@ -360,3 +393,26 @@ def size_limit_flag(model, w, h, rules=None):
         if w > 0 and h > 0 and (min(w, h) > lim[0] or max(w, h) > lim[1]):
             return g["canh_bao"].format(w=int(w), h=int(h))
     return ""
+
+
+def box_combo_by_name(raw_name, rules=None):
+    """`hop_gio_theo_ten`: Tên gốc có từ khóa hộp gió VÀ từ khóa cửa / miệng gió → combo cửa + hộp (dự phòng khi Agent 01
+    chưa gắn is_box_combo). Runner + swind_item_inspector gọi (Task B, dọn sạch sau Việc 4, 2026-11-25)."""
+    cfg = (rules or load_rules())["hop_gio_theo_ten"]
+    rn = str(raw_name or "").lower()
+    return any(k in rn for k in cfg["tu_khoa_hop"]) and any(k in rn for k in cfg["tu_khoa_cua"])
+
+
+def name_note_conflict(raw_name_low, note_low, note_priority=False, rules=None):
+    """`xung_dot_ten_ghi_chu`: Ghi chú / Spec ghi kiểu nan khác Cột Tên → id rule (runner in cảnh báo HỎI LẠI USER),
+    không thì None. Chuỗi con thuần trên chữ thường như bộ dò cũ của runner (Task B, dọn sạch sau Việc 4, 2026-11-25)."""
+    cfg = (rules or load_rules())["xung_dot_ten_ghi_chu"]
+    rn, nb = str(raw_name_low or ""), str(note_low or "")
+    if not nb or (note_priority and cfg.get("bo_qua_khi_uu_tien_ghi_chu")):
+        return None
+    for r in cfg["quy_tac"]:
+        if (any(k in nb for k in r["ghi_chu_co"])
+                and (not r.get("ten_co") or any(k in rn for k in r["ten_co"]))
+                and not any(k in rn for k in r.get("ten_khong", ()))):
+            return r["id"]
+    return None

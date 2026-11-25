@@ -123,6 +123,143 @@ class ScopeRuleTableTest(unittest.TestCase):
         self.assertIn("flexible connection", cov["CANVAS_NAME_PREFIXES"])
 
 
+class ScopeNameHelpersTest(unittest.TestCase):
+    """Helper từ khóa chuyển từ runner sang scope_filter (Việc 4, 2026-11-25) — tiền tố / regex đọc từ PV-11."""
+
+    def test_main_noun(self):
+        self.assertEqual(sf.main_noun("Cung cấp và lắp đặt ống gió 600x400"), "ống gió 600x400")
+        self.assertEqual(sf.main_noun("Ống gió 600x400"), "ống gió 600x400")
+
+    def test_is_duct_like_name(self):
+        self.assertTrue(sf.is_duct_like_name("Cung cấp và lắp đặt ống gió 600x400"))
+        self.assertFalse(sf.is_duct_like_name("Cửa gió 600x400"))
+
+    def test_is_canvas_like_name(self):
+        self.assertTrue(sf.is_canvas_like_name("Gia công, lắp đặt flexible connection"))
+        self.assertFalse(sf.is_canvas_like_name("Ống gió 600x400"))
+
+    def test_is_swind_product_name(self):
+        kws = list(sf.coverage_lists()["SWIND_SCOPE_KWS"])
+        self.assertTrue(sf.is_swind_product_name("Van chặn lửa 400x300", kws))
+        self.assertFalse(sf.is_swind_product_name("Giá đỡ van chặn lửa", kws))
+
+    def test_is_insect_screen_name(self):
+        self.assertTrue(sf.is_insect_screen_name("louver kèm lcct 600x400"))
+        self.assertTrue(sf.is_insect_screen_name("lưới chắn côn trùng 300x300"))
+        self.assertFalse(sf.is_insect_screen_name("cửa gió 300x300"))
+
+
+    def test_is_lcct_m2_title(self):
+        """Task A (2026-11-25): Title 'LCCT ... kích thước:' ĐVT m2 có KL → báo LCCT theo m² (parser). Key RIÊNG
+        PV-11 tu_khoa_lcct_theo_m2 — có 'insect screen' (không gộp vào tu_khoa_luoi_chan_con_trung: đổi Coverage Audit)."""
+        cfg = sf.load_rules()["PV-11"]["tu_khoa_lcct_theo_m2"]
+        for key in ("tu_khoa", "nguon", "ly_do", "vi_du_dung", "vi_du_sai"):
+            self.assertTrue(cfg.get(key), f"tu_khoa_lcct_theo_m2 thiếu '{key}'")
+        self.assertEqual(sorted(cfg["tu_khoa"]), sorted(["lưới chắn côn trùng", "lcct", "insect screen"]))
+        self.assertNotIn("insect screen", sf.load_rules()["PV-11"]["tu_khoa_luoi_chan_con_trung"])
+        for t in cfg["vi_du_dung"] + ["Insect screen kích thước:", "Lưới chắn côn trùng kích thước"]:
+            self.assertTrue(sf.is_lcct_m2_title(t.lower()), t)
+        for t in cfg["vi_du_sai"] + ["Cửa gió kích thước:", "Lưới chắn chim kích thước:"]:
+            self.assertFalse(sf.is_lcct_m2_title(t.lower()), t)
+
+
+
+class RunnerScopeFlagListsTest(unittest.TestCase):
+    """Task B bước 1 (dọn sạch sau Việc 4, 2026-11-25): danh sách từ khóa theo cờ chuyển từ swind_master_runner sang
+    PV-11 / PV-18. Giá trị mong đợi = hành vi literal cũ trong runner (ghim trước khi chuyển)."""
+
+    def test_audit_scope_keywords_by_flags(self):
+        cov = sf.coverage_lists()
+        full, cv = cov["SWIND_SCOPE_KWS"], cov["SWIND_SCOPE_CUA_VAN_KWS"]
+        self.assertEqual(sf.audit_scope_keywords(False, True, True), full)
+        self.assertEqual(sf.audit_scope_keywords(True, True, True), cv)
+        self.assertEqual(sf.audit_scope_keywords(False, False, True), tuple(k for k in full if k != "ống gió"))
+        self.assertEqual(sf.audit_scope_keywords(False, True, False), tuple(k for k in full if k not in ("nối mềm", "canvas")))
+        self.assertEqual(sf.audit_scope_keywords(False, False, False),
+                         tuple(k for k in full if k not in ("ống gió", "nối mềm", "canvas")))
+        self.assertEqual(sf.audit_scope_keywords(True, False, False), cv)
+
+    def test_is_main_cv_name(self):
+        for t in ("louver kèm lưới chắn côn trùng d503", "luover kèm lcct", "louvre + lcct", "cửa chớp kèm lcct",
+                  "cửa gió kèm lcct", "miệng gió kèm lcct", "van gió kèm lcct", "van kèm lcct"):
+            self.assertTrue(sf.is_main_cv_name(t), t)
+        for t in ("lcct 600x400", "lưới chắn côn trùng", "vanh lcct", "khung van"):
+            self.assertFalse(sf.is_main_cv_name(t), t)
+
+    def test_is_cua_van_only_excluded(self):
+        for t in ("ống chờ 300x300", "ống lồng d200", "ống nối mềm", "canvas mềm ei60", "khớp nối mềm",
+                  "fire sleeve 300x300", "flexible duct d200"):
+            self.assertTrue(sf.is_cua_van_only_excluded(t), t)
+        for t in ("cửa gió 600x600", "van mfd 400x400", "ống gió 400x400"):
+            self.assertFalse(sf.is_cua_van_only_excluded(t), t)
+
+    def test_pv18_examples(self):
+        for ex in self.R()["PV-18"]["vi_du"]:
+            with self.subTest(ten=ex["ten"], title=ex.get("title_con", "")):
+                self.assertEqual(sf.is_straight_fire_duct_row(ex["ten"], ex.get("title_con", "")), ex["ket_qua"])
+
+    def test_pv18_straight_only_literal_behaviour(self):
+        """Cờ --fire-duct-only --duct-straight-only (1 dự án, E2E không chạy): giữ nguyên chuỗi con 'tê' / 'co '."""
+        f = sf.is_straight_fire_duct_row
+        self.assertTrue(f("400x300", "ống gió thẳng tôn dày 1.0mm:"))
+        self.assertTrue(f("ống gió 300x300", ""))
+        self.assertTrue(f("ống gió 300x300", "phụ kiện:"))
+        self.assertFalse(f("cút 90 độ 400x300", "ống gió thẳng:"))
+        self.assertFalse(f("500x300", "phụ kiện:"))
+        self.assertFalse(f("ống gió 600x400 kèm co 45", ""))
+        self.assertFalse(f("ống gió tên a 300x300", ""))
+        for kw in ("côn", "chân rẽ", "chạc", "z chuyển", "hộp", "chuyển tiết diện", "bịt", "măng xông"):
+            self.assertFalse(f(f"ống gió {kw} 300x300", ""), kw)
+        self.assertFalse(f("400x300", ""))
+
+    @staticmethod
+    def R():
+        return sf.load_rules()
+
+
+class ParserDetectionConfigTest(unittest.TestCase):
+    """Task A (2026-11-25): danh sách nhận diện của parser đọc từ subtype_rules.json COMBO_AND_DETECTION_RULES,
+    không còn fallback / phần cộng cứng trong swind_boq_parser.py."""
+
+    @classmethod
+    def setUpClass(cls):
+        from swind_utils import get_subtype_rules
+        cls.C = get_subtype_rules()["COMBO_AND_DETECTION_RULES"]
+        with open(os.path.join(SRC, "swind_boq_parser.py"), encoding="utf-8") as f:
+            cls.SRC_TXT = f.read()
+
+    def test_missing_qty_cv_keywords_has_cua_chop(self):
+        kws = self.C["missing_qty_cv_keywords"]
+        self.assertIn("cửa chớp", kws)
+        self.assertIn("chớp nhôm", kws)
+        self.assertNotIn('("cửa chớp", "chớp nhôm")', self.SRC_TXT)
+
+    def test_no_dead_fallbacks_in_parser(self):
+        import re
+        for key in ("missing_qty_cv_keywords", "missing_qty_cv_regex", "single_dim_damper_regex", "combo_diffuser_regex",
+                    "combo_damper_regex", "hvac_sheet_keywords", "combo_category_list_title_regex",
+                    "combo_own_diffuser_prefix_regex", "ktc_regex"):
+            self.assertIn(key, self.C, key)
+            self.assertIsNone(re.search(r'combo_cfg\.get\("%s",' % key, self.SRC_TXT), f"{key}: còn fallback trong parser")
+
+    def test_category_list_title_regex(self):
+        import re
+        rx = self.C["combo_category_list_title_regex"]
+        for t in ("van, miệng gió", "cửa gió / van gió", "van gió và cửa gió", "miệng gió & van"):
+            self.assertTrue(re.match(rx, t), t)
+        for t in ("van gió", "cửa gió cấp, van", "van chặn lửa"):
+            self.assertFalse(re.match(rx, t), t)
+
+    def test_own_diffuser_prefix_regex(self):
+        import re
+        rx = self.C["combo_own_diffuser_prefix_regex"]
+        for t in ("cửa gió nan thẳng, kèm hộp gió, obd", "  miệng gió 600x300", "louver 1000x500", "grille 300x300",
+                  "luover 600x600", "diffuser 600x600"):
+            self.assertTrue(re.match(rx, t), t)
+        for t in ("van mfd 600x400", "hộp gió kèm cửa", "600x300 cửa gió"):
+            self.assertFalse(re.match(rx, t), t)
+
+
 class ScopeParserRowsTest(unittest.TestCase):
     """BOQ_ANH_KHACH_01 (User chốt 2026-11-03): 'IS 850x250', 'AL IS-1000x800' → LCCT; 'AG MPRD-1200x900-E160' → van MPRD."""
 

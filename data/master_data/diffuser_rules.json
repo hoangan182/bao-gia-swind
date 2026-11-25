@@ -3068,5 +3068,136 @@
       "LCCT",
       "FILTER_G4"
     ]
+  },
+  "hop_gio_theo_ten": {
+    "mo_ta": "Dòng cửa / miệng gió Tên ghi kèm hộp gió → coi là combo cửa + hộp (is_box_combo) khi Agent 01 chưa gắn cờ: dùng để tách giá đối tác (BOQ có đơn giá) phần hộp và ghi chú 'ĐG bao gồm Hộp gió ...'. Điều kiện: Tên (chữ thường, chuỗi con) có ≥ 1 từ khóa hộp VÀ ≥ 1 từ khóa cửa.",
+    "nguon": "1805d82 2026-10-20 / 4e14743 2026-10-22 (fallback is_box_combo trong swind_master_runner + bản sao swind_item_inspector); chuyển vào JSON — Task B dọn sạch sau Việc 4, 2026-11-25",
+    "ly_do": "Hai nơi (runner, inspector) chép cùng danh sách → gom 1 chỗ để không lệch. Chỉ xét Tên gốc của dòng (không Ghi chú / Title), không chuẩn hóa chính tả.",
+    "tu_khoa_hop": [
+      "kèm hộp gió",
+      "kèm hộp",
+      "kèm box",
+      "có hộp gió",
+      "gắn hộp gió"
+    ],
+    "tu_khoa_cua": [
+      "cửa gió",
+      "miệng gió",
+      "cửa cấp",
+      "miệng cấp",
+      "cửa hồi",
+      "miệng hồi"
+    ],
+    "vi_du_dung": [
+      "Cửa gió 600x600 kèm hộp gió",
+      "Miệng cấp kèm box 300x300"
+    ],
+    "vi_du_sai": [
+      "Cửa gió 600x600",
+      "Van gió kèm hộp gió"
+    ]
+  },
+  "xung_dot_ten_ghi_chu": {
+    "mo_ta": "Bộ dò xung đột kiểu nan giữa Cột Tên và Ghi chú / Spec của dòng CỬA GIÓ → runner in '⚠️ [PHÁT HIỆN GHI CHÚ / SPEC KHÁC BIỆT CỘT TÊN — BẮT BUỘC HỎI LẠI USER]' (AGENTS.md quy tắc 3). Không đổi giá. Rule chạy theo thứ tự, rule đầu tiên khớp đủ điều kiện thắng: ghi_chu_co (≥ 1 trong Ghi chú) VÀ ten_co (≥ 1 trong Tên, nếu có) VÀ không có ten_khong trong Tên. So chuỗi con thuần trên chữ thường (KHÔNG ranh giới từ, KHÔNG chuẩn hóa chính tả): mã ngắn 'mag/sag/rag/fag/eag/oag' khớp cả trong chữ khác và 'sọt trưng' (gõ sai) là cố ý.",
+    "nguon": "1e5672d 2026-10-29 (bộ dò trong swind_master_runner.print_quotation_summary_table); nhánh bầu dục / nan thẳng 7cdc069 2026-11-02 (phản hồi Kỹ thuật BDKSCT); chuyển vào JSON — Task B dọn sạch sau Việc 4, 2026-11-25",
+    "ly_do": "Mỗi dự án trình bày khác nhau: Ghi chú ghi kiểu nan khác Tên thì AI phải hỏi User chọn --spec-priority name / note. Khi đã chạy --spec-priority note thì không hỏi nữa.",
+    "bo_qua_khi_uu_tien_ghi_chu": true,
+    "quy_tac": [
+      {
+        "id": "XD-CG-01_GHI_CHU_SOT_TRUNG",
+        "nguon": "1e5672d 2026-10-29 (bộ dò trong swind_master_runner); ten_khong gồm 'ecg' thêm ở ff05449 2026-10-29; chuyển từ swind_master_runner.py 2026-11-25",
+        "ly_do": "Ghi chú ghi kiểu sọt trứng / eggcrate mà Tên không ghi kiểu này (EAG / mã khác) → hỏi User theo Tên hay Ghi chú.",
+        "ghi_chu_co": [
+          "sọt trứng",
+          "eggcrate"
+        ],
+        "ten_khong": [
+          "sọt trứng",
+          "eggcrate",
+          "ecg"
+        ],
+        "vi_du_dung": [
+          {
+            "ten": "miệng hút gió eag+obd kích thước: 200x200",
+            "ghi_chu": "cửa nan sọt trứng kèm van obd"
+          }
+        ],
+        "vi_du_sai": [
+          {
+            "ten": "cửa ecg 600x600",
+            "ghi_chu": "eggcrate"
+          }
+        ]
+      },
+      {
+        "id": "XD-CG-02_GHI_CHU_NAN_Z",
+        "nguon": "1e5672d 2026-10-29 (mã ngắn mag/sag/rag/fag/eag/oag là mã cửa gió riêng của khách); chuyển từ swind_master_runner.py 2026-11-25",
+        "ly_do": "Ghi chú ghi nan Z / louver mà Tên đã ghi nan thẳng / bầu dục / khuếch tán / sọt trứng hoặc mã cửa nan → xung đột kiểu nan.",
+        "ghi_chu_co": [
+          "nan z",
+          "louver"
+        ],
+        "ten_co": [
+          "nan thẳng",
+          "bầu dục",
+          "khuếch tán",
+          "sọt trứng",
+          "mag",
+          "sag",
+          "rag",
+          "fag",
+          "eag",
+          "oag"
+        ],
+        "vi_du_dung": [
+          {
+            "ten": "miệng gió eag 300x300",
+            "ghi_chu": "louver nan z"
+          }
+        ],
+        "vi_du_sai": [
+          {
+            "ten": "cửa gió 600x300",
+            "ghi_chu": "nan z"
+          }
+        ]
+      },
+      {
+        "id": "XD-CG-03_GHI_CHU_BAU_DUC",
+        "nguon": "7cdc069 2026-11-02 (phản hồi Kỹ thuật BDKSCT: nhánh bầu dục / nan thẳng; 'sọt trưng' gõ sai cố ý); chuyển từ swind_master_runner.py 2026-11-25",
+        "ly_do": "Ghi chú ghi bầu dục / nan thẳng mà Tên ghi kiểu khác (khuếch tán / sọt trứng / lưới / nan Z / louver / khe) → xung đột kiểu nan.",
+        "ghi_chu_co": [
+          "bầu dục",
+          "nan thẳng"
+        ],
+        "ten_co": [
+          "khuếch tán",
+          "sọt trứng",
+          "sọt trưng",
+          "kiểu lưới",
+          "dạng lưới",
+          "nan z",
+          "louver",
+          "slot",
+          "kiểu khe"
+        ],
+        "ten_khong": [
+          "bầu dục",
+          "nan thẳng"
+        ],
+        "vi_du_dung": [
+          {
+            "ten": "cửa gió khe slot 1000x150",
+            "ghi_chu": "nan thẳng bầu dục"
+          }
+        ],
+        "vi_du_sai": [
+          {
+            "ten": "cửa gió slot nan thẳng 1000x150",
+            "ghi_chu": "bầu dục"
+          }
+        ]
+      }
+    ]
   }
 }

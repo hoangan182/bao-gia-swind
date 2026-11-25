@@ -144,5 +144,97 @@ class DuctParserCategoryTest(unittest.TestCase):
         self.assertEqual(dcl.elbow_mesh_filter("Co 45 D1000", note="không kèm lọc G4"), (False, False))
 
 
+
+class DuctProvenanceTest(unittest.TestCase):
+    """Bảng 'đã hiểu thế nào' (2026-11-24): rule mặc định (mac_dinh: true) ghi thêm OG-MAC-DINH vào trail."""
+
+    def test_og_default(self):
+        t = []
+        dcl.detect_subtype("ống gió 600x400", 600, 400, trail=t)
+        self.assertIn("OG-MAC-DINH", t)
+
+    def test_og_explicit_no_default(self):
+        t = []
+        dcl.detect_subtype("cút 90 độ 600x400", 600, 400, trail=t)
+        self.assertNotIn("OG-MAC-DINH", t)
+
+
+
+class LinedDuctRulesTest(unittest.TestCase):
+    """Task B bước 4 (dọn sạch sau Việc 4, 2026-11-25): LINED_DUCT_RX (agent_04, runner import) → OG-25; chữ
+    'tiêu âm trong' (runner / inspector include_casing) → OG-26. HAI mẫu KHÁC nhau — không gộp (OG-25 khớp cả không
+    dấu / '+' / 'có'; OG-26 chỉ chuỗi con có dấu)."""
+
+    OLD_RX = r"\(?\s*(?:kèm|kem|có|co|\+)?\s*ti[êe]u\s*[âa]m\s*trong[^)]*\)?"
+
+    def test_og25_regex_is_old_literal(self):
+        import re
+        rx = dcl.lined_duct_rx()
+        self.assertEqual(rx.pattern, self.OLD_RX)
+        self.assertTrue(rx.flags & re.IGNORECASE)
+        r = dcl.load_rules()["_extra"]["OG-25"]
+        for ex in r["vi_du_dung"]:
+            self.assertTrue(rx.search(ex["ten"]), ex)
+        for ex in r["vi_du_sai"]:
+            self.assertFalse(rx.search(ex["ten"]), ex)
+
+    def test_og25_strip_like_agent04(self):
+        import re
+        rx = dcl.lined_duct_rx()
+        t = "Ống gió 800x400 ( kèm tiêu âm trong dày 50mm)"
+        self.assertEqual(re.sub(r"\s{2,}", " ", rx.sub(" ", t)).strip(), "Ống gió 800x400")
+        for t in ("ống gió + tieu am trong 25mm", "Ống gió có Tiêu Âm Trong", "ống gió kem tieu am trong"):
+            self.assertTrue(rx.search(t), t)
+
+    def test_og26_inner_lined_literal(self):
+        f = dcl.is_inner_lined_silencer
+        self.assertTrue(f("Ống gió 800x400 ( kèm tiêu âm trong dày 50mm)"))
+        self.assertTrue(f("Hộp TIÊU ÂM TRONG 600x600"))
+        for t in ("ống gió tieu am trong", "Hộp tiêu âm 600x600", "tiêu âm  trong", "", None):
+            self.assertFalse(f(t), t)
+        r = dcl.load_rules()["_extra"]["OG-26"]
+        for ex in r["vi_du_dung"]:
+            self.assertTrue(f(ex["ten"]), ex)
+        for ex in r["vi_du_sai"]:
+            self.assertFalse(f(ex["ten"]), ex)
+
+
+class SilencerFittingRuleTest(unittest.TestCase):
+    """Task C (dọn sạch sau Việc 4, 2026-11-25): OG-27 — kiểm phụ kiện tiêu âm chuyển từ agent_04 sang duct_rules.json,
+    so với bản sao biểu thức cũ trên lưới tên."""
+
+    @staticmethod
+    def _old(raw_name, full_text):
+        t_name_low, t_full_low = raw_name.lower(), full_text.lower()
+        fit = any(k in t_name_low for k in (
+            "phụ kiện", "phu kien", "cút", "cut ", "co ", "chếch", "chech",
+            "côn", "con ", "tê ", "te ", "chạc", "chac", "chân rẽ", "chan re",
+            "gót giày", "got giay", "zét", "zet", "ống lượn", "ong luon", "bịt đầu", "bit dau"
+        )) or ("phụ kiện tiêu âm" in t_full_low)
+        elbow = fit and any(k in t_name_low for k in ("cút", "cut ", "co ", "chếch", "chech"))
+        cone = fit and any(k in t_name_low for k in ("côn", "con ", "chân rẽ", "chan re", "gót giày", "got giay"))
+        return fit, elbow, cone
+
+    def test_grid_identical_to_old_expression(self):
+        import itertools
+        bases = ["Cút 90 tiêu âm", "CUT 45 tieu am", "Co 90", "Côn thu tiêu âm", "con thu", "Chân rẽ", "Tê tiêu âm", "te 600",
+                 "Chạc ba", "Gót giày", "Zét", "Ống lượn", "Bịt đầu", "Phụ kiện tiêu âm", "Hộp tiêu âm", "Ống gió tiêu âm",
+                 "Chếch 30", "cutter", "conn", "Silencer", "", "Cút côn", "Tê"]
+        for b, suffix, full in itertools.product(bases, ["", " 600x400", " ( kèm tiêu âm trong)"], ["", "phụ kiện tiêu âm 600x400", "Hộp"]):
+            n = b + suffix
+            old = self._old(n, full)
+            new = (dcl.is_silencer_fitting(n, full),
+                   dcl.is_silencer_fitting(n, full) and dcl.is_silencer_elbow_name(n),
+                   dcl.is_silencer_fitting(n, full) and dcl.is_silencer_cone_name(n))
+            self.assertEqual(old, new, (n, full))
+
+    def test_og27_examples(self):
+        r = dcl.load_rules()["_extra"]["OG-27"]
+        for ex in r["vi_du_dung"]:
+            self.assertTrue(dcl.is_silencer_fitting(ex["ten"], ex["ten"]), ex)
+        for ex in r["vi_du_sai"]:
+            self.assertFalse(dcl.is_silencer_fitting(ex["ten"], ex["ten"]), ex)
+
+
 if __name__ == "__main__":
     unittest.main()
