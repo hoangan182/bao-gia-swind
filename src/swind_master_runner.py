@@ -1253,6 +1253,10 @@ def audit_full_boq_coverage(boq_wb, target_sheets, raw_all_items, filtered_items
                 continue
             if info.get("reason") == "MISSING_Z_OFFSET" and not include_duct:
                 skipped_other_cnt += 1
+            elif info.get("reason") == "UNSUPPORTED_ANGLE":  # OG-28
+                if include_duct:
+                    skipped_in_scope.append(f"{desc} | Lý do lọc=UNSUPPORTED_ANGLE (góc không có công thức)")
+                    flag_rows[r] = duct_classifier.load_rules()["_extra"]["OG-28"]["canh_bao"]
             elif info.get("reason") == "MISSING_Z_OFFSET":
                 skipped_in_scope.append(f"{desc} | Lý do lọc=MISSING_Z_OFFSET (chưa có độ lệch E)")
                 flag_rows[r] = "⚠️ CHƯA BÁO GIÁ: Chữ Z chưa ghi độ lệch E (chênh cao độ) — Kỹ thuật kiểm tra & bổ sung"

@@ -709,6 +709,34 @@
    ]
   },
   {
+   "id": "OG-28_GOC_CUT_NGOAI_CHUAN",
+   "ten": "Cút / chếch (ELBOW_*) ghi góc ngoài các góc có công thức và BOQ không có đơn giá → để trống giá, tô vàng cho Kỹ thuật",
+   "nguon": "User chốt 2026-11-26, dự án 03. Ống gió_ Đồng Trúc R103 'Chêck 10 độ GHCL Ei60 KT 1200x500'",
+   "ly_do": "Công thức cút chỉ có 30/45/60/90 độ; trước đây góc khác bị tính như 45 độ (chếch) hoặc 90 độ. Không ghi góc thì giữ mặc định cũ. Kiểm tra ở parser (SwindBOQParser.parse_sheet).",
+   "canh_bao": "⚠️ CHƯA BÁO GIÁ: góc cút / chếch không có công thức (chỉ có 30/45/60/90 độ) — Kỹ thuật kiểm tra & báo giá",
+   "goc_co_cong_thuc": [
+    30,
+    45,
+    60,
+    90
+   ],
+   "regex_goc": "(?<![\\d.,])(\\d{1,3}(?:[.,]\\d+)?)\\s*(?:độ|°|º|deg\\b)",
+   "loai_ap_dung": [
+    "ELBOW_SQ",
+    "ELBOW_RT"
+   ],
+   "vi_du_dung": [
+    {
+     "ten": "Chếch 10 độ GHCL Ei60 KT 1200x500",
+     "kt": [
+      1200,
+      500
+     ],
+     "loai": "ELBOW_SQ"
+    }
+   ]
+  },
+  {
    "id": "OG-21_HOP_TRONG_GHI_CHU",
    "ten": "Ghi chú liệt kê hộp dạng 'BOX/Hộp <nhãn> WxHxL': ≥ 2 hộp → 1 dòng, đơn giá = tổng các hộp; đúng 1 hộp khác kích thước Tên → vẫn tính theo Ghi chú + HỎI LẠI USER",
    "nguon": "Nhiều hộp: User chốt 2026-11-03 (MKS BP05a 'Hộp gió FCU'); 1 hộp khác Tên: User chốt 2026-11-03 (việc C2)",

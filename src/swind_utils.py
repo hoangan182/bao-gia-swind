@@ -187,7 +187,11 @@ def detect_boq_header(ws):
                 return True
             return any(k in v_txt for k in QTY_KEYWORDS) or any(k in v_txt for k in ("cần về", "đặt hàng", "kl đặt", "sl đặt", "cung cấp đợt này", "yêu cầu cấp")) or bool(re.match(r'^lần\s*\d+$', v_txt))
 
-        name_cols = [c for c, v in row_vals.items() if any(k in v for k in NAME_KEYWORDS)]
+        # Dòng thông tin khách hàng dạng '- Hạng mục: HỆ THỐNG ...' (gạch đầu dòng + 'nhãn: giá trị') không phải ô header cột Tên.
+        # Nguồn: 2026-11-26, input/TAHK.xlsx sheet 'Chi tiết' — dòng 17 '- Hạng mục: ...' có 'Đơn vị'/'Khối lượng' ở 2 dòng dưới
+        # nên bị nhận làm header, lấy cột STT (B) làm cột Tên thay vì 'Nội dung' (C).
+        name_cols = [c for c, v in row_vals.items() if any(k in v for k in NAME_KEYWORDS)
+                     and not re.match(r'^[-–•+*]\s*[^:]{1,25}:\s*\S', v)]
         qty_or_unit_cols = [
             c for c, vs in block_vals.items()
             if c not in name_cols and any(is_qty_label(v, c) or any(k in v for k in UNIT_KEYWORDS) for v in vs)
@@ -272,6 +276,16 @@ def detect_boq_header(ws):
                         and not any(k in sub_txt for k in HEADER_LABEL_KWS)):
                     break
                 row_has_col_idx = False
+                # Dòng đánh số cột không ngoặc '1 | 2 | 3 | 4 ...' (số nguyên tăng liên tiếp trên ≥ 4 ô hiển thị) ngay dưới header
+                # -> thuộc vùng header, không phải mặt hàng.
+                # Nguồn: 2026-11-26, input/TAHK.xlsx sheet 'Chi tiết' dòng 21 — bị đọc thành mặt hàng Tên='2', KL=8, giá đối tác 9.
+                seq_vals = [str(ws.cell(sub_r, cc).value).strip() for cc in range(1, max_scan_col + 1)
+                            if get_column_letter(cc) not in hidden_cols and str(ws.cell(sub_r, cc).value or "").strip()]
+                # Ô số trần '8' hoặc dạng công thức '(11)=(9)+(10)' đều lấy số đầu ô.
+                seq_nums = [re.match(r'^\(?(\d+)\)?(?:\s*=.*)?$', v) for v in seq_vals]
+                if (len(seq_vals) >= 4 and all(seq_nums)
+                        and all(int(b.group(1)) == int(a.group(1)) + 1 for a, b in zip(seq_nums, seq_nums[1:]))):
+                    row_has_col_idx = True
                 row_has_sub_dim = False
                 sub_has_w = False
                 sub_has_h = False

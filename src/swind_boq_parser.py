@@ -6,6 +6,7 @@ import unicodedata
 from swind_utils import detect_boq_header, get_subtype_rules, extract_duct_fitting_geometry
 import damper_classifier
 import scope_filter
+import duct_classifier
 import typo_normalizer
 import title_row_resolver
 import decision_trace
@@ -686,6 +687,17 @@ class SwindBOQParser:
                     has_ref_z = isinstance(ref_z, (int, float)) and ref_z > 0
                     is_missing_z_offset = not has_ref_z and not (extract_duct_fitting_geometry(z_txt).get("offset_h") or 0) > 0
 
+            # OG-28 (User chốt 2026-11-26): cút / chếch góc không có công thức -> để trống giá, tô vàng (giữ nguyên nếu BOQ có đơn giá)
+            bad_angle = None
+            if category == "ONG_GIO" and not is_user_skip:
+                # Tên thuần kích thước thì góc nằm ở Title (name_str)
+                a_name = raw_name_str if re.search(r"[A-Za-zÀ-ỹ]{3,}", raw_name_str) else name_str
+                bad_angle = duct_classifier.unsupported_elbow_angle(f"{a_name} {note_boq}", w, h, d_val, unit_val)
+                if bad_angle is not None:
+                    ref_a = ws.cell(r, col_map["price"]).value if "price" in col_map else None
+                    if isinstance(ref_a, (int, float)) and ref_a > 0:
+                        bad_angle = None
+
             if category in ("CUA_GIO", "VAN_GIO") and has_diffuser and m_damper and detected_dampers:
                 sorted_dampers = damper_classifier.sort_by_priority(detected_dampers)
                 w_diff = (w + ktc_offset) if (is_ktc and w > 0) else w
@@ -786,12 +798,12 @@ class SwindBOQParser:
             else:
                 # PV-04: không báo theo nhóm / ống không KT / Zét thiếu E; BOQ có đơn giá đối tác thì giữ dòng (giữ giá)
                 ref_p = ws.cell(r, col_map["price"]).value if "price" in col_map else None
-                if scope_filter.should_skip_row(category, w, h, d_val, name_lower, ref_p, self.include_flex_duct, is_missing_z_offset, unit=unit_val):
+                if scope_filter.should_skip_row(category, w, h, d_val, name_lower, ref_p, self.include_flex_duct, is_missing_z_offset or bad_angle is not None, unit=unit_val):
                     self.skipped_rows[sheet_name].add(r)
                     raw_spec_cell = ws.cell(r, col_map["spec"]).value if "spec" in col_map else None
                     raw_spec_disp = raw_spec_cell if raw_spec_cell not in (None, "") else (spec_str or None)
                     self.skip_reasons.setdefault(sheet_name, {})[r] = {
-                        "reason": "USER_SKIP" if is_user_skip else "MISSING_Z_OFFSET" if is_missing_z_offset else "MISSING_DIMS" if is_missing_dims else (f"NO_DIMS_{category}" if category in ("ONG_GIO", "TIEU_AM", "CANVAS") else f"OUT_OF_SCOPE_{category}"),
+                        "reason": "USER_SKIP" if is_user_skip else "MISSING_Z_OFFSET" if is_missing_z_offset else "UNSUPPORTED_ANGLE" if bad_angle is not None else "MISSING_DIMS" if is_missing_dims else (f"NO_DIMS_{category}" if category in ("ONG_GIO", "TIEU_AM", "CANVAS") else f"OUT_OF_SCOPE_{category}"),
                         "category": category,
                         "orig_category": orig_category,
                         "name": raw_name_str,

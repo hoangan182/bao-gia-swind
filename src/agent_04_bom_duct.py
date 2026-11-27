@@ -3,6 +3,7 @@ import os
 import re
 import unicodedata
 import duct_classifier
+import typo_normalizer
 from swind_utils import get_master_bom_rules, get_master_price_map, extract_duct_fitting_geometry, K, get_pricing_constants
 
 
@@ -207,6 +208,12 @@ class Agent04_DuctworkBOM:
             raw_name = re.sub(r"\s{2,}", " ", lined_rx.sub(" ", raw_name)).strip()
             note_boq = re.sub(r"\s{2,}", " ", lined_rx.sub(" ", note_boq)).strip()
         full_text = f"{raw_name} {note_boq}".strip()
+        # TY-01 (2026-11-26, User chốt, dự án 03. Ống gió_ Đồng Trúc): lỗi gõ đã duyệt phải áp cả khi nhận loại phụ kiện / góc
+        # ('Chêck 10 độ ...' bị tính như ống thẳng L1110). Chỉ rẽ nhánh khi từ điển thật sự đổi chữ.
+        _low = full_text.lower()
+        _fixed = typo_normalizer.apply_dictionary(_low, "full")
+        if _fixed != _low:
+            full_text = _fixed
 
         w_in = float(item.get("w") or 0.0)
         h_in = float(item.get("h") or 0.0)

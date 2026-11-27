@@ -145,6 +145,56 @@ class DuctParserCategoryTest(unittest.TestCase):
 
 
 
+class UnsupportedElbowAngleTest(unittest.TestCase):
+    """OG-28 (User chốt 2026-11-26, dự án 03. Ống gió_ Đồng Trúc R103 'Chêck 10 độ'): cút / chếch ghi góc ngoài
+    30/45/60/90 không có công thức -> để trống giá, tô vàng; không mượn công thức 45° / 90°."""
+
+    def _parse(self, rows):
+        from swind_boq_parser import SwindBOQParser
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "boq.xlsx")
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = "BOQ"
+            ws.append(["STT", "Danh mục vật tư", "ĐVT", "Khối lượng", "Đơn giá"])
+            for i, (name, price) in enumerate(rows, 1):
+                ws.append([i, name, "cái", 2, price])
+            wb.save(p)
+            parser = SwindBOQParser(p)
+            items = parser.parse_sheet("BOQ")
+        return [it["source_row"] for it in items], parser.skip_reasons.get("BOQ", {})
+
+    def test_unsupported_angle_is_not_quoted(self):
+        got, why = self._parse([
+            ("Chếch 10 độ GHCL Ei60 KT 1200x500", None),   # R2
+            ("Chêck 10 độ GHCL Ei60 KT 1200x500", None),   # R3: lỗi gõ đã duyệt
+            ("Cút 64 độ ống gió KT 1200x300", None),       # R4
+            ("Cút 22,5° ống gió D300", None),              # R5
+        ])
+        self.assertEqual(got, [])
+        self.assertEqual([why[r]["reason"] for r in (2, 3, 4, 5)], ["UNSUPPORTED_ANGLE"] * 4)
+
+    def test_supported_or_unstated_angle_still_quoted(self):
+        got, _ = self._parse([
+            ("Cút 90 độ ống gió KT 1200x500", None),
+            ("Cút 45º ống gió D450", None),
+            ("Chếch ống gió KT 500x400", None),
+            ("Cút 30 độ ống gió KT 500x400", None),
+            ("Cút 60° ống gió KT 500x400", None),
+            ("Cút ống gió KT 400x300 R200", None),
+            ("Ống gió KT 500x400 chịu nhiệt 70 độ", None),
+        ])
+        self.assertEqual(got, [2, 3, 4, 5, 6, 7, 8])
+
+    def test_partner_price_kept(self):
+        got, _ = self._parse([("Chếch 10 độ ống gió KT 1200x500", 1500000)])
+        self.assertEqual(got, [2])
+
+    def test_typo_elbow_read_as_elbow(self):
+        spec, _ = _resolve({"ten": "Chêck 45 độ KT 1200x500", "kt": [1200, 500]})
+        self.assertEqual(spec["subtype"], "ELBOW_SQ")
+
+
 class DuctProvenanceTest(unittest.TestCase):
     """Bảng 'đã hiểu thế nào' (2026-11-24): rule mặc định (mac_dinh: true) ghi thêm OG-MAC-DINH vào trail."""
 

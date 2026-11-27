@@ -14,6 +14,8 @@ import re
 import json
 import unicodedata
 
+import typo_normalizer
+
 RULES_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "master_data", "duct_rules.json")
 _RULES_CACHE = {}
 
@@ -87,6 +89,24 @@ def detect_subtype(text, w1=0.0, h1=0.0, w2=0.0, h2=0.0, d1=0.0, d2=0.0, unit=""
         if trail is not None:
             trail.append("OG-19")
     return subtype
+
+
+# ---------------------------------------------------------------- Góc cút không có công thức (OG-28)
+
+def unsupported_elbow_angle(text, w1=0.0, h1=0.0, d1=0.0, unit="", rules=None):
+    """OG-28: cút / chếch ghi góc không có công thức → trả góc (float), ngược lại None."""
+    R = rules or load_rules()
+    r = R["_extra"]["OG-28"]
+    t = typo_normalizer.apply_dictionary(unicodedata.normalize("NFC", str(text or "")).lower(), "full")
+    m = re.search(r["regex_goc"], t)
+    if not m:
+        return None
+    angle = float(m.group(1).replace(",", "."))
+    if angle >= 180 or angle in r["goc_co_cong_thuc"]:
+        return None
+    if detect_subtype(t, w1, h1, d1=d1, unit=unit, rules=R) not in r["loai_ap_dung"]:
+        return None
+    return angle
 
 
 # ---------------------------------------------------------------- Hộp trong Ghi chú (OG-21)

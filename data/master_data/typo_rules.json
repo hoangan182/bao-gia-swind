@@ -128,6 +128,19 @@
       "agent01"
      ],
      "nguon": "User chốt 2026-11-19, GMS TASEOC DBTSCO-1.OGIO (Côn thu 'dày 1.115mm' = 1.15mm)"
+    },
+    {
+     "mau": "\\bchêck\\b",
+     "thay": "chếch",
+     "pham_vi": [
+      "ten",
+      "title",
+      "full",
+      "combo",
+      "van",
+      "agent01"
+     ],
+     "nguon": "2026-11-26 — User chốt"
     }
    ],
    "vi_du_dung": [
